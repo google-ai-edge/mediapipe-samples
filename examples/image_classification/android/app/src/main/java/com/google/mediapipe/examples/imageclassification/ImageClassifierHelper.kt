@@ -93,6 +93,12 @@ class ImageClassifierHelper(
                 "Image classifier failed to initialize. See error logs for details"
             )
             Log.e(TAG, "TFLite failed to load model with error: " + e.message)
+        } catch (e: RuntimeException) {
+            // This occurs if the model being used does not support GPU
+            imageClassifierListener?.onError(
+                "Image classifier failed to initialize. See error logs for details"
+            )
+            Log.e(TAG, "TFLite failed to load model with error: " + e.message)
         }
     }
 
