@@ -1,0 +1,19 @@
+task downloadModelFile(type: Download) {
+    src 'https://storage.googleapis.com/mediapipe-assets/mobilenet_v2_1.0_224_quant.tflite?generation=1664340173966530'
+    dest project.ext.ASSET_DIR + '/mobilenetv2.tflite'
+    overwrite false
+}
+
+task downloadModelFile0(type: Download) {
+    src 'https://storage.googleapis.com/mediapipe-assets/coco_efficientdet_lite0_v1_1.0_quant_2021_09_06.tflite?generation=1661875692679200'
+    dest project.ext.ASSET_DIR + '/efficientdet-lite0.tflite'
+    overwrite false
+}
+
+task downloadModelFile1(type: Download) {
+    src 'https://storage.googleapis.com/download.tensorflow.org/models/tflite/task_library/object_detection/android/lite-model_efficientdet_lite1_detection_metadata_1.tflite'
+    dest project.ext.ASSET_DIR + '/efficientdet-lite1.tflite'
+    overwrite false
+}
+
+preBuild.dependsOn downloadModelFile, downloadModelFile0, downloadModelFile1
