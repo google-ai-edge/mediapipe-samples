@@ -57,7 +57,7 @@ class CameraFragment : Fragment(),
         get() = _fragmentCameraBinding!!
 
     private lateinit var handGestureRecognitionHelper: HandGestureRecognitionHelper
-    private var defaultNumResults = 3
+    private var defaultNumResults = 1
     private val recognitionResultsAdapter: RecognitionResultsAdapter by lazy {
         RecognitionResultsAdapter().apply {
             updateAdapterSize(defaultNumResults)
@@ -167,42 +167,6 @@ class CameraFragment : Fragment(),
             }
         }
 
-        // When clicked, reduce the number of hands that can be recognize at a
-        // time
-        fragmentCameraBinding.bottomSheetLayout.maxResultsMinus.setOnClickListener {
-            if (defaultNumResults > 1) {
-                defaultNumResults--
-                updateControlsUi()
-                recognitionResultsAdapter.updateAdapterSize(size = defaultNumResults)
-            }
-        }
-
-        // When clicked, increase the number of hands that can be recognize
-        // at a time
-        fragmentCameraBinding.bottomSheetLayout.maxResultsPlus.setOnClickListener {
-            if (defaultNumResults < 8) {
-                defaultNumResults++
-                updateControlsUi()
-                recognitionResultsAdapter.updateAdapterSize(size = defaultNumResults)
-            }
-        }
-
-        // When clicked, decrease the number of threads used for recognition
-        fragmentCameraBinding.bottomSheetLayout.threadsMinus.setOnClickListener {
-            if (handGestureRecognitionHelper.numThreads > 1) {
-                handGestureRecognitionHelper.numThreads--
-                updateControlsUi()
-            }
-        }
-
-        // When clicked, increase the number of threads used for recognition
-        fragmentCameraBinding.bottomSheetLayout.threadsPlus.setOnClickListener {
-            if (handGestureRecognitionHelper.numThreads < 4) {
-                handGestureRecognitionHelper.numThreads++
-                updateControlsUi()
-            }
-        }
-
         // When clicked, change the underlying hardware used for inference.
         // Current options are CPU and GPU
         fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(
@@ -226,14 +190,10 @@ class CameraFragment : Fragment(),
     // Update the values displayed in the bottom sheet. Reset recognition
     // helper.
     private fun updateControlsUi() {
-        fragmentCameraBinding.bottomSheetLayout.maxResultsValue.text =
-            defaultNumResults.toString()
         fragmentCameraBinding.bottomSheetLayout.thresholdValue.text =
             String.format(
                 Locale.US, "%.2f", handGestureRecognitionHelper.minConfidence
             )
-        fragmentCameraBinding.bottomSheetLayout.threadsValue.text =
-            handGestureRecognitionHelper.numThreads.toString()
 
         // Needs to be cleared instead of reinitialized because the GPU
         // delegate needs to be initialized on the thread using it when applicable

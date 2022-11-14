@@ -35,8 +35,6 @@
     <string name="label_inference_time">Inference Time</string>
     <string name="label_fps">Frames per Second</string>
     <string name="label_confidence_threshold">Threshold</string>
-    <string name="label_max_results">Max Results</string>
-    <string name="label_threads">Number of Threads</string>
     <string name="label_delegate">Delegate</string>
 
     <string-array name="delegate_spinner_titles">

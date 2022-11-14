@@ -31,7 +31,6 @@ import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizerResu
 
 class HandGestureRecognitionHelper(
     var minConfidence: Float = 0.5f,
-    var numThreads: Int = 2,
     var currentDelegate: Int = 0,
     val context: Context,
     val handGestureRecognitionListener: GestureRecognitionHelper.RecognitionListener
