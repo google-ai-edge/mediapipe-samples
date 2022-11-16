@@ -78,8 +78,7 @@ class ObjectDetectorHelper(
     val modelName =
       when (currentModel) {
         MODEL_EFFICIENTDETV0 -> "efficientdet-lite0.tflite"
-        MODEL_EFFICIENTDETV1 -> "efficientdet-lite1.tflite"
-        MODEL_MOBILENETV2 -> "mobilenetv1.tflite"
+        MODEL_EFFICIENTDETV2 -> "efficientdet-lite2.tflite"
         else -> "efficientdet-lite0.tflite"
       }
 
@@ -260,6 +259,12 @@ class ObjectDetectorHelper(
   // Accepted a Bitmap and runs object detection inference on it to return results back
   // to the caller
   fun detectImage(image: Bitmap): ResultBundle? {
+
+    if(runningMode != RunningMode.IMAGE) {
+      throw IllegalArgumentException("Attempting to call detectImage" +
+              " while not using RunningMode.IMAGE")
+    }
+
     // Inference time is the difference between the system time at the start and finish of the
     // process
     val startTime = SystemClock.uptimeMillis()
@@ -297,8 +302,7 @@ class ObjectDetectorHelper(
     const val DELEGATE_CPU = 0
     const val DELEGATE_GPU = 1
     const val MODEL_EFFICIENTDETV0 = 1
-    const val MODEL_EFFICIENTDETV1 = 2
-    const val MODEL_MOBILENETV2 = 3
+    const val MODEL_EFFICIENTDETV2 = 2
 
     val TAG = "ObjectDetectorHelper ${this.hashCode()}"
   }

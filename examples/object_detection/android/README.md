@@ -1,4 +1,4 @@
-# MediaPipe Lite Object Detection Android Demo
+# MediaPipe Tasks Object Detection Android Demo
 
 ### Overview
 
