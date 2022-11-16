@@ -1,0 +1,7 @@
+task downloadTaskFile(type: Download) {
+    src 'https://storage.googleapis.com/mediapipe-assets/hand_landmarker.task'
+    dest project.ext.ASSET_DIR + '/hand_landmarker.task'
+    overwrite false
+}
+
+preBuild.dependsOn downloadTaskFile
