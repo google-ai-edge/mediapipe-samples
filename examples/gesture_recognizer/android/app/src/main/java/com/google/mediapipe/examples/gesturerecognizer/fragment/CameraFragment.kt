@@ -79,7 +79,7 @@ class CameraFragment : Fragment(),
         // Start the GestureRecognizerHelper again when users come back
         // to the foreground.
         backgroundExecutor.execute {
-            if (gestureRecognizerHelper.isClose()) {
+            if (gestureRecognizerHelper.isClosed()) {
                 gestureRecognizerHelper.setupGestureRecognizer()
             }
         }

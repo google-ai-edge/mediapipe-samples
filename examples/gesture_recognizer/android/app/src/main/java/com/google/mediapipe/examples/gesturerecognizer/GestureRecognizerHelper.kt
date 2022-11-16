@@ -138,8 +138,8 @@ class GestureRecognizerHelper(
         // be returned in returnLivestreamResult function
     }
 
-    // Return running status of recognizer helper
-    fun isClose(): Boolean {
+    // Return running status of the recognizer helper
+    fun isClosed(): Boolean {
         return gestureRecognizer == null
     }
 
