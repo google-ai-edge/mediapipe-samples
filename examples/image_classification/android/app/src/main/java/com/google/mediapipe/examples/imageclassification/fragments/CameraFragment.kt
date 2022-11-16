@@ -241,7 +241,6 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
                 .setTargetRotation(fragmentCameraBinding.viewFinder.display.rotation)
                 .build()
 
-        // ImageAnalysis. Using RGBA 8888 to match how our models work
         imageAnalyzer =
             ImageAnalysis.Builder()
                 .setTargetAspectRatio(AspectRatio.RATIO_4_3)

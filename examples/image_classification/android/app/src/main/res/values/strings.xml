@@ -46,6 +46,6 @@
 
     <string-array name="models_spinner_titles">
         <item>EfficientNet Lite0</item>
-        <item>EfficientNet Lite1</item>
+        <item>EfficientNet Lite2</item>
     </string-array>
 </resources>

@@ -24,9 +24,11 @@ import android.util.Log
 import androidx.camera.core.ImageProxy
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.MPImage
+import com.google.mediapipe.framework.image.MediaImageBuilder
 import com.google.mediapipe.tasks.components.processors.ClassifierOptions
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
+import com.google.mediapipe.tasks.vision.core.ImageProcessingOptions
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.imageclassifier.ImageClassifier
 import com.google.mediapipe.tasks.vision.imageclassifier.ImageClassifierResult
@@ -72,7 +74,7 @@ class ImageClassifierHelper(
         val modelName =
             when (currentModel) {
                 MODEL_EFFICIENTNETV0 -> "efficientnet-lite0.tflite"
-                MODEL_EFFICIENTNETV1 -> "efficientnet-lite1.tflite"
+                MODEL_EFFICIENTNETV2 -> "efficientnet-lite2.tflite"
                 else -> "efficientnet-lite0.tflite"
             }
 
@@ -92,20 +94,20 @@ class ImageClassifierHelper(
             imageClassifierListener?.onError(
                 "Image classifier failed to initialize. See error logs for details"
             )
-            Log.e(TAG, "TFLite failed to load model with error: " + e.message)
+            Log.e(TAG, "MediaPipe failed to load model with error: " + e.message)
         } catch (e: RuntimeException) {
             // This occurs if the model being used does not support GPU
             imageClassifierListener?.onError(
                 "Image classifier failed to initialize. See error logs for details"
             )
-            Log.e(TAG, "TFLite failed to load model with error: " + e.message)
+            Log.e(TAG, "MediaPipe failed to load model with error: " + e.message)
         }
     }
 
     // Attempts to classify items in a camera live stream frame
     fun classify(image: ImageProxy) {
+        Log.e("Test", "format: " + image.format)
         val frameTime = SystemClock.uptimeMillis()
-
         val bitmapBuffer =
             Bitmap.createBitmap(
                 image.width,
@@ -166,7 +168,7 @@ class ImageClassifierHelper(
         const val DELEGATE_CPU = 0
         const val DELEGATE_GPU = 1
         const val MODEL_EFFICIENTNETV0 = 0
-        const val MODEL_EFFICIENTNETV1 = 1
+        const val MODEL_EFFICIENTNETV2 = 1
 
         private const val TAG = "ImageClassifierHelper"
     }

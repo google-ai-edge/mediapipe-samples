@@ -27,8 +27,8 @@ task downloadModelFile0(type: Download) {
 }
 
 task downloadModelFile1(type: Download) {
-    src 'https://tfhub.dev/tensorflow/lite-model/efficientnet/lite1/int8/2?lite-format=tflite'
-    dest project.ext.ASSET_DIR + '/efficientnet-lite1.tflite'
+    src 'https://tfhub.dev/tensorflow/lite-model/efficientnet/lite2/int8/2?lite-format=tflite'
+    dest project.ext.ASSET_DIR + '/efficientnet-lite2.tflite'
     overwrite false
 }
 
