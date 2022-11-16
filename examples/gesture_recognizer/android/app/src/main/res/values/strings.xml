@@ -15,7 +15,7 @@
     ~ limitations under the License.
 -->
 <resources>
-    <string name="app_name">MP Gesture Recognition</string>
+    <string name="app_name">MP Gesture Recognizer</string>
 
     <string name="media_pipe">MediaPipe</string>
 

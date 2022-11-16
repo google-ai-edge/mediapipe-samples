@@ -29,11 +29,11 @@ import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizer
 import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizerResult
 
-class HandGestureRecognitionHelper(
+class GestureRecognizerHelper(
     var minConfidence: Float = 0.5f,
     var currentDelegate: Int = 0,
     val context: Context,
-    val handGestureRecognitionListener: RecognitionListener
+    val gestureRecognizerListener: GestureRecognizerListener
 ) {
 
     // For this example this needs to be a var so it can be reset on changes. If the GestureRecognizer
@@ -41,10 +41,10 @@ class HandGestureRecognitionHelper(
     private var gestureRecognizer: GestureRecognizer? = null
 
     init {
-        setupGestureRecognition()
+        setupGestureRecognizer()
     }
 
-    fun clearGestureRecognition() {
+    fun clearGestureRecognizer() {
         gestureRecognizer?.close()
         gestureRecognizer = null
     }
@@ -53,7 +53,7 @@ class HandGestureRecognitionHelper(
     // thread that is using it. CPU can be used with recognizers
     // that are created on the main thread and used on a background thread, but
     // the GPU delegate needs to be used on the thread that initialized the recognizer
-    fun setupGestureRecognition() {
+    fun setupGestureRecognizer() {
         // Set general recognition options, including number of used threads
         val baseOptionBuilder = BaseOptions.builder()
 
@@ -67,7 +67,7 @@ class HandGestureRecognitionHelper(
             }
         }
 
-        baseOptionBuilder.setModelAssetPath(MP_RECOGNITION_TASK)
+        baseOptionBuilder.setModelAssetPath(MP_RECOGNIZER_TASK)
 
         try {
             val optionsBuilder =
@@ -82,7 +82,7 @@ class HandGestureRecognitionHelper(
             gestureRecognizer =
                 GestureRecognizer.createFromOptions(context, options)
         } catch (e: IllegalStateException) {
-            handGestureRecognitionListener.onError(
+            gestureRecognizerListener.onError(
                 "Gesture recognizer failed to initialize. See error logs for " +
                         "details"
             )
@@ -96,7 +96,6 @@ class HandGestureRecognitionHelper(
     // Convert the ImageProxy to MP Image and feed it to GestureRecognizer.
     fun recognizeLiveStream(
         imageProxy: ImageProxy,
-        isFrontCamera: Boolean
     ) {
         val frameTime = SystemClock.uptimeMillis()
 
@@ -144,7 +143,7 @@ class HandGestureRecognitionHelper(
         return gestureRecognizer == null
     }
 
-    // Return the recognition result to this HandGestureRecognitionHelper's caller
+    // Return the recognition result to the GestureRecognizerHelper's caller
     private fun returnLivestreamResult(
         result: GestureRecognizerResult,
         input: MPImage
@@ -152,7 +151,7 @@ class HandGestureRecognitionHelper(
         val finishTimeMs = SystemClock.uptimeMillis()
         val inferenceTime = finishTimeMs - result.timestampMs()
 
-        handGestureRecognitionListener.onResults(
+        gestureRecognizerListener.onResults(
             ResultBundle(
                 listOf(result),
                 inferenceTime,
@@ -163,8 +162,8 @@ class HandGestureRecognitionHelper(
     }
 
     companion object {
-        val TAG = "GestureRecognitionHelper ${this.hashCode()}"
-        private const val MP_RECOGNITION_TASK = "gesture_recognizer.task"
+        val TAG = "GestureRecognizerHelper ${this.hashCode()}"
+        private const val MP_RECOGNIZER_TASK = "gesture_recognizer.task"
 
         const val DELEGATE_CPU = 0
         const val DELEGATE_GPU = 1
@@ -201,8 +200,8 @@ class HandGestureRecognitionHelper(
         val inputImageWidth: Int,
     )
 
-    interface RecognitionListener {
+    interface GestureRecognizerListener {
         fun onError(error: String)
-        fun onResults(resultBundle: HandGestureRecognitionHelper.ResultBundle)
+        fun onResults(resultBundle: ResultBundle)
     }
 }

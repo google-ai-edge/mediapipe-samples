@@ -38,6 +38,8 @@ android {
 
 // import DownloadMPTasks task
 project.ext.ASSET_DIR = projectDir.toString() + '/src/main/assets'
+project.ext.TEST_ASSETS_DIR = projectDir.toString() + '/src/androidTest/assets'
+
 apply from: 'download_tasks.gradle'
 
 dependencies {
@@ -79,5 +81,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     // Mediapipe Library
-    implementation 'com.google.mediapipe:tasks-vision:0.1.0-alpha-2'
+    implementation 'com.google.mediapipe:tasks-vision:0.1.0-alpha-3'
 }

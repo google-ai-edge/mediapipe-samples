@@ -4,4 +4,9 @@ task downloadTaskFile(type: Download) {
     overwrite false
 }
 
+task copyTestModel(type: Copy, dependsOn: downloadTaskFile) {
+    from project.ext.ASSET_DIR + '/gesture_recognizer.task'
+    into project.ext.TEST_ASSETS_DIR
+}
+
 preBuild.dependsOn downloadTaskFile

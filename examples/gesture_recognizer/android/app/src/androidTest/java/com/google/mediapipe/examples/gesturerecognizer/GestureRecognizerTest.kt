@@ -35,7 +35,7 @@ import java.io.InputStream
 
 // TODO: Add tests
 @RunWith(AndroidJUnit4::class)
-class HandGestureRecognitionTest {
+class GestureRecognizerTest {
 
     private companion object {
         private const val MP_RECOGNITION_TASK = "gesture_recognizer.task"

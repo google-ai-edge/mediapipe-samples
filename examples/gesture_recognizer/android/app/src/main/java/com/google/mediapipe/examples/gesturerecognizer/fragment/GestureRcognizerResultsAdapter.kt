@@ -19,13 +19,13 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.google.mediapipe.examples.gesturerecognizer.databinding.ItemRecognitionResultBinding
+import com.google.mediapipe.examples.gesturerecognizer.databinding.ItemGestureRecognizerResultBinding
 import com.google.mediapipe.tasks.components.containers.Category
 import java.util.Locale
 import kotlin.math.min
 
-class RecognitionResultsAdapter :
-    RecyclerView.Adapter<RecognitionResultsAdapter.ViewHolder>() {
+class GestureRcognizerResultsAdapter :
+    RecyclerView.Adapter<GestureRcognizerResultsAdapter.ViewHolder>() {
     companion object {
         private const val NO_VALUE = "--"
     }
@@ -53,7 +53,7 @@ class RecognitionResultsAdapter :
         parent: ViewGroup,
         viewType: Int
     ): ViewHolder {
-        val binding = ItemRecognitionResultBinding.inflate(
+        val binding = ItemGestureRecognizerResultBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
             false
@@ -69,7 +69,7 @@ class RecognitionResultsAdapter :
 
     override fun getItemCount(): Int = adapterCategories.size
 
-    inner class ViewHolder(private val binding: ItemRecognitionResultBinding) :
+    inner class ViewHolder(private val binding: ItemGestureRecognizerResultBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(label: String?, score: Float?) {

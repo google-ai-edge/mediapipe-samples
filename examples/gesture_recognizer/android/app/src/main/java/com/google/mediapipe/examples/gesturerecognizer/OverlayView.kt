@@ -61,11 +61,11 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
-        results?.let { gestureRecognitionResult ->
+        results?.let { gestureRecognizerResult ->
             val lines = mutableListOf<Float>()
             val points = mutableListOf<Float>()
 
-            for (landmarks in gestureRecognitionResult.landmarks()) {
+            for (landmarks in gestureRecognizerResult.landmarks()) {
                 for (i in landmarkConnections.indices step 2) {
                     val startX =
                         landmarks[landmarkConnections[i]].x() * imageWidth * scaleFactor
@@ -89,11 +89,11 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     }
 
     fun setResults(
-        recognitionResults: GestureRecognizerResult,
+        gestureRecognizerResult: GestureRecognizerResult,
         imageHeight: Int,
         imageWidth: Int,
     ) {
-        results = recognitionResults
+        results = gestureRecognizerResult
 
         this.imageHeight = imageHeight
         this.imageWidth = imageWidth
@@ -110,48 +110,48 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
         // results. These lines connect:
         // landmarkConnections[2*n] and landmarkConnections[2*n+1]
         private val landmarkConnections = listOf(
-            HandGestureRecognitionHelper.WRIST,
-            HandGestureRecognitionHelper.THUMB_CMC,
-            HandGestureRecognitionHelper.THUMB_CMC,
-            HandGestureRecognitionHelper.THUMB_MCP,
-            HandGestureRecognitionHelper.THUMB_MCP,
-            HandGestureRecognitionHelper.THUMB_IP,
-            HandGestureRecognitionHelper.THUMB_IP,
-            HandGestureRecognitionHelper.THUMB_TIP,
-            HandGestureRecognitionHelper.WRIST,
-            HandGestureRecognitionHelper.INDEX_FINGER_MCP,
-            HandGestureRecognitionHelper.INDEX_FINGER_MCP,
-            HandGestureRecognitionHelper.INDEX_FINGER_PIP,
-            HandGestureRecognitionHelper.INDEX_FINGER_PIP,
-            HandGestureRecognitionHelper.INDEX_FINGER_DIP,
-            HandGestureRecognitionHelper.INDEX_FINGER_DIP,
-            HandGestureRecognitionHelper.INDEX_FINGER_TIP,
-            HandGestureRecognitionHelper.INDEX_FINGER_MCP,
-            HandGestureRecognitionHelper.MIDDLE_FINGER_MCP,
-            HandGestureRecognitionHelper.MIDDLE_FINGER_MCP,
-            HandGestureRecognitionHelper.MIDDLE_FINGER_PIP,
-            HandGestureRecognitionHelper.MIDDLE_FINGER_PIP,
-            HandGestureRecognitionHelper.MIDDLE_FINGER_DIP,
-            HandGestureRecognitionHelper.MIDDLE_FINGER_DIP,
-            HandGestureRecognitionHelper.MIDDLE_FINGER_TIP,
-            HandGestureRecognitionHelper.MIDDLE_FINGER_MCP,
-            HandGestureRecognitionHelper.RING_FINGER_MCP,
-            HandGestureRecognitionHelper.RING_FINGER_MCP,
-            HandGestureRecognitionHelper.RING_FINGER_PIP,
-            HandGestureRecognitionHelper.RING_FINGER_PIP,
-            HandGestureRecognitionHelper.RING_FINGER_DIP,
-            HandGestureRecognitionHelper.RING_FINGER_DIP,
-            HandGestureRecognitionHelper.RING_FINGER_TIP,
-            HandGestureRecognitionHelper.RING_FINGER_MCP,
-            HandGestureRecognitionHelper.PINKY_MCP,
-            HandGestureRecognitionHelper.WRIST,
-            HandGestureRecognitionHelper.PINKY_MCP,
-            HandGestureRecognitionHelper.PINKY_MCP,
-            HandGestureRecognitionHelper.PINKY_PIP,
-            HandGestureRecognitionHelper.PINKY_PIP,
-            HandGestureRecognitionHelper.PINKY_DIP,
-            HandGestureRecognitionHelper.PINKY_DIP,
-            HandGestureRecognitionHelper.PINKY_TIP
+            GestureRecognizerHelper.WRIST,
+            GestureRecognizerHelper.THUMB_CMC,
+            GestureRecognizerHelper.THUMB_CMC,
+            GestureRecognizerHelper.THUMB_MCP,
+            GestureRecognizerHelper.THUMB_MCP,
+            GestureRecognizerHelper.THUMB_IP,
+            GestureRecognizerHelper.THUMB_IP,
+            GestureRecognizerHelper.THUMB_TIP,
+            GestureRecognizerHelper.WRIST,
+            GestureRecognizerHelper.INDEX_FINGER_MCP,
+            GestureRecognizerHelper.INDEX_FINGER_MCP,
+            GestureRecognizerHelper.INDEX_FINGER_PIP,
+            GestureRecognizerHelper.INDEX_FINGER_PIP,
+            GestureRecognizerHelper.INDEX_FINGER_DIP,
+            GestureRecognizerHelper.INDEX_FINGER_DIP,
+            GestureRecognizerHelper.INDEX_FINGER_TIP,
+            GestureRecognizerHelper.INDEX_FINGER_MCP,
+            GestureRecognizerHelper.MIDDLE_FINGER_MCP,
+            GestureRecognizerHelper.MIDDLE_FINGER_MCP,
+            GestureRecognizerHelper.MIDDLE_FINGER_PIP,
+            GestureRecognizerHelper.MIDDLE_FINGER_PIP,
+            GestureRecognizerHelper.MIDDLE_FINGER_DIP,
+            GestureRecognizerHelper.MIDDLE_FINGER_DIP,
+            GestureRecognizerHelper.MIDDLE_FINGER_TIP,
+            GestureRecognizerHelper.MIDDLE_FINGER_MCP,
+            GestureRecognizerHelper.RING_FINGER_MCP,
+            GestureRecognizerHelper.RING_FINGER_MCP,
+            GestureRecognizerHelper.RING_FINGER_PIP,
+            GestureRecognizerHelper.RING_FINGER_PIP,
+            GestureRecognizerHelper.RING_FINGER_DIP,
+            GestureRecognizerHelper.RING_FINGER_DIP,
+            GestureRecognizerHelper.RING_FINGER_TIP,
+            GestureRecognizerHelper.RING_FINGER_MCP,
+            GestureRecognizerHelper.PINKY_MCP,
+            GestureRecognizerHelper.WRIST,
+            GestureRecognizerHelper.PINKY_MCP,
+            GestureRecognizerHelper.PINKY_MCP,
+            GestureRecognizerHelper.PINKY_PIP,
+            GestureRecognizerHelper.PINKY_PIP,
+            GestureRecognizerHelper.PINKY_DIP,
+            GestureRecognizerHelper.PINKY_DIP,
+            GestureRecognizerHelper.PINKY_TIP
         )
     }
 }

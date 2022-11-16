@@ -30,7 +30,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.mediapipe.examples.gesturerecognizer.HandGestureRecognitionHelper
+import com.google.mediapipe.examples.gesturerecognizer.GestureRecognizerHelper
 import com.google.mediapipe.examples.gesturerecognizer.R
 import com.google.mediapipe.examples.gesturerecognizer.databinding.FragmentCameraBinding
 import java.util.*
@@ -39,10 +39,10 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class CameraFragment : Fragment(),
-    HandGestureRecognitionHelper.RecognitionListener {
+    GestureRecognizerHelper.GestureRecognizerListener {
 
     companion object {
-        private const val TAG = "Hand gesture recognition"
+        private const val TAG = "Hand gesture recognizer"
     }
 
     private var _fragmentCameraBinding: FragmentCameraBinding? = null
@@ -50,10 +50,10 @@ class CameraFragment : Fragment(),
     private val fragmentCameraBinding
         get() = _fragmentCameraBinding!!
 
-    private lateinit var handGestureRecognitionHelper: HandGestureRecognitionHelper
+    private lateinit var gestureRecognizerHelper: GestureRecognizerHelper
     private var defaultNumResults = 1
-    private val recognitionResultsAdapter: RecognitionResultsAdapter by lazy {
-        RecognitionResultsAdapter().apply {
+    private val gestureRcognizerResultsAdapter: GestureRcognizerResultsAdapter by lazy {
+        GestureRcognizerResultsAdapter().apply {
             updateAdapterSize(defaultNumResults)
         }
     }
@@ -76,11 +76,11 @@ class CameraFragment : Fragment(),
             ).navigate(R.id.action_camera_to_permissions)
         }
 
-        // Start the HandGestureRecognitionHelper again when users come back
+        // Start the GestureRecognizerHelper again when users come back
         // to the foreground.
         backgroundExecutor.execute {
-            if (handGestureRecognitionHelper.isClose()) {
-                handGestureRecognitionHelper.setupGestureRecognition()
+            if (gestureRecognizerHelper.isClose()) {
+                gestureRecognizerHelper.setupGestureRecognizer()
             }
         }
     }
@@ -89,7 +89,7 @@ class CameraFragment : Fragment(),
         super.onPause()
 
         // Close the gesture recognizer and release resources
-        backgroundExecutor.execute { handGestureRecognitionHelper.clearGestureRecognition() }
+        backgroundExecutor.execute { gestureRecognizerHelper.clearGestureRecognizer() }
     }
 
     override fun onDestroyView() {
@@ -119,7 +119,7 @@ class CameraFragment : Fragment(),
         super.onViewCreated(view, savedInstanceState)
         with(fragmentCameraBinding.recyclerviewResults) {
             layoutManager = LinearLayoutManager(requireContext())
-            adapter = recognitionResultsAdapter
+            adapter = gestureRcognizerResultsAdapter
         }
 
         // Initialize our background executor
@@ -134,9 +134,9 @@ class CameraFragment : Fragment(),
         // Create the Hand Gesture Recognition Helper that will handle the
         // inference
         backgroundExecutor.execute {
-            handGestureRecognitionHelper = HandGestureRecognitionHelper(
+            gestureRecognizerHelper = GestureRecognizerHelper(
                 context = requireContext(),
-                handGestureRecognitionListener = this
+                gestureRecognizerListener = this
             )
         }
 
@@ -147,16 +147,16 @@ class CameraFragment : Fragment(),
     private fun initBottomSheetControls() {
         // When clicked, lower recognition score threshold floor
         fragmentCameraBinding.bottomSheetLayout.thresholdMinus.setOnClickListener {
-            if (handGestureRecognitionHelper.minConfidence >= 0.1) {
-                handGestureRecognitionHelper.minConfidence -= 0.1f
+            if (gestureRecognizerHelper.minConfidence >= 0.1) {
+                gestureRecognizerHelper.minConfidence -= 0.1f
                 updateControlsUi()
             }
         }
 
         // When clicked, raise recognition score threshold floor
         fragmentCameraBinding.bottomSheetLayout.thresholdPlus.setOnClickListener {
-            if (handGestureRecognitionHelper.minConfidence <= 0.8) {
-                handGestureRecognitionHelper.minConfidence += 0.1f
+            if (gestureRecognizerHelper.minConfidence <= 0.8) {
+                gestureRecognizerHelper.minConfidence += 0.1f
                 updateControlsUi()
             }
         }
@@ -171,7 +171,7 @@ class CameraFragment : Fragment(),
                 override fun onItemSelected(
                     p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long
                 ) {
-                    handGestureRecognitionHelper.currentDelegate = p2
+                    gestureRecognizerHelper.currentDelegate = p2
                     updateControlsUi()
                 }
 
@@ -186,14 +186,14 @@ class CameraFragment : Fragment(),
     private fun updateControlsUi() {
         fragmentCameraBinding.bottomSheetLayout.thresholdValue.text =
             String.format(
-                Locale.US, "%.2f", handGestureRecognitionHelper.minConfidence
+                Locale.US, "%.2f", gestureRecognizerHelper.minConfidence
             )
 
         // Needs to be cleared instead of reinitialized because the GPU
         // delegate needs to be initialized on the thread using it when applicable
         backgroundExecutor.execute {
-            handGestureRecognitionHelper.clearGestureRecognition()
-            handGestureRecognitionHelper.setupGestureRecognition()
+            gestureRecognizerHelper.clearGestureRecognizer()
+            gestureRecognizerHelper.setupGestureRecognizer()
         }
         fragmentCameraBinding.overlay.clear()
     }
@@ -261,9 +261,8 @@ class CameraFragment : Fragment(),
     }
 
     private fun recognizeHand(imageProxy: ImageProxy) {
-        handGestureRecognitionHelper.recognizeLiveStream(
+        gestureRecognizerHelper.recognizeLiveStream(
             imageProxy = imageProxy,
-            isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
         )
     }
 
@@ -278,15 +277,15 @@ class CameraFragment : Fragment(),
     // OverlayView. Only one result is expected at a time. If two or more
     // hands are seen in the camera frame, only one will be processed.
     override fun onResults(
-        resultBundle: HandGestureRecognitionHelper.ResultBundle
+        resultBundle: GestureRecognizerHelper.ResultBundle
     ) {
         activity?.runOnUiThread {
             // Show result of recognized gesture
             val gestureCategories = resultBundle.results.first().gestures()
             if (gestureCategories.isNotEmpty()) {
-                recognitionResultsAdapter.updateResults(gestureCategories.first())
+                gestureRcognizerResultsAdapter.updateResults(gestureCategories.first())
             } else {
-                recognitionResultsAdapter.updateResults(emptyList())
+                gestureRcognizerResultsAdapter.updateResults(emptyList())
             }
 
             fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
@@ -307,7 +306,7 @@ class CameraFragment : Fragment(),
     override fun onError(error: String) {
         activity?.runOnUiThread {
             Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
-            recognitionResultsAdapter.updateResults(emptyList())
+            gestureRcognizerResultsAdapter.updateResults(emptyList())
         }
     }
 }
