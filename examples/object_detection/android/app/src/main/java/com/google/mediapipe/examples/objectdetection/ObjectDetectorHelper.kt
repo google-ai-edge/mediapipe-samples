@@ -129,6 +129,11 @@ class ObjectDetectorHelper(
     }
   }
 
+  // Return running status of recognizer helper
+  fun isClosed(): Boolean {
+    return objectDetector == null
+  }
+
   // Accepts the URI for a video file loaded from the user's gallery and attempts to run
   // object detection inference on the video. This process will evaluate every frame in
   // the video and attach the results to a bundle that will be returned.

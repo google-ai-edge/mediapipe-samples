@@ -68,6 +68,12 @@ class CameraFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
       Navigation.findNavController(requireActivity(), R.id.fragment_container)
         .navigate(CameraFragmentDirections.actionCameraToPermissions())
     }
+
+    backgroundExecutor.execute {
+      if(objectDetectorHelper.isClosed()) {
+        objectDetectorHelper.setupObjectDetector()
+      }
+    }
   }
 
   override fun onPause() {
