@@ -131,7 +131,11 @@ class GestureRecognizerHelper(
         // Convert the input Bitmap object to an MPImage object to run inference
         val mpImage = BitmapImageBuilder(rotatedBitmap).build()
 
-        // Run hand gesture recognition using MediaPipe Gesture Recognition API
+        recognize(mpImage, frameTime)
+    }
+
+    // Run hand gesture recognition using MediaPipe Gesture Recognition API
+    fun recognize(mpImage: MPImage, frameTime: Long) {
         gestureRecognizer?.recognizeAsync(mpImage, frameTime)
 
         // As we're using running mode LIVE_STREAM, the recognition result will
