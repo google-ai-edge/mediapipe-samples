@@ -1,0 +1,12 @@
+task downloadTaskFile(type: Download) {
+    src 'https://storage.googleapis.com/mediapipe-assets/gesture_recognizer.task'
+    dest project.ext.ASSET_DIR + '/gesture_recognizer.task'
+    overwrite false
+}
+
+task copyTestModel(type: Copy, dependsOn: downloadTaskFile) {
+    from project.ext.ASSET_DIR + '/gesture_recognizer.task'
+    into project.ext.TEST_ASSETS_DIR
+}
+
+preBuild.dependsOn downloadTaskFile
