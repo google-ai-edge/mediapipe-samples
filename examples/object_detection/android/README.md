@@ -5,8 +5,9 @@
 This is a camera app that continuously detects the objects (bounding boxes and
 classes) in the frames seen by your device's back camera, in an image imported from the device gallery, 
 or in a video imported by the device gallery, with the option to use a quantized
-[EfficientDet Lite 0](https://tfhub.dev/tensorflow/lite-model/efficientdet/lite0/detection/metadata/1),
-or [EfficientDet Lite2](https://tfhub.dev/tensorflow/lite-model/efficientdet/lite1/detection/metadata/1)
+[MobileNetV2](https://storage.cloud.google.com/tf_model_garden/vision/qat/mobilenetv2_ssd_coco/mobilenetv2_ssd_256_uint8.tflite)
+[EfficientDet Lite 0](https://storage.googleapis.com/mediapipe-tasks/object_detector/efficientdet_lite0_uint8.tflite),
+or [EfficientDet Lite2](https://storage.googleapis.com/mediapipe-tasks/object_detector/efficientdet_lite2_uint8.tflite)
 
 The model files are downloaded via Gradle scripts when you build and run the
 app. You don't need to do any steps to download TFLite models into the project
