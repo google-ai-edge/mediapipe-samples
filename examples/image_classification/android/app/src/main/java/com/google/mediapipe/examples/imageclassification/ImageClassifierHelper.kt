@@ -94,19 +94,18 @@ class ImageClassifierHelper(
             imageClassifierListener?.onError(
                 "Image classifier failed to initialize. See error logs for details"
             )
-            Log.e(TAG, "MediaPipe failed to load model with error: " + e.message)
+            Log.e(TAG, "Image classifier failed to load model with error: " + e.message)
         } catch (e: RuntimeException) {
             // This occurs if the model being used does not support GPU
             imageClassifierListener?.onError(
                 "Image classifier failed to initialize. See error logs for details"
             )
-            Log.e(TAG, "MediaPipe failed to load model with error: " + e.message)
+            Log.e(TAG, "Image classifier failed to load model with error: " + e.message)
         }
     }
 
     // Attempts to classify items in a camera live stream frame
     fun classify(image: ImageProxy) {
-        Log.e("Test", "format: " + image.format)
         val frameTime = SystemClock.uptimeMillis()
         val bitmapBuffer =
             Bitmap.createBitmap(
