@@ -31,16 +31,12 @@ class TextClassifierHelper(
 ) {
     private lateinit var textClassifier: TextClassifier
 
-    private lateinit var executor: ScheduledThreadPoolExecutor
-
     init {
         initClassifier()
     }
 
     fun initClassifier() {
         val baseOptionsBuilder = BaseOptions.builder()
-            // This text classifier only support CPU
-            .setDelegate(Delegate.CPU)
             .setModelAssetPath(currentModel)
 
         try {
@@ -62,19 +58,15 @@ class TextClassifierHelper(
 
     // Run text classification using MediaPipe Text Classifier API
     fun classify(text: String) {
-        executor = ScheduledThreadPoolExecutor(1)
+        // inferenceTime is the amount of time, in milliseconds, that it takes to
+        // classify the input text.
+        var inferenceTime = SystemClock.uptimeMillis()
 
-        executor.execute {
-            // inferenceTime is the amount of time, in milliseconds, that it takes to
-            // classify the input text.
-            var inferenceTime = SystemClock.uptimeMillis()
+        val results = textClassifier.classify(text)
 
-            val results = textClassifier.classify(text)
+        inferenceTime = SystemClock.uptimeMillis() - inferenceTime
 
-            inferenceTime = SystemClock.uptimeMillis() - inferenceTime
-
-            listener.onResult(results, inferenceTime)
-        }
+        listener.onResult(results, inferenceTime)
     }
 
     interface TextResultsListener {

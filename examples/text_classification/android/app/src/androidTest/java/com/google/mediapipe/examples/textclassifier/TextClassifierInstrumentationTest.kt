@@ -17,6 +17,7 @@ package com.google.mediapipe.examples.textclassifier
 
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.mediapipe.tasks.components.containers.Category
 import com.google.mediapipe.tasks.text.textclassifier.TextClassifierResult
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -34,8 +35,10 @@ class TextClassifierInstrumentationTest {
         "This was a triumph. I\\'m making a note here, HUGE SUCCESS. It\\'s hard to " +
                 "overstate my satisfaction."
 
-    val nlClassifierPositiveConfidence = 0.5736692f
-    val nlClassifierNegativeConfidence = 0.4263308f
+    private val expectedCategories = listOf(
+        Category.create(0.5736692f, 0, "Positive", ""),
+        Category.create(0.4263308f, 1, "Negative", "")
+    )
 
     @Test
     fun textClassifierHelperReturnsConsistentConfidenceResults() {
@@ -53,15 +56,28 @@ class TextClassifierInstrumentationTest {
                         results: TextClassifierResult,
                         inferenceTime: Long
                     ) {
+                        // Verify that the categories are correct.
+                        assertEquals(
+                            results.classificationResult().classifications()
+                                .first().categories()[0].categoryName(),
+                            expectedCategories[0].categoryName()
+                        )
+                        assertEquals(
+                            results.classificationResult().classifications()
+                                .first().categories()[1].categoryName(),
+                            expectedCategories[1].categoryName()
+                        )
+
+                        // Verify that the scores are correct.
                         assertEquals(
                             results.classificationResult().classifications()
                                 .first().categories()[0].score(),
-                            nlClassifierNegativeConfidence
+                            expectedCategories[0].score(), 0.0001f
                         )
                         assertEquals(
                             results.classificationResult().classifications()
                                 .first().categories()[1].score(),
-                            nlClassifierPositiveConfidence
+                            expectedCategories[1].score(), 0.0001f
                         )
                     }
                 }
