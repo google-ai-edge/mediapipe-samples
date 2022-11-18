@@ -30,7 +30,6 @@ class TextClassifierHelper(
     val listener: TextResultsListener,
 ) {
     private lateinit var textClassifier: TextClassifier
-
     private lateinit var executor: ScheduledThreadPoolExecutor
 
     init {
@@ -39,13 +38,12 @@ class TextClassifierHelper(
 
     fun initClassifier() {
         val baseOptionsBuilder = BaseOptions.builder()
-            // This text classifier only support CPU
-            .setDelegate(Delegate.CPU)
             .setModelAssetPath(currentModel)
 
         try {
+            val baseOptions = baseOptionsBuilder.build()
             val optionsBuilder = TextClassifier.TextClassifierOptions.builder()
-                .setBaseOptions(baseOptionsBuilder.build())
+                .setBaseOptions(baseOptions)
             val options = optionsBuilder.build()
             textClassifier = TextClassifier.createFromOptions(context, options)
         } catch (e: IllegalStateException) {
@@ -54,7 +52,7 @@ class TextClassifierHelper(
                         "details"
             )
             Log.e(
-                TAG, "MP Task Text failed to load the task with error: " + e
+                TAG, "Text classifier failed to load the task with error: " + e
                     .message
             )
         }
@@ -83,7 +81,7 @@ class TextClassifierHelper(
     }
 
     companion object {
-        val TAG = "TextClassifierHelper ${this.hashCode()}"
+        const val TAG = "TextClassifierHelper"
 
         const val WORD_VEC = "wordvec.tflite"
         const val MOBILEBERT = "mobilebert.tflite"
