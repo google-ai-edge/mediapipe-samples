@@ -136,10 +136,9 @@ class GestureRecognizerHelper(
 
     // Run hand gesture recognition using MediaPipe Gesture Recognition API
     fun recognize(mpImage: MPImage, frameTime: Long) {
-        gestureRecognizer?.recognizeAsync(mpImage, frameTime)
-
         // As we're using running mode LIVE_STREAM, the recognition result will
         // be returned in returnLivestreamResult function
+        gestureRecognizer?.recognizeAsync(mpImage, frameTime)
     }
 
     // Return running status of the recognizer helper

@@ -42,14 +42,14 @@ import kotlin.concurrent.withLock
  */
 
 @RunWith(AndroidJUnit4::class)
-class MPGestureRecognizerTest {
+class GestureRecognizerTest {
 
     private companion object {
         private const val TEST_IMAGE = "hand_thumb_up.jpg"
     }
 
     private val expectedCategories = listOf(
-        Category.create(0.8056f, 0, "Thumb_Up", ""),
+        Category.create(0.8105f, 0, "Thumb_Up", ""),
     )
     private lateinit var lock: ReentrantLock
     private lateinit var condition: Condition
@@ -62,20 +62,26 @@ class MPGestureRecognizerTest {
 
     @Test
     @Throws(Exception::class)
-    fun recognitionResultsShouldNotChange() {
+    fun recognitionResultsFallsWithinAcceptedRange() {
         var recognizerResult: GestureRecognizerHelper.ResultBundle? = null
         val gestureRecognizerHelper =
             GestureRecognizerHelper(context = ApplicationProvider.getApplicationContext(),
                 gestureRecognizerListener = object :
                     GestureRecognizerHelper.GestureRecognizerListener {
                     override fun onError(error: String) {
-                        // no-op
+                        // Print out the error
+                        println(error)
+
+                        // Release the lock
+                        lock.withLock {
+                            condition.signal()
+                        }
                     }
 
                     override fun onResults(resultBundle: GestureRecognizerHelper.ResultBundle) {
                         recognizerResult = resultBundle
 
-                        // Release the lock and start verify the result
+                        // Release the lock and start verifying the result
                         lock.withLock {
                             condition.signal()
                         }
@@ -99,25 +105,24 @@ class MPGestureRecognizerTest {
         // Verify that the recognizer is not null
         assertNotNull(recognizerResult)
 
+        // Expecting one hand for this test case
         val categories = recognizerResult!!.results.first().gestures().first()
 
-        // Verify that the categories is not empty
+        // Verify that the categories are not empty
         assert(categories.isNotEmpty())
 
-        // Loop through the categories
-        for (i in categories.indices) {
+        // Verify that the scores are correct
+        assertEquals(
+            expectedCategories.first().score(),
+            categories.first().score(),
+            0.01f
+        )
 
-            // Verify that the scores are correct
-            assertEquals(
-                expectedCategories[i].score(), categories[i].score(), 0.0001f
-            )
-
-            // Verify that the category names are consistent
-            assertEquals(
-                expectedCategories[i].categoryName(),
-                categories[i].categoryName()
-            )
-        }
+        // Verify that the category names are consistent
+        assertEquals(
+            expectedCategories.first().categoryName(),
+            categories.first().categoryName()
+        )
     }
 
     @Throws(Exception::class)
