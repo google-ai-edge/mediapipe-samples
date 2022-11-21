@@ -19,7 +19,6 @@ import android.content.Context
 import android.os.SystemClock
 import android.util.Log
 import com.google.mediapipe.tasks.core.BaseOptions
-import com.google.mediapipe.tasks.core.Delegate
 import com.google.mediapipe.tasks.text.textclassifier.TextClassifier
 import com.google.mediapipe.tasks.text.textclassifier.TextClassifierResult
 import java.util.concurrent.ScheduledThreadPoolExecutor
