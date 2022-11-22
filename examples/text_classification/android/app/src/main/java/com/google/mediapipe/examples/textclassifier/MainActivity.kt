@@ -35,7 +35,6 @@ class MainActivity : AppCompatActivity() {
 
     private val listener = object :
         TextClassifierHelper.TextResultsListener {
-        @SuppressLint("NotifyDataSetChanged")
         override fun onResult(
             results: TextClassifierResult,
             inferenceTime: Long
@@ -44,13 +43,12 @@ class MainActivity : AppCompatActivity() {
                 activityMainBinding.bottomSheetLayout.inferenceTimeVal.text =
                     String.format("%d ms", inferenceTime)
 
-                adapter.resultsList =
-                    results.classificationResult().classifications().first()
-                        .categories().sortedByDescending {
-                            it.score()
-                        }
-
-                adapter.notifyDataSetChanged()
+                adapter.updateResult(results.classificationResult()
+                    .classifications().first()
+                    .categories().sortedByDescending {
+                        it.score()
+                    }, classifierHelper.currentModel
+                )
             }
         }
 

@@ -15,6 +15,7 @@
  */
 package com.google.mediapipe.examples.textclassifier
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -23,19 +24,36 @@ import com.google.mediapipe.tasks.components.containers.Category
 
 class ResultsAdapter : RecyclerView.Adapter<ResultsAdapter.ViewHolder>() {
 
-    var resultsList: List<Category> = emptyList()
+    private var resultsList: List<Category> = emptyList()
+    private var currentModel = TextClassifierHelper.WORD_VEC
 
-    class ViewHolder(private val binding: ItemClassificationBinding) :
+    inner class ViewHolder(private val binding: ItemClassificationBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(label: String, score: Float) {
             with(binding) {
+                val displayLabel =
+                    if (currentModel == TextClassifierHelper.WORD_VEC
+                    ) {
+                        // Category name 1 is Positive and 0 is Negative.
+                        if (label == "1") "Positive" else "Negative"
+                    } else {
+                        label
+                    }
+
                 result.text = binding.root.context.getString(
                     R.string.result_display_text,
-                    label,
+                    displayLabel,
                     score
                 ).replaceFirstChar { it.titlecase() }
             }
         }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun updateResult(results: List<Category>, model: String) {
+        resultsList = results
+        currentModel = model
+        notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(

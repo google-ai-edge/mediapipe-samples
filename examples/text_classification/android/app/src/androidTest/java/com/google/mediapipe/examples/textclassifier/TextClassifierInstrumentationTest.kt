@@ -37,12 +37,12 @@ import kotlin.concurrent.withLock
 class TextClassifierInstrumentationTest {
 
     private val testText =
-        "This was a triumph. I\\'m making a note here, HUGE SUCCESS. It\\'s hard to " +
-                "overstate my satisfaction."
+        "Keep your face always toward the sunshine—and shadows will fall behind you."
 
+    // Category name 1 is Positive and 0 is Negative.
     private val expectedCategories = listOf(
-        Category.create(0.7621565f, 0, "Positive", ""),
-        Category.create(0.23784359f, 1, "Negative", "")
+        Category.create(0.9523648f, 0, "1", ""),
+        Category.create(0.04763528f, 1, "0", "")
     )
     private lateinit var lock: ReentrantLock
     private lateinit var condition: Condition
