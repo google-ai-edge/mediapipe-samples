@@ -50,7 +50,7 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
     private lateinit var imageClassifierHelper: ImageClassifierHelper
     private val classificationResultsAdapter by lazy {
         ClassificationResultsAdapter().apply {
-            updateAdapterSize(imageClassifierHelper.maxResults)
+            updateAdapterSize(ImageClassifierHelper.MAX_RESULTS_DEFAULT)
         }
     }
     private var preview: Preview? = null
@@ -66,7 +66,10 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
         super.onResume()
 
         if (!PermissionsFragment.hasPermissions(requireContext())) {
-            Navigation.findNavController(requireActivity(), R.id.fragment_container)
+            Navigation.findNavController(
+                requireActivity(),
+                R.id.fragment_container
+            )
                 .navigate(CameraFragmentDirections.actionCameraToPermissions())
         }
     }
@@ -77,7 +80,10 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
 
         // Shut down our background executor
         backgroundExecutor.shutdown()
-        backgroundExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)
+        backgroundExecutor.awaitTermination(
+            Long.MAX_VALUE,
+            TimeUnit.NANOSECONDS
+        )
     }
 
     override fun onCreateView(
@@ -85,7 +91,8 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _fragmentCameraBinding = FragmentCameraBinding.inflate(inflater, container, false)
+        _fragmentCameraBinding =
+            FragmentCameraBinding.inflate(inflater, container, false)
 
         return fragmentCameraBinding.root
     }
@@ -95,7 +102,10 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
         super.onViewCreated(view, savedInstanceState)
 
         imageClassifierHelper =
-            ImageClassifierHelper(context = requireContext(), imageClassifierListener = this)
+            ImageClassifierHelper(
+                context = requireContext(),
+                imageClassifierListener = this
+            )
 
         with(fragmentCameraBinding.recyclerviewResults) {
             layoutManager = LinearLayoutManager(requireContext())
@@ -115,7 +125,8 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
 
     // Initialize CameraX, and prepare to bind the camera use cases
     private fun setUpCamera() {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
+        val cameraProviderFuture =
+            ProcessCameraProvider.getInstance(requireContext())
         cameraProviderFuture.addListener(
             {
                 // CameraProvider
@@ -165,7 +176,10 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
 
         // When clicked, change the underlying hardware used for inference. Current options are CPU
         // GPU, and NNAPI
-        fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(0, false)
+        fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(
+            0,
+            false
+        )
         fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
@@ -184,7 +198,10 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
             }
 
         // When clicked, change the underlying model used for object classification
-        fragmentCameraBinding.bottomSheetLayout.spinnerModel.setSelection(0, false)
+        fragmentCameraBinding.bottomSheetLayout.spinnerModel.setSelection(
+            0,
+            false
+        )
         fragmentCameraBinding.bottomSheetLayout.spinnerModel.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
@@ -219,7 +236,8 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        imageAnalyzer?.targetRotation = fragmentCameraBinding.viewFinder.display.rotation
+        imageAnalyzer?.targetRotation =
+            fragmentCameraBinding.viewFinder.display.rotation
     }
 
     // Declare and bind preview, capture and analysis use cases
@@ -228,11 +246,13 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
 
         // CameraProvider
         val cameraProvider =
-            cameraProvider ?: throw IllegalStateException("Camera initialization failed.")
+            cameraProvider
+                ?: throw IllegalStateException("Camera initialization failed.")
 
         // CameraSelector - makes assumption that we're only using the back camera
         val cameraSelector =
-            CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
+            CameraSelector.Builder()
+                .requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
 
         // Preview. Only using the 4:3 ratio because this is the closest to our models
         preview =
@@ -250,7 +270,10 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
                 .build()
                 // The analyzer can then be assigned to the instance
                 .also {
-                    it.setAnalyzer(backgroundExecutor, imageClassifierHelper::classify)
+                    it.setAnalyzer(
+                        backgroundExecutor,
+                        imageClassifierHelper::classifyLiveStreamFrame
+                    )
                 }
 
         // Must unbind the use-cases before rebinding them
@@ -259,7 +282,12 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
         try {
             // A variable number of use-cases can be passed here -
             // camera provides access to CameraControl & CameraInfo
-            camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalyzer)
+            camera = cameraProvider.bindToLifecycle(
+                this,
+                cameraSelector,
+                preview,
+                imageAnalyzer
+            )
 
             // Attach the viewfinder's surface provider to preview use case
             preview?.setSurfaceProvider(fragmentCameraBinding.viewFinder.surfaceProvider)
@@ -283,11 +311,15 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
         inferenceTime: Long
     ) {
         activity?.runOnUiThread {
-            // Show result on bottom sheet
-            classificationResultsAdapter.updateResults(results)
-            classificationResultsAdapter.notifyDataSetChanged()
-            fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
-                String.format("%d ms", inferenceTime)
+            if (_fragmentCameraBinding != null) {
+                // Show result on bottom sheet
+                if (results != null) {
+                    classificationResultsAdapter.updateResults(results.first())
+                    classificationResultsAdapter.notifyDataSetChanged()
+                }
+                fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
+                    String.format("%d ms", inferenceTime)
+            }
         }
     }
 }

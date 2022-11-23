@@ -38,6 +38,10 @@
     <string name="label_threads">Number of Threads</string>
     <string name="label_delegate">Delegate</string>
     <string name="label_models">ML Model</string>
+    <string name="menu_camera">Camera</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="tv_gallery_placeholder">Click + to add an image or a video
+        to begin running the image classification.</string>
 
     <string-array name="delegate_spinner_titles">
         <item>CPU</item>
