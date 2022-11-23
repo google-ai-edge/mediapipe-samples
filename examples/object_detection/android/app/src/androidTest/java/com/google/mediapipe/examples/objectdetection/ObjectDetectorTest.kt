@@ -71,11 +71,15 @@ class ObjectDetectorTest {
     )
 
     private val expectedCategoryForVideoMode = listOf(
-        Category.create(0.64570314f, 2, "laptop", ""),
-        Category.create(0.62890625f, 0, "person", ""),
-        Category.create(0.5859375f, 1, "cell phone", ""),
+        Category.create(0.64570314f, 0, "laptop", ""),
+        Category.create(0.62890625f, 1, "person", ""),
+        Category.create(0.5859375f, 2, "cell phone", ""),
     )
 
+    /**
+     * Verify that the result returned from the Object Detector Helper with
+     * LIVE_STREAM mode is within the acceptable range to the expected result.
+     */
     @Test
     fun detectionResultsFromLiveStreamModeFallsWithinAcceptedRange() {
         var detectionResult: ObjectDetectionResult? = null
@@ -135,6 +139,11 @@ class ObjectDetectorTest {
         }
     }
 
+    /**
+     * Verify that the result returned from Object Detector Helper with
+     * VIDEO mode is within the acceptable range to the expected result.
+     * The result is the average of all frames.
+     */
     @Test
     fun detectionResultsFromVideoModeFallsWithinAcceptedRange() {
         val objectDetectorHelper = ObjectDetectorHelper(
@@ -190,6 +199,10 @@ class ObjectDetectorTest {
         }
     }
 
+    /**
+     * Verify that the result returned from the Object Detector Helper with
+     * IMAGE mode is within the acceptable range to the expected result.
+     */
     @Test
     fun detectionResultsFromImageModeFallsWithinAcceptedRange() {
         val objectDetectorHelper = ObjectDetectorHelper(
