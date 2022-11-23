@@ -109,12 +109,6 @@ class CameraFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
     // Initialize our background executor
     backgroundExecutor = Executors.newSingleThreadExecutor()
 
-    // Wait for the views to be properly laid out
-    fragmentCameraBinding.viewFinder.post {
-      // Set up the camera and its use cases
-      setUpCamera()
-    }
-
     // Create the ObjectDetectionHelper that will handle the inference
     backgroundExecutor.execute {
       objectDetectorHelper =
@@ -123,6 +117,12 @@ class CameraFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
           objectDetectorListener = this,
           runningMode = RunningMode.LIVE_STREAM
         )
+
+      // Wait for the views to be properly laid out
+      fragmentCameraBinding.viewFinder.post {
+        // Set up the camera and its use cases
+        setUpCamera()
+      }
     }
 
     // Attach listeners to UI control widgets

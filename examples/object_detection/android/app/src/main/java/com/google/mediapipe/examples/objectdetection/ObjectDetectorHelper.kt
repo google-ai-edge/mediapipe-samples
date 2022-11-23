@@ -22,6 +22,7 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.SystemClock
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import androidx.camera.core.ImageProxy
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.MPImage
@@ -240,11 +241,15 @@ class ObjectDetectorHelper(
     // Convert the input Bitmap object to an MPImage object to run inference
     val mpImage = BitmapImageBuilder(rotatedBitmap).build()
 
-    // Run object detection using MediaPipe Object Detector API
-    objectDetector?.detectAsync(mpImage, frameTime)
+    detectAsync(mpImage, frameTime)
+}
 
+  // Run object detection using MediaPipe Object Detector API
+  @VisibleForTesting
+  fun detectAsync(mpImage: MPImage, frameTime: Long) {
     // As we're using running mode LIVE_STREAM, the detection result will be returned in
     // returnLivestreamResult function
+    objectDetector?.detectAsync(mpImage, frameTime)
   }
 
   // Return the detection result to this ObjectDetectorHelper's caller
