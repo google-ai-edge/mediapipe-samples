@@ -34,11 +34,11 @@ import com.google.mediapipe.tasks.vision.imageclassifier.ImageClassifier
 import com.google.mediapipe.tasks.vision.imageclassifier.ImageClassifierResult
 
 class ImageClassifierHelper(
-    var threshold: Float = 0.1f,
+    var threshold: Float = THRESHOLD_DEFAULT,
     var maxResults: Int = MAX_RESULTS_DEFAULT,
-    var currentDelegate: Int = 0,
-    var currentModel: Int = 0,
-    var runningMode: RunningMode = RunningMode.LIVE_STREAM,
+    var currentDelegate: Int = DELEGATE_CPU,
+    var currentModel: Int = MODEL_EFFICIENTNETV0,
+    var runningMode: RunningMode = RunningMode.IMAGE,
     val context: Context,
     val imageClassifierListener: ClassifierListener? = null
 ) {
@@ -56,6 +56,11 @@ class ImageClassifierHelper(
     fun clearImageClassifier() {
         imageClassifier?.close()
         imageClassifier = null
+    }
+
+    // Return running status of image classifier helper
+    fun isClosed(): Boolean {
+        return imageClassifier == null
     }
 
     // Initialize the image classifier using current settings on the
@@ -107,21 +112,20 @@ class ImageClassifierHelper(
             }
         }
         try {
+            val baseOptions = baseOptionsBuilder.build()
             val optionsBuilder =
                 ImageClassifier.ImageClassifierOptions.builder()
                     .setClassifierOptions(classifierOptions)
                     .setRunningMode(runningMode)
-                    .setBaseOptions(baseOptionsBuilder.build())
+                    .setBaseOptions(baseOptions)
 
             if (runningMode == RunningMode.LIVE_STREAM) {
                 optionsBuilder.setResultListener(this::returnLivestreamResult)
                 optionsBuilder.setErrorListener(this::returnLivestreamError)
             }
+            val options = optionsBuilder.build()
             imageClassifier =
-                ImageClassifier.createFromOptions(
-                    context,
-                    optionsBuilder.build()
-                )
+                ImageClassifier.createFromOptions(context, options)
         } catch (e: IllegalStateException) {
             imageClassifierListener?.onError(
                 "Image classifier failed to initialize. See error logs for details"
@@ -144,23 +148,30 @@ class ImageClassifierHelper(
 
     // Runs image classification on live streaming cameras frame-by-frame and
     // returns the results asynchronously to the caller.
-    fun classifyLiveStreamFrame(image: ImageProxy) {
+    fun classifyLiveStreamFrame(imageProxy: ImageProxy) {
+        if (runningMode != RunningMode.LIVE_STREAM) {
+            throw IllegalArgumentException(
+                "Attempting to call classifyLiveStreamFrame" +
+                        " while not using RunningMode.LIVE_STREAM"
+            )
+        }
+
         val frameTime = SystemClock.uptimeMillis()
         val bitmapBuffer =
             Bitmap.createBitmap(
-                image.width,
-                image.height,
+                imageProxy.width,
+                imageProxy.height,
                 Bitmap.Config.ARGB_8888
             )
 
-        image.use {
-            bitmapBuffer.copyPixelsFromBuffer(image.planes[0].buffer)
+        imageProxy.use {
+            bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer)
         }
-        image.close()
+        imageProxy.close()
 
         // Used for rotating the frame image so it matches our models
         val matrix = Matrix().apply {
-            postRotate(image.imageInfo.rotationDegrees.toFloat())
+            postRotate(imageProxy.imageInfo.rotationDegrees.toFloat())
         }
 
         val rotatedBitmap = Bitmap.createBitmap(
@@ -174,7 +185,6 @@ class ImageClassifierHelper(
         )
 
         val mpImage = BitmapImageBuilder(rotatedBitmap).build()
-
         // Attempts to classify an image asynchronously and return the results to our listener
         imageClassifier?.classifyAsync(mpImage, frameTime)
     }
@@ -303,14 +313,6 @@ class ImageClassifierHelper(
         }
     }
 
-    interface ClassifierListener {
-        fun onError(error: String)
-        fun onResults(
-            results: List<ImageClassifierResult>?,
-            inferenceTime: Long
-        )
-    }
-
     // MPImage isn't necessary for this example, but the listener requires it
     private fun returnLivestreamResult(
         result: ImageClassifierResult,
@@ -350,6 +352,16 @@ class ImageClassifierHelper(
         const val MODEL_EFFICIENTNETV0 = 0
         const val MODEL_EFFICIENTNETV2 = 1
         const val MAX_RESULTS_DEFAULT = 3
+        const val THRESHOLD_DEFAULT = 0.5F
+
         private const val TAG = "ImageClassifierHelper"
+    }
+
+    interface ClassifierListener {
+        fun onError(error: String)
+        fun onResults(
+            results: List<ImageClassifierResult>?,
+            inferenceTime: Long
+        )
     }
 }

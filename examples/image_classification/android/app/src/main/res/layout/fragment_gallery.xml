@@ -73,6 +73,7 @@
         android:src="@drawable/ic_baseline_add_24"
         app:layout_anchor="@id/recyclerview_results"
         app:layout_anchorGravity="top|right"
+        app:tint="@android:color/white"
         app:useCompatPadding="true" />
 
     <include

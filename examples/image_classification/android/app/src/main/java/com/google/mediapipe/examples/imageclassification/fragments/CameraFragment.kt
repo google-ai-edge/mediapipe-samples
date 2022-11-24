@@ -32,6 +32,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.mediapipe.examples.imageclassification.ImageClassifierHelper
 import com.google.mediapipe.examples.imageclassification.R
 import com.google.mediapipe.examples.imageclassification.databinding.FragmentCameraBinding
+import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.imageclassifier.ImageClassifierResult
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -72,6 +73,19 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
             )
                 .navigate(CameraFragmentDirections.actionCameraToPermissions())
         }
+
+        backgroundExecutor.execute {
+            if(imageClassifierHelper.isClosed()) {
+                imageClassifierHelper.setupImageClassifier()
+            }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        // Close the image classifier and release resources
+        backgroundExecutor.execute { imageClassifierHelper.clearImageClassifier() }
     }
 
     override fun onDestroyView() {
@@ -101,24 +115,25 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        imageClassifierHelper =
-            ImageClassifierHelper(
-                context = requireContext(),
-                imageClassifierListener = this
-            )
-
         with(fragmentCameraBinding.recyclerviewResults) {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = classificationResultsAdapter
         }
 
         backgroundExecutor = Executors.newSingleThreadExecutor()
+        backgroundExecutor.execute {
+            imageClassifierHelper =
+                ImageClassifierHelper(
+                    context = requireContext(),
+                    runningMode = RunningMode.LIVE_STREAM,
+                    imageClassifierListener = this
+                )
 
-        fragmentCameraBinding.viewFinder.post {
-            // Set up the camera and its use cases
-            setUpCamera()
+            fragmentCameraBinding.viewFinder.post {
+                // Set up the camera and its use cases
+                setUpCamera()
+            }
         }
-
         // Attach listeners to UI control widgets
         initBottomSheetControls()
     }
