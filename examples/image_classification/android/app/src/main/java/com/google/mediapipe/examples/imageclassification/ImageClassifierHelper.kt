@@ -23,6 +23,7 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.SystemClock
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import androidx.camera.core.ImageProxy
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.MPImage
@@ -185,7 +186,15 @@ class ImageClassifierHelper(
         )
 
         val mpImage = BitmapImageBuilder(rotatedBitmap).build()
-        // Attempts to classify an image asynchronously and return the results to our listener
+
+        classifyAsync(mpImage, frameTime)
+    }
+
+    // Run object detection using MediaPipe Object Detector API
+    @VisibleForTesting
+    fun classifyAsync(mpImage: MPImage, frameTime: Long) {
+        // As we're using running mode LIVE_STREAM, the classification result will
+        // be returned in returnLivestreamResult function
         imageClassifier?.classifyAsync(mpImage, frameTime)
     }
 
@@ -324,14 +333,15 @@ class ImageClassifierHelper(
         val inferenceTime = finishTimeMs - result.timestampMs()
 
         imageClassifierListener?.onResults(
-            listOf(result),
-            inferenceTime
+            ResultBundle(
+                listOf(result),
+                inferenceTime
+            )
         )
     }
 
     // Return errors thrown during classification to this
-    // ImageClassifierHelper's
-    // caller
+    // ImageClassifierHelper's caller
     private fun returnLivestreamError(error: RuntimeException) {
         imageClassifierListener?.onError(
             error.message ?: "An unknown error has occurred"
@@ -359,9 +369,6 @@ class ImageClassifierHelper(
 
     interface ClassifierListener {
         fun onError(error: String)
-        fun onResults(
-            results: List<ImageClassifierResult>?,
-            inferenceTime: Long
-        )
+        fun onResults(resultBundle: ResultBundle)
     }
 }

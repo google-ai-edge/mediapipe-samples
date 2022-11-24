@@ -20,10 +20,16 @@ import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.Toast
-import androidx.camera.core.*
+import androidx.camera.core.AspectRatio
+import androidx.camera.core.Camera
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -33,7 +39,6 @@ import com.google.mediapipe.examples.imageclassification.ImageClassifierHelper
 import com.google.mediapipe.examples.imageclassification.R
 import com.google.mediapipe.examples.imageclassification.databinding.FragmentCameraBinding
 import com.google.mediapipe.tasks.vision.core.RunningMode
-import com.google.mediapipe.tasks.vision.imageclassifier.ImageClassifierResult
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -75,7 +80,7 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
         }
 
         backgroundExecutor.execute {
-            if(imageClassifierHelper.isClosed()) {
+            if (imageClassifierHelper.isClosed()) {
                 imageClassifierHelper.setupImageClassifier()
             }
         }
@@ -322,18 +327,17 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onResults(
-        results: List<ImageClassifierResult>?,
-        inferenceTime: Long
+        resultBundle: ImageClassifierHelper.ResultBundle
     ) {
         activity?.runOnUiThread {
             if (_fragmentCameraBinding != null) {
                 // Show result on bottom sheet
-                if (results != null) {
-                    classificationResultsAdapter.updateResults(results.first())
-                    classificationResultsAdapter.notifyDataSetChanged()
-                }
+                classificationResultsAdapter.updateResults(
+                    resultBundle.results.first()
+                )
+                classificationResultsAdapter.notifyDataSetChanged()
                 fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
-                    String.format("%d ms", inferenceTime)
+                    String.format("%d ms", resultBundle.inferenceTime)
             }
         }
     }

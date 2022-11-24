@@ -57,7 +57,7 @@ class GalleryFragment : Fragment() {
     private lateinit var backgroundExecutor: ScheduledExecutorService
 
     private var maxResults = ImageClassifierHelper.MAX_RESULTS_DEFAULT
-    private var threshold = 0.50f
+    private var threshold = ImageClassifierHelper.THRESHOLD_DEFAULT
     private var currentDelegate = ImageClassifierHelper.DELEGATE_CPU
     private var currentModel = ImageClassifierHelper.MODEL_EFFICIENTNETV0
 
