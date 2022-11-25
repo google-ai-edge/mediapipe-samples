@@ -87,7 +87,7 @@ class ImageClassificationTest {
             threshold = 0.1f,
             imageClassifierListener =
             object : ImageClassifierHelper.ClassifierListener {
-                override fun onError(error: String) {
+                override fun onError(error: String, errorCode: Int) {
                     println(error)
 
                     // Release the lock

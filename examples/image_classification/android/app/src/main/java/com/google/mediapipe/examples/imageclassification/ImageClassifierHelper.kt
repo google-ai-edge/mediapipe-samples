@@ -138,7 +138,8 @@ class ImageClassifierHelper(
         } catch (e: RuntimeException) {
             // This occurs if the model being used does not support GPU
             imageClassifierListener?.onError(
-                "Image classifier failed to initialize. See error logs for details"
+                "Image classifier failed to initialize. See error logs for " +
+                        "details", GPU_ERROR
             )
             Log.e(
                 TAG,
@@ -208,6 +209,8 @@ class ImageClassifierHelper(
             )
         }
 
+        if (imageClassifier == null) return null
+
         // Inference time is the difference between the system time at the start and finish of the
         // process
         val startTime = SystemClock.uptimeMillis()
@@ -240,6 +243,8 @@ class ImageClassifierHelper(
                         " while not using RunningMode.VIDEO"
             )
         }
+
+        if (imageClassifier == null) return null
 
         // Inference time is the difference between the system time at the start and finish of the
         // process
@@ -361,14 +366,16 @@ class ImageClassifierHelper(
         const val DELEGATE_GPU = 1
         const val MODEL_EFFICIENTNETV0 = 0
         const val MODEL_EFFICIENTNETV2 = 1
-        const val MAX_RESULTS_DEFAULT = 3
+        const val MAX_RESULTS_DEFAULT = 5
         const val THRESHOLD_DEFAULT = 0.5F
+        const val OTHER_ERROR = 0
+        const val GPU_ERROR = 1
 
         private const val TAG = "ImageClassifierHelper"
     }
 
     interface ClassifierListener {
-        fun onError(error: String)
+        fun onError(error: String, errorCode: Int = OTHER_ERROR)
         fun onResults(resultBundle: ResultBundle)
     }
 }

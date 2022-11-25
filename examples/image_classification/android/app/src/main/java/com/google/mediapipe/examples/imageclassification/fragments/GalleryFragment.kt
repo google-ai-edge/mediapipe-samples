@@ -22,7 +22,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
 import android.provider.MediaStore
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -95,6 +94,7 @@ class GalleryFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         fragmentGalleryBinding.fabGetContent.setOnClickListener {
             getContent.launch(arrayOf("image/*", "video/*"))
+            updateDisplayView(MediaType.UNKNOWN)
         }
         with(fragmentGalleryBinding.recyclerviewResults) {
             layoutManager = LinearLayoutManager(requireContext())
@@ -105,6 +105,7 @@ class GalleryFragment : Fragment() {
     }
 
     private fun initBottomSheetControls() {
+        updateControlsUi()
         // When clicked, lower classification score threshold floor
         fragmentGalleryBinding.bottomSheetLayout.thresholdMinus.setOnClickListener {
             if (threshold >= 0.1) {
@@ -219,31 +220,31 @@ class GalleryFragment : Fragment() {
                 imageClassifierHelper = ImageClassifierHelper(
                     context = requireContext(),
                     runningMode = RunningMode.IMAGE,
-                    imageClassifierListener = null
+                    currentModel = currentModel,
+                    currentDelegate = currentDelegate,
+                    maxResults = maxResults,
+                    threshold = threshold
                 )
-
-                setImageClassifierConfigValues()
-
-                imageClassifierHelper.classifyImage(bitmap)?.let { result ->
-                    activity?.runOnUiThread {
-                        classificationResultsAdapter.updateResults(result.results.first())
-                        classificationResultsAdapter.notifyDataSetChanged()
-                        setUiEnabled(true)
-                        fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
-                            String.format("%d ms", result.inferenceTime)
-                    }
+                imageClassifierHelper.classifyImage(bitmap)
+                    ?.let { resultBundle ->
+                        activity?.runOnUiThread {
+                            classificationResultsAdapter.updateResults(
+                                resultBundle.results.first()
+                            )
+                            classificationResultsAdapter.notifyDataSetChanged()
+                            setUiEnabled(true)
+                            fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
+                                String.format(
+                                    "%d ms", resultBundle.inferenceTime
+                                )
+                        }
+                    } ?: run {
+                    classifyingError()
                 }
 
                 imageClassifierHelper.clearImageClassifier()
             }
         }
-    }
-
-    private fun setImageClassifierConfigValues() {
-        imageClassifierHelper.currentModel = currentModel
-        imageClassifierHelper.currentDelegate = currentDelegate
-        imageClassifierHelper.maxResults = maxResults
-        imageClassifierHelper.threshold = threshold
     }
 
     private fun runClassificationOnVideo(uri: Uri) {
@@ -260,23 +261,28 @@ class GalleryFragment : Fragment() {
         backgroundExecutor = Executors.newSingleThreadScheduledExecutor()
         backgroundExecutor.execute {
 
-            imageClassifierHelper = ImageClassifierHelper(
-                context = requireContext(),
-                runningMode = RunningMode.VIDEO,
-                imageClassifierListener = null
-            )
-
             activity?.runOnUiThread {
                 fragmentGalleryBinding.videoView.visibility = View.GONE
                 fragmentGalleryBinding.progress.visibility = View.VISIBLE
             }
 
-            setImageClassifierConfigValues()
+            imageClassifierHelper = ImageClassifierHelper(
+                context = requireContext(),
+                runningMode = RunningMode.VIDEO,
+                currentModel = currentModel,
+                currentDelegate = currentDelegate,
+                maxResults = maxResults,
+                threshold = threshold
+            )
 
             imageClassifierHelper.classifyVideoFile(uri, VIDEO_INTERVAL_MS)
                 ?.let { resultBundle ->
-                    activity?.runOnUiThread { displayVideoResult(resultBundle) }
-                } ?: run { Log.e(TAG, "Error running image classification.") }
+                    activity?.runOnUiThread {
+                        displayVideoResult(resultBundle)
+                    }
+                } ?: run {
+                classifyingError()
+            }
 
             imageClassifierHelper.clearImageClassifier()
         }
@@ -301,11 +307,12 @@ class GalleryFragment : Fragment() {
 
                     if (resultIndex >= result.results.size || fragmentGalleryBinding.videoView.visibility == View.GONE) {
                         // The video playback has finished so we stop drawing bounding boxes
+                        setUiEnabled(true)
                         backgroundExecutor.shutdown()
                     } else {
                         classificationResultsAdapter.updateResults(result.results[resultIndex])
                         classificationResultsAdapter.notifyDataSetChanged()
-                        setUiEnabled(true)
+                        setUiEnabled(false)
 
                         fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
                             String.format("%d ms", result.inferenceTime)
@@ -349,6 +356,20 @@ class GalleryFragment : Fragment() {
             enabled
         fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.isEnabled =
             enabled
+    }
+
+    private fun classifyingError() {
+        activity?.runOnUiThread {
+            fragmentGalleryBinding.progress.visibility = View.GONE
+            setUiEnabled(true)
+            updateDisplayView(MediaType.UNKNOWN)
+            Toast.makeText(
+                requireContext(),
+                "There is an error in image classifier helper. " +
+                        "See the error logs for details.",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 
     companion object {

@@ -317,11 +317,18 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    override fun onError(error: String) {
+    override fun onError(error: String, errorCode: Int) {
         activity?.runOnUiThread {
             Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
             classificationResultsAdapter.updateResults(null)
             classificationResultsAdapter.notifyDataSetChanged()
+
+            if (errorCode == ImageClassifierHelper.GPU_ERROR) {
+                fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(
+                    ImageClassifierHelper.DELEGATE_CPU,
+                    false
+                )
+            }
         }
     }
 
