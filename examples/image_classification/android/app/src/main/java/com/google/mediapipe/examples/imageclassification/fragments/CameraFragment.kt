@@ -162,7 +162,7 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
     private fun initBottomSheetControls() {
         // When clicked, lower classification score threshold floor
         fragmentCameraBinding.bottomSheetLayout.thresholdMinus.setOnClickListener {
-            if (imageClassifierHelper.threshold >= 0.1) {
+            if (imageClassifierHelper.threshold >= 0.2) {
                 imageClassifierHelper.threshold -= 0.1f
                 updateControlsUi()
             }
@@ -170,7 +170,7 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
 
         // When clicked, raise classification score threshold floor
         fragmentCameraBinding.bottomSheetLayout.thresholdPlus.setOnClickListener {
-            if (imageClassifierHelper.threshold < 0.9) {
+            if (imageClassifierHelper.threshold <= 0.8) {
                 imageClassifierHelper.threshold += 0.1f
                 updateControlsUi()
             }

@@ -135,7 +135,7 @@ class GalleryFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
         // When clicked, increase the number of objects that can be
         // classified at a time
         fragmentGalleryBinding.bottomSheetLayout.maxResultsPlus.setOnClickListener {
-            if (maxResults < 5) {
+            if (maxResults < 3) {
                 maxResults++
                 updateControlsUi()
             }
