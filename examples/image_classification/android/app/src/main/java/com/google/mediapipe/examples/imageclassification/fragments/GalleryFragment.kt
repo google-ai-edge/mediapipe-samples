@@ -22,6 +22,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
 import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -37,7 +38,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
-class GalleryFragment : Fragment() {
+class GalleryFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
     enum class MediaType {
         IMAGE, VIDEO, UNKNOWN
     }
@@ -108,7 +109,7 @@ class GalleryFragment : Fragment() {
         updateControlsUi()
         // When clicked, lower classification score threshold floor
         fragmentGalleryBinding.bottomSheetLayout.thresholdMinus.setOnClickListener {
-            if (threshold >= 0.1) {
+            if (threshold >= 0.2) {
                 threshold -= 0.1f
                 updateControlsUi()
             }
@@ -223,7 +224,8 @@ class GalleryFragment : Fragment() {
                     currentModel = currentModel,
                     currentDelegate = currentDelegate,
                     maxResults = maxResults,
-                    threshold = threshold
+                    threshold = threshold,
+                    imageClassifierListener = this
                 )
                 imageClassifierHelper.classifyImage(bitmap)
                     ?.let { resultBundle ->
@@ -239,6 +241,7 @@ class GalleryFragment : Fragment() {
                                 )
                         }
                     } ?: run {
+                    Log.e(TAG, "Error running image classification.")
                     classifyingError()
                 }
 
@@ -272,7 +275,8 @@ class GalleryFragment : Fragment() {
                 currentModel = currentModel,
                 currentDelegate = currentDelegate,
                 maxResults = maxResults,
-                threshold = threshold
+                threshold = threshold,
+                imageClassifierListener = this
             )
 
             imageClassifierHelper.classifyVideoFile(uri, VIDEO_INTERVAL_MS)
@@ -281,6 +285,7 @@ class GalleryFragment : Fragment() {
                         displayVideoResult(resultBundle)
                     }
                 } ?: run {
+                Log.e(TAG, "Error running image classification.")
                 classifyingError()
             }
 
@@ -363,12 +368,6 @@ class GalleryFragment : Fragment() {
             fragmentGalleryBinding.progress.visibility = View.GONE
             setUiEnabled(true)
             updateDisplayView(MediaType.UNKNOWN)
-            Toast.makeText(
-                requireContext(),
-                "There is an error in image classifier helper. " +
-                        "See the error logs for details.",
-                Toast.LENGTH_SHORT
-            ).show()
         }
     }
 
@@ -377,5 +376,21 @@ class GalleryFragment : Fragment() {
 
         // Value used to get frames at specific intervals for inference (e.g. every 300ms)
         private const val VIDEO_INTERVAL_MS = 300L
+    }
+
+    override fun onError(error: String, errorCode: Int) {
+        activity?.runOnUiThread {
+            Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
+            if (errorCode == ImageClassifierHelper.GPU_ERROR) {
+                fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.setSelection(
+                    ImageClassifierHelper.DELEGATE_CPU,
+                    false
+                )
+            }
+        }
+    }
+
+    override fun onResults(resultBundle: ImageClassifierHelper.ResultBundle) {
+        // no-op
     }
 }

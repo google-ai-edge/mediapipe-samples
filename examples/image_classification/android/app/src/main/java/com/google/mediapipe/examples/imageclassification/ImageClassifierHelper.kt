@@ -96,14 +96,6 @@ class ImageClassifierHelper(
 
         // Check if runningMode is consistent with imageClassifierListener
         when (runningMode) {
-            RunningMode.IMAGE,
-            RunningMode.VIDEO -> {
-                if (imageClassifierListener != null) {
-                    throw IllegalStateException(
-                        "imageClassifierListener cannot be set when runningMode is IMAGE or VIDEO."
-                    )
-                }
-            }
             RunningMode.LIVE_STREAM -> {
                 if (imageClassifierListener == null) {
                     throw IllegalStateException(
@@ -111,7 +103,11 @@ class ImageClassifierHelper(
                     )
                 }
             }
+            else -> {
+                // no-op
+            }
         }
+
         try {
             val baseOptions = baseOptionsBuilder.build()
             val optionsBuilder =
@@ -366,7 +362,7 @@ class ImageClassifierHelper(
         const val DELEGATE_GPU = 1
         const val MODEL_EFFICIENTNETV0 = 0
         const val MODEL_EFFICIENTNETV2 = 1
-        const val MAX_RESULTS_DEFAULT = 5
+        const val MAX_RESULTS_DEFAULT = 3
         const val THRESHOLD_DEFAULT = 0.5F
         const val OTHER_ERROR = 0
         const val GPU_ERROR = 1
