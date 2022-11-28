@@ -369,13 +369,6 @@ class GalleryFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
         }
     }
 
-    companion object {
-        private const val TAG = "GalleryFragment"
-
-        // Value used to get frames at specific intervals for inference (e.g. every 300ms)
-        private const val VIDEO_INTERVAL_MS = 300L
-    }
-
     override fun onError(error: String, errorCode: Int) {
         classifyingError()
         activity?.runOnUiThread {
@@ -391,5 +384,12 @@ class GalleryFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
 
     override fun onResults(resultBundle: ImageClassifierHelper.ResultBundle) {
         // no-op
+    }
+
+    companion object {
+        private const val TAG = "GalleryFragment"
+
+        // Value used to get frames at specific intervals for inference (e.g. every 300ms)
+        private const val VIDEO_INTERVAL_MS = 300L
     }
 }
