@@ -22,8 +22,10 @@ import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
+import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarkerResult
 import kotlin.math.max
+import kotlin.math.min
 
 class OverlayView(context: Context?, attrs: AttributeSet?) :
     View(context, attrs) {
@@ -92,15 +94,26 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
         handLandmarkerResults: HandLandmarkerResult,
         imageHeight: Int,
         imageWidth: Int,
+        runningMode: RunningMode = RunningMode.IMAGE
     ) {
         results = handLandmarkerResults
 
         this.imageHeight = imageHeight
         this.imageWidth = imageWidth
-        // PreviewView is in FILL_START mode. So we need to scale up the
-        // landmarks to match with the size that the captured images will be
-        // displayed.
-        scaleFactor = max(width * 1f / imageWidth, height * 1f / imageHeight)
+
+        scaleFactor = when (runningMode) {
+            RunningMode.IMAGE,
+            RunningMode.VIDEO -> {
+                min(width * 1f / imageWidth, height * 1f / imageHeight)
+            }
+            RunningMode.LIVE_STREAM -> {
+                // PreviewView is in FILL_START mode. So we need to scale up the
+                // landmarks to match with the size that the captured images will be
+                // displayed.
+                max(width * 1f / imageWidth, height * 1f / imageHeight)
+            }
+        }
+        invalidate()
     }
 
     companion object {

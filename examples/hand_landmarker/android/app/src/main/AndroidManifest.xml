@@ -34,7 +34,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:taskAffinity=""
-        android:theme="@style/Theme.MPHandLandmarker"
+        android:theme="@style/AppTheme"
         tools:ignore="AllowBackup">
 
         <activity

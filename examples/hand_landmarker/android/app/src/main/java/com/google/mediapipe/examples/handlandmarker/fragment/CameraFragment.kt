@@ -37,6 +37,7 @@ import androidx.navigation.Navigation
 import com.google.mediapipe.examples.handlandmarker.HandLandmarkerHelper
 import com.google.mediapipe.examples.handlandmarker.R
 import com.google.mediapipe.examples.handlandmarker.databinding.FragmentCameraBinding
+import com.google.mediapipe.tasks.vision.core.RunningMode
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -127,7 +128,9 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
         // Create the HandLandmarkerHelper that will handle the inference
         backgroundExecutor.execute {
             handLandmarkerHelper = HandLandmarkerHelper(
-                context = requireContext(), handLandmarkerHelperListener = this
+                context = requireContext(),
+                runningMode = RunningMode.LIVE_STREAM,
+                handLandmarkerHelperListener = this
             )
         }
 
@@ -138,7 +141,7 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
     private fun initBottomSheetControls() {
         // When clicked, lower detection score threshold floor
         fragmentCameraBinding.bottomSheetLayout.thresholdMinus.setOnClickListener {
-            if (handLandmarkerHelper.minConfidence >= 0.1) {
+            if (handLandmarkerHelper.minConfidence >= 0.2) {
                 handLandmarkerHelper.minConfidence -= 0.1f
                 updateControlsUi()
             }
@@ -166,22 +169,6 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
         fragmentCameraBinding.bottomSheetLayout.maxHandsPlus.setOnClickListener {
             if (handLandmarkerHelper.maxNumHands < 2) {
                 handLandmarkerHelper.maxNumHands++
-                updateControlsUi()
-            }
-        }
-
-        // When clicked, decrease the number of threads used for detection
-        fragmentCameraBinding.bottomSheetLayout.threadsMinus.setOnClickListener {
-            if (handLandmarkerHelper.numThreads > 1) {
-                handLandmarkerHelper.numThreads--
-                updateControlsUi()
-            }
-        }
-
-        // When clicked, increase the number of threads used for detection
-        fragmentCameraBinding.bottomSheetLayout.threadsPlus.setOnClickListener {
-            if (handLandmarkerHelper.numThreads < 4) {
-                handLandmarkerHelper.numThreads++
                 updateControlsUi()
             }
         }
@@ -215,8 +202,6 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
             String.format(
                 Locale.US, "%.2f", handLandmarkerHelper.minConfidence
             )
-        fragmentCameraBinding.bottomSheetLayout.threadsValue.text =
-            handLandmarkerHelper.numThreads.toString()
 
         // Needs to be cleared instead of reinitialized because the GPU
         // delegate needs to be initialized on the thread using it when applicable
@@ -317,7 +302,8 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
             fragmentCameraBinding.overlay.setResults(
                 resultBundle.results.first(),
                 resultBundle.inputImageHeight,
-                resultBundle.inputImageWidth
+                resultBundle.inputImageWidth,
+                RunningMode.LIVE_STREAM
             )
 
             // Force a redraw
@@ -325,9 +311,15 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
         }
     }
 
-    override fun onError(error: String) {
+    override fun onError(error: String, errorCode: Int) {
         activity?.runOnUiThread {
             Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
+            if (errorCode == HandLandmarkerHelper.GPU_ERROR) {
+                fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(
+                    HandLandmarkerHelper.DELEGATE_CPU,
+                    false
+                )
+            }
         }
     }
 }
