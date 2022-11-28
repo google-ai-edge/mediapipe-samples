@@ -222,6 +222,9 @@ class ImageClassifierHelper(
 
         // If imageClassifier?.classify() returns null, this is likely an error. Returning null
         // to indicate this.
+        imageClassifierListener?.onError(
+            "Image classifier failed to classify."
+        )
         return null
     }
 

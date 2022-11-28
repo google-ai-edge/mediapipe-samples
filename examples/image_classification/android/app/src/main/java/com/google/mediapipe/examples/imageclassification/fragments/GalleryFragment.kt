@@ -242,7 +242,6 @@ class GalleryFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
                         }
                     } ?: run {
                     Log.e(TAG, "Error running image classification.")
-                    classifyingError()
                 }
 
                 imageClassifierHelper.clearImageClassifier()
@@ -286,7 +285,6 @@ class GalleryFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
                     }
                 } ?: run {
                 Log.e(TAG, "Error running image classification.")
-                classifyingError()
             }
 
             imageClassifierHelper.clearImageClassifier()
@@ -379,6 +377,7 @@ class GalleryFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
     }
 
     override fun onError(error: String, errorCode: Int) {
+        classifyingError()
         activity?.runOnUiThread {
             Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
             if (errorCode == ImageClassifierHelper.GPU_ERROR) {
