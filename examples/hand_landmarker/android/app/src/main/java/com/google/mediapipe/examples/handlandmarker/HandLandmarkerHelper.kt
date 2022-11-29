@@ -22,6 +22,7 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.SystemClock
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import androidx.camera.core.ImageProxy
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.MPImage
@@ -182,9 +183,13 @@ class HandLandmarkerHelper(
         // Convert the input Bitmap object to an MPImage object to run inference
         val mpImage = BitmapImageBuilder(rotatedBitmap).build()
 
-        // Run hand hand landmark using MediaPipe Hand Landmarker API
-        handLandmarker?.detectAsync(mpImage, frameTime)
+        detectAsync(mpImage, frameTime)
+    }
 
+    // Run hand hand landmark using MediaPipe Hand Landmarker API
+    @VisibleForTesting
+    fun detectAsync(mpImage: MPImage, frameTime: Long) {
+        handLandmarker?.detectAsync(mpImage, frameTime)
         // As we're using running mode LIVE_STREAM, the landmark result will
         // be returned in returnLivestreamResult function
     }
@@ -253,12 +258,12 @@ class HandLandmarkerHelper(
                         ?.let { detectionResult ->
                             resultList.add(detectionResult)
                         } ?: {
-                            didErrorOccurred = true
-                            handLandmarkerHelperListener?.onError(
-                                "ResultBundle could not be returned" +
-                                        " in detectVideoFile"
-                            )
-                        }
+                        didErrorOccurred = true
+                        handLandmarkerHelperListener?.onError(
+                            "ResultBundle could not be returned" +
+                                    " in detectVideoFile"
+                        )
+                    }
                 }
                 ?: run {
                     didErrorOccurred = true
