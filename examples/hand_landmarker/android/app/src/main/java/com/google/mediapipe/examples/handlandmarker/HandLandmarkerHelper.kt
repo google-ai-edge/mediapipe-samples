@@ -96,6 +96,8 @@ class HandLandmarkerHelper(
 
         try {
             val baseOptions = baseOptionBuilder.build()
+            // Create an option builder with base options and specific
+            // options only use for Hand Landmarker.
             val optionsBuilder =
                 HandLandmarker.HandLandmarkerOptions.builder()
                     .setBaseOptions(baseOptions)
@@ -103,6 +105,7 @@ class HandLandmarkerHelper(
                     .setNumHands(maxNumHands)
                     .setRunningMode(runningMode)
 
+            // The ResultListener and ErrorListener only use for LIVE_STREAM mode.
             if (runningMode == RunningMode.LIVE_STREAM) {
                 optionsBuilder
                     .setResultListener(this::returnLivestreamResult)

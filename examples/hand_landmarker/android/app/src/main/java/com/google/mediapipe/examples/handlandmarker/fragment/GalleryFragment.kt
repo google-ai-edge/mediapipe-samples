@@ -30,9 +30,12 @@ import android.widget.AdapterView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import com.google.mediapipe.examples.handlandmarker.HandLandmarkerHelper
+import com.google.mediapipe.examples.handlandmarker.MainViewModel
 import com.google.mediapipe.examples.handlandmarker.databinding.FragmentGalleryBinding
 import com.google.mediapipe.tasks.vision.core.RunningMode
+import java.util.Locale
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
@@ -49,13 +52,10 @@ class GalleryFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
     private val fragmentGalleryBinding
         get() = _fragmentGalleryBinding!!
     private lateinit var handLandmarkerHelper: HandLandmarkerHelper
+    private val viewModel: MainViewModel by activityViewModels()
 
     /** Blocking ML operations are performed using this executor */
     private lateinit var backgroundExecutor: ScheduledExecutorService
-
-    private var maxNumHands = HandLandmarkerHelper.DEFAULT_NUM_HANDS
-    private var threshold = HandLandmarkerHelper.DEFAULT_THRESHOLD
-    private var currentDelegate = HandLandmarkerHelper.DELEGATE_CPU
 
     private val getContent =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
@@ -91,41 +91,57 @@ class GalleryFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
         super.onViewCreated(view, savedInstanceState)
         fragmentGalleryBinding.fabGetContent.setOnClickListener {
             getContent.launch(arrayOf("image/*", "video/*"))
-            updateDisplayView(MediaType.UNKNOWN)
         }
 
         initBottomSheetControls()
     }
 
+    override fun onPause() {
+        fragmentGalleryBinding.overlay.clear()
+        if (fragmentGalleryBinding.videoView.isPlaying) {
+            fragmentGalleryBinding.videoView.stopPlayback()
+        }
+        fragmentGalleryBinding.videoView.visibility = View.GONE
+        super.onPause()
+    }
+
     private fun initBottomSheetControls() {
+        // init bottom sheet settings
+        fragmentGalleryBinding.bottomSheetLayout.maxHandsValue.text =
+            viewModel.currentMaxHands.toString()
+        fragmentGalleryBinding.bottomSheetLayout.thresholdValue.text =
+            String.format(
+                Locale.US, "%.2f", viewModel.currentMinConfidence
+            )
+
         // When clicked, lower detection score threshold floor
         fragmentGalleryBinding.bottomSheetLayout.thresholdMinus.setOnClickListener {
-            if (threshold >= 0.2) {
-                threshold -= 0.1f
+            if (viewModel.currentMinConfidence >= 0.2) {
+                viewModel.setMinConfidence(viewModel.currentMinConfidence - 0.1f)
                 updateControlsUi()
             }
         }
 
         // When clicked, raise detection score threshold floor
         fragmentGalleryBinding.bottomSheetLayout.thresholdPlus.setOnClickListener {
-            if (threshold <= 0.8) {
-                threshold += 0.1f
+            if (viewModel.currentMinConfidence <= 0.8) {
+                viewModel.setMinConfidence(viewModel.currentMinConfidence + 0.1f)
                 updateControlsUi()
             }
         }
 
         // When clicked, reduce the number of objects that can be detected at a time
         fragmentGalleryBinding.bottomSheetLayout.maxHandsMinus.setOnClickListener {
-            if (maxNumHands > 1) {
-                maxNumHands--
+            if (viewModel.currentMaxHands > 1) {
+                viewModel.setMaxHands(viewModel.currentMaxHands - 1)
                 updateControlsUi()
             }
         }
 
         // When clicked, increase the number of objects that can be detected at a time
         fragmentGalleryBinding.bottomSheetLayout.maxHandsPlus.setOnClickListener {
-            if (maxNumHands < 2) {
-                maxNumHands++
+            if (viewModel.currentMaxHands < 2) {
+                viewModel.setMaxHands(viewModel.currentMaxHands + 1)
                 updateControlsUi()
             }
         }
@@ -133,7 +149,7 @@ class GalleryFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
         // When clicked, change the underlying hardware used for inference. Current options are CPU
         // GPU, and NNAPI
         fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.setSelection(
-            0,
+            viewModel.currentDelegate,
             false
         )
         fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.onItemSelectedListener =
@@ -145,7 +161,7 @@ class GalleryFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
                     p3: Long
                 ) {
 
-                    currentDelegate = p2
+                    viewModel.setDelegate(p2)
                     updateControlsUi()
                 }
 
@@ -159,14 +175,14 @@ class GalleryFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
     private fun updateControlsUi() {
         if (fragmentGalleryBinding.videoView.isPlaying) {
             fragmentGalleryBinding.videoView.stopPlayback()
-            fragmentGalleryBinding.videoView.visibility = View.GONE
         }
+        fragmentGalleryBinding.videoView.visibility = View.GONE
         fragmentGalleryBinding.imageResult.visibility = View.GONE
         fragmentGalleryBinding.overlay.clear()
         fragmentGalleryBinding.bottomSheetLayout.maxHandsValue.text =
-            maxNumHands.toString()
+            viewModel.currentMaxHands.toString()
         fragmentGalleryBinding.bottomSheetLayout.thresholdValue.text =
-            String.format("%.2f", threshold)
+            String.format("%.2f", viewModel.currentMinConfidence)
 
         fragmentGalleryBinding.overlay.clear()
         fragmentGalleryBinding.tvPlaceholder.visibility = View.VISIBLE
@@ -200,9 +216,9 @@ class GalleryFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
                         HandLandmarkerHelper(
                             context = requireContext(),
                             runningMode = RunningMode.IMAGE,
-                            minConfidence = threshold,
-                            maxNumHands = maxNumHands,
-                            currentDelegate = currentDelegate
+                            minConfidence = viewModel.currentMinConfidence,
+                            maxNumHands = viewModel.currentMaxHands,
+                            currentDelegate = viewModel.currentDelegate
                         )
 
                     handLandmarkerHelper.detectImage(bitmap)?.let { result ->
@@ -243,9 +259,9 @@ class GalleryFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
                 HandLandmarkerHelper(
                     context = requireContext(),
                     runningMode = RunningMode.VIDEO,
-                    minConfidence = threshold,
-                    maxNumHands = maxNumHands,
-                    currentDelegate = currentDelegate
+                    minConfidence = viewModel.currentMinConfidence,
+                    maxNumHands = viewModel.currentMaxHands,
+                    currentDelegate = viewModel.currentDelegate
                 )
 
             activity?.runOnUiThread {
@@ -305,7 +321,6 @@ class GalleryFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
     }
 
     private fun updateDisplayView(mediaType: MediaType) {
-        fragmentGalleryBinding.overlay.clear()
         fragmentGalleryBinding.imageResult.visibility =
             if (mediaType == MediaType.IMAGE) View.VISIBLE else View.GONE
         fragmentGalleryBinding.videoView.visibility =

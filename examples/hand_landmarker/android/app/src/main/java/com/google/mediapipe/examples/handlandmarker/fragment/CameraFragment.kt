@@ -33,8 +33,10 @@ import androidx.camera.core.AspectRatio
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.Navigation
 import com.google.mediapipe.examples.handlandmarker.HandLandmarkerHelper
+import com.google.mediapipe.examples.handlandmarker.MainViewModel
 import com.google.mediapipe.examples.handlandmarker.R
 import com.google.mediapipe.examples.handlandmarker.databinding.FragmentCameraBinding
 import com.google.mediapipe.tasks.vision.core.RunningMode
@@ -55,6 +57,7 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
         get() = _fragmentCameraBinding!!
 
     private lateinit var handLandmarkerHelper: HandLandmarkerHelper
+    private val viewModel: MainViewModel by activityViewModels()
     private var preview: Preview? = null
     private var imageAnalyzer: ImageAnalysis? = null
     private var camera: Camera? = null
@@ -84,6 +87,9 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
     }
 
     override fun onPause() {
+        viewModel.setMaxHands(handLandmarkerHelper.maxNumHands)
+        viewModel.setMinConfidence(handLandmarkerHelper.minConfidence)
+        viewModel.setDelegate(handLandmarkerHelper.currentDelegate)
         super.onPause()
 
         // Close the HandLandmarkerHelper and release resources
@@ -130,6 +136,9 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
             handLandmarkerHelper = HandLandmarkerHelper(
                 context = requireContext(),
                 runningMode = RunningMode.LIVE_STREAM,
+                minConfidence = viewModel.currentMinConfidence,
+                maxNumHands = viewModel.currentMaxHands,
+                currentDelegate = viewModel.currentDelegate,
                 handLandmarkerHelperListener = this
             )
         }
@@ -139,6 +148,14 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
     }
 
     private fun initBottomSheetControls() {
+        // init bottom sheet settings
+        fragmentCameraBinding.bottomSheetLayout.maxHandsValue.text =
+            viewModel.currentMaxHands.toString()
+        fragmentCameraBinding.bottomSheetLayout.thresholdValue.text =
+            String.format(
+                Locale.US, "%.2f", viewModel.currentMinConfidence
+            )
+
         // When clicked, lower detection score threshold floor
         fragmentCameraBinding.bottomSheetLayout.thresholdMinus.setOnClickListener {
             if (handLandmarkerHelper.minConfidence >= 0.2) {
@@ -176,7 +193,7 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
         // When clicked, change the underlying hardware used for inference.
         // Current options are CPU and GPU
         fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(
-            0, false
+            viewModel.currentDelegate, false
         )
         fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
@@ -294,20 +311,21 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
         resultBundle: HandLandmarkerHelper.ResultBundle
     ) {
         activity?.runOnUiThread {
+            if (_fragmentCameraBinding != null) {
+                fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
+                    String.format("%d ms", resultBundle.inferenceTime)
 
-            fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
-                String.format("%d ms", resultBundle.inferenceTime)
+                // Pass necessary information to OverlayView for drawing on the canvas
+                fragmentCameraBinding.overlay.setResults(
+                    resultBundle.results.first(),
+                    resultBundle.inputImageHeight,
+                    resultBundle.inputImageWidth,
+                    RunningMode.LIVE_STREAM
+                )
 
-            // Pass necessary information to OverlayView for drawing on the canvas
-            fragmentCameraBinding.overlay.setResults(
-                resultBundle.results.first(),
-                resultBundle.inputImageHeight,
-                resultBundle.inputImageWidth,
-                RunningMode.LIVE_STREAM
-            )
-
-            // Force a redraw
-            fragmentCameraBinding.overlay.invalidate()
+                // Force a redraw
+                fragmentCameraBinding.overlay.invalidate()
+            }
         }
     }
 
@@ -316,8 +334,7 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
             Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
             if (errorCode == HandLandmarkerHelper.GPU_ERROR) {
                 fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(
-                    HandLandmarkerHelper.DELEGATE_CPU,
-                    false
+                    HandLandmarkerHelper.DELEGATE_CPU, false
                 )
             }
         }
