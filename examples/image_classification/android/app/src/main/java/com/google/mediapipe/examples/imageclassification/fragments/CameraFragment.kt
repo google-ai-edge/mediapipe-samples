@@ -33,9 +33,11 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.mediapipe.examples.imageclassification.ImageClassifierHelper
+import com.google.mediapipe.examples.imageclassification.MainViewModel
 import com.google.mediapipe.examples.imageclassification.R
 import com.google.mediapipe.examples.imageclassification.databinding.FragmentCameraBinding
 import com.google.mediapipe.tasks.vision.core.RunningMode
@@ -53,10 +55,11 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
     private val fragmentCameraBinding
         get() = _fragmentCameraBinding!!
 
+    private val viewModel: MainViewModel by activityViewModels()
     private lateinit var imageClassifierHelper: ImageClassifierHelper
     private val classificationResultsAdapter by lazy {
         ClassificationResultsAdapter().apply {
-            updateAdapterSize(ImageClassifierHelper.MAX_RESULTS_DEFAULT)
+            updateAdapterSize(viewModel.currentMaxResults)
         }
     }
     private var preview: Preview? = null
@@ -73,10 +76,8 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
 
         if (!PermissionsFragment.hasPermissions(requireContext())) {
             Navigation.findNavController(
-                requireActivity(),
-                R.id.fragment_container
-            )
-                .navigate(CameraFragmentDirections.actionCameraToPermissions())
+                requireActivity(), R.id.fragment_container
+            ).navigate(CameraFragmentDirections.actionCameraToPermissions())
         }
 
         backgroundExecutor.execute {
@@ -87,6 +88,11 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
     }
 
     override fun onPause() {
+        // save ImageClassifier settings
+        viewModel.setModel(imageClassifierHelper.currentModel)
+        viewModel.setDelegate(imageClassifierHelper.currentDelegate)
+        viewModel.setThreshold(imageClassifierHelper.threshold)
+        viewModel.setMaxResults(imageClassifierHelper.maxResults)
         super.onPause()
 
         // Close the image classifier and release resources
@@ -100,8 +106,7 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
         // Shut down our background executor
         backgroundExecutor.shutdown()
         backgroundExecutor.awaitTermination(
-            Long.MAX_VALUE,
-            TimeUnit.NANOSECONDS
+            Long.MAX_VALUE, TimeUnit.NANOSECONDS
         )
     }
 
@@ -127,12 +132,15 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
 
         backgroundExecutor = Executors.newSingleThreadExecutor()
         backgroundExecutor.execute {
-            imageClassifierHelper =
-                ImageClassifierHelper(
-                    context = requireContext(),
-                    runningMode = RunningMode.LIVE_STREAM,
-                    imageClassifierListener = this
-                )
+            imageClassifierHelper = ImageClassifierHelper(
+                context = requireContext(),
+                runningMode = RunningMode.LIVE_STREAM,
+                threshold = viewModel.currentThreshold,
+                currentDelegate = viewModel.currentDelegate,
+                currentModel = viewModel.currentModel,
+                maxResults = viewModel.currentMaxResults,
+                imageClassifierListener = this
+            )
 
             fragmentCameraBinding.viewFinder.post {
                 // Set up the camera and its use cases
@@ -154,12 +162,18 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
 
                 // Build and bind the camera use cases
                 bindCameraUseCases()
-            },
-            ContextCompat.getMainExecutor(requireContext())
+            }, ContextCompat.getMainExecutor(requireContext())
         )
     }
 
     private fun initBottomSheetControls() {
+        // Init bottom sheet settings
+        fragmentCameraBinding.bottomSheetLayout.maxResultsValue.text =
+            viewModel.currentMaxResults.toString()
+
+        fragmentCameraBinding.bottomSheetLayout.thresholdValue.text =
+            String.format("%.2f", viewModel.currentThreshold)
+
         // When clicked, lower classification score threshold floor
         fragmentCameraBinding.bottomSheetLayout.thresholdMinus.setOnClickListener {
             if (imageClassifierHelper.threshold >= 0.2) {
@@ -197,8 +211,7 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
         // When clicked, change the underlying hardware used for inference. Current options are CPU
         // GPU, and NNAPI
         fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(
-            0,
-            false
+            viewModel.currentDelegate, false
         )
         fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
@@ -219,8 +232,7 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
 
         // When clicked, change the underlying model used for object classification
         fragmentCameraBinding.bottomSheetLayout.spinnerModel.setSelection(
-            0,
-            false
+            viewModel.currentModel, false
         )
         fragmentCameraBinding.bottomSheetLayout.spinnerModel.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
@@ -265,25 +277,20 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
     private fun bindCameraUseCases() {
 
         // CameraProvider
-        val cameraProvider =
-            cameraProvider
-                ?: throw IllegalStateException("Camera initialization failed.")
+        val cameraProvider = cameraProvider
+            ?: throw IllegalStateException("Camera initialization failed.")
 
         // CameraSelector - makes assumption that we're only using the back camera
-        val cameraSelector =
-            CameraSelector.Builder()
-                .requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
+        val cameraSelector = CameraSelector.Builder()
+            .requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
 
         // Preview. Only using the 4:3 ratio because this is the closest to our models
-        preview =
-            Preview.Builder()
-                .setTargetAspectRatio(AspectRatio.RATIO_4_3)
-                .setTargetRotation(fragmentCameraBinding.viewFinder.display.rotation)
-                .build()
+        preview = Preview.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
+            .setTargetRotation(fragmentCameraBinding.viewFinder.display.rotation)
+            .build()
 
         imageAnalyzer =
-            ImageAnalysis.Builder()
-                .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+            ImageAnalysis.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
                 .setTargetRotation(fragmentCameraBinding.viewFinder.display.rotation)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
@@ -303,10 +310,7 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
             // A variable number of use-cases can be passed here -
             // camera provides access to CameraControl & CameraInfo
             camera = cameraProvider.bindToLifecycle(
-                this,
-                cameraSelector,
-                preview,
-                imageAnalyzer
+                this, cameraSelector, preview, imageAnalyzer
             )
 
             // Attach the viewfinder's surface provider to preview use case
@@ -325,8 +329,7 @@ class CameraFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
 
             if (errorCode == ImageClassifierHelper.GPU_ERROR) {
                 fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(
-                    ImageClassifierHelper.DELEGATE_CPU,
-                    false
+                    ImageClassifierHelper.DELEGATE_CPU, false
                 )
             }
         }

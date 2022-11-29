@@ -15,6 +15,7 @@
  */
 package com.google.mediapipe.examples.imageclassification.fragments
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
@@ -30,8 +31,10 @@ import android.widget.AdapterView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.mediapipe.examples.imageclassification.ImageClassifierHelper
+import com.google.mediapipe.examples.imageclassification.MainViewModel
 import com.google.mediapipe.examples.imageclassification.databinding.FragmentGalleryBinding
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import java.util.concurrent.Executors
@@ -46,20 +49,16 @@ class GalleryFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
     private var _fragmentGalleryBinding: FragmentGalleryBinding? = null
     private val fragmentGalleryBinding
         get() = _fragmentGalleryBinding!!
+    private val viewModel: MainViewModel by activityViewModels()
     private lateinit var imageClassifierHelper: ImageClassifierHelper
     private val classificationResultsAdapter by lazy {
         ClassificationResultsAdapter().apply {
-            updateAdapterSize(ImageClassifierHelper.MAX_RESULTS_DEFAULT)
+            updateAdapterSize(viewModel.currentMaxResults)
         }
     }
 
     /** Blocking ML operations are performed using this executor */
     private lateinit var backgroundExecutor: ScheduledExecutorService
-
-    private var maxResults = ImageClassifierHelper.MAX_RESULTS_DEFAULT
-    private var threshold = ImageClassifierHelper.THRESHOLD_DEFAULT
-    private var currentDelegate = ImageClassifierHelper.DELEGATE_CPU
-    private var currentModel = ImageClassifierHelper.MODEL_EFFICIENTNETV0
 
     private val getContent =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
@@ -109,16 +108,16 @@ class GalleryFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
         updateControlsUi()
         // When clicked, lower classification score threshold floor
         fragmentGalleryBinding.bottomSheetLayout.thresholdMinus.setOnClickListener {
-            if (threshold >= 0.2) {
-                threshold -= 0.1f
+            if (viewModel.currentThreshold >= 0.2) {
+                viewModel.setThreshold(viewModel.currentThreshold - 0.1f)
                 updateControlsUi()
             }
         }
 
         // When clicked, raise classification score threshold floor
         fragmentGalleryBinding.bottomSheetLayout.thresholdPlus.setOnClickListener {
-            if (threshold <= 0.8) {
-                threshold += 0.1f
+            if (viewModel.currentThreshold <= 0.8) {
+                viewModel.setThreshold(viewModel.currentThreshold + 0.1f)
                 updateControlsUi()
             }
         }
@@ -126,8 +125,8 @@ class GalleryFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
         // When clicked, reduce the number of objects that can be classified
         // at a time
         fragmentGalleryBinding.bottomSheetLayout.maxResultsMinus.setOnClickListener {
-            if (maxResults > 1) {
-                maxResults--
+            if (viewModel.currentMaxResults > 1) {
+                viewModel.setMaxResults(viewModel.currentMaxResults - 1)
                 updateControlsUi()
             }
         }
@@ -135,8 +134,8 @@ class GalleryFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
         // When clicked, increase the number of objects that can be
         // classified at a time
         fragmentGalleryBinding.bottomSheetLayout.maxResultsPlus.setOnClickListener {
-            if (maxResults < 3) {
-                maxResults++
+            if (viewModel.currentMaxResults < 3) {
+                viewModel.setMaxResults(viewModel.currentMaxResults + 1)
                 updateControlsUi()
             }
         }
@@ -144,7 +143,7 @@ class GalleryFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
         // When clicked, change the underlying hardware used for inference. Current options are CPU
         // GPU, and NNAPI
         fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.setSelection(
-            0, false
+            viewModel.currentDelegate, false
         )
         fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
@@ -152,7 +151,7 @@ class GalleryFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
                     p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long
                 ) {
 
-                    currentDelegate = p2
+                    viewModel.setDelegate(p2)
                     updateControlsUi()
                 }
 
@@ -164,14 +163,14 @@ class GalleryFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
         // When clicked, change the underlying model used for image
         // classification
         fragmentGalleryBinding.bottomSheetLayout.spinnerModel.setSelection(
-            0, false
+            viewModel.currentModel, false
         )
         fragmentGalleryBinding.bottomSheetLayout.spinnerModel.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
                     p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long
                 ) {
-                    currentModel = p2
+                    viewModel.setModel(p2)
                     updateControlsUi()
                 }
 
@@ -182,18 +181,19 @@ class GalleryFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
     }
 
     // Update the values displayed in the bottom sheet. Reset classifier.
+    @SuppressLint("NotifyDataSetChanged")
     private fun updateControlsUi() {
         if (fragmentGalleryBinding.videoView.isPlaying) {
             fragmentGalleryBinding.videoView.stopPlayback()
-            fragmentGalleryBinding.videoView.visibility = View.GONE
         }
+        fragmentGalleryBinding.videoView.visibility = View.GONE
         fragmentGalleryBinding.imageResult.visibility = View.GONE
         fragmentGalleryBinding.bottomSheetLayout.maxResultsValue.text =
-            maxResults.toString()
+            viewModel.currentMaxResults.toString()
         fragmentGalleryBinding.bottomSheetLayout.thresholdValue.text =
-            String.format("%.2f", threshold)
+            String.format("%.2f", viewModel.currentThreshold)
         fragmentGalleryBinding.tvPlaceholder.visibility = View.VISIBLE
-        classificationResultsAdapter.updateAdapterSize(maxResults)
+        classificationResultsAdapter.updateAdapterSize(viewModel.currentMaxResults)
         classificationResultsAdapter.updateResults(null)
         classificationResultsAdapter.notifyDataSetChanged()
     }
@@ -221,10 +221,10 @@ class GalleryFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
                 imageClassifierHelper = ImageClassifierHelper(
                     context = requireContext(),
                     runningMode = RunningMode.IMAGE,
-                    currentModel = currentModel,
-                    currentDelegate = currentDelegate,
-                    maxResults = maxResults,
-                    threshold = threshold,
+                    currentModel = viewModel.currentModel,
+                    currentDelegate = viewModel.currentDelegate,
+                    maxResults = viewModel.currentMaxResults,
+                    threshold = viewModel.currentThreshold,
                     imageClassifierListener = this
                 )
                 imageClassifierHelper.classifyImage(bitmap)
@@ -249,6 +249,7 @@ class GalleryFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
         }
     }
 
+    // Load and display the video.
     private fun runClassificationOnVideo(uri: Uri) {
         setUiEnabled(false)
         updateDisplayView(MediaType.VIDEO)
@@ -271,10 +272,10 @@ class GalleryFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
             imageClassifierHelper = ImageClassifierHelper(
                 context = requireContext(),
                 runningMode = RunningMode.VIDEO,
-                currentModel = currentModel,
-                currentDelegate = currentDelegate,
-                maxResults = maxResults,
-                threshold = threshold,
+                currentModel = viewModel.currentModel,
+                currentDelegate = viewModel.currentDelegate,
+                maxResults = viewModel.currentMaxResults,
+                threshold = viewModel.currentThreshold,
                 imageClassifierListener = this
             )
 
@@ -309,7 +310,6 @@ class GalleryFragment : Fragment(), ImageClassifierHelper.ClassifierListener {
                         videoElapsedTimeMs.div(VIDEO_INTERVAL_MS).toInt()
 
                     if (resultIndex >= result.results.size || fragmentGalleryBinding.videoView.visibility == View.GONE) {
-                        // The video playback has finished so we stop drawing bounding boxes
                         setUiEnabled(true)
                         backgroundExecutor.shutdown()
                     } else {
