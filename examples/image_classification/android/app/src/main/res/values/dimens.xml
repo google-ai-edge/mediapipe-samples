@@ -30,4 +30,5 @@
     <dimen name="bottom_sheet_spinner_model_min_width">240dp</dimen>
 
     <integer name="bottom_sheet_control_text_min_ems">3</integer>
+    <dimen name="fab_margin">16dp</dimen>
 </resources>

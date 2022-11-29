@@ -32,15 +32,14 @@ class ClassificationResultsAdapter :
     private var categories: MutableList<Category?> = mutableListOf()
     private var adapterSize: Int = 0
 
-    fun updateResults(listClassifications: List<ImageClassifierResult>?) {
+    fun updateResults(imageClassifierResult: ImageClassifierResult? = null) {
         categories = MutableList(adapterSize) { null }
-        listClassifications?.let { it ->
-            if (it.isNotEmpty()) {
-                val sortedCategories = it[0].classificationResult().classifications()[0].categories().sortedBy { it.index() }
-                val min = kotlin.math.min(sortedCategories.size, categories.size)
-                for (i in 0 until min) {
-                    categories[i] = sortedCategories[i]
-                }
+        if (imageClassifierResult != null) {
+            val sortedCategories = imageClassifierResult.classificationResult()
+                .classifications()[0].categories().sortedBy { it.index() }
+            val min = kotlin.math.min(sortedCategories.size, categories.size)
+            for (i in 0 until min) {
+                categories[i] = sortedCategories[i]
             }
         }
     }
@@ -49,7 +48,10 @@ class ClassificationResultsAdapter :
         adapterSize = size
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): ViewHolder {
         val binding = ItemClassificationResultBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
@@ -72,7 +74,10 @@ class ClassificationResultsAdapter :
         fun bind(label: String?, score: Float?) {
             with(binding) {
                 tvLabel.text = label ?: NO_VALUE
-                tvScore.text = if (score != null) String.format("%.2f", score) else NO_VALUE
+                tvScore.text = if (score != null) String.format(
+                    "%.2f",
+                    score
+                ) else NO_VALUE
             }
         }
     }
