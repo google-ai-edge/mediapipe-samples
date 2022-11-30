@@ -83,15 +83,18 @@ class CameraFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
     }
 
     override fun onPause() {
-        // save ObjectDetector settings
-        viewModel.setModel(objectDetectorHelper.currentModel)
-        viewModel.setDelegate(objectDetectorHelper.currentDelegate)
-        viewModel.setThreshold(objectDetectorHelper.threshold)
-        viewModel.setMaxResults(objectDetectorHelper.maxResults)
         super.onPause()
 
-        // Close the object detector and release resources
-        backgroundExecutor.execute { objectDetectorHelper.clearObjectDetector() }
+        // save ObjectDetector settings
+        if(this::objectDetectorHelper.isInitialized) {
+            viewModel.setModel(objectDetectorHelper.currentModel)
+            viewModel.setDelegate(objectDetectorHelper.currentDelegate)
+            viewModel.setThreshold(objectDetectorHelper.threshold)
+            viewModel.setMaxResults(objectDetectorHelper.maxResults)
+            // Close the object detector and release resources
+            backgroundExecutor.execute { objectDetectorHelper.clearObjectDetector() }
+        }
+
     }
 
     override fun onDestroyView() {

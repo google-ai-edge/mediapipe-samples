@@ -79,7 +79,6 @@ class ObjectDetectorHelper(
             when (currentModel) {
                 MODEL_EFFICIENTDETV0 -> "efficientdet-lite0.tflite"
                 MODEL_EFFICIENTDETV2 -> "efficientdet-lite2.tflite"
-                MODEL_MOBILENETV2 -> "mobilenetv2.tflite"
                 else -> "efficientdet-lite0.tflite"
             }
 
@@ -362,7 +361,6 @@ class ObjectDetectorHelper(
         const val DELEGATE_GPU = 1
         const val MODEL_EFFICIENTDETV0 = 0
         const val MODEL_EFFICIENTDETV2 = 1
-        const val MODEL_MOBILENETV2 = 2
         const val MAX_RESULTS_DEFAULT = 3
         const val THRESHOLD_DEFAULT = 0.5F
         const val OTHER_ERROR = 0

@@ -26,10 +26,4 @@ task downloadModelFile1(type: Download) {
     overwrite false
 }
 
-task downloadModelFile2(type: Download) {
-    src 'https://storage.cloud.google.com/tf_model_garden/vision/qat/mobilenetv2_ssd_coco/mobilenetv2_ssd_256_uint8.tflite'
-    dest project.ext.ASSET_DIR + '/mobilenetv2.tflite'
-    overwrite false
-}
-
-preBuild.dependsOn downloadModelFile0, downloadModelFile1, downloadModelFile2
+preBuild.dependsOn downloadModelFile0, downloadModelFile1
