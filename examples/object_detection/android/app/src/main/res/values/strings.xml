@@ -27,14 +27,11 @@
         results button</string>
     <string name="alt_bottom_sheet_threshold_button_plus">Increasing threshold of detected object
         results button</string>
-    <string name="alt_bottom_sheet_thread_button_minus">Decrease the number of threads used</string>
-    <string name="alt_bottom_sheet_thread_button_plus">Increase the number of threads used</string>
 
-    <string name="label_interence_time">Inference Time</string>
+    <string name="label_inference_time">Inference Time</string>
     <string name="label_fps">Frames per Second</string>
     <string name="label_confidence_threshold">Threshold</string>
     <string name="label_max_results">Max Results</string>
-    <string name="label_threads">Number of Threads</string>
     <string name="label_delegate">Delegate</string>
     <string name="label_models">ML Model</string>
     <string name="menu_camera">Camera</string>
