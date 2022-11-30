@@ -19,7 +19,7 @@
     <dimen name="round_button_medium">64dp</dimen>
 
     <!-- Bottom Sheet -->
-    <dimen name="bottom_sheet_text_size">20sp</dimen>
+    <dimen name="bottom_sheet_text_size">18sp</dimen>
     <dimen name="bottom_sheet_padding">16dp</dimen>
     <dimen name="bottom_sheet_peek_height">50dp</dimen>
     <dimen name="bottom_sheet_default_row_margin">16dp</dimen>

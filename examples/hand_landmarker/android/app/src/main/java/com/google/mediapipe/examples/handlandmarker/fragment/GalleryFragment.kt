@@ -109,23 +109,71 @@ class GalleryFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
         // init bottom sheet settings
         fragmentGalleryBinding.bottomSheetLayout.maxHandsValue.text =
             viewModel.currentMaxHands.toString()
-        fragmentGalleryBinding.bottomSheetLayout.thresholdValue.text =
+        fragmentGalleryBinding.bottomSheetLayout.detectionThresholdValue.text =
             String.format(
-                Locale.US, "%.2f", viewModel.currentMinConfidence
+                Locale.US, "%.2f", viewModel.currentMinHandDetectionConfidence
+            )
+        fragmentGalleryBinding.bottomSheetLayout.trackingThresholdValue.text =
+            String.format(
+                Locale.US, "%.2f", viewModel.currentMinHandTrackingConfidence
+            )
+        fragmentGalleryBinding.bottomSheetLayout.presenceThresholdValue.text =
+            String.format(
+                Locale.US, "%.2f", viewModel.currentMinHandPresenceConfidence
             )
 
         // When clicked, lower detection score threshold floor
-        fragmentGalleryBinding.bottomSheetLayout.thresholdMinus.setOnClickListener {
-            if (viewModel.currentMinConfidence >= 0.2) {
-                viewModel.setMinConfidence(viewModel.currentMinConfidence - 0.1f)
+        fragmentGalleryBinding.bottomSheetLayout.detectionThresholdMinus.setOnClickListener {
+            if (viewModel.currentMinHandDetectionConfidence >= 0.2) {
+                viewModel.setMinHandDetectionConfidence(viewModel.currentMinHandDetectionConfidence - 0.1f)
                 updateControlsUi()
             }
         }
 
         // When clicked, raise detection score threshold floor
-        fragmentGalleryBinding.bottomSheetLayout.thresholdPlus.setOnClickListener {
-            if (viewModel.currentMinConfidence <= 0.8) {
-                viewModel.setMinConfidence(viewModel.currentMinConfidence + 0.1f)
+        fragmentGalleryBinding.bottomSheetLayout.detectionThresholdPlus.setOnClickListener {
+            if (viewModel.currentMinHandDetectionConfidence <= 0.8) {
+                viewModel.setMinHandDetectionConfidence(viewModel.currentMinHandDetectionConfidence + 0.1f)
+                updateControlsUi()
+            }
+        }
+
+        // When clicked, lower hand tracking score threshold floor
+        fragmentGalleryBinding.bottomSheetLayout.trackingThresholdMinus.setOnClickListener {
+            if (viewModel.currentMinHandTrackingConfidence >= 0.2) {
+                viewModel.setMinHandTrackingConfidence(
+                    viewModel.currentMinHandTrackingConfidence - 0.1f
+                )
+                updateControlsUi()
+            }
+        }
+
+        // When clicked, raise hand tracking score threshold floor
+        fragmentGalleryBinding.bottomSheetLayout.trackingThresholdPlus.setOnClickListener {
+            if (viewModel.currentMinHandTrackingConfidence <= 0.8) {
+                viewModel.setMinHandTrackingConfidence(
+                    viewModel.currentMinHandTrackingConfidence + 0.1f
+                )
+                updateControlsUi()
+            }
+        }
+
+        // When clicked, lower hand presence score threshold floor
+        fragmentGalleryBinding.bottomSheetLayout.presenceThresholdMinus.setOnClickListener {
+            if (viewModel.currentMinHandPresenceConfidence >= 0.2) {
+                viewModel.setMinHandPresenceConfidence(
+                    viewModel.currentMinHandPresenceConfidence - 0.1f
+                )
+                updateControlsUi()
+            }
+        }
+
+        // When clicked, raise hand presence score threshold floor
+        fragmentGalleryBinding.bottomSheetLayout.presenceThresholdPlus.setOnClickListener {
+            if (viewModel.currentMinHandPresenceConfidence <= 0.8) {
+                viewModel.setMinHandPresenceConfidence(
+                    viewModel.currentMinHandPresenceConfidence + 0.1f
+                )
                 updateControlsUi()
             }
         }
@@ -181,8 +229,18 @@ class GalleryFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
         fragmentGalleryBinding.overlay.clear()
         fragmentGalleryBinding.bottomSheetLayout.maxHandsValue.text =
             viewModel.currentMaxHands.toString()
-        fragmentGalleryBinding.bottomSheetLayout.thresholdValue.text =
-            String.format("%.2f", viewModel.currentMinConfidence)
+        fragmentGalleryBinding.bottomSheetLayout.detectionThresholdValue.text =
+            String.format(
+                Locale.US, "%.2f", viewModel.currentMinHandDetectionConfidence
+            )
+        fragmentGalleryBinding.bottomSheetLayout.trackingThresholdValue.text =
+            String.format(
+                Locale.US, "%.2f", viewModel.currentMinHandTrackingConfidence
+            )
+        fragmentGalleryBinding.bottomSheetLayout.presenceThresholdValue.text =
+            String.format(
+                Locale.US, "%.2f", viewModel.currentMinHandPresenceConfidence
+            )
 
         fragmentGalleryBinding.overlay.clear()
         fragmentGalleryBinding.tvPlaceholder.visibility = View.VISIBLE
@@ -216,7 +274,9 @@ class GalleryFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
                         HandLandmarkerHelper(
                             context = requireContext(),
                             runningMode = RunningMode.IMAGE,
-                            minConfidence = viewModel.currentMinConfidence,
+                            minHandDetectionConfidence = viewModel.currentMinHandDetectionConfidence,
+                            minHandTrackingConfidence = viewModel.currentMinHandTrackingConfidence,
+                            minHandPresenceConfidence = viewModel.currentMinHandPresenceConfidence,
                             maxNumHands = viewModel.currentMaxHands,
                             currentDelegate = viewModel.currentDelegate
                         )
@@ -259,7 +319,9 @@ class GalleryFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
                 HandLandmarkerHelper(
                     context = requireContext(),
                     runningMode = RunningMode.VIDEO,
-                    minConfidence = viewModel.currentMinConfidence,
+                    minHandDetectionConfidence = viewModel.currentMinHandDetectionConfidence,
+                    minHandTrackingConfidence = viewModel.currentMinHandTrackingConfidence,
+                    minHandPresenceConfidence = viewModel.currentMinHandPresenceConfidence,
                     maxNumHands = viewModel.currentMaxHands,
                     currentDelegate = viewModel.currentDelegate
                 )
@@ -342,9 +404,17 @@ class GalleryFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
 
     private fun setUiEnabled(enabled: Boolean) {
         fragmentGalleryBinding.fabGetContent.isEnabled = enabled
-        fragmentGalleryBinding.bottomSheetLayout.thresholdMinus.isEnabled =
+        fragmentGalleryBinding.bottomSheetLayout.detectionThresholdMinus.isEnabled =
             enabled
-        fragmentGalleryBinding.bottomSheetLayout.thresholdPlus.isEnabled =
+        fragmentGalleryBinding.bottomSheetLayout.detectionThresholdPlus.isEnabled =
+            enabled
+        fragmentGalleryBinding.bottomSheetLayout.trackingThresholdMinus.isEnabled =
+            enabled
+        fragmentGalleryBinding.bottomSheetLayout.trackingThresholdPlus.isEnabled =
+            enabled
+        fragmentGalleryBinding.bottomSheetLayout.presenceThresholdMinus.isEnabled =
+            enabled
+        fragmentGalleryBinding.bottomSheetLayout.presenceThresholdPlus.isEnabled =
             enabled
         fragmentGalleryBinding.bottomSheetLayout.maxHandsPlus.isEnabled =
             enabled

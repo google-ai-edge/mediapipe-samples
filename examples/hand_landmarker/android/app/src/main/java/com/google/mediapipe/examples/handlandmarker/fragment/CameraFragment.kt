@@ -88,7 +88,9 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
 
     override fun onPause() {
         viewModel.setMaxHands(handLandmarkerHelper.maxNumHands)
-        viewModel.setMinConfidence(handLandmarkerHelper.minConfidence)
+        viewModel.setMinHandDetectionConfidence(handLandmarkerHelper.minHandDetectionConfidence)
+        viewModel.setMinHandTrackingConfidence(handLandmarkerHelper.minHandTrackingConfidence)
+        viewModel.setMinHandPresenceConfidence(handLandmarkerHelper.minHandPresenceConfidence)
         viewModel.setDelegate(handLandmarkerHelper.currentDelegate)
         super.onPause()
 
@@ -136,7 +138,9 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
             handLandmarkerHelper = HandLandmarkerHelper(
                 context = requireContext(),
                 runningMode = RunningMode.LIVE_STREAM,
-                minConfidence = viewModel.currentMinConfidence,
+                minHandDetectionConfidence = viewModel.currentMinHandDetectionConfidence,
+                minHandTrackingConfidence = viewModel.currentMinHandTrackingConfidence,
+                minHandPresenceConfidence = viewModel.currentMinHandPresenceConfidence,
                 maxNumHands = viewModel.currentMaxHands,
                 currentDelegate = viewModel.currentDelegate,
                 handLandmarkerHelperListener = this
@@ -151,23 +155,63 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
         // init bottom sheet settings
         fragmentCameraBinding.bottomSheetLayout.maxHandsValue.text =
             viewModel.currentMaxHands.toString()
-        fragmentCameraBinding.bottomSheetLayout.thresholdValue.text =
+        fragmentCameraBinding.bottomSheetLayout.detectionThresholdValue.text =
             String.format(
-                Locale.US, "%.2f", viewModel.currentMinConfidence
+                Locale.US, "%.2f", viewModel.currentMinHandDetectionConfidence
+            )
+        fragmentCameraBinding.bottomSheetLayout.trackingThresholdValue.text =
+            String.format(
+                Locale.US, "%.2f", viewModel.currentMinHandTrackingConfidence
+            )
+        fragmentCameraBinding.bottomSheetLayout.presenceThresholdValue.text =
+            String.format(
+                Locale.US, "%.2f", viewModel.currentMinHandPresenceConfidence
             )
 
-        // When clicked, lower detection score threshold floor
-        fragmentCameraBinding.bottomSheetLayout.thresholdMinus.setOnClickListener {
-            if (handLandmarkerHelper.minConfidence >= 0.2) {
-                handLandmarkerHelper.minConfidence -= 0.1f
+        // When clicked, lower hand detection score threshold floor
+        fragmentCameraBinding.bottomSheetLayout.detectionThresholdMinus.setOnClickListener {
+            if (handLandmarkerHelper.minHandDetectionConfidence >= 0.2) {
+                handLandmarkerHelper.minHandDetectionConfidence -= 0.1f
                 updateControlsUi()
             }
         }
 
-        // When clicked, raise detection score threshold floor
-        fragmentCameraBinding.bottomSheetLayout.thresholdPlus.setOnClickListener {
-            if (handLandmarkerHelper.minConfidence <= 0.8) {
-                handLandmarkerHelper.minConfidence += 0.1f
+        // When clicked, raise hand detection score threshold floor
+        fragmentCameraBinding.bottomSheetLayout.detectionThresholdPlus.setOnClickListener {
+            if (handLandmarkerHelper.minHandDetectionConfidence <= 0.8) {
+                handLandmarkerHelper.minHandDetectionConfidence += 0.1f
+                updateControlsUi()
+            }
+        }
+
+        // When clicked, lower hand tracking score threshold floor
+        fragmentCameraBinding.bottomSheetLayout.trackingThresholdMinus.setOnClickListener {
+            if (handLandmarkerHelper.minHandTrackingConfidence >= 0.2) {
+                handLandmarkerHelper.minHandTrackingConfidence -= 0.1f
+                updateControlsUi()
+            }
+        }
+
+        // When clicked, raise hand tracking score threshold floor
+        fragmentCameraBinding.bottomSheetLayout.trackingThresholdPlus.setOnClickListener {
+            if (handLandmarkerHelper.minHandTrackingConfidence <= 0.8) {
+                handLandmarkerHelper.minHandTrackingConfidence += 0.1f
+                updateControlsUi()
+            }
+        }
+
+        // When clicked, lower hand presence score threshold floor
+        fragmentCameraBinding.bottomSheetLayout.presenceThresholdMinus.setOnClickListener {
+            if (handLandmarkerHelper.minHandPresenceConfidence >= 0.2) {
+                handLandmarkerHelper.minHandPresenceConfidence -= 0.1f
+                updateControlsUi()
+            }
+        }
+
+        // When clicked, raise hand presence score threshold floor
+        fragmentCameraBinding.bottomSheetLayout.presenceThresholdPlus.setOnClickListener {
+            if (handLandmarkerHelper.minHandPresenceConfidence <= 0.8) {
+                handLandmarkerHelper.minHandPresenceConfidence += 0.1f
                 updateControlsUi()
             }
         }
@@ -215,9 +259,23 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
     private fun updateControlsUi() {
         fragmentCameraBinding.bottomSheetLayout.maxHandsValue.text =
             handLandmarkerHelper.maxNumHands.toString()
-        fragmentCameraBinding.bottomSheetLayout.thresholdValue.text =
+        fragmentCameraBinding.bottomSheetLayout.detectionThresholdValue.text =
             String.format(
-                Locale.US, "%.2f", handLandmarkerHelper.minConfidence
+                Locale.US,
+                "%.2f",
+                handLandmarkerHelper.minHandDetectionConfidence
+            )
+        fragmentCameraBinding.bottomSheetLayout.trackingThresholdValue.text =
+            String.format(
+                Locale.US,
+                "%.2f",
+                handLandmarkerHelper.minHandTrackingConfidence
+            )
+        fragmentCameraBinding.bottomSheetLayout.presenceThresholdValue.text =
+            String.format(
+                Locale.US,
+                "%.2f",
+                handLandmarkerHelper.minHandPresenceConfidence
             )
 
         // Needs to be cleared instead of reinitialized because the GPU

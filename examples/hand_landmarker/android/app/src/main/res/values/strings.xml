@@ -36,7 +36,12 @@
 
     <string name="label_inference_time">Inference Time</string>
     <string name="label_fps">Frames per Second</string>
-    <string name="label_confidence_threshold">Threshold</string>
+    <string name="label_hand_detection_confidence_threshold">Detection
+        Threshold</string>
+    <string name="label_hand_tracking_confidence_threshold">Tracking
+        Threshold</string>
+    <string name="label_hand_presence_confidence_threshold">Presence
+        Threshold</string>
     <string name="label_num_hands">Number of Hands</string>
     <string name="label_delegate">Delegate</string>
 

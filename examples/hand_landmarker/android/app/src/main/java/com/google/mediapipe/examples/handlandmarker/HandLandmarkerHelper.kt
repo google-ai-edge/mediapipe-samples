@@ -33,7 +33,9 @@ import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarker
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarkerResult
 
 class HandLandmarkerHelper(
-    var minConfidence: Float = DEFAULT_THRESHOLD,
+    var minHandDetectionConfidence: Float = DEFAULT_HAND_DETECTION_CONFIDENCE,
+    var minHandTrackingConfidence: Float = DEFAULT_HAND_TRACKING_CONFIDENCE,
+    var minHandPresenceConfidence: Float = DEFAULT_HAND_PRESENCE_CONFIDENCE,
     var maxNumHands: Int = DEFAULT_NUM_HANDS,
     var currentDelegate: Int = DELEGATE_CPU,
     var runningMode: RunningMode = RunningMode.IMAGE,
@@ -102,7 +104,9 @@ class HandLandmarkerHelper(
             val optionsBuilder =
                 HandLandmarker.HandLandmarkerOptions.builder()
                     .setBaseOptions(baseOptions)
-                    .setMinHandDetectionConfidence(minConfidence)
+                    .setMinHandDetectionConfidence(minHandDetectionConfidence)
+                    .setMinTrackingConfidence(minHandTrackingConfidence)
+                    .setMinHandPresenceConfidence(minHandPresenceConfidence)
                     .setNumHands(maxNumHands)
                     .setRunningMode(runningMode)
 
@@ -355,7 +359,9 @@ class HandLandmarkerHelper(
 
         const val DELEGATE_CPU = 0
         const val DELEGATE_GPU = 1
-        const val DEFAULT_THRESHOLD = 0.5F
+        const val DEFAULT_HAND_DETECTION_CONFIDENCE = 0.5F
+        const val DEFAULT_HAND_TRACKING_CONFIDENCE = 0.5F
+        const val DEFAULT_HAND_PRESENCE_CONFIDENCE = 0.5F
         const val DEFAULT_NUM_HANDS = 1
         const val OTHER_ERROR = 0
         const val GPU_ERROR = 1
