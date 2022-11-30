@@ -88,7 +88,7 @@ class ObjectDetectorTest {
             runningMode = RunningMode.LIVE_STREAM,
             objectDetectorListener =
             object : ObjectDetectorHelper.DetectorListener {
-                override fun onError(error: String) {
+                override fun onError(error: String, errorCode: Int) {
                     println(error)
 
                     // Release the lock
@@ -97,8 +97,8 @@ class ObjectDetectorTest {
                     }
                 }
 
-                override fun onResults(result: ObjectDetectorHelper.ResultBundle) {
-                    detectionResult = result.results.first()
+                override fun onResults(resultBundle: ObjectDetectorHelper.ResultBundle) {
+                    detectionResult = resultBundle.results.first()
 
                     // Release the lock and start verifying the result
                     lock.withLock {
