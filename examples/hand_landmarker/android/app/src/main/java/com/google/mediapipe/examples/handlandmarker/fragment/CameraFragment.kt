@@ -87,15 +87,17 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
     }
 
     override fun onPause() {
-        viewModel.setMaxHands(handLandmarkerHelper.maxNumHands)
-        viewModel.setMinHandDetectionConfidence(handLandmarkerHelper.minHandDetectionConfidence)
-        viewModel.setMinHandTrackingConfidence(handLandmarkerHelper.minHandTrackingConfidence)
-        viewModel.setMinHandPresenceConfidence(handLandmarkerHelper.minHandPresenceConfidence)
-        viewModel.setDelegate(handLandmarkerHelper.currentDelegate)
         super.onPause()
+        if(this::handLandmarkerHelper.isInitialized) {
+            viewModel.setMaxHands(handLandmarkerHelper.maxNumHands)
+            viewModel.setMinHandDetectionConfidence(handLandmarkerHelper.minHandDetectionConfidence)
+            viewModel.setMinHandTrackingConfidence(handLandmarkerHelper.minHandTrackingConfidence)
+            viewModel.setMinHandPresenceConfidence(handLandmarkerHelper.minHandPresenceConfidence)
+            viewModel.setDelegate(handLandmarkerHelper.currentDelegate)
 
-        // Close the HandLandmarkerHelper and release resources
-        backgroundExecutor.execute { handLandmarkerHelper.clearHandLandmarker() }
+            // Close the HandLandmarkerHelper and release resources
+            backgroundExecutor.execute { handLandmarkerHelper.clearHandLandmarker() }
+        }
     }
 
     override fun onDestroyView() {
