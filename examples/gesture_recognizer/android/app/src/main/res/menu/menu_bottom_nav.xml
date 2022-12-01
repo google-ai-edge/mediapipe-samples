@@ -14,12 +14,14 @@
     ~ See the License for the specific language governing permissions and
     ~ limitations under the License.
 -->
-<resources>
-    <style name="BottomSheetSpinnerItemStyle" parent="Widget.AppCompat.Light.DropDownItem.Spinner">
-        <item name="android:textSize">@dimen/bottom_sheet_text_size</item>
-    </style>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@id/camera_fragment"
+        android:icon="@drawable/ic_baseline_photo_camera_24"
+        android:title="@string/menu_camera" />
 
-    <style name="AppThemeProgressStyle">
-        <item name="colorAccent">@color/mp_color_primary_variant</item>
-    </style>
-</resources>
+    <item
+        android:id="@id/gallery_fragment"
+        android:icon="@drawable/ic_baseline_photo_library_24"
+        android:title="@string/menu_gallery" />
+</menu>
