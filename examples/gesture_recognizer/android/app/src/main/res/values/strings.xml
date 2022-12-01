@@ -31,10 +31,19 @@
         threshold of recognized hand gesture results button</string>
     <string name="alt_bottom_sheet_thread_button_minus">Decrease the number of threads used</string>
     <string name="alt_bottom_sheet_thread_button_plus">Increase the number of threads used</string>
+    <string name="menu_camera">Camera</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="tv_gallery_placeholder">Click + to add an image or a video
+        to begin running the gesture recognizer.</string>
 
     <string name="label_inference_time">Inference Time</string>
     <string name="label_fps">Frames per Second</string>
-    <string name="label_confidence_threshold">Threshold</string>
+    <string name="label_hand_detection_confidence_threshold">Detection
+        Threshold</string>
+    <string name="label_hand_tracking_confidence_threshold">Tracking
+        Threshold</string>
+    <string name="label_hand_presence_confidence_threshold">Presence
+        Threshold</string>
     <string name="label_delegate">Delegate</string>
 
     <string-array name="delegate_spinner_titles">

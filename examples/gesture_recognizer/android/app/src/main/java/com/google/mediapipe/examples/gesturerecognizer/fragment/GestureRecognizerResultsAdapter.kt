@@ -24,8 +24,8 @@ import com.google.mediapipe.tasks.components.containers.Category
 import java.util.Locale
 import kotlin.math.min
 
-class GestureRcognizerResultsAdapter :
-    RecyclerView.Adapter<GestureRcognizerResultsAdapter.ViewHolder>() {
+class GestureRecognizerResultsAdapter :
+    RecyclerView.Adapter<GestureRecognizerResultsAdapter.ViewHolder>() {
     companion object {
         private const val NO_VALUE = "--"
     }
@@ -34,15 +34,17 @@ class GestureRcognizerResultsAdapter :
     private var adapterSize: Int = 0
 
     @SuppressLint("NotifyDataSetChanged")
-    fun updateResults(categories: List<Category>) {
+    fun updateResults(categories: List<Category>?) {
         adapterCategories = MutableList(adapterSize) { null }
-        val sortedCategories = categories.sortedByDescending { it.score() }
-        val min = min(sortedCategories.size, adapterCategories.size)
-        for (i in 0 until min) {
-            adapterCategories[i] = sortedCategories[i]
+        if (categories != null) {
+            val sortedCategories = categories.sortedByDescending { it.score() }
+            val min = min(sortedCategories.size, adapterCategories.size)
+            for (i in 0 until min) {
+                adapterCategories[i] = sortedCategories[i]
+            }
+            adapterCategories.sortedBy { it?.index() }
+            notifyDataSetChanged()
         }
-        adapterCategories.sortedBy { it?.index() }
-        notifyDataSetChanged()
     }
 
     fun updateAdapterSize(size: Int) {
