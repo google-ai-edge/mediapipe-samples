@@ -268,17 +268,26 @@ class GalleryFragment : Fragment(),
                     gestureRecognizerHelper.recognizeImage(bitmap)
                         ?.let { resultBundle ->
                             activity?.runOnUiThread {
-                                fragmentGalleryBinding.overlay.setResults(
-                                    resultBundle.results[0],
-                                    bitmap.height,
-                                    bitmap.width,
-                                    RunningMode.IMAGE
-                                )
 
-                                gestureRecognizerResultsAdapter.updateResults(
-                                    resultBundle.results.first()
-                                        .gestures().first()
-                                )
+                                    fragmentGalleryBinding.overlay.setResults(
+                                        resultBundle.results[0],
+                                        bitmap.height,
+                                        bitmap.width,
+                                        RunningMode.IMAGE
+                                    )
+
+                                    // This will return an empty list if there are no gestures detected
+                                    if(!resultBundle.results.first().gestures().isEmpty()) {
+                                        gestureRecognizerResultsAdapter.updateResults(
+                                            resultBundle.results.first()
+                                                .gestures().first()
+                                        )
+                                    } else {
+                                        Toast.makeText(
+                                            context,
+                                            "Hands not detected",
+                                            Toast.LENGTH_SHORT).show()
+                                    }
 
                                 setUiEnabled(true)
                                 fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
