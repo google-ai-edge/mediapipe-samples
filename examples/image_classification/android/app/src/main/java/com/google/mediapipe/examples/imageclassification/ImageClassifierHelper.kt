@@ -70,11 +70,6 @@ class ImageClassifierHelper(
     // the GPU delegate needs to be used on the thread that initialized the
     // classifier
     fun setupImageClassifier() {
-        val classifierOptions = ClassifierOptions.builder()
-            .setMaxResults(maxResults)
-            .setScoreThreshold(threshold)
-            .build()
-
         val baseOptionsBuilder = BaseOptions.builder()
         when (currentDelegate) {
             DELEGATE_CPU -> {
@@ -112,7 +107,8 @@ class ImageClassifierHelper(
             val baseOptions = baseOptionsBuilder.build()
             val optionsBuilder =
                 ImageClassifier.ImageClassifierOptions.builder()
-                    .setClassifierOptions(classifierOptions)
+                    .setScoreThreshold(threshold)
+                    .setMaxResults(maxResults)
                     .setRunningMode(runningMode)
                     .setBaseOptions(baseOptions)
 
