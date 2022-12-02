@@ -9,6 +9,8 @@ The model files are downloaded by a Gradle script when you build and run the app
 
 This application should be run on a physical Android device to take advantage of the physical camera, though the gallery tab will enable you to use an emulator for opening locally stored files.
 
+![Object Detection Demo](object_detection.gif?raw=true "Object Detection Demo")
+
 ## Build the demo using Android Studio
 
 ### Prerequisites

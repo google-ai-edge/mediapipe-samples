@@ -10,6 +10,8 @@ The model files are downloaded by a Gradle script when you build and run the app
 
 This application should be run on a physical Android device to take advantage of the physical camera, though the gallery tab will enable you to use an emulator for opening locally stored files.
 
+![Image Classification Demo](imageclassifier.gif?raw=true "Image Classification Demo")
+
 ## Build the demo using Android Studio
 
 ### Prerequisites
