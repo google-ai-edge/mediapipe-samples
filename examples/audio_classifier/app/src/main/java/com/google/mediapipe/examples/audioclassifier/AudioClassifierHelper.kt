@@ -45,11 +45,11 @@ class AudioClassifierHelper(
     var listener: ClassifierListener? = null,
 ) {
 
-    private lateinit var recorder: AudioRecord
-    private lateinit var executor: ScheduledThreadPoolExecutor
+    private var recorder: AudioRecord? = null
+    private var executor: ScheduledThreadPoolExecutor? = null
     private var audioClassifier: AudioClassifier? = null
     private val classifyRunnable = Runnable {
-        classifyAudio(recorder)
+        recorder?.let { classifyAudioAsync(it) }
     }
 
     init {
@@ -91,23 +91,25 @@ class AudioClassifierHelper(
 
             if (runningMode == RunningMode.AUDIO_STREAM) {
                 optionsBuilder
-                    .setResultListener(this::onResult)
-                    .setErrorListener(this::onError)
+                    .setResultListener(this::streamAudioResultListener)
+                    .setErrorListener(this::streamAudioErrorListener)
             }
 
             val options = optionsBuilder.build()
 
             // Create the classifier and required supporting objects
-            audioClassifier = AudioClassifier.createFromOptions(context, options)
-            recorder = AudioRecord(
-                MediaRecorder.AudioSource.DEFAULT,
-                SAMPLING_RATE_IN_HZ,
-                CHANNEL_CONFIG,
-                AUDIO_FORMAT,
-                BUFFER_SIZE_IN_BYTES
-            )
-            startAudioClassification()
-
+            audioClassifier =
+                AudioClassifier.createFromOptions(context, options)
+            if (runningMode == RunningMode.AUDIO_STREAM) {
+                recorder = AudioRecord(
+                    MediaRecorder.AudioSource.DEFAULT,
+                    SAMPLING_RATE_IN_HZ,
+                    CHANNEL_CONFIG,
+                    AUDIO_FORMAT,
+                    BUFFER_SIZE_IN_BYTES.toInt()
+                )
+                startAudioClassification()
+            }
         } catch (e: IllegalStateException) {
             listener?.onError(
                 "Audio Classifier failed to initialize. See error logs for details"
@@ -127,12 +129,12 @@ class AudioClassifierHelper(
         }
     }
 
-    fun startAudioClassification() {
-        if (recorder.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
+    private fun startAudioClassification() {
+        if (recorder?.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
             return
         }
 
-        recorder.startRecording()
+        recorder?.startRecording()
         executor = ScheduledThreadPoolExecutor(1)
 
         // Each model will expect a specific audio recording length. This formula calculates that
@@ -144,7 +146,7 @@ class AudioClassifierHelper(
 
         val interval = (lengthInMilliSeconds * (1 - (overlap * 0.25))).toLong()
 
-        executor.scheduleAtFixedRate(
+        executor?.scheduleAtFixedRate(
             classifyRunnable,
             0,
             interval,
@@ -152,40 +154,47 @@ class AudioClassifierHelper(
         )
     }
 
-    private fun classifyAudio(audioRecord: AudioRecord) {
+    private fun classifyAudioAsync(audioRecord: AudioRecord) {
         val audioData = AudioData.create(
             AudioDataFormat.builder().setNumOfChannels(
                 AudioFormat.CHANNEL_IN_DEFAULT
             ).setSampleRate(SAMPLING_RATE_IN_HZ.toFloat()).build(),
-            REQUIRE_INPUT_BUFFER_SIZE
+            REQUIRE_INPUT_BUFFER_SIZE.toInt()
         )
         audioData.load(audioRecord)
         val inferenceTime = SystemClock.uptimeMillis()
+        Log.e("loge1", "$inferenceTime")
         audioClassifier?.classifyAsync(audioData, inferenceTime)
     }
 
+    fun classifyAudio(audioData: AudioData): AudioClassifierResult? {
+        return audioClassifier?.classify(audioData)
+    }
+
     fun stopAudioClassification() {
-        executor.shutdownNow()
+        executor?.shutdownNow()
         audioClassifier?.close()
         audioClassifier = null
-        recorder.stop()
+        recorder?.stop()
     }
 
     fun isClose(): Boolean {
         return audioClassifier == null
     }
 
-    private fun onResult(resultListener: AudioClassifierResult) {
+    private fun streamAudioResultListener(resultListener: AudioClassifierResult) {
         resultListener.classificationResult()?.get()
             ?.let { classificationResult ->
+                val finishTimeMs = SystemClock.uptimeMillis()
+                val inferenceTime = finishTimeMs - resultListener.timestampMs()
                 listener?.onResult(
                     classificationResult.classifications(),
-                    classificationResult.timestampMs().orElse(0)
+                    inferenceTime
                 )
             }
     }
 
-    private fun onError(e: RuntimeException) {
+    private fun streamAudioErrorListener(e: RuntimeException) {
         listener?.onError(e.message.toString())
     }
 
@@ -202,14 +211,15 @@ class AudioClassifierHelper(
         private const val CHANNEL_CONFIG: Int = AudioFormat.CHANNEL_IN_FRONT
         private const val AUDIO_FORMAT: Int = AudioFormat.ENCODING_PCM_FLOAT
         private const val BUFFER_SIZE_FACTOR: Int = 2
-        private const val REQUIRE_INPUT_BUFFER_SIZE = 15600
+        const val EXPECTED_INPUT_LENGTH = 0.975F
+        private const val REQUIRE_INPUT_BUFFER_SIZE =
+            SAMPLING_RATE_IN_HZ * EXPECTED_INPUT_LENGTH
 
         /**
          * Size of the buffer where the audio data is stored by Android
          */
         private const val BUFFER_SIZE_IN_BYTES =
-            REQUIRE_INPUT_BUFFER_SIZE * Float
-                .SIZE_BYTES * BUFFER_SIZE_FACTOR
+            REQUIRE_INPUT_BUFFER_SIZE * Float.SIZE_BYTES * BUFFER_SIZE_FACTOR
     }
 
     interface ClassifierListener {
