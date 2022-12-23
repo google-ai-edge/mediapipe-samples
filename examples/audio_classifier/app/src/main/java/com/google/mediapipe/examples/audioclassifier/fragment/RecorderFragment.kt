@@ -136,20 +136,6 @@ class RecorderFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
     }
 
     private fun initBottomSheetControls() {
-        // Allow the user to select between multiple supported audio models.
-        // The original location and documentation for these models is listed in
-        // the `download_model.gradle` file within this sample. You can also create your own
-        // audio model by following the documentation here:
-        // https://www.tensorflow.org/lite/models/modify/model_maker/speech_recognition
-        fragmentRecorderBinding.bottomSheetLayout.modelSelector.setOnCheckedChangeListener { _, checkedId ->
-            when (checkedId) {
-                R.id.yamnet -> {
-                    audioClassifierHelper.currentModel =
-                        AudioClassifierHelper.YAMNET_MODEL
-                    updateControlsUi()
-                }
-            }
-        }
 
         // Allow the user to change the amount of overlap used in classification. More overlap
         // can lead to more accurate resolves in classification.
@@ -231,11 +217,6 @@ class RecorderFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
             viewModel.currentThreshold.toString()
         fragmentRecorderBinding.bottomSheetLayout.resultsValue.text =
             viewModel.currentMaxResults.toString()
-        fragmentRecorderBinding.bottomSheetLayout.modelSelector.check(
-            fragmentRecorderBinding.bottomSheetLayout.modelSelector.getChildAt(
-                viewModel.currentModel
-            ).id
-        )
     }
 
     // Update the values displayed in the bottom sheet. Reset classifier.

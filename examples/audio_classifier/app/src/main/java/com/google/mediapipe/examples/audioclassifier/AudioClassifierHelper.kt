@@ -163,7 +163,6 @@ class AudioClassifierHelper(
         )
         audioData.load(audioRecord)
         val inferenceTime = SystemClock.uptimeMillis()
-        Log.e("loge1", "$inferenceTime")
         audioClassifier?.classifyAsync(audioData, inferenceTime)
     }
 
@@ -185,11 +184,12 @@ class AudioClassifierHelper(
     private fun streamAudioResultListener(resultListener: AudioClassifierResult) {
         resultListener.classificationResult()?.get()
             ?.let { classificationResult ->
-                val finishTimeMs = SystemClock.uptimeMillis()
-                val inferenceTime = finishTimeMs - resultListener.timestampMs()
+//                val inferenceTime =
+//                    resultListener.timestampMs() - resultListener.classificationResult()
+//                        .get().timestampMs().get()
                 listener?.onResult(
                     classificationResult.classifications(),
-                    inferenceTime
+                    0
                 )
             }
     }

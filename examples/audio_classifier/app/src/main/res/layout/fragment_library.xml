@@ -35,6 +35,7 @@
         <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/audioProgress"
             android:layout_width="match_parent"
+            android:visibility="invisible"
             android:layout_height="wrap_content"
             app:indicatorColor="@color/mp_color_primary"
             app:trackColor="@color/mp_color_secondary" />

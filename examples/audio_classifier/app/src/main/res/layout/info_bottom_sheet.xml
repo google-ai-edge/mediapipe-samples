@@ -75,20 +75,6 @@
                 android:textSize="@dimen/bottom_sheet_text_size" />
         </androidx.appcompat.widget.LinearLayoutCompat>
 
-        <RadioGroup
-            android:id="@+id/model_selector"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/bottom_sheet_default_row_margin">
-
-            <RadioButton
-                android:id="@+id/yamnet"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="YAMNET" />
-        </RadioGroup>
-
         <!-- Delegate selection row -->
         <RelativeLayout
             android:layout_width="match_parent"
