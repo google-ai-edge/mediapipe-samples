@@ -58,6 +58,7 @@ class LibraryFragment : Fragment() {
     private var audioClassifierHelper: AudioClassifierHelper? = null
     private lateinit var probabilitiesAdapter: ProbabilitiesAdapter
     private lateinit var backgroundExecutor: ExecutorService
+    private var progressExecutor: ScheduledThreadPoolExecutor? = null
     private var mediaPlayer: MediaPlayer? = null
 
     override fun onCreateView(
@@ -94,19 +95,44 @@ class LibraryFragment : Fragment() {
         initBottomSheetControls()
     }
 
+    override fun onPause() {
+        super.onPause()
+        stopProgress()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        backgroundExecutor.shutdownNow()
+        audioClassifierHelper?.stopAudioClassification()
+    }
+
+    private fun stopProgress() {
+        // stop audio when it in background
+        mediaPlayer?.pause()
+        mediaPlayer?.stop()
+        mediaPlayer = null
+        progressExecutor?.shutdownNow()
+        setUiEnabled(true)
+    }
+
     private fun startPickupAudio() {
         getContent.launch("audio/*")
     }
 
     private fun runAudioClassification(uri: Uri) {
-        fragmentLibraryBinding.audioProgress.visibility = View.INVISIBLE
-        fragmentLibraryBinding.classifierProgress.visibility = View.VISIBLE
+        with(fragmentLibraryBinding) {
+            audioProgress.visibility = View.INVISIBLE
+            audioProgress.progress = 0
+            classifierProgress.visibility = View.VISIBLE
+        }
         setUiEnabled(false)
-        fragmentLibraryBinding.audioProgress.progress = 0
 
+        // load the audio from uri
         val inputStream = requireContext().contentResolver.openInputStream(uri)
         val targetArray = inputStream?.available()?.let { ByteArray(it) }
         inputStream?.read(targetArray)
+
+        // run on background to avoid block the ui
         backgroundExecutor.execute {
 
             audioClassifierHelper = AudioClassifierHelper(
@@ -119,6 +145,7 @@ class LibraryFragment : Fragment() {
                 runningMode = RunningMode.AUDIO_CLIPS,
             )
 
+            // prepare media player
             mediaPlayer = MediaPlayer().apply {
                 setAudioAttributes(
                     AudioAttributes.Builder()
@@ -131,6 +158,8 @@ class LibraryFragment : Fragment() {
 
             val floatArray = targetArray?.let { toFloatArray(it) }
             floatArray?.let {
+
+                // create audio data to match with model expected length
                 val duration = mediaPlayer?.duration ?: 0
                 val sampleRate =
                     it.size / (duration / 1000 / AudioClassifierHelper.EXPECTED_INPUT_LENGTH)
@@ -145,44 +174,49 @@ class LibraryFragment : Fragment() {
                 val result = audioClassifierHelper?.classifyAudio(audioData)
                 val inferenceTime = SystemClock.uptimeMillis() - startTime
 
-                val executor = ScheduledThreadPoolExecutor(1)
-                val max = result?.classificationResultList()?.get()?.size ?: 1
-                fragmentLibraryBinding.audioProgress.max = max
-                val amountToUpdate = duration / max
+                progressExecutor = ScheduledThreadPoolExecutor(1)
+                val maxProgressCount =
+                    result?.classificationResultList()?.get()?.size ?: 1
+                fragmentLibraryBinding.audioProgress.max = maxProgressCount
+                val amountToUpdate = duration / maxProgressCount
                 val runnable = Runnable {
                     activity?.runOnUiThread {
                         if (amountToUpdate * fragmentLibraryBinding.audioProgress.progress < duration) {
                             var process: Int =
                                 fragmentLibraryBinding.audioProgress.progress
-                            val list = result?.classificationResultList()?.get()
-                                ?.get(process)?.classifications()?.get(0)
-                                ?.categories() ?: emptyList()
-                            probabilitiesAdapter.updateCategoryList(list)
+                            val categories =
+                                result?.classificationResultList()?.get()
+                                    ?.get(process)?.classifications()?.get(0)
+                                    ?.categories() ?: emptyList()
+                            probabilitiesAdapter.updateCategoryList(categories)
 
                             process += 1
                             fragmentLibraryBinding.audioProgress.progress =
                                 process
-                            if (process == max) {
-                                executor.shutdownNow()
+
+                            if (process == maxProgressCount) {
+                                // stop the process.
+                                progressExecutor?.shutdownNow()
                                 setUiEnabled(true)
                             }
                         }
                     }
                 }
                 activity?.runOnUiThread {
+                    // start audio
                     mediaPlayer?.start()
-                    executor.scheduleAtFixedRate(
+                    progressExecutor?.scheduleAtFixedRate(
                         runnable,
                         0,
                         amountToUpdate.toLong(),
                         TimeUnit.MILLISECONDS
                     )
-                    fragmentLibraryBinding.classifierProgress.visibility =
-                        View.GONE
-                    fragmentLibraryBinding.audioProgress.visibility =
-                        View.VISIBLE
-                    fragmentLibraryBinding.bottomSheetLayout
-                        .inferenceTimeVal.text = String.format("%d ms", inferenceTime)
+                    with(fragmentLibraryBinding) {
+                        classifierProgress.visibility = View.GONE
+                        audioProgress.visibility = View.VISIBLE
+                        bottomSheetLayout.inferenceTimeVal.text =
+                            String.format("%d ms", inferenceTime)
+                    }
                 }
             }
         }
@@ -282,36 +316,20 @@ class LibraryFragment : Fragment() {
     }
 
     private fun setUiEnabled(enabled: Boolean) {
-        fragmentLibraryBinding.fabGetContent.isEnabled = enabled
-        fragmentLibraryBinding.bottomSheetLayout.thresholdMinus.isEnabled =
-            enabled
-        fragmentLibraryBinding.bottomSheetLayout.thresholdPlus.isEnabled =
-            enabled
-        fragmentLibraryBinding.bottomSheetLayout.resultsMinus.isEnabled =
-            enabled
-        fragmentLibraryBinding.bottomSheetLayout.resultsPlus.isEnabled = enabled
-        fragmentLibraryBinding.bottomSheetLayout.spinnerDelegate.isEnabled =
-            enabled
-        fragmentLibraryBinding.bottomSheetLayout.spinnerOverlap.isEnabled =
-            enabled
+        with(fragmentLibraryBinding) {
+            fabGetContent.isEnabled = enabled
+            bottomSheetLayout.thresholdMinus.isEnabled = enabled
+            bottomSheetLayout.thresholdPlus.isEnabled = enabled
+            bottomSheetLayout.resultsMinus.isEnabled = enabled
+            bottomSheetLayout.resultsPlus.isEnabled = enabled
+            bottomSheetLayout.spinnerDelegate.isEnabled = enabled
+            bottomSheetLayout.spinnerOverlap.isEnabled = enabled
+        }
     }
 
     private fun toFloatArray(byteArray: ByteArray): FloatArray {
         val result = FloatArray(byteArray.size / Float.SIZE_BYTES)
         ByteBuffer.wrap(byteArray).asFloatBuffer()[result, 0, result.size]
         return result
-    }
-
-    override fun onPause() {
-        super.onPause()
-        mediaPlayer?.pause()
-        mediaPlayer?.stop()
-        mediaPlayer = null
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        backgroundExecutor.shutdownNow()
-        audioClassifierHelper?.stopAudioClassification()
     }
 }

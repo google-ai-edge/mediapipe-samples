@@ -82,11 +82,12 @@ class AudioClassifierHelper(
         }
         try {
             // Configures a set of parameters for the classifier and what results will be returned.
+            val baseOptions = baseOptionsBuilder.build()
             val optionsBuilder =
                 AudioClassifier.AudioClassifierOptions.builder()
                     .setScoreThreshold(classificationThreshold)
                     .setMaxResults(numOfResults)
-                    .setBaseOptions(baseOptionsBuilder.build())
+                    .setBaseOptions(baseOptions)
                     .setRunningMode(runningMode)
 
             if (runningMode == RunningMode.AUDIO_STREAM) {
