@@ -156,6 +156,7 @@ class AudioClassifierHelper(
     }
 
     private fun classifyAudioAsync(audioRecord: AudioRecord) {
+        // create audio data for recording.
         val audioData = AudioData.create(
             AudioDataFormat.builder().setNumOfChannels(
                 AudioFormat.CHANNEL_IN_DEFAULT
@@ -164,11 +165,35 @@ class AudioClassifierHelper(
         )
         audioData.load(audioRecord)
         val inferenceTime = SystemClock.uptimeMillis()
+        // run audio classifier
         audioClassifier?.classifyAsync(audioData, inferenceTime)
     }
 
-    fun classifyAudio(audioData: AudioData): AudioClassifierResult? {
-        return audioClassifier?.classify(audioData)
+    fun classifyAudio(floatArray: FloatArray, sampleRate: Float):
+            ResultBundle? {
+        val startTime = SystemClock.uptimeMillis()
+
+        // create audio data
+        val audioData = AudioData.create(
+            AudioDataFormat.builder().setNumOfChannels(
+                AudioFormat.CHANNEL_IN_DEFAULT
+            ).setSampleRate(sampleRate).build(), floatArray.size
+        )
+        audioData.load(floatArray)
+
+        audioClassifier?.classify(audioData)
+            ?.also { audioClassificationResult ->
+                val inferenceTime = SystemClock.uptimeMillis() - startTime
+                return ResultBundle(
+                    listOf(audioClassificationResult),
+                    inferenceTime
+                )
+            }
+
+        // If audioClassifier?.classify() returns null, this is likely an error. Returning null
+        // to indicate this.
+        listener?.onError("Audio classifier failed to classify.")
+        return null
     }
 
     fun stopAudioClassification() {
@@ -183,21 +208,19 @@ class AudioClassifierHelper(
     }
 
     private fun streamAudioResultListener(resultListener: AudioClassifierResult) {
-        resultListener.classificationResult()?.get()
-            ?.let { classificationResult ->
-//                val inferenceTime =
-//                    resultListener.timestampMs() - resultListener.classificationResult()
-//                        .get().timestampMs().get()
-                listener?.onResult(
-                    classificationResult.classifications(),
-                    0
-                )
-            }
+        listener?.onResult(ResultBundle(listOf(resultListener), 0))
     }
 
     private fun streamAudioErrorListener(e: RuntimeException) {
         listener?.onError(e.message.toString())
     }
+
+    // Wraps results from inference, the time it takes for inference to be
+    // performed.
+    data class ResultBundle(
+        val results: List<AudioClassifierResult>,
+        val inferenceTime: Long,
+    )
 
     companion object {
         private const val TAG = "AudioClassifierHelper"
@@ -225,6 +248,6 @@ class AudioClassifierHelper(
 
     interface ClassifierListener {
         fun onError(error: String)
-        fun onResult(results: List<Classifications>, inferenceTime: Long)
+        fun onResult(resultBundle: ResultBundle)
     }
 }

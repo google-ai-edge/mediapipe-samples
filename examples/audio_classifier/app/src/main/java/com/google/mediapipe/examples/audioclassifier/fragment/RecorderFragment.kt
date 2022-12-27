@@ -61,6 +61,8 @@ class RecorderFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         backgroundExecutor = Executors.newSingleThreadExecutor()
+
+        // init the result recyclerview
         probabilitiesAdapter = ProbabilitiesAdapter()
         val decoration = DividerItemDecoration(
             requireContext(),
@@ -112,11 +114,15 @@ class RecorderFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
 
     override fun onPause() {
         super.onPause()
-        viewModel.setModel(audioClassifierHelper.currentModel)
-        viewModel.setDelegate(audioClassifierHelper.currentDelegate)
-        viewModel.setThreshold(audioClassifierHelper.classificationThreshold)
-        viewModel.setMaxResults(audioClassifierHelper.numOfResults)
-        viewModel.setOverlap(audioClassifierHelper.overlap)
+
+        // save audio classifier settings
+        viewModel.apply {
+            setModel(audioClassifierHelper.currentModel)
+            setDelegate(audioClassifierHelper.currentDelegate)
+            setThreshold(audioClassifierHelper.classificationThreshold)
+            setMaxResults(audioClassifierHelper.numOfResults)
+            setOverlap(audioClassifierHelper.overlap)
+        }
 
         backgroundExecutor.execute {
             if (::audioClassifierHelper.isInitialized) {
@@ -223,7 +229,6 @@ class RecorderFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
     private fun updateControlsUi() {
         fragmentRecorderBinding.bottomSheetLayout.resultsValue.text =
             audioClassifierHelper.numOfResults.toString()
-
         fragmentRecorderBinding.bottomSheetLayout.thresholdValue.text =
             String.format("%.2f", audioClassifierHelper.classificationThreshold)
 
@@ -240,13 +245,16 @@ class RecorderFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
         }
     }
 
-    override fun onResult(results: List<Classifications>, inferenceTime: Long) {
+    override fun onResult(resultBundle: AudioClassifierHelper.ResultBundle) {
         activity?.runOnUiThread {
             if (_fragmentBinding != null) {
-                // Show result on bottom sheet
-                probabilitiesAdapter.updateCategoryList(results[0].categories())
-                fragmentRecorderBinding.bottomSheetLayout.inferenceTimeVal.text =
-                    String.format("%d ms", inferenceTime)
+                resultBundle.results[0].classificationResult().get()
+                    .classifications()?.get(0)?.categories()?.let {
+                        // Show result on bottom sheet
+                        probabilitiesAdapter.updateCategoryList(it)
+                        fragmentRecorderBinding.bottomSheetLayout.inferenceTimeVal.text =
+                            String.format("%d ms", resultBundle.inferenceTime)
+                    }
             }
         }
     }

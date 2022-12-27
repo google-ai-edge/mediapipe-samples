@@ -17,11 +17,10 @@
 package com.google.mediapipe.examples.audioclassifier.fragment
 
 import android.media.AudioAttributes
-import android.media.AudioFormat
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
-import android.os.SystemClock
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -37,7 +36,7 @@ import com.google.mediapipe.examples.audioclassifier.MainViewModel
 import com.google.mediapipe.examples.audioclassifier.R
 import com.google.mediapipe.examples.audioclassifier.databinding.FragmentLibraryBinding
 import com.google.mediapipe.tasks.audio.core.RunningMode
-import com.google.mediapipe.tasks.components.containers.AudioData
+import java.io.DataInputStream
 import java.nio.ByteBuffer
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -129,8 +128,9 @@ class LibraryFragment : Fragment() {
 
         // load the audio from uri
         val inputStream = requireContext().contentResolver.openInputStream(uri)
-        val targetArray = inputStream?.available()?.let { ByteArray(it) }
-        inputStream?.read(targetArray)
+        val dataInputStream = DataInputStream(inputStream)
+        val targetArray = ByteArray(dataInputStream.available())
+        dataInputStream.read(targetArray)
 
         // run on background to avoid block the ui
         backgroundExecutor.execute {
@@ -156,68 +156,81 @@ class LibraryFragment : Fragment() {
                 prepare()
             }
 
-            val floatArray = targetArray?.let { toFloatArray(it) }
-            floatArray?.let {
+            val audioFloatArrayData = toFloatArray(targetArray)
 
-                // create audio data to match with model expected length
-                val duration = mediaPlayer?.duration ?: 0
-                val sampleRate =
-                    it.size / (duration / 1000 / AudioClassifierHelper.EXPECTED_INPUT_LENGTH)
-                val audioData = AudioData.create(
-                    AudioData.AudioDataFormat.builder().setNumOfChannels(
-                        AudioFormat.CHANNEL_IN_DEFAULT
-                    ).setSampleRate(sampleRate).build(), it.size
+            // create audio data to match with model expected length
+            val audioDuration = mediaPlayer!!.duration
+            // calculate the sample rate
+            val expectedSampleRate =
+                audioFloatArrayData.size / (audioDuration / 1000 / AudioClassifierHelper
+                    .EXPECTED_INPUT_LENGTH)
+
+
+            val resultBundle =
+                audioClassifierHelper?.classifyAudio(
+                    audioFloatArrayData,
+                    expectedSampleRate
                 )
-                audioData.load(it)
-
-                val startTime = SystemClock.uptimeMillis()
-                val result = audioClassifierHelper?.classifyAudio(audioData)
-                val inferenceTime = SystemClock.uptimeMillis() - startTime
+            resultBundle?.results?.let { audioClassifierResults ->
 
                 progressExecutor = ScheduledThreadPoolExecutor(1)
-                val maxProgressCount =
-                    result?.classificationResultList()?.get()?.size ?: 1
-                fragmentLibraryBinding.audioProgress.max = maxProgressCount
-                val amountToUpdate = duration / maxProgressCount
-                val runnable = Runnable {
-                    activity?.runOnUiThread {
-                        if (amountToUpdate * fragmentLibraryBinding.audioProgress.progress < duration) {
-                            var process: Int =
-                                fragmentLibraryBinding.audioProgress.progress
-                            val categories =
-                                result?.classificationResultList()?.get()
-                                    ?.get(process)?.classifications()?.get(0)
-                                    ?.categories() ?: emptyList()
-                            probabilitiesAdapter.updateCategoryList(categories)
+                audioClassifierResults.first().classificationResultList()
+                    ?.get()?.size?.let { maxProgressCount ->
+                        fragmentLibraryBinding.audioProgress.max =
+                            maxProgressCount
+                        val amountToUpdate = audioDuration / maxProgressCount
+                        val runnable = Runnable {
+                            activity?.runOnUiThread {
+                                if (amountToUpdate * fragmentLibraryBinding.audioProgress.progress < audioDuration) {
+                                    var process: Int =
+                                        fragmentLibraryBinding.audioProgress.progress
+                                    val categories =
+                                        audioClassifierResults.first()
+                                            .classificationResultList()
+                                            ?.get()
+                                            ?.get(process)?.classifications()
+                                            ?.get(0)
+                                            ?.categories() ?: emptyList()
+                                    probabilitiesAdapter.updateCategoryList(
+                                        categories
+                                    )
 
-                            process += 1
-                            fragmentLibraryBinding.audioProgress.progress =
-                                process
+                                    process += 1
+                                    // update audio process
+                                    fragmentLibraryBinding.audioProgress.progress =
+                                        process
 
-                            if (process == maxProgressCount) {
-                                // stop the process.
-                                progressExecutor?.shutdownNow()
-                                setUiEnabled(true)
+                                    if (process == maxProgressCount) {
+                                        // stop the process.
+                                        progressExecutor?.shutdownNow()
+                                        setUiEnabled(true)
+                                    }
+                                }
+                            }
+                        }
+                        activity?.runOnUiThread {
+                            // start audio
+                            mediaPlayer?.start()
+                            progressExecutor?.scheduleAtFixedRate(
+                                runnable,
+                                0,
+                                amountToUpdate.toLong(),
+                                TimeUnit.MILLISECONDS
+                            )
+                            with(fragmentLibraryBinding) {
+                                classifierProgress.visibility = View.GONE
+                                audioProgress.visibility = View.VISIBLE
+                                bottomSheetLayout.inferenceTimeVal.text =
+                                    String.format(
+                                        "%d ms",
+                                        resultBundle.inferenceTime
+                                    )
                             }
                         }
                     }
-                }
-                activity?.runOnUiThread {
-                    // start audio
-                    mediaPlayer?.start()
-                    progressExecutor?.scheduleAtFixedRate(
-                        runnable,
-                        0,
-                        amountToUpdate.toLong(),
-                        TimeUnit.MILLISECONDS
-                    )
-                    with(fragmentLibraryBinding) {
-                        classifierProgress.visibility = View.GONE
-                        audioProgress.visibility = View.VISIBLE
-                        bottomSheetLayout.inferenceTimeVal.text =
-                            String.format("%d ms", inferenceTime)
-                    }
-                }
+
+            } ?: run {
+                Log.e(TAG, "Error running audio classification.")
             }
         }
     }
@@ -331,5 +344,9 @@ class LibraryFragment : Fragment() {
         val result = FloatArray(byteArray.size / Float.SIZE_BYTES)
         ByteBuffer.wrap(byteArray).asFloatBuffer()[result, 0, result.size]
         return result
+    }
+
+    companion object {
+        private const val TAG = "GalleryFragment"
     }
 }
