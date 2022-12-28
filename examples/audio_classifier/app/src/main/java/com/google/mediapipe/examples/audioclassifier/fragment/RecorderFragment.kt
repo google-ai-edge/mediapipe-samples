@@ -105,7 +105,7 @@ class RecorderFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
                 .navigate(R.id.action_audio_to_permissions)
         }
         backgroundExecutor.execute {
-            if (audioClassifierHelper.isClose()) {
+            if (audioClassifierHelper.isClosed()) {
                 audioClassifierHelper.initClassifier()
             }
         }

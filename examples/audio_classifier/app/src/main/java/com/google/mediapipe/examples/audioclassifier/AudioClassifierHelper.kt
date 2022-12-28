@@ -203,7 +203,7 @@ class AudioClassifierHelper(
         recorder?.stop()
     }
 
-    fun isClose(): Boolean {
+    fun isClosed(): Boolean {
         return audioClassifier == null
     }
 
