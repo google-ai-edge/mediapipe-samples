@@ -25,6 +25,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -38,12 +39,10 @@ import com.google.mediapipe.examples.audioclassifier.databinding.FragmentLibrary
 import com.google.mediapipe.tasks.audio.core.RunningMode
 import java.io.DataInputStream
 import java.nio.ByteBuffer
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
-class LibraryFragment : Fragment() {
+class LibraryFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
 
     private var _fragmentBinding: FragmentLibraryBinding? = null
     private val fragmentLibraryBinding get() = _fragmentBinding!!
@@ -54,10 +53,11 @@ class LibraryFragment : Fragment() {
             uri?.let { runAudioClassification(it) }
         }
 
-    private var audioClassifierHelper: AudioClassifierHelper? = null
     private lateinit var probabilitiesAdapter: ProbabilitiesAdapter
-    private lateinit var backgroundExecutor: ExecutorService
+    private var audioClassifierHelper: AudioClassifierHelper? = null
     private var progressExecutor: ScheduledThreadPoolExecutor? = null
+    private var backgroundExecutor: ScheduledThreadPoolExecutor? = null
+
     private var mediaPlayer: MediaPlayer? = null
 
     override fun onCreateView(
@@ -73,7 +73,6 @@ class LibraryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         probabilitiesAdapter = ProbabilitiesAdapter()
-
         val decoration = DividerItemDecoration(
             requireContext(), DividerItemDecoration.VERTICAL
         )
@@ -89,29 +88,30 @@ class LibraryFragment : Fragment() {
             startPickupAudio()
         }
 
-        backgroundExecutor = Executors.newSingleThreadExecutor()
-
         initBottomSheetControls()
     }
 
     override fun onPause() {
         super.onPause()
-        stopProgress()
+        resetUi()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        backgroundExecutor.shutdownNow()
         audioClassifierHelper?.stopAudioClassification()
     }
 
-    private fun stopProgress() {
+    private fun resetUi() {
         // stop audio when it in background
-        mediaPlayer?.pause()
         mediaPlayer?.stop()
         mediaPlayer = null
+        // stop all background tasks
+        backgroundExecutor?.shutdownNow()
         progressExecutor?.shutdownNow()
         setUiEnabled(true)
+        fragmentLibraryBinding.audioProgress.visibility = View.INVISIBLE
+        fragmentLibraryBinding.classifierProgress.visibility = View.GONE
+        probabilitiesAdapter.updateCategoryList(emptyList())
     }
 
     private fun startPickupAudio() {
@@ -119,6 +119,7 @@ class LibraryFragment : Fragment() {
     }
 
     private fun runAudioClassification(uri: Uri) {
+        backgroundExecutor = ScheduledThreadPoolExecutor(1)
         with(fragmentLibraryBinding) {
             audioProgress.visibility = View.INVISIBLE
             audioProgress.progress = 0
@@ -133,7 +134,7 @@ class LibraryFragment : Fragment() {
         dataInputStream.read(targetArray)
 
         // run on background to avoid block the ui
-        backgroundExecutor.execute {
+        backgroundExecutor?.execute {
 
             audioClassifierHelper = AudioClassifierHelper(
                 context = requireContext(),
@@ -143,6 +144,7 @@ class LibraryFragment : Fragment() {
                 numOfResults = viewModel.currentMaxResults,
                 currentDelegate = viewModel.currentDelegate,
                 runningMode = RunningMode.AUDIO_CLIPS,
+                listener = this
             )
 
             // prepare media player
@@ -165,14 +167,16 @@ class LibraryFragment : Fragment() {
                 audioFloatArrayData.size / (audioDuration / 1000 / AudioClassifierHelper
                     .EXPECTED_INPUT_LENGTH)
 
-
             val resultBundle =
                 audioClassifierHelper?.classifyAudio(
                     audioFloatArrayData,
                     expectedSampleRate
                 )
             resultBundle?.results?.let { audioClassifierResults ->
-
+                // if the thread is interrupted, skip the next block code.
+                if (Thread.currentThread().isInterrupted) {
+                    return@let
+                }
                 progressExecutor = ScheduledThreadPoolExecutor(1)
                 audioClassifierResults.first().classificationResultList()
                     ?.get()?.size?.let { maxProgressCount ->
@@ -196,12 +200,12 @@ class LibraryFragment : Fragment() {
                                     )
 
                                     process += 1
-                                    // update audio process
+                                    // update the audio process
                                     fragmentLibraryBinding.audioProgress.progress =
                                         process
 
                                     if (process == maxProgressCount) {
-                                        // stop the process.
+                                        // stop the audio process.
                                         progressExecutor?.shutdownNow()
                                         setUiEnabled(true)
                                     }
@@ -236,25 +240,6 @@ class LibraryFragment : Fragment() {
     }
 
     private fun initBottomSheetControls() {
-        // Allow the user to change the amount of overlap used in classification. More overlap
-        // can lead to more accurate resolves in classification.
-        fragmentLibraryBinding.bottomSheetLayout.spinnerOverlap.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    viewModel.setOverlap(position)
-                    updateControlsUi()
-                }
-
-                override fun onNothingSelected(p0: AdapterView<*>?) {
-                    // no op
-                }
-            }
-
         // Allow the user to change the max number of results returned by the audio classifier.
         // Currently allows between 1 and 5 results, but can be edited here.
         fragmentLibraryBinding.bottomSheetLayout.resultsMinus.setOnClickListener {
@@ -304,39 +289,34 @@ class LibraryFragment : Fragment() {
                 }
             }
 
-        fragmentLibraryBinding.bottomSheetLayout.spinnerOverlap.setSelection(
-            viewModel.currentOverlapPosition, false
-        )
-        fragmentLibraryBinding.bottomSheetLayout.spinnerDelegate.setSelection(
-            viewModel.currentDelegate, false
-        )
-        fragmentLibraryBinding.bottomSheetLayout.thresholdValue.text =
-            viewModel.currentThreshold.toString()
-        fragmentLibraryBinding.bottomSheetLayout.resultsValue.text =
-            viewModel.currentMaxResults.toString()
+        with(fragmentLibraryBinding.bottomSheetLayout) {
+            spinnerDelegate.setSelection(viewModel.currentDelegate, false)
+            thresholdValue.text = viewModel.currentThreshold.toString()
+            resultsValue.text = viewModel.currentMaxResults.toString()
+            // hide overlap in audio clip mode
+            rlOverlap.visibility = View.GONE
+        }
     }
 
     // Update the values displayed in the bottom sheet. Reset classifier.
     private fun updateControlsUi() {
-        fragmentLibraryBinding.bottomSheetLayout.resultsValue.text =
-            viewModel.currentMaxResults.toString()
-
-        fragmentLibraryBinding.bottomSheetLayout.thresholdValue.text =
-            String.format("%.2f", viewModel.currentThreshold)
-
-        probabilitiesAdapter.updateCategoryList(emptyList())
+        with(fragmentLibraryBinding.bottomSheetLayout) {
+            resultsValue.text = viewModel.currentMaxResults.toString()
+            thresholdValue.text =
+                String.format("%.2f", viewModel.currentThreshold)
+        }
         fragmentLibraryBinding.audioProgress.visibility = View.INVISIBLE
+        probabilitiesAdapter.updateCategoryList(emptyList())
     }
 
     private fun setUiEnabled(enabled: Boolean) {
-        with(fragmentLibraryBinding) {
-            fabGetContent.isEnabled = enabled
-            bottomSheetLayout.thresholdMinus.isEnabled = enabled
-            bottomSheetLayout.thresholdPlus.isEnabled = enabled
-            bottomSheetLayout.resultsMinus.isEnabled = enabled
-            bottomSheetLayout.resultsPlus.isEnabled = enabled
-            bottomSheetLayout.spinnerDelegate.isEnabled = enabled
-            bottomSheetLayout.spinnerOverlap.isEnabled = enabled
+        fragmentLibraryBinding.fabGetContent.isEnabled = enabled
+        with(fragmentLibraryBinding.bottomSheetLayout) {
+            thresholdMinus.isEnabled = enabled
+            thresholdPlus.isEnabled = enabled
+            resultsMinus.isEnabled = enabled
+            resultsPlus.isEnabled = enabled
+            spinnerDelegate.isEnabled = enabled
         }
     }
 
@@ -346,7 +326,18 @@ class LibraryFragment : Fragment() {
         return result
     }
 
+    override fun onError(error: String) {
+        activity?.runOnUiThread {
+            resetUi()
+            Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onResult(resultBundle: AudioClassifierHelper.ResultBundle) {
+        // no-op
+    }
+
     companion object {
-        private const val TAG = "GalleryFragment"
+        private const val TAG = "LibraryFragment"
     }
 }

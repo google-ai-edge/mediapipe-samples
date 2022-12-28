@@ -33,7 +33,6 @@ import com.google.mediapipe.examples.audioclassifier.MainViewModel
 import com.google.mediapipe.examples.audioclassifier.R
 import com.google.mediapipe.examples.audioclassifier.databinding.FragmentRecorderBinding
 import com.google.mediapipe.tasks.audio.core.RunningMode
-import com.google.mediapipe.tasks.components.containers.Classifications
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -130,7 +129,6 @@ class RecorderFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
             }
         }
     }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _fragmentBinding = null

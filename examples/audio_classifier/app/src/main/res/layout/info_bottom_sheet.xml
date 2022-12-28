@@ -49,7 +49,7 @@
         </RelativeLayout>
 
         <!-- Inference time row -->
-        <androidx.appcompat.widget.LinearLayoutCompat
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/bottom_sheet_default_row_margin"
@@ -66,14 +66,15 @@
 
             <TextView
                 android:id="@+id/inference_time_val"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
+                android:layout_alignParentEnd="true"
                 android:gravity="end"
+                android:minWidth="@dimen/bottom_sheet_spinner_min_width"
                 android:text="0ms"
                 android:textColor="@color/bottom_sheet_text_color"
                 android:textSize="@dimen/bottom_sheet_text_size" />
-        </androidx.appcompat.widget.LinearLayoutCompat>
+        </RelativeLayout>
 
         <!-- Delegate selection row -->
         <RelativeLayout
@@ -92,15 +93,17 @@
                 android:id="@+id/spinner_delegate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
                 android:entries="@array/delegate_spinner_titles"
-                android:minWidth="@dimen/bottom_sheet_spinner_delegate_min_width"
+                android:minWidth="@dimen/bottom_sheet_spinner_min_width"
                 android:spinnerMode="dropdown"
+                android:textAlignment="center"
                 android:theme="@style/BottomSheetSpinnerItemStyle" />
 
         </RelativeLayout>
 
         <RelativeLayout
+            android:id="@+id/rlOverlap"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/bottom_sheet_default_row_margin">
@@ -117,10 +120,11 @@
                 android:id="@+id/spinner_overlap"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
                 android:entries="@array/overlap_spinner_titles"
-                android:minWidth="@dimen/bottom_sheet_spinner_overlap_min_width"
+                android:minWidth="@dimen/bottom_sheet_spinner_min_width"
                 android:spinnerMode="dropdown"
+                android:textAlignment="center"
                 android:theme="@style/BottomSheetSpinnerItemStyle" />
         </RelativeLayout>
 
@@ -143,7 +147,7 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
