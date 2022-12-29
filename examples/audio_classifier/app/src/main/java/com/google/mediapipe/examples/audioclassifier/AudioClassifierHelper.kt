@@ -28,7 +28,6 @@ import com.google.mediapipe.tasks.audio.audioclassifier.AudioClassifierResult
 import com.google.mediapipe.tasks.audio.core.RunningMode
 import com.google.mediapipe.tasks.components.containers.AudioData
 import com.google.mediapipe.tasks.components.containers.AudioData.AudioDataFormat
-import com.google.mediapipe.tasks.components.containers.Classifications
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
 import java.util.concurrent.ScheduledThreadPoolExecutor
@@ -36,7 +35,6 @@ import java.util.concurrent.TimeUnit
 
 class AudioClassifierHelper(
     val context: Context,
-    var currentModel: Int = YAMNET_MODEL,
     var classificationThreshold: Float = DISPLAY_THRESHOLD,
     var overlap: Int = DEFAULT_OVERLAP,
     var numOfResults: Int = DEFAULT_NUM_OF_RESULTS,
@@ -75,11 +73,8 @@ class AudioClassifierHelper(
             }
         }
 
-        when (currentModel) {
-            YAMNET_MODEL -> {
-                baseOptionsBuilder.setModelAssetPath("yamnet.tflite")
-            }
-        }
+        baseOptionsBuilder.setModelAssetPath(YAMNET_MODEL)
+
         try {
             // Configures a set of parameters for the classifier and what results will be returned.
             val baseOptions = baseOptionsBuilder.build()
@@ -229,7 +224,7 @@ class AudioClassifierHelper(
         const val DISPLAY_THRESHOLD = 0.3f
         const val DEFAULT_NUM_OF_RESULTS = 2
         const val DEFAULT_OVERLAP = 2
-        const val YAMNET_MODEL = 0
+        const val YAMNET_MODEL = "yamnet.tflite"
 
         private const val SAMPLING_RATE_IN_HZ = 16000
         private const val CHANNEL_CONFIG: Int = AudioFormat.CHANNEL_IN_FRONT

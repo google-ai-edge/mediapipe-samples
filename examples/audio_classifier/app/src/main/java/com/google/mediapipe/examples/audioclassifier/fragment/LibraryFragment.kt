@@ -138,7 +138,6 @@ class LibraryFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
 
             audioClassifierHelper = AudioClassifierHelper(
                 context = requireContext(),
-                currentModel = viewModel.currentModel,
                 classificationThreshold = viewModel.currentThreshold,
                 overlap = viewModel.currentOverlapPosition,
                 numOfResults = viewModel.currentMaxResults,

@@ -79,7 +79,6 @@ class RecorderFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
             audioClassifierHelper =
                 AudioClassifierHelper(
                     context = requireContext(),
-                    currentModel = viewModel.currentModel,
                     classificationThreshold = viewModel.currentThreshold,
                     overlap = viewModel.currentOverlapPosition,
                     numOfResults = viewModel.currentMaxResults,
@@ -116,7 +115,6 @@ class RecorderFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
 
         // save audio classifier settings
         viewModel.apply {
-            setModel(audioClassifierHelper.currentModel)
             setDelegate(audioClassifierHelper.currentDelegate)
             setThreshold(audioClassifierHelper.classificationThreshold)
             setMaxResults(audioClassifierHelper.numOfResults)
