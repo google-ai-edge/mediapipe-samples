@@ -43,12 +43,14 @@ class MainActivity : AppCompatActivity(), ImageEmbedderHelper.EmbedderListener {
                 1 -> {
                     imageOne = it?.getImage(this)
                     binding.imgOne.setImageBitmap(imageOne)
-                    binding.tvImageOneDescription.visibility = View.GONE
+                    binding.tvImageOneDescription.visibility =
+                        if (it == null) View.VISIBLE else View.GONE
                 }
                 2 -> {
                     imageTwo = it?.getImage(this)
                     binding.imgTwo.setImageBitmap(imageTwo)
-                    binding.tvImageTwoDescription.visibility = View.GONE
+                    binding.tvImageTwoDescription.visibility =
+                        if (it == null) View.VISIBLE else View.GONE
                 }
             }
         }

@@ -31,7 +31,7 @@ class ImageEmbedderHelper(
     private val context: Context,
     var currentDelegate: Int = DELEGATE_CPU,
     var currentModel: Int = MODEL_SMALL,
-    var listener: EmbedderListener?
+    var listener: EmbedderListener? = null
 ) {
     private var imageEmbedder: ImageEmbedder? = null
 
@@ -51,10 +51,10 @@ class ImageEmbedderHelper(
         }
         when (currentModel) {
             MODEL_SMALL -> {
-                baseOptionsBuilder.setModelAssetPath("mobilenet_v3_small.tflite")
+                baseOptionsBuilder.setModelAssetPath(MODEL_SMALL_PATH)
             }
             MODEL_LARGE -> {
-                baseOptionsBuilder.setModelAssetPath("mobilenet_v3_large.tflite")
+                baseOptionsBuilder.setModelAssetPath(MODEL_LARGE_PATH)
             }
         }
         try {
@@ -85,6 +85,9 @@ class ImageEmbedderHelper(
         }
     }
 
+    //  If both the vectors are aligned, the angle between them
+    //  will be 0. cos 0 = 1. So, mathematically, this distance metric will
+    //  be used to find the most similar image.
     fun embed(firstBitmap: Bitmap, secondBitmap: Bitmap): ResultBundle? {
         // Inference time is the difference between the system time at the start and finish of the
         // process
@@ -99,10 +102,8 @@ class ImageEmbedderHelper(
                 it.embed(secondMpImage).embeddingResult().embeddings().first()
             val inferenceTimeMs = SystemClock.uptimeMillis() - startTime
             return ResultBundle(
-                ImageEmbedder.cosineSimilarity(
-                    firstEmbed,
-                    secondEmbed
-                ), inferenceTimeMs
+                ImageEmbedder.cosineSimilarity(firstEmbed, secondEmbed),
+                inferenceTimeMs
             )
         }
         return null
@@ -125,6 +126,8 @@ class ImageEmbedderHelper(
         const val DELEGATE_GPU = 1
         const val MODEL_SMALL = 0
         const val MODEL_LARGE = 1
+        const val MODEL_SMALL_PATH = "mobilenet_v3_small.tflite"
+        const val MODEL_LARGE_PATH = "mobilenet_v3_large.tflite"
         const val OTHER_ERROR = 0
         const val GPU_ERROR = 1
         private const val TAG = "ImageEmbedderHelper"

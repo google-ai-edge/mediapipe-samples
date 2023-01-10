@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
     ~ Copyright 2022 The TensorFlow Authors. All Rights Reserved.
     ~
     ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,7 +41,6 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:padding="10dp"
             app:layout_constraintBottom_toTopOf="@id/btnCompare"
             app:layout_constraintTop_toBottomOf="@id/toolbar">
 
@@ -50,16 +48,22 @@
                 android:id="@+id/tvTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
+                android:padding="10dp"
                 android:text="@string/tv_title"
+                android:textAlignment="center"
+                android:textColor="@android:color/black"
+                android:textSize="20sp"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/tvSimilarity"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
+                android:padding="10dp"
                 android:text="@string/tv_similarity"
+                android:textAlignment="center"
+                android:textColor="@android:color/black"
+                android:textSize="20sp"
                 android:visibility="invisible"
                 app:layout_constraintTop_toTopOf="parent" />
 
