@@ -19,6 +19,7 @@ package com.google.mediapipe.examples.textembedder
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.mediapipe.examples.textembedder.databinding.ActivityMainBinding
 
@@ -109,6 +110,8 @@ class MainActivity : AppCompatActivity(), TextEmbedderHelper.EmbedderListener {
     }
 
     override fun onError(error: String, errorCode: Int) {
+        Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
+
         if (errorCode == TextEmbedderHelper.GPU_ERROR) {
             binding.bottomSheetLayout.spinnerDelegate.setSelection(
                 TextEmbedderHelper.DELEGATE_CPU,
