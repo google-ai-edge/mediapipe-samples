@@ -114,13 +114,12 @@
                 app:layout_constraintTop_toTopOf="@id/imgTwo" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCompare"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="55dp"
-            android:backgroundTint="@color/mp_color_primary"
-            android:drawableTint="@android:color/white"
+            android:backgroundTint="@color/button_enable_disable_state"
             android:text="@string/btn_compare"
             android:textColor="@android:color/white"
             app:layout_constraintBottom_toBottomOf="parent"

@@ -20,14 +20,13 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import com.google.mediapipe.examples.imageembedder.databinding.ActivityMainBinding
-import java.util.concurrent.ExecutorService
 
 class MainActivity : AppCompatActivity(), ImageEmbedderHelper.EmbedderListener {
     private lateinit var binding: ActivityMainBinding
@@ -45,12 +44,14 @@ class MainActivity : AppCompatActivity(), ImageEmbedderHelper.EmbedderListener {
                     binding.imgOne.setImageBitmap(imageOne)
                     binding.tvImageOneDescription.visibility =
                         if (it == null) View.VISIBLE else View.GONE
+                    checkIsReadyForCompare()
                 }
                 2 -> {
                     imageTwo = it?.getImage(this)
                     binding.imgTwo.setImageBitmap(imageTwo)
                     binding.tvImageTwoDescription.visibility =
                         if (it == null) View.VISIBLE else View.GONE
+                    checkIsReadyForCompare()
                 }
             }
         }
@@ -85,6 +86,7 @@ class MainActivity : AppCompatActivity(), ImageEmbedderHelper.EmbedderListener {
         }
 
         initBottomSheetControls()
+        checkIsReadyForCompare()
     }
 
     private fun initBottomSheetControls() {
@@ -148,6 +150,14 @@ class MainActivity : AppCompatActivity(), ImageEmbedderHelper.EmbedderListener {
         imageEmbedderHelper.setupImageEmbedder()
     }
 
+    private fun checkIsReadyForCompare() {
+        binding.btnCompare.isEnabled = (imageOne != null && imageTwo != null)
+        if (imageOne == null || imageTwo == null) {
+            binding.tvTitle.visibility = View.VISIBLE
+            binding.tvSimilarity.visibility = View.GONE
+        }
+    }
+
     private fun Uri.getImage(context: Context): Bitmap {
         return BitmapFactory.decodeStream(
             context.contentResolver.openInputStream(this)
@@ -155,6 +165,8 @@ class MainActivity : AppCompatActivity(), ImageEmbedderHelper.EmbedderListener {
     }
 
     override fun onError(error: String, errorCode: Int) {
+        Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
+
         if (errorCode == ImageEmbedderHelper.GPU_ERROR) {
             binding.bottomSheetLayout.spinnerDelegate.setSelection(
                 ImageEmbedderHelper.DELEGATE_CPU,

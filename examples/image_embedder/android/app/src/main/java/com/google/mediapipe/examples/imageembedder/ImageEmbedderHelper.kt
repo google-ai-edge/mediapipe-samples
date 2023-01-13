@@ -20,7 +20,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.os.SystemClock
 import android.util.Log
-import com.google.mediapipe.framework.MediaPipeException
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate

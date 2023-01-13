@@ -15,7 +15,7 @@
 -->
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar" >
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar" >
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/mp_color_primary</item>
         <item name="colorPrimaryVariant">@color/mp_color_primary_variant</item>
