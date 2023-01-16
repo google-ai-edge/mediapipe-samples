@@ -16,19 +16,14 @@
 
 package com.google.mediapipe.examples.textembedder
 
-import android.content.res.AssetManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 
 import org.junit.Test
 import org.junit.runner.RunWith
 
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
 import org.junit.Before
-import java.io.InputStream
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -55,7 +50,7 @@ class TextEmbedderHelperTest {
 
     @Test
     fun embeddingResultsWithinAcceptedRange() {
-        val bundleResult = embedderHelper.embed(TEXT_TEST_ONE, TEXT_TEST_TWO)
+        val bundleResult = embedderHelper.compare(TEXT_TEST_ONE, TEXT_TEST_TWO)
         assertEquals(EXPECTED_SIMILARITY, bundleResult?.similarity ?: 0.0, 0.09)
     }
 }

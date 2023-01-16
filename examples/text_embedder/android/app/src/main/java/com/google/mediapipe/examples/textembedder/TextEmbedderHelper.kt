@@ -85,16 +85,16 @@ class TextEmbedderHelper(
     //  If both the vectors are aligned, the angle between them
     //  will be 0. cos 0 = 1. So, mathematically, this distance metric will
     //  be used to find the most similar text.
-    fun embed(firstBitmap: String, secondBitmap: String): ResultBundle? {
+    fun compare(firstText: String, secondText: String): ResultBundle? {
         // Inference time is the difference between the system time at the start and finish of the
         // process
         val startTime = SystemClock.uptimeMillis()
 
         textEmbedder?.let {
             val firstEmbed =
-                it.embed(firstBitmap).embeddingResult().embeddings().first()
+                it.embed(firstText).embeddingResult().embeddings().first()
             val secondEmbed =
-                it.embed(secondBitmap).embeddingResult().embeddings().first()
+                it.embed(secondText).embeddingResult().embeddings().first()
             val inferenceTimeMs = SystemClock.uptimeMillis() - startTime
             return ResultBundle(
                 TextEmbedder.cosineSimilarity(firstEmbed, secondEmbed),

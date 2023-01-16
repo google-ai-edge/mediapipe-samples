@@ -38,11 +38,11 @@ class MainActivity : AppCompatActivity(), TextEmbedderHelper.EmbedderListener {
         binding.btnCompare.setOnClickListener {
             // Compare two texts here
             val firstText =
-                if (binding.imgOne.text.isNullOrEmpty()) getString(R.string.default_compared_text) else binding.imgOne.text.toString()
+                if (binding.imgOne.text.isNullOrEmpty()) getString(R.string.default_hint_first_text) else binding.imgOne.text.toString()
             val secondText =
-                if (binding.imgTwo.text.isNullOrEmpty()) getString(R.string.default_compared_text) else binding.imgTwo.text.toString()
+                if (binding.imgTwo.text.isNullOrEmpty()) getString(R.string.default_hint_second_text) else binding.imgTwo.text.toString()
 
-            textEmbedderHelper.embed(firstText, secondText)
+            textEmbedderHelper.compare(firstText, secondText)
                 ?.let { resultBundle ->
                     updateResult(resultBundle)
                 }

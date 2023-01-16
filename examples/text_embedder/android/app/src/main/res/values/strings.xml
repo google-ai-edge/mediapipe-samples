@@ -26,7 +26,8 @@
     <string name="tv_title">Input two texts to compare</string>
     <string name="tv_similarity">Similarity:</string>
     <string name="btn_compare">Compare</string>
-    <string name="default_compared_text">MediaPipe offers cross-platform, customizable ML solutions for live and streaming media.</string>
+    <string name="default_hint_first_text">MediaPipe offers cross-platform, customizable ML solutions for live and streaming media.</string>
+    <string name="default_hint_second_text">I use MediaPipe to create amazing things with text, audio, and visual content.</string>
 
     <string-array name="delegate_spinner_titles">
         <item>CPU</item>
