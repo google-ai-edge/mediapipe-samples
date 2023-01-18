@@ -232,8 +232,13 @@ class CameraFragment : Fragment(),
                 override fun onItemSelected(
                     p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long
                 ) {
-                    gestureRecognizerHelper.currentDelegate = p2
-                    updateControlsUi()
+                    try {
+                        gestureRecognizerHelper.currentDelegate = p2
+                        updateControlsUi()
+                    } catch(e: UninitializedPropertyAccessException) {
+                        Log.e(TAG, "GestureRecognizerHelper has not been initialized yet.")
+
+                    }
                 }
 
                 override fun onNothingSelected(p0: AdapterView<*>?) {
