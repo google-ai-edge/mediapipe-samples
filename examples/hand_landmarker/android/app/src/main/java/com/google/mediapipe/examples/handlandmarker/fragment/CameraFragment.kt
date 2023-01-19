@@ -246,8 +246,12 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
                 override fun onItemSelected(
                     p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long
                 ) {
-                    handLandmarkerHelper.currentDelegate = p2
-                    updateControlsUi()
+                    try {
+                        handLandmarkerHelper.currentDelegate = p2
+                        updateControlsUi()
+                    } catch(e: UninitializedPropertyAccessException) {
+                        Log.e(TAG, "HandLandmarkerHelper has not been initialized yet.")
+                    }
                 }
 
                 override fun onNothingSelected(p0: AdapterView<*>?) {
