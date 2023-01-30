@@ -23,12 +23,13 @@
     <string name="label_inference_time">Inference Time</string>
     <string name="label_delegate">Delegate</string>
     <string name="label_models">ML Model</string>
-    <string name="tv_title">Select two audios to compare</string>
+    <string name="tv_title">Select two audio files to compare</string>
     <string name="tv_similarity">Similarity:</string>
     <string name="btn_compare">Compare</string>
     <string name="tv_pick_audio_title">Audio</string>
-    <string name="tv_pick_audio_description">Pick one from your media library.</string>
-    <string name="btn_pick_audio">Pick</string>
+    <string name="tv_pick_audio_description">Import one from your media library.</string>
+    <string name="btn_pick_audio">Import</string>
+    <string name="tv_play_audio">Play audio</string>
 
     <string-array name="delegate_spinner_titles">
         <item>CPU</item>

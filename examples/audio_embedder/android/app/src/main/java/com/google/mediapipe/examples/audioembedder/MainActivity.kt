@@ -17,6 +17,8 @@
 package com.google.mediapipe.examples.audioembedder
 
 import android.content.Context
+import android.media.AudioAttributes
+import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
@@ -26,13 +28,19 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.google.mediapipe.examples.audioembedder.databinding.ActivityMainBinding
+import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity(), AudioEmbedderHelper.EmbedderListener {
     private lateinit var binding: ActivityMainBinding
-    private var selectAudioPos = 1
     private lateinit var audioEmbedderHelper: AudioEmbedderHelper
+    private lateinit var backgroundExecutor: ExecutorService
+    private var selectAudioPos = 1
     private var uriOne: Uri? = null
     private var uriTwo: Uri? = null
+    private var mediaPlayer: MediaPlayer? = null
 
     private val getContent =
         registerForActivityResult(ActivityResultContracts.GetContent()) {
@@ -42,12 +50,14 @@ class MainActivity : AppCompatActivity(), AudioEmbedderHelper.EmbedderListener {
                     binding.tvDescriptionOne.text = it?.getName(this)
                         ?: getString(R.string.tv_pick_audio_description)
                     checkIsReadyForCompare()
+                    checkIsReadyForPlayAudio()
                 }
                 2 -> {
                     uriTwo = it
                     binding.tvDescriptionTwo.text = it?.getName(this)
                         ?: getString(R.string.tv_pick_audio_description)
                     checkIsReadyForCompare()
+                    checkIsReadyForPlayAudio()
                 }
             }
         }
@@ -57,35 +67,35 @@ class MainActivity : AppCompatActivity(), AudioEmbedderHelper.EmbedderListener {
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+        backgroundExecutor = Executors.newSingleThreadExecutor()
+        backgroundExecutor.execute {
+            audioEmbedderHelper = AudioEmbedderHelper(this, listener = this)
+            runOnUiThread {
+                initBottomSheetControls()
+                checkIsReadyForCompare()
+                checkIsReadyForPlayAudio()
 
-        audioEmbedderHelper = AudioEmbedderHelper(this, listener = this)
-
-        binding.btnCompare.setOnClickListener {
-            // Compare two audios here
-            uriOne?.let { audio1 ->
-                uriTwo?.let { audio2 ->
-                    audioEmbedderHelper.compare(
-                        audio1.createAudioData(this),
-                        audio2.createAudioData(this)
-                    )?.let { resultBundle ->
-                        updateResult(resultBundle)
+                with(binding) {
+                    btnCompare.setOnClickListener {
+                        compareTwoAudioFiles()
+                    }
+                    btnPickAudioOne.setOnClickListener {
+                        selectAudioPos = 1
+                        getContent.launch("audio/*")
+                    }
+                    btnPickAudioTwo.setOnClickListener {
+                        selectAudioPos = 2
+                        getContent.launch("audio/*")
+                    }
+                    btnPlayAudioOne.setOnClickListener {
+                        uriOne?.let { it1 -> playAudio(it1) }
+                    }
+                    btnPlayAudioTwo.setOnClickListener {
+                        uriTwo?.let { it1 -> playAudio(it1) }
                     }
                 }
             }
         }
-
-        binding.btnPickAudioOne.setOnClickListener {
-            selectAudioPos = 1
-            getContent.launch("audio/*")
-        }
-
-        binding.btnPickAudioTwo.setOnClickListener {
-            selectAudioPos = 2
-            getContent.launch("audio/*")
-        }
-
-        initBottomSheetControls()
-        checkIsReadyForCompare()
     }
 
     private fun initBottomSheetControls() {
@@ -110,14 +120,37 @@ class MainActivity : AppCompatActivity(), AudioEmbedderHelper.EmbedderListener {
             }
     }
 
+    // Compare two audio files here
+    private fun compareTwoAudioFiles() {
+        uriOne?.let { audio1 ->
+            uriTwo?.let { audio2 ->
+                // show progress bar
+                binding.flProgress.visibility = View.VISIBLE
+                backgroundExecutor.execute {
+                    audioEmbedderHelper.compare(
+                        audio1.createAudioData(this@MainActivity),
+                        audio2.createAudioData(this@MainActivity)
+                    )?.let { resultBundle ->
+                        updateResult(resultBundle)
+                    } ?: runOnUiThread {
+                        binding.flProgress.visibility = View.GONE
+                    }
+                }
+            }
+        }
+    }
+
     private fun updateResult(resultBundle: AudioEmbedderHelper.ResultBundle) {
-        binding.tvTitle.visibility = View.INVISIBLE
-        binding.tvSimilarity.visibility = View.VISIBLE
-        binding.tvSimilarity.text = String.format(
-            "Similarity: %.2f", resultBundle.similarity
-        )
-        binding.bottomSheetLayout.inferenceTimeVal.text =
-            String.format("%d ms", resultBundle.inferenceTime)
+        runOnUiThread {
+            binding.flProgress.visibility = View.GONE
+            binding.tvTitle.visibility = View.INVISIBLE
+            binding.tvSimilarity.visibility = View.VISIBLE
+            binding.tvSimilarity.text = String.format(
+                "Similarity: %.2f", resultBundle.similarity
+            )
+            binding.bottomSheetLayout.inferenceTimeVal.text =
+                String.format("%d ms", resultBundle.inferenceTime)
+        }
     }
 
     // Reset Embedder.
@@ -132,6 +165,27 @@ class MainActivity : AppCompatActivity(), AudioEmbedderHelper.EmbedderListener {
             binding.tvTitle.visibility = View.VISIBLE
             binding.tvSimilarity.visibility = View.GONE
         }
+    }
+
+    private fun playAudio(uri: Uri) {
+        mediaPlayer?.stop()
+
+        mediaPlayer = MediaPlayer().apply {
+            setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .setUsage(AudioAttributes.USAGE_MEDIA).build()
+            )
+            setDataSource(this@MainActivity, uri)
+            prepare()
+        }
+
+        mediaPlayer?.start()
+    }
+
+    private fun checkIsReadyForPlayAudio() {
+        binding.btnPlayAudioOne.isEnabled = uriOne != null
+        binding.btnPlayAudioTwo.isEnabled = uriTwo != null
     }
 
     override fun onError(error: String, errorCode: Int) {
@@ -153,5 +207,19 @@ class MainActivity : AppCompatActivity(), AudioEmbedderHelper.EmbedderListener {
         val fileName = nameIndex?.let { returnCursor.getString(it) }
         returnCursor?.close()
         return fileName
+    }
+
+    override fun onPause() {
+        super.onPause()
+        mediaPlayer?.pause()
+        mediaPlayer?.stop()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        backgroundExecutor.shutdown()
+        backgroundExecutor.awaitTermination(
+            Long.MAX_VALUE, TimeUnit.NANOSECONDS
+        )
     }
 }

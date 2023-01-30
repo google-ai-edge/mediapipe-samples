@@ -4,7 +4,7 @@
 
 This is a camera app that compare the similarity between two audios, in the
 audios imported from the device library, with the option to use a
-[Yamnet Embedding](https://storage.googleapis.com/mediapipe-tasks/). The model
+[Yamnet Embedding](https://storage.googleapis.com/mediapipe-assets/yamnet_embedding_metadata.tflite?generation=1668295071595506). The model
 files are downloaded by a Gradle script when you build and run the app. You
 don't need to do any steps to download TFLite models into the project explicitly
 unless you wish to use your own models. If you do use your own models, place

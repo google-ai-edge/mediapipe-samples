@@ -15,9 +15,29 @@
  */
 
 task downloadYamnetModel(type: Download) {
-    src ''
-    dest project.ext.ASSET_DIR + '/yamnet_embedding.tflite'
+    src 'https://storage.googleapis.com/mediapipe-assets/yamnet_embedding_metadata.tflite?generation=1668295071595506'
+    dest project.ext.ASSET_DIR + '/yamnet_embedding_metadata.tflite'
     overwrite false
 }
 
-preBuild.dependsOn downloadYamnetModel
+task downloadAudioForTestOne(type: Download) {
+    src 'https://storage.googleapis.com/mediapipe-assets/speech_16000_hz_mono.wav?generation=1661875934539524'
+    dest project.ext.TEST_ASSETS_DIR + '/speech_16000_hz_mono.wav'
+    overwrite false
+}
+
+task downloadAudioForTestTwo(type: Download) {
+    src 'https://storage.googleapis.com/mediapipe-assets/speech_48000_hz_mono.wav?generation=1661875938066405'
+    dest project.ext.TEST_ASSETS_DIR + '/speech_48000_hz_mono.wav'
+    overwrite false
+}
+
+task downloadAudioForTestThree(type: Download) {
+    src 'https://storage.googleapis.com/mediapipe-assets/two_heads_16000_hz_mono.wav?generation=1661875962421337'
+    dest project.ext.TEST_ASSETS_DIR + '/two_heads_16000_hz_mono.wav'
+    overwrite false
+}
+
+preBuild.dependsOn downloadYamnetModel, downloadAudioForTestOne,
+        downloadAudioForTestTwo, downloadAudioForTestThree
+

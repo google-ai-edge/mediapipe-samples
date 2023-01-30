@@ -20,6 +20,23 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <FrameLayout
+        android:id="@+id/flProgress"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#887A7A7A"
+        android:clickable="true"
+        android:elevation="1dp"
+        android:focusable="true"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+
+    </FrameLayout>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -102,6 +119,16 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/tvDescriptionOne"
                     android:text="@string/btn_pick_audio" />
+
+
+                <Button
+                    android:id="@+id/btnPlayAudioOne"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/tvDescriptionOne"
+                    android:layout_marginStart="10dp"
+                    android:layout_toEndOf="@id/btnPickAudioOne"
+                    android:text="@string/tv_play_audio" />
             </RelativeLayout>
 
             <RelativeLayout
@@ -140,6 +167,15 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/tvDescriptionTwo"
                     android:text="@string/btn_pick_audio" />
+
+                <Button
+                    android:id="@+id/btnPlayAudioTwo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/tvDescriptionTwo"
+                    android:layout_marginStart="10dp"
+                    android:layout_toEndOf="@id/btnPickAudioTwo"
+                    android:text="@string/tv_play_audio" />
             </RelativeLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
