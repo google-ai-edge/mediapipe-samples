@@ -35,10 +35,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.mediapipe.examples.audioclassifier.AudioClassifierHelper
 import com.google.mediapipe.examples.audioclassifier.MainViewModel
 import com.google.mediapipe.examples.audioclassifier.R
+import com.google.mediapipe.examples.audioclassifier.createAudioData
 import com.google.mediapipe.examples.audioclassifier.databinding.FragmentLibraryBinding
 import com.google.mediapipe.tasks.audio.core.RunningMode
-import java.io.DataInputStream
-import java.nio.ByteBuffer
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
@@ -127,12 +126,6 @@ class LibraryFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
         }
         setUiEnabled(false)
 
-        // load the audio from uri
-        val inputStream = requireContext().contentResolver.openInputStream(uri)
-        val dataInputStream = DataInputStream(inputStream)
-        val targetArray = ByteArray(dataInputStream.available())
-        dataInputStream.read(targetArray)
-
         // run on background to avoid block the ui
         backgroundExecutor?.execute {
 
@@ -156,20 +149,13 @@ class LibraryFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
                 setDataSource(requireContext(), uri)
                 prepare()
             }
-
-            val audioFloatArrayData = toFloatArray(targetArray)
-
-            // create audio data to match with model expected length
             val audioDuration = mediaPlayer!!.duration
-            // calculate the sample rate
-            val expectedSampleRate =
-                audioFloatArrayData.size / (audioDuration / 1000 / AudioClassifierHelper
-                    .EXPECTED_INPUT_LENGTH)
 
             val resultBundle =
                 audioClassifierHelper?.classifyAudio(
-                    audioFloatArrayData,
-                    expectedSampleRate
+                    uri.createAudioData(
+                        requireContext()
+                    )
                 )
             resultBundle?.results?.let { audioClassifierResults ->
                 // if the thread is interrupted, skip the next block code.
@@ -317,12 +303,6 @@ class LibraryFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
             resultsPlus.isEnabled = enabled
             spinnerDelegate.isEnabled = enabled
         }
-    }
-
-    private fun toFloatArray(byteArray: ByteArray): FloatArray {
-        val result = FloatArray(byteArray.size / Float.SIZE_BYTES)
-        ByteBuffer.wrap(byteArray).asFloatBuffer()[result, 0, result.size]
-        return result
     }
 
     override fun onError(error: String) {

@@ -53,6 +53,7 @@ android {
 
 // import DownloadModels task
 project.ext.ASSET_DIR = projectDir.toString() + '/src/main/assets'
+project.ext.TEST_ASSET_DIR = projectDir.toString() + '/src/androidTest/assets'
 
 apply from:'download_model.gradle'
 

@@ -20,4 +20,10 @@ task downloadYamnetModel(type: Download) {
     overwrite false
 }
 
-preBuild.dependsOn downloadYamnetModel
+task downloadAudioForTest(type: Download) {
+    src 'https://www.tensorflow.org/static/tutorials/audio/transfer_learning_audio_files/output_FRqpjkwB0Jjw_4.wav'
+    dest project.ext.TEST_ASSET_DIR + '/cat_sound.wav'
+    overwrite false
+}
+
+preBuild.dependsOn downloadYamnetModel, downloadAudioForTest
