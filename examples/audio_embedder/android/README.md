@@ -2,7 +2,7 @@
 
 ### Overview
 
-This is a camera app that compare the similarity between two audios, in the
+This is an audio app that compare the similarity between two audios, in the
 audios imported from the device library, with the option to use a
 [Yamnet Embedding](https://storage.googleapis.com/mediapipe-assets/yamnet_embedding_metadata.tflite?generation=1668295071595506). The model
 files are downloaded by a Gradle script when you build and run the app. You
