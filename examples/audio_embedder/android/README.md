@@ -10,10 +10,6 @@ don't need to do any steps to download TFLite models into the project explicitly
 unless you wish to use your own models. If you do use your own models, place
 them into the app's *assets* directory.
 
-This application should be run on a physical Android device to take advantage of
-the physical camera, though the gallery tab will enable you to use an emulator
-for opening locally stored files.
-
 ![Audio Embedder Demo](audioembedder.png?raw=true "Audio Embedder Demo")
 
 ## Build the demo using Android Studio
@@ -45,4 +41,4 @@ for opening locally stored files.
 ### Models used
 
 Downloading, extraction, and placing the models into the *assets* folder is
-managed automatically by the **download.gradle** file.
+managed automatically by the **download_models.gradle** file.

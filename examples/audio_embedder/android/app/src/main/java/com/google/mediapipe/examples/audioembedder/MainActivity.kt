@@ -28,7 +28,6 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.google.mediapipe.examples.audioembedder.databinding.ActivityMainBinding
-import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -188,16 +187,7 @@ class MainActivity : AppCompatActivity(), AudioEmbedderHelper.EmbedderListener {
         binding.btnPlayAudioTwo.isEnabled = uriTwo != null
     }
 
-    override fun onError(error: String, errorCode: Int) {
-        Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
-
-        if (errorCode == AudioEmbedderHelper.GPU_ERROR) {
-            binding.bottomSheetLayout.spinnerDelegate.setSelection(
-                AudioEmbedderHelper.DELEGATE_CPU, false
-            )
-        }
-    }
-
+    // Get name of audio
     private fun Uri.getName(context: Context): String? {
         val returnCursor =
             context.contentResolver.query(this, null, null, null, null)
@@ -207,6 +197,16 @@ class MainActivity : AppCompatActivity(), AudioEmbedderHelper.EmbedderListener {
         val fileName = nameIndex?.let { returnCursor.getString(it) }
         returnCursor?.close()
         return fileName
+    }
+
+    override fun onError(error: String, errorCode: Int) {
+        Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
+
+        if (errorCode == AudioEmbedderHelper.GPU_ERROR) {
+            binding.bottomSheetLayout.spinnerDelegate.setSelection(
+                AudioEmbedderHelper.DELEGATE_CPU, false
+            )
+        }
     }
 
     override fun onPause() {

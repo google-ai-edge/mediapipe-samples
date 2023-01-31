@@ -16,6 +16,7 @@
 
 package com.google.mediapipe.examples.audioembedder
 
+import android.content.Context
 import android.media.AudioFormat
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -44,59 +45,53 @@ class AudioEmbedderHelperTest {
     }
 
     private lateinit var embedderHelper: AudioEmbedderHelper
-    private val context = InstrumentationRegistry.getInstrumentation().context
+    private lateinit var context: Context
 
     @Before
     fun setup() {
         embedderHelper =
             AudioEmbedderHelper(ApplicationProvider.getApplicationContext())
-
+        context = InstrumentationRegistry.getInstrumentation().context
     }
 
     @Test
     fun embeddingResultsWithinAcceptedRangeOne() {
         val audioDataOne = getAudioDataFromAsset(
-            SPEECH_WAV_16K_MONO,
-            SPEECH_WAV_DURATION
+            SPEECH_WAV_16K_MONO, SPEECH_WAV_DURATION
         )
         val audioDataTwo = getAudioDataFromAsset(
-            SPEECH_WAV_48K_MONO,
-            SPEECH_WAV_DURATION
+            SPEECH_WAV_48K_MONO, SPEECH_WAV_DURATION
         )
 
         assertNotNull(audioDataOne)
         assertNotNull(audioDataTwo)
 
-        embedderHelper.compare(audioDataOne!!, audioDataTwo!!)?.let {
-            assertEquals(0.94, it.similarity, 0.01)
-        } ?: run {
-            assert(false)
-        }
+        val bundleResult =
+            embedderHelper.compare(audioDataOne!!, audioDataTwo!!)
+        assertNotNull(bundleResult)
+        assertEquals(0.94, bundleResult!!.similarity, 0.01)
     }
 
     @Test
     fun embeddingResultsWithinAcceptedRangeTwo() {
         val audioDataOne = getAudioDataFromAsset(
-            SPEECH_WAV_16K_MONO,
-            SPEECH_WAV_DURATION
+            SPEECH_WAV_16K_MONO, SPEECH_WAV_DURATION
         )
         val audioDataTwo = getAudioDataFromAsset(
-            TWO_HEADS_WAV_16K_MONO,
-            TWO_HEADS_WAV_DURATION
+            TWO_HEADS_WAV_16K_MONO, TWO_HEADS_WAV_DURATION
         )
 
         assertNotNull(audioDataOne)
         assertNotNull(audioDataTwo)
-        embedderHelper.compare(audioDataOne!!, audioDataTwo!!)?.let {
-            assertEquals(0.08, it.similarity, 0.01)
-        } ?: run {
-            assert(false)
-        }
+
+        val bundleResult =
+            embedderHelper.compare(audioDataOne!!, audioDataTwo!!)
+        assertNotNull(bundleResult)
+        assertEquals(0.08, bundleResult!!.similarity, 0.01)
     }
 
     private fun getAudioDataFromAsset(
-        audioName: String,
-        audioDuration: Long
+        audioName: String, audioDuration: Long
     ): AudioData? {
 
         val inputStream = context.assets.open(audioName)
