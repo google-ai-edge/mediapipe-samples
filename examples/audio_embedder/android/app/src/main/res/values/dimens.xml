@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    ~ Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+    ~ Copyright 2023 The TensorFlow Authors. All Rights Reserved.
     ~
     ~ Licensed under the Apache License, Version 2.0 (the "License");
     ~ you may not use this file except in compliance with the License.
@@ -27,7 +27,15 @@
     <dimen name="bottom_sheet_control_text_side_margin">10dp</dimen>
     <dimen name="bottom_sheet_spinner_delegate_min_width">160dp</dimen>
     <dimen name="bottom_sheet_spinner_model_min_width">240dp</dimen>
-
     <integer name="bottom_sheet_control_text_min_ems">3</integer>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="rl_audio_box_padding">10dp</dimen>
+    <dimen name="tv_title_text_size">20sp</dimen>
+    <dimen name="tv_title_padding">10dp</dimen>
+    <dimen name="tv_description_padding">20dp</dimen>
+    <dimen name="btn_compare_margin_bottom">55dp</dimen>
+    <dimen name="btn_play_audio_margin">10dp</dimen>
+    <dimen name="tv_import_audio_title">20sp</dimen>
+    <dimen name="tv_import_audio_margin_top">20dp</dimen>
+    <dimen name="tv_progress_elevation">1dp</dimen>
 </resources>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+ * Copyright 2023 The TensorFlow Authors. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,10 @@
 
 package com.google.mediapipe.examples.audioembedder
 
-import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
-import android.provider.OpenableColumns
 import android.view.View
 import android.widget.AdapterView
 import android.widget.Toast
@@ -48,17 +46,15 @@ class MainActivity : AppCompatActivity(), AudioEmbedderHelper.EmbedderListener {
                     uriOne = it
                     binding.tvDescriptionOne.text = it?.getName(this)
                         ?: getString(R.string.tv_pick_audio_description)
-                    checkIsReadyForCompare()
-                    checkIsReadyForPlayAudio()
                 }
                 2 -> {
                     uriTwo = it
                     binding.tvDescriptionTwo.text = it?.getName(this)
                         ?: getString(R.string.tv_pick_audio_description)
-                    checkIsReadyForCompare()
-                    checkIsReadyForPlayAudio()
                 }
             }
+            checkIsReadyForCompare()
+            checkIsReadyForPlayAudio()
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,14 +62,19 @@ class MainActivity : AppCompatActivity(), AudioEmbedderHelper.EmbedderListener {
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+        // create background executor for background tasks.
         backgroundExecutor = Executors.newSingleThreadExecutor()
         backgroundExecutor.execute {
             audioEmbedderHelper = AudioEmbedderHelper(this, listener = this)
             runOnUiThread {
+
+                //sets up the bottom sheet controls and checks whether
+                //the application is ready for comparison and playing audio
                 initBottomSheetControls()
                 checkIsReadyForCompare()
                 checkIsReadyForPlayAudio()
 
+                // setup click listeners
                 with(binding) {
                     btnCompare.setOnClickListener {
                         compareTwoAudioFiles()
@@ -126,6 +127,7 @@ class MainActivity : AppCompatActivity(), AudioEmbedderHelper.EmbedderListener {
                 // show progress bar
                 binding.flProgress.visibility = View.VISIBLE
                 backgroundExecutor.execute {
+                    // run compare in background so it don't block the UI
                     audioEmbedderHelper.compare(
                         audio1.createAudioData(this@MainActivity),
                         audio2.createAudioData(this@MainActivity)
@@ -152,7 +154,6 @@ class MainActivity : AppCompatActivity(), AudioEmbedderHelper.EmbedderListener {
         }
     }
 
-    // Reset Embedder.
     private fun resetEmbedder() {
         audioEmbedderHelper.clearAudioEmbedder()
         audioEmbedderHelper.setupAudioEmbedder()
@@ -166,9 +167,19 @@ class MainActivity : AppCompatActivity(), AudioEmbedderHelper.EmbedderListener {
         }
     }
 
-    private fun playAudio(uri: Uri) {
-        mediaPlayer?.stop()
+    private fun checkIsReadyForPlayAudio() {
+        binding.btnPlayAudioOne.isEnabled = uriOne != null
+        binding.btnPlayAudioTwo.isEnabled = uriTwo != null
+    }
 
+    private fun playAudio(uri: Uri) {
+        // release the media player if it already has.
+        mediaPlayer?.apply {
+            stop()
+            release()
+        }
+
+        // create new media player
         mediaPlayer = MediaPlayer().apply {
             setAudioAttributes(
                 AudioAttributes.Builder()
@@ -180,23 +191,6 @@ class MainActivity : AppCompatActivity(), AudioEmbedderHelper.EmbedderListener {
         }
 
         mediaPlayer?.start()
-    }
-
-    private fun checkIsReadyForPlayAudio() {
-        binding.btnPlayAudioOne.isEnabled = uriOne != null
-        binding.btnPlayAudioTwo.isEnabled = uriTwo != null
-    }
-
-    // Get name of audio
-    private fun Uri.getName(context: Context): String? {
-        val returnCursor =
-            context.contentResolver.query(this, null, null, null, null)
-        val nameIndex =
-            returnCursor?.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-        returnCursor?.moveToFirst()
-        val fileName = nameIndex?.let { returnCursor.getString(it) }
-        returnCursor?.close()
-        return fileName
     }
 
     override fun onError(error: String, errorCode: Int) {
@@ -211,12 +205,18 @@ class MainActivity : AppCompatActivity(), AudioEmbedderHelper.EmbedderListener {
 
     override fun onPause() {
         super.onPause()
-        mediaPlayer?.pause()
-        mediaPlayer?.stop()
+        // stop and release media player
+        mediaPlayer?.apply {
+            pause()
+            stop()
+            release()
+        }
+        mediaPlayer = null
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        // stop all background tasks
         backgroundExecutor.shutdown()
         backgroundExecutor.awaitTermination(
             Long.MAX_VALUE, TimeUnit.NANOSECONDS

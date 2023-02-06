@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    ~ Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+    ~ Copyright 2023 The TensorFlow Authors. All Rights Reserved.
     ~
     ~ Licensed under the Apache License, Version 2.0 (the "License");
     ~ you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@
         android:layout_height="match_parent"
         android:background="#887A7A7A"
         android:clickable="true"
-        android:elevation="1dp"
+        android:elevation="@dimen/tv_progress_elevation"
         android:focusable="true"
         android:visibility="gone">
 
@@ -51,9 +51,9 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
-                android:contentDescription="@null"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:contentDescription="@null"
                 android:src="@drawable/media_pipe_banner" />
         </androidx.appcompat.widget.Toolbar>
 
@@ -67,22 +67,22 @@
                 android:id="@+id/tvTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="10dp"
+                android:padding="@dimen/tv_title_padding"
                 android:text="@string/tv_title"
                 android:textAlignment="center"
                 android:textColor="@android:color/black"
-                android:textSize="20sp"
+                android:textSize="@dimen/tv_title_text_size"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/tvSimilarity"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="10dp"
+                android:padding="@dimen/tv_title_padding"
                 android:text="@string/tv_similarity"
                 android:textAlignment="center"
                 android:textColor="@android:color/black"
-                android:textSize="20sp"
+                android:textSize="@dimen/tv_title_text_size"
                 android:visibility="invisible"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -92,7 +92,7 @@
                 android:layout_height="0dp"
                 android:background="@color/bottom_sheet_background"
                 android:gravity="center_vertical"
-                android:padding="10dp"
+                android:padding="@dimen/rl_audio_box_padding"
                 app:layout_constraintHeight_percent="0.3"
                 app:layout_constraintTop_toBottomOf="@id/tvTitle">
 
@@ -102,7 +102,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/tv_pick_audio_title"
                     android:textColor="@android:color/black"
-                    android:textSize="20sp"
+                    android:textSize="@dimen/tv_import_audio_title"
                     android:textStyle="bold"
                     app:drawableStartCompat="@drawable/ic_baseline_audiotrack_24" />
 
@@ -111,8 +111,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/tvAudioTrackOne"
-                    android:layout_marginTop="20dp"
-                    android:layout_marginBottom="20dp"
+                    android:layout_marginTop="@dimen/tv_description_padding"
+                    android:layout_marginBottom="@dimen/tv_description_padding"
                     android:text="@string/tv_pick_audio_description" />
 
                 <Button
@@ -128,7 +128,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/tvDescriptionOne"
-                    android:layout_marginStart="10dp"
+                    android:layout_marginStart="@dimen/btn_play_audio_margin"
                     android:layout_toEndOf="@id/btnPickAudioOne"
                     android:text="@string/tv_play_audio" />
             </RelativeLayout>
@@ -137,10 +137,10 @@
                 android:id="@+id/tvSecondAudio"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="@dimen/tv_import_audio_margin_top"
                 android:background="@color/bottom_sheet_background"
                 android:gravity="center_vertical"
-                android:padding="10dp"
+                android:padding="@dimen/rl_audio_box_padding"
                 app:layout_constraintHeight_percent="0.3"
                 app:layout_constraintTop_toBottomOf="@id/tvFirstAudio">
 
@@ -150,7 +150,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/tv_pick_audio_title"
                     android:textColor="@android:color/black"
-                    android:textSize="20sp"
+                    android:textSize="@dimen/tv_import_audio_title"
                     android:textStyle="bold"
                     app:drawableStartCompat="@drawable/ic_baseline_audiotrack_24" />
 
@@ -159,8 +159,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/tvAudioTrackTwo"
-                    android:layout_marginTop="20dp"
-                    android:layout_marginBottom="20dp"
+                    android:layout_marginTop="@dimen/tv_description_padding"
+                    android:layout_marginBottom="@dimen/tv_description_padding"
                     android:text="@string/tv_pick_audio_description" />
 
                 <Button
@@ -175,7 +175,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/tvDescriptionTwo"
-                    android:layout_marginStart="10dp"
+                    android:layout_marginStart="@dimen/btn_play_audio_margin"
                     android:layout_toEndOf="@id/btnPickAudioTwo"
                     android:text="@string/tv_play_audio" />
             </RelativeLayout>
@@ -185,7 +185,7 @@
             android:id="@+id/btnCompare"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="55dp"
+            android:layout_marginBottom="@dimen/btn_compare_margin_bottom"
             android:backgroundTint="@color/button_enable_disable_state"
             android:text="@string/btn_compare"
             android:textColor="@android:color/white"
