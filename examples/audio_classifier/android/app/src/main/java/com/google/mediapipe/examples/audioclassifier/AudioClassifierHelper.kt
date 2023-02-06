@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+ * Copyright 2023 The TensorFlow Authors. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.media.AudioFormat
 import android.media.AudioRecord
-import android.media.MediaMetadataRetriever
 import android.media.MediaRecorder
-import android.net.Uri
 import android.os.SystemClock
 import android.util.Log
 import com.google.mediapipe.tasks.audio.audioclassifier.AudioClassifier
@@ -32,9 +30,6 @@ import com.google.mediapipe.tasks.components.containers.AudioData
 import com.google.mediapipe.tasks.components.containers.AudioData.AudioDataFormat
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
-import java.io.DataInputStream
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
@@ -198,7 +193,14 @@ class AudioClassifierHelper(
     }
 
     private fun streamAudioResultListener(resultListener: AudioClassifierResult) {
-        listener?.onResult(ResultBundle(listOf(resultListener), 0))
+        val finishTimeMs = SystemClock.uptimeMillis()
+        val inferenceTime = finishTimeMs - resultListener.timestampMs()
+        listener?.onResult(
+            ResultBundle(
+                listOf(resultListener),
+                inferenceTime
+            )
+        )
     }
 
     private fun streamAudioErrorListener(e: RuntimeException) {
@@ -240,38 +242,4 @@ class AudioClassifierHelper(
         fun onError(error: String)
         fun onResult(resultBundle: ResultBundle)
     }
-}
-fun Uri.createAudioData(context: Context): AudioData {
-    val inputStream = context.contentResolver.openInputStream(this)
-    val dataInputStream = DataInputStream(inputStream)
-    val targetArray = ByteArray(dataInputStream.available())
-    dataInputStream.read(targetArray)
-    val audioFloatArrayData = targetArray.toShortArray()
-
-    // get audio's duration
-    val mmr = MediaMetadataRetriever()
-    mmr.setDataSource(context, this)
-    val durationStr =
-        mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-    val audioDuration = durationStr!!.toInt()
-
-    // calculate the sample rate
-    val expectedSampleRate =
-        audioFloatArrayData.size / (audioDuration / 1000F / AudioClassifierHelper.EXPECTED_INPUT_LENGTH)
-
-    // create audio data
-    val audioData = AudioData.create(
-        AudioData.AudioDataFormat.builder().setNumOfChannels(
-            AudioFormat.CHANNEL_IN_DEFAULT
-        ).setSampleRate(expectedSampleRate).build(), audioFloatArrayData.size
-    )
-    audioData.load(audioFloatArrayData)
-    return audioData
-}
-
-fun ByteArray.toShortArray(): ShortArray {
-    val result = ShortArray(this.size / 2)
-    ByteBuffer.wrap(this).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer()
-        .get(result)
-    return result
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+ * Copyright 2023 The TensorFlow Authors. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -244,13 +244,13 @@ class RecorderFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
     override fun onResult(resultBundle: AudioClassifierHelper.ResultBundle) {
         activity?.runOnUiThread {
             if (_fragmentBinding != null) {
-                resultBundle.results[0].classificationResult().get()
+                resultBundle.results[0].classificationResults().first()
                     .classifications()?.get(0)?.categories()?.let {
-                        // Show result on bottom sheet
-                        probabilitiesAdapter.updateCategoryList(it)
-                        fragmentRecorderBinding.bottomSheetLayout.inferenceTimeVal.text =
-                            String.format("%d ms", resultBundle.inferenceTime)
-                    }
+                    // Show result on bottom sheet
+                    probabilitiesAdapter.updateCategoryList(it)
+                    fragmentRecorderBinding.bottomSheetLayout.inferenceTimeVal.text =
+                        String.format("%d ms", resultBundle.inferenceTime)
+                }
             }
         }
     }

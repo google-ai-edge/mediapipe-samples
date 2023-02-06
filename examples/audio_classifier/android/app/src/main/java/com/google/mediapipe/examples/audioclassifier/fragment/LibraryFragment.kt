@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+ * Copyright 2023 The TensorFlow Authors. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -163,8 +163,7 @@ class LibraryFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
                     return@let
                 }
                 progressExecutor = ScheduledThreadPoolExecutor(1)
-                audioClassifierResults.first().classificationResultList()
-                    ?.get()?.size?.let { maxProgressCount ->
+                audioClassifierResults.first().classificationResults()?.size?.let { maxProgressCount ->
                         fragmentLibraryBinding.audioProgress.max =
                             maxProgressCount
                         val amountToUpdate = audioDuration / maxProgressCount
@@ -175,8 +174,7 @@ class LibraryFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
                                         fragmentLibraryBinding.audioProgress.progress
                                     val categories =
                                         audioClassifierResults.first()
-                                            .classificationResultList()
-                                            ?.get()
+                                            .classificationResults()
                                             ?.get(process)?.classifications()
                                             ?.get(0)
                                             ?.categories() ?: emptyList()
