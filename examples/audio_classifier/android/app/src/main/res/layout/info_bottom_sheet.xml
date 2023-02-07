@@ -50,6 +50,7 @@
 
         <!-- Inference time row -->
         <RelativeLayout
+            android:id="@+id/rlInferenceTime"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/bottom_sheet_default_row_margin"

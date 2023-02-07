@@ -59,6 +59,8 @@ class RecorderFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        fragmentRecorderBinding.bottomSheetLayout.rlInferenceTime.visibility =
+            View.GONE
         backgroundExecutor = Executors.newSingleThreadExecutor()
 
         // init the result recyclerview
@@ -246,11 +248,9 @@ class RecorderFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
             if (_fragmentBinding != null) {
                 resultBundle.results[0].classificationResults().first()
                     .classifications()?.get(0)?.categories()?.let {
-                    // Show result on bottom sheet
-                    probabilitiesAdapter.updateCategoryList(it)
-                    fragmentRecorderBinding.bottomSheetLayout.inferenceTimeVal.text =
-                        String.format("%d ms", resultBundle.inferenceTime)
-                }
+                        // Show result on bottom sheet
+                        probabilitiesAdapter.updateCategoryList(it)
+                    }
             }
         }
     }

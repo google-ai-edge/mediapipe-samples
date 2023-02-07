@@ -193,13 +193,8 @@ class AudioClassifierHelper(
     }
 
     private fun streamAudioResultListener(resultListener: AudioClassifierResult) {
-        val finishTimeMs = SystemClock.uptimeMillis()
-        val inferenceTime = finishTimeMs - resultListener.timestampMs()
         listener?.onResult(
-            ResultBundle(
-                listOf(resultListener),
-                inferenceTime
-            )
+            ResultBundle(listOf(resultListener), 0)
         )
     }
 
