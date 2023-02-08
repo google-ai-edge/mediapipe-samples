@@ -90,10 +90,10 @@ class AudioEmbedderHelper(
         audioEmbedder?.let {
             // calculate the embeddings for each audio data
             val firstEmbed =
-                it.embed(firstAudioData).embeddingResultList().get().first()
+                it.embed(firstAudioData).embeddingResults().first()
                     .embeddings().first()
             val secondEmbed =
-                it.embed(secondAudioData).embeddingResultList().get().first()
+                it.embed(secondAudioData).embeddingResults().first()
                     .embeddings().first()
 
             val inferenceTimeMs = SystemClock.uptimeMillis() - startTime
