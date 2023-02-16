@@ -1,0 +1,121 @@
+/*
+ * Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *             http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.google.mediapipe.examples.imagesegmenter
+
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.util.AttributeSet
+import android.view.View
+import com.google.mediapipe.framework.image.ByteBufferExtractor
+import com.google.mediapipe.framework.image.MPImage
+import kotlin.math.max
+
+class OverlayView(context: Context?, attrs: AttributeSet?) :
+    View(context, attrs) {
+    companion object {
+
+        private const val ALPHA_COLOR = 128
+        private val colors = listOf(
+            -16777216,
+            -8388608,
+            -16744448,
+            -8355840,
+            -16777088,
+            -8388480,
+            -16744320,
+            -8355712,
+            -12582912,
+            -4194304,
+            -12550144,
+            -4161536,
+            -12582784,
+            -4194176,
+            -12550016,
+            -4161408,
+            -16760832,
+            -8372224,
+            -16728064,
+            -8339456,
+            -16760704
+        )
+    }
+
+    private var scaleBitmap: Bitmap? = null
+
+    fun clear() {
+        scaleBitmap = null
+        invalidate()
+    }
+
+    override fun draw(canvas: Canvas) {
+        super.draw(canvas)
+        scaleBitmap?.let {
+            canvas.drawBitmap(it, 0f, 0f, null)
+        }
+    }
+
+    fun setResults(
+        segmentResult: MPImage,
+    ) {
+        // Create the mask bitmap with colors and the set of detected labels.
+        // We only need the first mask for this sample because we are using
+        // the OutputType CATEGORY_MASK, which only provides a single mask.
+        val byteBuffer =
+            ByteBufferExtractor.extract(segmentResult)
+        val pixels = IntArray(byteBuffer.capacity())
+        for (i in pixels.indices) {
+            val index = byteBuffer.get(i).toInt()
+            val color =
+                if (index in 1..20) colors[index].toColor() else Color.TRANSPARENT
+            pixels[i] = color
+        }
+
+        val image = Bitmap.createBitmap(
+            pixels,
+            segmentResult.width,
+            segmentResult.height,
+            Bitmap.Config.ARGB_8888
+        )
+
+        // PreviewView is in FILL_START mode. So we need to scale up the bounding
+        // box to match with the size that the captured images will be displayed.
+        val scaleFactor =
+            max(
+                width * 1f / segmentResult.width,
+                height * 1f / segmentResult.height
+            )
+        val scaleWidth = (segmentResult.width * scaleFactor).toInt()
+        val scaleHeight = (segmentResult.height * scaleFactor).toInt()
+
+        scaleBitmap =
+            Bitmap.createScaledBitmap(
+                image,
+                scaleWidth,
+                scaleHeight,
+                false
+            )
+    }
+
+    private fun Int.toColor(): Int {
+        return Color.argb(
+            ALPHA_COLOR, Color.red(this),
+            Color.green(this),
+            Color.blue(this)
+        )
+    }
+}
