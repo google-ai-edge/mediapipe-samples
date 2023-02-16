@@ -1,4 +1,4 @@
-# MediaPipe Text Classification task for web
+# MediaPipe Text Embedder task for web
 
 ## Overview
 
