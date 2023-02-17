@@ -36,7 +36,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginBottom="@dimen/bottom_sheet_peek_height">
-
             <ImageView
                 android:id="@+id/imageResult"
                 android:layout_width="match_parent"
@@ -50,6 +49,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:visibility="gone" />
+
+            <com.google.mediapipe.examples.imagesegmenter.OverlayView
+                android:id="@+id/overlay_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
             <androidx.core.widget.ContentLoadingProgressBar
                 android:id="@+id/progress"

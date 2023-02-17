@@ -35,7 +35,7 @@ class ImageSegmenterHelper(
     var currentDelegate: Int = DELEGATE_CPU,
     var runningMode: RunningMode = RunningMode.IMAGE,
     val context: Context,
-    val imageSegmenterListener: SegmenterListener? = null
+    var imageSegmenterListener: SegmenterListener? = null
 ) {
 
     // For this example this needs to be a var so it can be reset on changes. If the Imagesegmenter
@@ -49,6 +49,7 @@ class ImageSegmenterHelper(
     // Segmenter must be closed when creating a new one to avoid returning results to a
     // non-existent object
     fun clearImageSegmenter() {
+        imageSegmenterListener = null
         imagesegmenter?.close()
         imagesegmenter = null
     }
@@ -96,11 +97,8 @@ class ImageSegmenterHelper(
                     .setRunningMode(runningMode)
                     .setBaseOptions(baseOptions)
                     .setOutputType(ImageSegmenter.ImageSegmenterOptions.OutputType.CATEGORY_MASK)
-
-            if (runningMode == RunningMode.LIVE_STREAM) {
-                optionsBuilder.setResultListener(this::returnLivestreamResult)
-                optionsBuilder.setErrorListener(this::returnLivestreamError)
-            }
+                    .setResultListener(this::returnLivestreamResult)
+                    .setErrorListener(this::returnLivestreamError)
             val options = optionsBuilder.build()
             imagesegmenter =
                 ImageSegmenter.createFromOptions(context, options)
@@ -174,6 +172,12 @@ class ImageSegmenterHelper(
         // As we're using running mode LIVE_STREAM, the segmentation result will
         // be returned in returnLivestreamResult function
         imagesegmenter?.segmentAsync(mpImage, frameTime)
+    }
+
+    fun segments(bitmap: Bitmap) {
+        val mpImage = BitmapImageBuilder(bitmap).build()
+
+        imagesegmenter?.segment(mpImage)
     }
 
     // MPImage isn't necessary for this example, but the listener requires it

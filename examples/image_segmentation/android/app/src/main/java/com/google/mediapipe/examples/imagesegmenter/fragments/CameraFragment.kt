@@ -83,7 +83,7 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     }
 
     override fun onPause() {
-        // save Imagesegmenter settings
+        // save ImageSegmenter settings
         viewModel.setDelegate(imageSegmenterHelper.currentDelegate)
         super.onPause()
 
@@ -135,6 +135,7 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
                 setUpCamera()
             }
         }
+        fragmentCameraBinding.overlayView.setRunningMode(RunningMode.LIVE_STREAM)
         // Attach listeners to UI control widgets
         initBottomSheetControls()
     }
@@ -255,20 +256,16 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
         }
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     override fun onResults(
         resultBundle: ImageSegmenterHelper.ResultBundle
     ) {
-        activity?.runOnUiThread {
-            if (_fragmentCameraBinding != null) {
-                // Show result on bottom sheet
-                fragmentCameraBinding.overlayView.setResults(
-                    resultBundle.results
-                )
-                fragmentCameraBinding.overlayView.invalidate()
-                fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
-                    String.format("%d ms", resultBundle.inferenceTime)
-            }
+        if (_fragmentCameraBinding != null) {
+            fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
+                String.format("%d ms", resultBundle.inferenceTime)
+            fragmentCameraBinding.overlayView.setResults(
+                resultBundle.results
+            )
+            fragmentCameraBinding.overlayView.invalidate()
         }
     }
 }

@@ -24,10 +24,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:scaleType="fillStart" />
+
     <com.google.mediapipe.examples.imagesegmenter.OverlayView
-        android:layout_width="match_parent"
         android:id="@+id/overlay_view"
-        android:layout_height="match_parent"/>
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <include
         android:id="@+id/bottom_sheet_layout"

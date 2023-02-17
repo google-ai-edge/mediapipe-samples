@@ -16,8 +16,12 @@
 package com.google.mediapipe.examples.imagesegmenter.fragments
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -29,6 +33,8 @@ import androidx.fragment.app.activityViewModels
 import com.google.mediapipe.examples.imagesegmenter.ImageSegmenterHelper
 import com.google.mediapipe.examples.imagesegmenter.MainViewModel
 import com.google.mediapipe.examples.imagesegmenter.databinding.FragmentGalleryBinding
+import com.google.mediapipe.tasks.vision.core.RunningMode
+import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 
 class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
@@ -40,7 +46,7 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     private val fragmentGalleryBinding
         get() = _fragmentGalleryBinding!!
     private val viewModel: MainViewModel by activityViewModels()
-    private lateinit var imagesegmenterHelper: ImageSegmenterHelper
+    private lateinit var imageSegmenterHelper: ImageSegmenterHelper
 
     /** Blocking ML operations are performed using this executor */
     private lateinit var backgroundExecutor: ScheduledExecutorService
@@ -80,8 +86,9 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
         fragmentGalleryBinding.fabGetContent.setOnClickListener {
             getContent.launch(arrayOf("image/*", "video/*"))
             updateDisplayView(MediaType.UNKNOWN)
+            fragmentGalleryBinding.overlayView.clear()
         }
-
+        fragmentGalleryBinding.overlayView.setRunningMode(RunningMode.IMAGE)
         initBottomSheetControls()
     }
 
@@ -119,7 +126,22 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
 
     // Load and display the image.
     private fun runSegmentationOnImage(uri: Uri) {
+        setUiEnabled(false)
+        backgroundExecutor = Executors.newSingleThreadScheduledExecutor()
+        updateDisplayView(MediaType.IMAGE)
+        fragmentGalleryBinding.imageResult.setImageBitmap(uri.toBitmap())
 
+        // Run image classification on the input image
+        backgroundExecutor.execute {
+
+            imageSegmenterHelper = ImageSegmenterHelper(
+                context = requireContext(),
+                runningMode = RunningMode.IMAGE,
+                currentDelegate = viewModel.currentDelegate,
+                imageSegmenterListener = this
+            )
+            imageSegmenterHelper.segments(uri.toBitmap())
+        }
     }
 
     // Load and display the video.
@@ -166,6 +188,19 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
         }
     }
 
+    private fun Uri.toBitmap(): Bitmap {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val source = ImageDecoder.createSource(
+                requireActivity().contentResolver, this
+            )
+            ImageDecoder.decodeBitmap(source)
+        } else {
+            MediaStore.Images.Media.getBitmap(
+                requireActivity().contentResolver, this
+            )
+        }.copy(Bitmap.Config.ARGB_8888, true)
+    }
+
     override fun onError(error: String, errorCode: Int) {
         segmentationError()
         activity?.runOnUiThread {
@@ -180,7 +215,17 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     }
 
     override fun onResults(resultBundle: ImageSegmenterHelper.ResultBundle) {
-        // no-op
+       activity?.runOnUiThread {
+           if (_fragmentGalleryBinding != null) {
+               setUiEnabled(true)
+               fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
+                   String.format("%d ms", resultBundle.inferenceTime)
+               fragmentGalleryBinding.overlayView.setResults(
+                   resultBundle.results
+               )
+               fragmentGalleryBinding.overlayView.invalidate()
+           }
+       }
     }
 
     companion object {

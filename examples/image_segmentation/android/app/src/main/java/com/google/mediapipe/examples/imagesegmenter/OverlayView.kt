@@ -23,7 +23,9 @@ import android.util.AttributeSet
 import android.view.View
 import com.google.mediapipe.framework.image.ByteBufferExtractor
 import com.google.mediapipe.framework.image.MPImage
+import com.google.mediapipe.tasks.vision.core.RunningMode
 import kotlin.math.max
+import kotlin.math.min
 
 class OverlayView(context: Context?, attrs: AttributeSet?) :
     View(context, attrs) {
@@ -56,6 +58,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     }
 
     private var scaleBitmap: Bitmap? = null
+    private var runningMode: RunningMode = RunningMode.IMAGE
 
     fun clear() {
         scaleBitmap = null
@@ -68,6 +71,9 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
             canvas.drawBitmap(it, 0f, 0f, null)
         }
     }
+    fun setRunningMode(runningMode: RunningMode){
+        this.runningMode = runningMode
+    }
 
     fun setResults(
         segmentResult: MPImage,
@@ -75,8 +81,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
         // Create the mask bitmap with colors and the set of detected labels.
         // We only need the first mask for this sample because we are using
         // the OutputType CATEGORY_MASK, which only provides a single mask.
-        val byteBuffer =
-            ByteBufferExtractor.extract(segmentResult)
+        val byteBuffer = ByteBufferExtractor.extract(segmentResult)
         val pixels = IntArray(byteBuffer.capacity())
         for (i in pixels.indices) {
             val index = byteBuffer.get(i).toInt()
@@ -92,30 +97,30 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
             Bitmap.Config.ARGB_8888
         )
 
+
+        val scaleFactor = if (runningMode == RunningMode.LIVE_STREAM)
         // PreviewView is in FILL_START mode. So we need to scale up the bounding
         // box to match with the size that the captured images will be displayed.
-        val scaleFactor =
             max(
                 width * 1f / segmentResult.width,
                 height * 1f / segmentResult.height
+            ) else
+            min(
+                width * 1f / segmentResult.width,
+                height * 1f / segmentResult.height
             )
+
         val scaleWidth = (segmentResult.width * scaleFactor).toInt()
         val scaleHeight = (segmentResult.height * scaleFactor).toInt()
 
-        scaleBitmap =
-            Bitmap.createScaledBitmap(
-                image,
-                scaleWidth,
-                scaleHeight,
-                false
-            )
+        scaleBitmap = Bitmap.createScaledBitmap(
+            image, scaleWidth, scaleHeight, false
+        )
     }
 
     private fun Int.toColor(): Int {
         return Color.argb(
-            ALPHA_COLOR, Color.red(this),
-            Color.green(this),
-            Color.blue(this)
+            ALPHA_COLOR, Color.red(this), Color.green(this), Color.blue(this)
         )
     }
 }
