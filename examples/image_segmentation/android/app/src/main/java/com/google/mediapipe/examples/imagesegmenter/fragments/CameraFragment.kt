@@ -63,7 +63,7 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     private var cameraProvider: ProcessCameraProvider? = null
 
     /** Blocking operations are performed using this executor */
-    private lateinit var backgroundExecutor: ExecutorService
+    private var backgroundExecutor: ExecutorService? = null
 
 
     override fun onResume() {
@@ -75,8 +75,9 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
             ).navigate(CameraFragmentDirections.actionCameraToPermissions())
         }
 
-        backgroundExecutor.execute {
+        backgroundExecutor?.execute {
             if (imageSegmenterHelper.isClosed()) {
+                imageSegmenterHelper.setListener(this)
                 imageSegmenterHelper.setupImageSegmenter()
             }
         }
@@ -88,18 +89,24 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
         super.onPause()
 
         // Close the image segmenter and release resources
-        backgroundExecutor.execute { imageSegmenterHelper.clearImageSegmenter() }
+        backgroundExecutor?.execute {
+            with(imageSegmenterHelper) {
+                clearListener()
+                clearImageSegmenter()
+            }
+        }
     }
 
     override fun onDestroyView() {
         _fragmentCameraBinding = null
-        super.onDestroyView()
 
         // Shut down our background executor
-        backgroundExecutor.shutdown()
-        backgroundExecutor.awaitTermination(
+        backgroundExecutor?.shutdown()
+        backgroundExecutor?.awaitTermination(
             Long.MAX_VALUE, TimeUnit.NANOSECONDS
         )
+        backgroundExecutor = null
+        super.onDestroyView()
     }
 
     override fun onCreateView(
@@ -122,7 +129,7 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
         }
 
         backgroundExecutor = Executors.newSingleThreadExecutor()
-        backgroundExecutor.execute {
+        backgroundExecutor?.execute {
             imageSegmenterHelper = ImageSegmenterHelper(
                 context = requireContext(),
                 runningMode = RunningMode.LIVE_STREAM,
@@ -182,7 +189,7 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
 
     // Update the values displayed in the bottom sheet. Reset segmenter.
     private fun updateControlsUi() {
-        backgroundExecutor.execute {
+        backgroundExecutor?.execute {
             imageSegmenterHelper.clearImageSegmenter()
             imageSegmenterHelper.setupImageSegmenter()
         }
@@ -220,10 +227,12 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
                 .build()
                 // The analyzer can then be assigned to the instance
                 .also {
-                    it.setAnalyzer(
-                        backgroundExecutor,
-                        imageSegmenterHelper::segmentsLiveStreamFrame
-                    )
+                    backgroundExecutor?.let { executor ->
+                        it.setAnalyzer(
+                            executor,
+                            imageSegmenterHelper::segmentsLiveStreamFrame
+                        )
+                    }
                 }
 
         // Must unbind the use-cases before rebinding them

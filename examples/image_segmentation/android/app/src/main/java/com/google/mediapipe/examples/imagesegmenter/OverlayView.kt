@@ -32,7 +32,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     companion object {
 
         private const val ALPHA_COLOR = 128
-        private val colors = listOf(
+        private val labelColors = listOf(
             -16777216,
             -8388608,
             -16744448,
@@ -76,42 +76,42 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     }
 
     fun setResults(
-        segmentResult: MPImage,
+        mpImage: MPImage,
     ) {
         // Create the mask bitmap with colors and the set of detected labels.
         // We only need the first mask for this sample because we are using
         // the OutputType CATEGORY_MASK, which only provides a single mask.
-        val byteBuffer = ByteBufferExtractor.extract(segmentResult)
+        val byteBuffer = ByteBufferExtractor.extract(mpImage)
         val pixels = IntArray(byteBuffer.capacity())
         for (i in pixels.indices) {
             val index = byteBuffer.get(i).toInt()
             val color =
-                if (index in 1..20) colors[index].toColor() else Color.TRANSPARENT
+                if (index in 1..20) labelColors[index].toColor() else Color.TRANSPARENT
             pixels[i] = color
         }
 
         val image = Bitmap.createBitmap(
             pixels,
-            segmentResult.width,
-            segmentResult.height,
+            mpImage.width,
+            mpImage.height,
             Bitmap.Config.ARGB_8888
         )
 
+        val scaleFactor = when (runningMode) {
+            RunningMode.IMAGE,
+            RunningMode.VIDEO -> {
+                min(width * 1f / mpImage.width, height * 1f / mpImage.height)
+            }
+            RunningMode.LIVE_STREAM -> {
+                // PreviewView is in FILL_START mode. So we need to scale up the
+                // landmarks to match with the size that the captured images will be
+                // displayed.
+                max(width * 1f / mpImage.width, height * 1f / mpImage.height)
+            }
+        }
 
-        val scaleFactor = if (runningMode == RunningMode.LIVE_STREAM)
-        // PreviewView is in FILL_START mode. So we need to scale up the bounding
-        // box to match with the size that the captured images will be displayed.
-            max(
-                width * 1f / segmentResult.width,
-                height * 1f / segmentResult.height
-            ) else
-            min(
-                width * 1f / segmentResult.width,
-                height * 1f / segmentResult.height
-            )
-
-        val scaleWidth = (segmentResult.width * scaleFactor).toInt()
-        val scaleHeight = (segmentResult.height * scaleFactor).toInt()
+        val scaleWidth = (mpImage.width * scaleFactor).toInt()
+        val scaleHeight = (mpImage.height * scaleFactor).toInt()
 
         scaleBitmap = Bitmap.createScaledBitmap(
             image, scaleWidth, scaleHeight, false

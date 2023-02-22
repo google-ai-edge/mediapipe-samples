@@ -49,9 +49,16 @@ class ImageSegmenterHelper(
     // Segmenter must be closed when creating a new one to avoid returning results to a
     // non-existent object
     fun clearImageSegmenter() {
-        imageSegmenterListener = null
         imagesegmenter?.close()
         imagesegmenter = null
+    }
+
+    fun setListener(listener: SegmenterListener){
+        imageSegmenterListener = listener
+    }
+
+    fun clearListener() {
+        imageSegmenterListener = null
     }
 
     // Return running status of image segmenter helper
@@ -77,31 +84,21 @@ class ImageSegmenterHelper(
         baseOptionsBuilder.setModelAssetPath(MODEL_PATH)
 
         // Check if runningMode is consistent with imageSegmenterListener
-        when (runningMode) {
-            RunningMode.LIVE_STREAM -> {
-                if (imageSegmenterListener == null) {
-                    throw IllegalStateException(
-                        "ImageSegmenterListener must be set when runningMode is LIVE_STREAM."
-                    )
-                }
-            }
-            else -> {
-                // no-op
-            }
+        if (imageSegmenterListener == null) {
+            throw IllegalStateException(
+                "ImageSegmenterListener must be set."
+            )
         }
 
         try {
             val baseOptions = baseOptionsBuilder.build()
-            val optionsBuilder =
-                ImageSegmenter.ImageSegmenterOptions.builder()
-                    .setRunningMode(runningMode)
-                    .setBaseOptions(baseOptions)
-                    .setOutputType(ImageSegmenter.ImageSegmenterOptions.OutputType.CATEGORY_MASK)
-                    .setResultListener(this::returnLivestreamResult)
-                    .setErrorListener(this::returnLivestreamError)
+            val optionsBuilder = ImageSegmenter.ImageSegmenterOptions.builder()
+                .setRunningMode(runningMode).setBaseOptions(baseOptions)
+                .setOutputType(ImageSegmenter.ImageSegmenterOptions.OutputType.CATEGORY_MASK)
+                .setResultListener(this::returnLivestreamResult)
+                .setErrorListener(this::returnLivestreamError)
             val options = optionsBuilder.build()
-            imagesegmenter =
-                ImageSegmenter.createFromOptions(context, options)
+            imagesegmenter = ImageSegmenter.createFromOptions(context, options)
         } catch (e: IllegalStateException) {
             imageSegmenterListener?.onError(
                 "Image segmenter failed to initialize. See error logs for details"
@@ -113,8 +110,8 @@ class ImageSegmenterHelper(
         } catch (e: RuntimeException) {
             // This occurs if the model being used does not support GPU
             imageSegmenterListener?.onError(
-                "Image segmenter failed to initialize. See error logs for " +
-                        "details", GPU_ERROR
+                "Image segmenter failed to initialize. See error logs for " + "details",
+                GPU_ERROR
             )
             Log.e(
                 TAG,
@@ -128,18 +125,14 @@ class ImageSegmenterHelper(
     fun segmentsLiveStreamFrame(imageProxy: ImageProxy) {
         if (runningMode != RunningMode.LIVE_STREAM) {
             throw IllegalArgumentException(
-                "Attempting to call segmentsLiveStreamFrame" +
-                        " while not using RunningMode.LIVE_STREAM"
+                "Attempting to call segmentsLiveStreamFrame" + " while not using RunningMode.LIVE_STREAM"
             )
         }
 
         val frameTime = SystemClock.uptimeMillis()
-        val bitmapBuffer =
-            Bitmap.createBitmap(
-                imageProxy.width,
-                imageProxy.height,
-                Bitmap.Config.ARGB_8888
-            )
+        val bitmapBuffer = Bitmap.createBitmap(
+            imageProxy.width, imageProxy.height, Bitmap.Config.ARGB_8888
+        )
 
         imageProxy.use {
             bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer)
@@ -166,34 +159,44 @@ class ImageSegmenterHelper(
         segmentsAsync(mpImage, frameTime)
     }
 
-    // Run object detection using MediaPipe Object Detector API
     @VisibleForTesting
     fun segmentsAsync(mpImage: MPImage, frameTime: Long) {
-        // As we're using running mode LIVE_STREAM, the segmentation result will
-        // be returned in returnLivestreamResult function
         imagesegmenter?.segmentAsync(mpImage, frameTime)
     }
 
-    fun segments(bitmap: Bitmap) {
-        val mpImage = BitmapImageBuilder(bitmap).build()
-
+    // Runs image segmentation on single image and
+    // returns the results asynchronously to the caller.
+    fun segments(mpImage: MPImage) {
+        if (runningMode != RunningMode.IMAGE) {
+            throw IllegalArgumentException(
+                "Attempting to call segmentsLiveStreamFrame" + " while not using RunningMode.IMAGE"
+            )
+        }
         imagesegmenter?.segment(mpImage)
+    }
+
+    fun segmentsVideoFile(
+        mpImage: MPImage,
+    ) {
+        if (runningMode != RunningMode.VIDEO) {
+            throw IllegalArgumentException(
+                "Attempting to call segmentsLiveStreamFrame" + " while not using RunningMode.VIDEO"
+            )
+        }
+        imagesegmenter?.segmentForVideo(mpImage, SystemClock.uptimeMillis())
     }
 
     // MPImage isn't necessary for this example, but the listener requires it
     private fun returnLivestreamResult(
-        result: ImageSegmenterResult,
-        image: MPImage
+        result: ImageSegmenterResult, image: MPImage
     ) {
-
         val finishTimeMs = SystemClock.uptimeMillis()
 
         val inferenceTime = finishTimeMs - result.timestampMs()
 
         imageSegmenterListener?.onResults(
             ResultBundle(
-                result.segmentations().first(),
-                inferenceTime
+                result.segmentations().first(), inferenceTime
             )
         )
     }

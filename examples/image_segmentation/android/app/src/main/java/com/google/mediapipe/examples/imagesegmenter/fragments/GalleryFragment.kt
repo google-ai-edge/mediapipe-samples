@@ -15,9 +15,9 @@
  */
 package com.google.mediapipe.examples.imagesegmenter.fragments
 
-import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -33,9 +33,12 @@ import androidx.fragment.app.activityViewModels
 import com.google.mediapipe.examples.imagesegmenter.ImageSegmenterHelper
 import com.google.mediapipe.examples.imagesegmenter.MainViewModel
 import com.google.mediapipe.examples.imagesegmenter.databinding.FragmentGalleryBinding
+import com.google.mediapipe.framework.image.BitmapImageBuilder
+import com.google.mediapipe.framework.image.MPImage
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 
 class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     enum class MediaType {
@@ -46,10 +49,10 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     private val fragmentGalleryBinding
         get() = _fragmentGalleryBinding!!
     private val viewModel: MainViewModel by activityViewModels()
-    private lateinit var imageSegmenterHelper: ImageSegmenterHelper
+    private var imageSegmenterHelper: ImageSegmenterHelper? = null
 
     /** Blocking ML operations are performed using this executor */
-    private lateinit var backgroundExecutor: ScheduledExecutorService
+    private var backgroundExecutor: ScheduledExecutorService? = null
 
     private val getContent =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
@@ -86,15 +89,16 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
         fragmentGalleryBinding.fabGetContent.setOnClickListener {
             getContent.launch(arrayOf("image/*", "video/*"))
             updateDisplayView(MediaType.UNKNOWN)
-            fragmentGalleryBinding.overlayView.clear()
         }
-        fragmentGalleryBinding.overlayView.setRunningMode(RunningMode.IMAGE)
         initBottomSheetControls()
     }
 
-    private fun initBottomSheetControls() {
-        updateControlsUi()
+    override fun onPause() {
+        stopAllTasks()
+        super.onPause()
+    }
 
+    private fun initBottomSheetControls() {
         // When clicked, change the underlying hardware used for inference. Current options are CPU
         // GPU, and NNAPI
         fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.setSelection(
@@ -107,7 +111,7 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
                 ) {
 
                     viewModel.setDelegate(p2)
-                    updateControlsUi()
+                    stopAllTasks()
                 }
 
                 override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -116,42 +120,143 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
             }
     }
 
-    // Update the values displayed in the bottom sheet. Reset segmenter.
-    @SuppressLint("NotifyDataSetChanged")
-    private fun updateControlsUi() {
-        if (fragmentGalleryBinding.videoView.isPlaying) {
-            fragmentGalleryBinding.videoView.stopPlayback()
+    private fun stopAllTasks() {
+        with(fragmentGalleryBinding) {
+            if (videoView.isPlaying) {
+                fragmentGalleryBinding.videoView.stopPlayback()
+            }
+
+            // clear overlay view
+            overlayView.clear()
+            progress.visibility = View.GONE
+            updateDisplayView(MediaType.UNKNOWN)
         }
+
+        // shut down background tasks
+        backgroundExecutor?.shutdownNow()
+        backgroundExecutor = null
+
+        // clear Image Segmenter
+        imageSegmenterHelper?.clearListener()
+        imageSegmenterHelper?.clearImageSegmenter()
+        imageSegmenterHelper = null
     }
 
     // Load and display the image.
     private fun runSegmentationOnImage(uri: Uri) {
+        fragmentGalleryBinding.overlayView.setRunningMode(RunningMode.IMAGE)
         setUiEnabled(false)
-        backgroundExecutor = Executors.newSingleThreadScheduledExecutor()
         updateDisplayView(MediaType.IMAGE)
+
+        // display image on UI
         fragmentGalleryBinding.imageResult.setImageBitmap(uri.toBitmap())
 
-        // Run image classification on the input image
-        backgroundExecutor.execute {
+        imageSegmenterHelper = ImageSegmenterHelper(
+            context = requireContext(),
+            runningMode = RunningMode.IMAGE,
+            currentDelegate = viewModel.currentDelegate,
+            imageSegmenterListener = this
+        )
 
-            imageSegmenterHelper = ImageSegmenterHelper(
-                context = requireContext(),
-                runningMode = RunningMode.IMAGE,
-                currentDelegate = viewModel.currentDelegate,
-                imageSegmenterListener = this
-            )
-            imageSegmenterHelper.segments(uri.toBitmap())
+        backgroundExecutor = Executors.newSingleThreadScheduledExecutor()
+        // Run image segmentation on the input image
+        backgroundExecutor?.execute {
+            val mpImage = BitmapImageBuilder(uri.toBitmap()).build()
+            imageSegmenterHelper?.segments(mpImage)
         }
     }
 
     // Load and display the video.
     private fun runSegmentationOnVideo(uri: Uri) {
+        fragmentGalleryBinding.overlayView.setRunningMode(RunningMode.VIDEO)
+        setUiEnabled(false)
+        updateDisplayView(MediaType.VIDEO)
 
+        // prepare video before start
+        with(fragmentGalleryBinding.videoView) {
+            setVideoURI(uri)
+            // mute the audio
+            setOnPreparedListener { it.setVolume(0f, 0f) }
+            requestFocus()
+        }
+        fragmentGalleryBinding.videoView.visibility = View.GONE
+        fragmentGalleryBinding.progress.visibility = View.VISIBLE
+
+        imageSegmenterHelper = ImageSegmenterHelper(
+            context = requireContext(),
+            runningMode = RunningMode.VIDEO,
+            currentDelegate = viewModel.currentDelegate,
+            imageSegmenterListener = this
+        )
+
+        // If ImageSegmenterHelper is closed after creation,
+        // it means that ImageSegmenterHelper is corrupted.
+        if (imageSegmenterHelper?.isClosed() == true) return
+
+        // Load frames from the video.
+        val retriever = MediaMetadataRetriever()
+        retriever.setDataSource(context, uri)
+        val videoLengthMs =
+            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                ?.toLong()
+
+        // Note: We need to read width/height from frame instead of getting the width/height
+        // of the video directly because MediaRetriever returns frames that are smaller than the
+        // actual dimension of the video file.
+        val firstFrame = retriever.getFrameAtTime(0)
+        val width = firstFrame?.width
+        val height = firstFrame?.height
+
+        // If the video is invalid, returns a null
+        if ((videoLengthMs == null) || (width == null) || (height == null)) return
+
+        // Next, we'll get one frame every frameInterval ms
+        val numberOfFrameToRead = videoLengthMs.div(VIDEO_INTERVAL_MS)
+        var frameIndex = 0
+        backgroundExecutor = Executors.newSingleThreadScheduledExecutor()
+        val mpImages: MutableList<MPImage> = mutableListOf()
+        backgroundExecutor?.execute {
+            for (i in 0..numberOfFrameToRead) {
+                val timestampMs = i * VIDEO_INTERVAL_MS // ms
+
+                retriever
+                    .getFrameAtTime(
+                        timestampMs * 1000, // convert from ms to micro-s
+                        MediaMetadataRetriever.OPTION_CLOSEST
+                    )
+                    ?.let { frame ->
+                        // Convert the video frame to ARGB_8888 which is required by the MediaPipe
+                        val argb8888Frame =
+                            if (frame.config == Bitmap.Config.ARGB_8888) frame
+                            else frame.copy(Bitmap.Config.ARGB_8888, false)
+
+                        // Convert the input Bitmap object to an MPImage object to run inference
+                        val mpImage = BitmapImageBuilder(argb8888Frame).build()
+                        mpImages.add(mpImage)
+                    }
+            }
+            retriever.release()
+            displayVideoResult()
+
+            backgroundExecutor?.scheduleAtFixedRate({
+                // run segmentation on each frames.
+                imageSegmenterHelper?.segmentsVideoFile(mpImages[frameIndex])
+                frameIndex++
+                if (frameIndex >= numberOfFrameToRead.toInt()) {
+                    backgroundExecutor?.shutdown()
+                }
+            }, 0, VIDEO_INTERVAL_MS, TimeUnit.MILLISECONDS)
+        }
     }
 
-    // Setup and display the video.
-    private fun displayVideoResult(result: ImageSegmenterHelper.ResultBundle) {
 
+    // Setup and display the video.
+    private fun displayVideoResult() {
+        activity?.runOnUiThread {
+            fragmentGalleryBinding.videoView.visibility = View.VISIBLE
+            fragmentGalleryBinding.progress.visibility = View.GONE
+            fragmentGalleryBinding.videoView.start()
+        }
     }
 
     private fun updateDisplayView(mediaType: MediaType) {
@@ -182,12 +287,13 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
 
     private fun segmentationError() {
         activity?.runOnUiThread {
-            fragmentGalleryBinding.progress.visibility = View.GONE
+            stopAllTasks()
             setUiEnabled(true)
             updateDisplayView(MediaType.UNKNOWN)
         }
     }
 
+    // convert Uri to bitmap image.
     private fun Uri.toBitmap(): Bitmap {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             val source = ImageDecoder.createSource(
@@ -215,17 +321,17 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     }
 
     override fun onResults(resultBundle: ImageSegmenterHelper.ResultBundle) {
-       activity?.runOnUiThread {
-           if (_fragmentGalleryBinding != null) {
-               setUiEnabled(true)
-               fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
-                   String.format("%d ms", resultBundle.inferenceTime)
-               fragmentGalleryBinding.overlayView.setResults(
-                   resultBundle.results
-               )
-               fragmentGalleryBinding.overlayView.invalidate()
-           }
-       }
+        activity?.runOnUiThread {
+            if (_fragmentGalleryBinding != null) {
+                setUiEnabled(true)
+                fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
+                    String.format("%d ms", resultBundle.inferenceTime)
+                fragmentGalleryBinding.overlayView.setResults(
+                    resultBundle.results
+                )
+                fragmentGalleryBinding.overlayView.invalidate()
+            }
+        }
     }
 
     companion object {
