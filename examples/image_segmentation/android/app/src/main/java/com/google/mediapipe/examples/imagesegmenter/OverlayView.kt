@@ -21,9 +21,8 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.util.AttributeSet
 import android.view.View
-import com.google.mediapipe.framework.image.ByteBufferExtractor
-import com.google.mediapipe.framework.image.MPImage
 import com.google.mediapipe.tasks.vision.core.RunningMode
+import java.nio.ByteBuffer
 import kotlin.math.max
 import kotlin.math.min
 
@@ -71,17 +70,17 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
             canvas.drawBitmap(it, 0f, 0f, null)
         }
     }
-    fun setRunningMode(runningMode: RunningMode){
+
+    fun setRunningMode(runningMode: RunningMode) {
         this.runningMode = runningMode
     }
 
     fun setResults(
-        mpImage: MPImage,
+        byteBuffer: ByteBuffer,
+        outputWidth: Int,
+        outputHeight: Int
     ) {
         // Create the mask bitmap with colors and the set of detected labels.
-        // We only need the first mask for this sample because we are using
-        // the OutputType CATEGORY_MASK, which only provides a single mask.
-        val byteBuffer = ByteBufferExtractor.extract(mpImage)
         val pixels = IntArray(byteBuffer.capacity())
         for (i in pixels.indices) {
             val index = byteBuffer.get(i).toInt()
@@ -89,33 +88,33 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                 if (index in 1..20) labelColors[index].toColor() else Color.TRANSPARENT
             pixels[i] = color
         }
-
         val image = Bitmap.createBitmap(
             pixels,
-            mpImage.width,
-            mpImage.height,
+            outputWidth,
+            outputHeight,
             Bitmap.Config.ARGB_8888
         )
 
         val scaleFactor = when (runningMode) {
             RunningMode.IMAGE,
             RunningMode.VIDEO -> {
-                min(width * 1f / mpImage.width, height * 1f / mpImage.height)
+                min(width * 1f / outputWidth, height * 1f / outputHeight)
             }
             RunningMode.LIVE_STREAM -> {
                 // PreviewView is in FILL_START mode. So we need to scale up the
                 // landmarks to match with the size that the captured images will be
                 // displayed.
-                max(width * 1f / mpImage.width, height * 1f / mpImage.height)
+                max(width * 1f / outputWidth, height * 1f / outputHeight)
             }
         }
 
-        val scaleWidth = (mpImage.width * scaleFactor).toInt()
-        val scaleHeight = (mpImage.height * scaleFactor).toInt()
+        val scaleWidth = (outputWidth * scaleFactor).toInt()
+        val scaleHeight = (outputHeight * scaleFactor).toInt()
 
         scaleBitmap = Bitmap.createScaledBitmap(
             image, scaleWidth, scaleHeight, false
         )
+        invalidate()
     }
 
     private fun Int.toColor(): Int {

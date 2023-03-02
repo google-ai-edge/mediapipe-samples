@@ -24,12 +24,14 @@ import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.camera.core.ImageProxy
 import com.google.mediapipe.framework.image.BitmapImageBuilder
+import com.google.mediapipe.framework.image.ByteBufferExtractor
 import com.google.mediapipe.framework.image.MPImage
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.imagesegmenter.ImageSegmenter
 import com.google.mediapipe.tasks.vision.imagesegmenter.ImageSegmenterResult
+import java.nio.ByteBuffer
 
 class ImageSegmenterHelper(
     var currentDelegate: Int = DELEGATE_CPU,
@@ -53,7 +55,7 @@ class ImageSegmenterHelper(
         imagesegmenter = null
     }
 
-    fun setListener(listener: SegmenterListener){
+    fun setListener(listener: SegmenterListener) {
         imageSegmenterListener = listener
     }
 
@@ -194,9 +196,16 @@ class ImageSegmenterHelper(
 
         val inferenceTime = finishTimeMs - result.timestampMs()
 
+        // We only need the first mask for this sample because we are using
+        // the OutputType CATEGORY_MASK, which only provides a single mask.
+        val mpImage = result.segmentations().first()
+
         imageSegmenterListener?.onResults(
             ResultBundle(
-                result.segmentations().first(), inferenceTime
+                ByteBufferExtractor.extract(mpImage),
+                mpImage.width,
+                mpImage.height,
+                inferenceTime
             )
         )
     }
@@ -213,7 +222,9 @@ class ImageSegmenterHelper(
     // Wraps results from inference, the time it takes for inference to be
     // performed.
     data class ResultBundle(
-        val results: MPImage,
+        val results: ByteBuffer,
+        val width: Int,
+        val height: Int,
         val inferenceTime: Long,
     )
 

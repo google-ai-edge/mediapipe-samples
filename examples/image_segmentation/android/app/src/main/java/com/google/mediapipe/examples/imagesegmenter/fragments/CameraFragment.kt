@@ -268,13 +268,16 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     override fun onResults(
         resultBundle: ImageSegmenterHelper.ResultBundle
     ) {
-        if (_fragmentCameraBinding != null) {
-            fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
-                String.format("%d ms", resultBundle.inferenceTime)
-            fragmentCameraBinding.overlayView.setResults(
-                resultBundle.results
-            )
-            fragmentCameraBinding.overlayView.invalidate()
+        activity?.runOnUiThread {
+            if (_fragmentCameraBinding != null) {
+                fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
+                    String.format("%d ms", resultBundle.inferenceTime)
+                fragmentCameraBinding.overlayView.setResults(
+                    resultBundle.results,
+                    resultBundle.width,
+                    resultBundle.height
+                )
+            }
         }
     }
 }
