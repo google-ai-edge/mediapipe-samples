@@ -36,6 +36,9 @@ import com.google.mediapipe.examples.imagesegmenter.databinding.FragmentGalleryB
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.MPImage
 import com.google.mediapipe.tasks.vision.core.RunningMode
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -321,16 +324,18 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     }
 
     override fun onResults(resultBundle: ImageSegmenterHelper.ResultBundle) {
-        activity?.runOnUiThread {
-            if (_fragmentGalleryBinding != null) {
-                setUiEnabled(true)
-                fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
-                    String.format("%d ms", resultBundle.inferenceTime)
-                fragmentGalleryBinding.overlayView.setResults(
-                    resultBundle.results,
-                    resultBundle.width,
-                    resultBundle.height
-                )
+        runBlocking {
+            withContext(Dispatchers.Main) {
+                if (_fragmentGalleryBinding != null) {
+                    setUiEnabled(true)
+                    fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
+                        String.format("%d ms", resultBundle.inferenceTime)
+                    fragmentGalleryBinding.overlayView.setResults(
+                        resultBundle.results,
+                        resultBundle.width,
+                        resultBundle.height
+                    )
+                }
             }
         }
     }
