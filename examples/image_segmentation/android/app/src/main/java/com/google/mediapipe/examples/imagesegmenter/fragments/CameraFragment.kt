@@ -35,7 +35,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.Navigation
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.mediapipe.examples.imagesegmenter.ImageSegmenterHelper
 import com.google.mediapipe.examples.imagesegmenter.MainViewModel
 import com.google.mediapipe.examples.imagesegmenter.R
@@ -123,11 +122,6 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     @SuppressLint("MissingPermission")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        with(fragmentCameraBinding.recyclerviewResults) {
-            layoutManager = LinearLayoutManager(requireContext())
-        }
-
         backgroundExecutor = Executors.newSingleThreadExecutor()
         backgroundExecutor?.execute {
             imageSegmenterHelper = ImageSegmenterHelper(

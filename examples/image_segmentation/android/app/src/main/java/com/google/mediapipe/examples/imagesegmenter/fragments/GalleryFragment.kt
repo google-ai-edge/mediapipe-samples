@@ -36,12 +36,13 @@ import com.google.mediapipe.examples.imagesegmenter.databinding.FragmentGalleryB
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.MPImage
 import com.google.mediapipe.tasks.vision.core.RunningMode
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
+import kotlin.concurrent.fixedRateTimer
 
 class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     enum class MediaType {
@@ -53,9 +54,7 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
         get() = _fragmentGalleryBinding!!
     private val viewModel: MainViewModel by activityViewModels()
     private var imageSegmenterHelper: ImageSegmenterHelper? = null
-
-    /** Blocking ML operations are performed using this executor */
-    private var backgroundExecutor: ScheduledExecutorService? = null
+    private var backgroundScope: CoroutineScope? = null
 
     private val getContent =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
@@ -135,9 +134,9 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
             updateDisplayView(MediaType.UNKNOWN)
         }
 
-        // shut down background tasks
-        backgroundExecutor?.shutdownNow()
-        backgroundExecutor = null
+        // cancel all jobs
+        backgroundScope?.cancel()
+        backgroundScope = null
 
         // clear Image Segmenter
         imageSegmenterHelper?.clearListener()
@@ -154,6 +153,8 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
         // display image on UI
         fragmentGalleryBinding.imageResult.setImageBitmap(uri.toBitmap())
 
+        backgroundScope = CoroutineScope(Dispatchers.IO)
+
         imageSegmenterHelper = ImageSegmenterHelper(
             context = requireContext(),
             runningMode = RunningMode.IMAGE,
@@ -161,9 +162,8 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
             imageSegmenterListener = this
         )
 
-        backgroundExecutor = Executors.newSingleThreadScheduledExecutor()
         // Run image segmentation on the input image
-        backgroundExecutor?.execute {
+        backgroundScope?.launch {
             val mpImage = BitmapImageBuilder(uri.toBitmap()).build()
             imageSegmenterHelper?.segments(mpImage)
         }
@@ -185,6 +185,8 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
         fragmentGalleryBinding.videoView.visibility = View.GONE
         fragmentGalleryBinding.progress.visibility = View.VISIBLE
 
+        backgroundScope = CoroutineScope(Dispatchers.IO)
+
         imageSegmenterHelper = ImageSegmenterHelper(
             context = requireContext(),
             runningMode = RunningMode.VIDEO,
@@ -196,29 +198,28 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
         // it means that ImageSegmenterHelper is corrupted.
         if (imageSegmenterHelper?.isClosed() == true) return
 
-        // Load frames from the video.
-        val retriever = MediaMetadataRetriever()
-        retriever.setDataSource(context, uri)
-        val videoLengthMs =
-            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                ?.toLong()
+        backgroundScope?.launch {
+            // Load frames from the video.
+            val retriever = MediaMetadataRetriever()
+            retriever.setDataSource(context, uri)
+            val videoLengthMs =
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                    ?.toLong()
 
-        // Note: We need to read width/height from frame instead of getting the width/height
-        // of the video directly because MediaRetriever returns frames that are smaller than the
-        // actual dimension of the video file.
-        val firstFrame = retriever.getFrameAtTime(0)
-        val width = firstFrame?.width
-        val height = firstFrame?.height
+            // Note: We need to read width/height from frame instead of getting the width/height
+            // of the video directly because MediaRetriever returns frames that are smaller than the
+            // actual dimension of the video file.
+            val firstFrame = retriever.getFrameAtTime(0)
+            val width = firstFrame?.width
+            val height = firstFrame?.height
 
-        // If the video is invalid, returns a null
-        if ((videoLengthMs == null) || (width == null) || (height == null)) return
+            // If the video is invalid, returns a null
+            if ((videoLengthMs == null) || (width == null) || (height == null)) return@launch
 
-        // Next, we'll get one frame every frameInterval ms
-        val numberOfFrameToRead = videoLengthMs.div(VIDEO_INTERVAL_MS)
-        var frameIndex = 0
-        backgroundExecutor = Executors.newSingleThreadScheduledExecutor()
-        val mpImages: MutableList<MPImage> = mutableListOf()
-        backgroundExecutor?.execute {
+            // Next, we'll get one frame every frameInterval ms
+            val numberOfFrameToRead = videoLengthMs.div(VIDEO_INTERVAL_MS)
+            var frameIndex = 0
+            val mpImages: MutableList<MPImage> = mutableListOf()
             for (i in 0..numberOfFrameToRead) {
                 val timestampMs = i * VIDEO_INTERVAL_MS // ms
 
@@ -239,27 +240,26 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
                     }
             }
             retriever.release()
-            displayVideoResult()
+            withContext(Dispatchers.Main) {
+                displayVideoResult()
+            }
 
-            backgroundExecutor?.scheduleAtFixedRate({
+            fixedRateTimer("", true, 0, VIDEO_INTERVAL_MS) {
                 // run segmentation on each frames.
                 imageSegmenterHelper?.segmentsVideoFile(mpImages[frameIndex])
                 frameIndex++
                 if (frameIndex >= numberOfFrameToRead.toInt()) {
-                    backgroundExecutor?.shutdown()
+                    this.cancel()
                 }
-            }, 0, VIDEO_INTERVAL_MS, TimeUnit.MILLISECONDS)
+            }
         }
     }
 
-
     // Setup and display the video.
     private fun displayVideoResult() {
-        activity?.runOnUiThread {
-            fragmentGalleryBinding.videoView.visibility = View.VISIBLE
-            fragmentGalleryBinding.progress.visibility = View.GONE
-            fragmentGalleryBinding.videoView.start()
-        }
+        fragmentGalleryBinding.videoView.visibility = View.VISIBLE
+        fragmentGalleryBinding.progress.visibility = View.GONE
+        fragmentGalleryBinding.videoView.start()
     }
 
     private fun updateDisplayView(mediaType: MediaType) {
@@ -289,11 +289,9 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     }
 
     private fun segmentationError() {
-        activity?.runOnUiThread {
-            stopAllTasks()
-            setUiEnabled(true)
-            updateDisplayView(MediaType.UNKNOWN)
-        }
+        stopAllTasks()
+        setUiEnabled(true)
+        updateDisplayView(MediaType.UNKNOWN)
     }
 
     // convert Uri to bitmap image.
@@ -311,14 +309,17 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     }
 
     override fun onError(error: String, errorCode: Int) {
-        segmentationError()
-        activity?.runOnUiThread {
-            Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
-            if (errorCode == ImageSegmenterHelper.GPU_ERROR) {
-                fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.setSelection(
-                    ImageSegmenterHelper.DELEGATE_CPU,
-                    false
-                )
+        backgroundScope?.launch {
+            withContext(Dispatchers.Main) {
+                segmentationError()
+                Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT)
+                    .show()
+                if (errorCode == ImageSegmenterHelper.GPU_ERROR) {
+                    fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.setSelection(
+                        ImageSegmenterHelper.DELEGATE_CPU,
+                        false
+                    )
+                }
             }
         }
     }
