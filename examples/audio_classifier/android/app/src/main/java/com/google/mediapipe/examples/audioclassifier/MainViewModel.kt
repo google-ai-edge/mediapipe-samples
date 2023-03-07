@@ -20,19 +20,13 @@ import androidx.lifecycle.ViewModel
 
 class MainViewModel : ViewModel() {
 
-    private var _delegate: Int = AudioClassifierHelper.DELEGATE_CPU
     private var _threshold: Float = AudioClassifierHelper.DISPLAY_THRESHOLD
     private var _maxResults: Int = AudioClassifierHelper.DEFAULT_NUM_OF_RESULTS
     private var _overlapPosition: Int = 2
 
-    val currentDelegate: Int get() = _delegate
     val currentThreshold: Float get() = _threshold
     val currentMaxResults: Int get() = _maxResults
     val currentOverlapPosition: Int get() = _overlapPosition
-
-    fun setDelegate(delegate: Int) {
-        _delegate = delegate
-    }
 
     fun setThreshold(threshold: Float) {
         _threshold = threshold

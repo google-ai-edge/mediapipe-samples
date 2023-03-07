@@ -84,7 +84,6 @@ class RecorderFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
                     classificationThreshold = viewModel.currentThreshold,
                     overlap = viewModel.currentOverlapPosition,
                     numOfResults = viewModel.currentMaxResults,
-                    currentDelegate = viewModel.currentDelegate,
                     runningMode = RunningMode.AUDIO_STREAM,
                     listener = this
                 )
@@ -117,7 +116,6 @@ class RecorderFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
 
         // save audio classifier settings
         viewModel.apply {
-            setDelegate(audioClassifierHelper.currentDelegate)
             setThreshold(audioClassifierHelper.classificationThreshold)
             setMaxResults(audioClassifierHelper.numOfResults)
             setOverlap(audioClassifierHelper.overlap)
@@ -192,31 +190,11 @@ class RecorderFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
             }
         }
 
-        fragmentRecorderBinding.bottomSheetLayout.spinnerDelegate.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    audioClassifierHelper.currentDelegate = position
-                    updateControlsUi()
-                }
-
-                override fun onNothingSelected(p0: AdapterView<*>?) {
-                    /* no op */
-                }
-            }
-
         fragmentRecorderBinding.bottomSheetLayout.spinnerOverlap.setSelection(
             viewModel.currentOverlapPosition,
             false
         )
-        fragmentRecorderBinding.bottomSheetLayout.spinnerDelegate.setSelection(
-            viewModel.currentDelegate,
-            false
-        )
+
         fragmentRecorderBinding.bottomSheetLayout.thresholdValue.text =
             viewModel.currentThreshold.toString()
         fragmentRecorderBinding.bottomSheetLayout.resultsValue.text =

@@ -24,7 +24,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -134,7 +133,6 @@ class LibraryFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
                 classificationThreshold = viewModel.currentThreshold,
                 overlap = viewModel.currentOverlapPosition,
                 numOfResults = viewModel.currentMaxResults,
-                currentDelegate = viewModel.currentDelegate,
                 runningMode = RunningMode.AUDIO_CLIPS,
                 listener = this
             )
@@ -255,25 +253,7 @@ class LibraryFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
             }
         }
 
-        fragmentLibraryBinding.bottomSheetLayout.spinnerDelegate.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    viewModel.setDelegate(position)
-                    updateControlsUi()
-                }
-
-                override fun onNothingSelected(p0: AdapterView<*>?) {
-                    /* no op */
-                }
-            }
-
         with(fragmentLibraryBinding.bottomSheetLayout) {
-            spinnerDelegate.setSelection(viewModel.currentDelegate, false)
             thresholdValue.text = viewModel.currentThreshold.toString()
             resultsValue.text = viewModel.currentMaxResults.toString()
             // hide overlap in audio clip mode
@@ -299,7 +279,6 @@ class LibraryFragment : Fragment(), AudioClassifierHelper.ClassifierListener {
             thresholdPlus.isEnabled = enabled
             resultsMinus.isEnabled = enabled
             resultsPlus.isEnabled = enabled
-            spinnerDelegate.isEnabled = enabled
         }
     }
 

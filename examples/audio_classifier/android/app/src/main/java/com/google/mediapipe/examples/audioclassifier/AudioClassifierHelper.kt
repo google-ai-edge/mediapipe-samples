@@ -59,20 +59,6 @@ class AudioClassifierHelper(
         // Set general detection options, e.g. number of used threads
         val baseOptionsBuilder = BaseOptions.builder()
 
-        // Use the specified hardware for running the model. Default to CPU.
-        // Possible to also use a GPU delegate, but this requires that the classifier be created
-        // on the same thread that is using the classifier, which is outside of the scope of this
-        // sample's design.
-        when (currentDelegate) {
-            DELEGATE_CPU -> {
-                // Default
-                baseOptionsBuilder.setDelegate(Delegate.CPU)
-            }
-            DELEGATE_GPU -> {
-                baseOptionsBuilder.setDelegate(Delegate.GPU)
-            }
-        }
-
         baseOptionsBuilder.setModelAssetPath(YAMNET_MODEL)
 
         try {
