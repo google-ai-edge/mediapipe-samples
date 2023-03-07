@@ -98,12 +98,15 @@ class AudioClassifierHelper(
                 AudioClassifier.createFromOptions(context, options)
             if (runningMode == RunningMode.AUDIO_STREAM) {
                 recorder = AudioRecord(
-                    MediaRecorder.AudioSource.DEFAULT,
+                    MediaRecorder.AudioSource.VOICE_RECOGNITION,
                     SAMPLING_RATE_IN_HZ,
                     CHANNEL_CONFIG,
                     AUDIO_FORMAT,
                     BUFFER_SIZE_IN_BYTES.toInt()
                 )
+
+//                recorder = AudioClassifier.createAudioRecord(AudioFormat.CHANNEL_IN_DEFAULT, SAMPLING_RATE_IN_HZ)
+
                 startAudioClassification()
             }
         } catch (e: IllegalStateException) {
@@ -151,16 +154,12 @@ class AudioClassifierHelper(
     }
 
     private fun classifyAudioAsync(audioRecord: AudioRecord) {
-        // create audio data for recording.
         val audioData = AudioData.create(
-            AudioDataFormat.builder().setNumOfChannels(
-                AudioFormat.CHANNEL_IN_DEFAULT
-            ).setSampleRate(SAMPLING_RATE_IN_HZ.toFloat()).build(),
-            REQUIRE_INPUT_BUFFER_SIZE.toInt()
+            AudioDataFormat.create(recorder!!.getFormat()),  /* sampleCounts= */SAMPLING_RATE_IN_HZ
         )
         audioData.load(audioRecord)
+
         val inferenceTime = SystemClock.uptimeMillis()
-        // run audio classifier
         audioClassifier?.classifyAsync(audioData, inferenceTime)
     }
 
