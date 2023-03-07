@@ -38,7 +38,6 @@ class AudioClassifierHelper(
     var classificationThreshold: Float = DISPLAY_THRESHOLD,
     var overlap: Int = DEFAULT_OVERLAP,
     var numOfResults: Int = DEFAULT_NUM_OF_RESULTS,
-    var currentDelegate: Int = DELEGATE_CPU,
     var runningMode: RunningMode = RunningMode.AUDIO_CLIPS,
     var listener: ClassifierListener? = null,
 ) {
@@ -83,6 +82,7 @@ class AudioClassifierHelper(
             audioClassifier =
                 AudioClassifier.createFromOptions(context, options)
             if (runningMode == RunningMode.AUDIO_STREAM) {
+
                 recorder = AudioRecord(
                     MediaRecorder.AudioSource.VOICE_RECOGNITION,
                     SAMPLING_RATE_IN_HZ,
@@ -196,8 +196,6 @@ class AudioClassifierHelper(
 
     companion object {
         private const val TAG = "AudioClassifierHelper"
-        const val DELEGATE_CPU = 0
-        const val DELEGATE_GPU = 1
         const val DISPLAY_THRESHOLD = 0.3f
         const val DEFAULT_NUM_OF_RESULTS = 2
         const val DEFAULT_OVERLAP = 2
