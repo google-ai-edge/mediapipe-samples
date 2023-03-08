@@ -2,7 +2,7 @@
 
 ### Overview
 
-This is a camera app that continuously segments the objects in the frames seen
+This is a camera app that continuously segment the objects in the frames seen
 by your device's back camera, in an image imported from the device gallery, or
 in a video imported by the device gallery, with the option to use
 a [Deeplab V3](https://storage.googleapis.com/mediapipe-assets/deeplabv3.tflite?generation=1661875711618421)

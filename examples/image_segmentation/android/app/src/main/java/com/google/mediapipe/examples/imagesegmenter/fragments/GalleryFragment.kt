@@ -42,6 +42,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import java.util.Timer
 import kotlin.concurrent.fixedRateTimer
 
 class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
@@ -55,6 +56,7 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     private val viewModel: MainViewModel by activityViewModels()
     private var imageSegmenterHelper: ImageSegmenterHelper? = null
     private var backgroundScope: CoroutineScope? = null
+    private var fixedRateTimer: Timer? = null
 
     private val getContent =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
@@ -123,25 +125,29 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     }
 
     private fun stopAllTasks() {
-        with(fragmentGalleryBinding) {
-            if (videoView.isPlaying) {
-                fragmentGalleryBinding.videoView.stopPlayback()
+        runBlocking {
+            with(fragmentGalleryBinding) {
+                if (videoView.isPlaying) {
+                    fragmentGalleryBinding.videoView.stopPlayback()
+                }
+
+                // clear overlay view
+                overlayView.clear()
+                progress.visibility = View.GONE
+                updateDisplayView(MediaType.UNKNOWN)
             }
 
-            // clear overlay view
-            overlayView.clear()
-            progress.visibility = View.GONE
-            updateDisplayView(MediaType.UNKNOWN)
+            // cancel all jobs
+            fixedRateTimer?.cancel()
+            fixedRateTimer = null
+            backgroundScope?.cancel()
+            backgroundScope = null
+
+            // clear Image Segmenter
+            imageSegmenterHelper?.clearListener()
+            imageSegmenterHelper?.clearImageSegmenter()
+            imageSegmenterHelper = null
         }
-
-        // cancel all jobs
-        backgroundScope?.cancel()
-        backgroundScope = null
-
-        // clear Image Segmenter
-        imageSegmenterHelper?.clearListener()
-        imageSegmenterHelper?.clearImageSegmenter()
-        imageSegmenterHelper = null
     }
 
     // Load and display the image.
@@ -165,7 +171,7 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
         // Run image segmentation on the input image
         backgroundScope?.launch {
             val mpImage = BitmapImageBuilder(uri.toBitmap()).build()
-            imageSegmenterHelper?.segments(mpImage)
+            imageSegmenterHelper?.segmentImageFile(mpImage)
         }
     }
 
@@ -242,11 +248,12 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
             retriever.release()
             withContext(Dispatchers.Main) {
                 displayVideoResult()
+                setUiEnabled(true)
             }
 
-            fixedRateTimer("", true, 0, VIDEO_INTERVAL_MS) {
+            fixedRateTimer = fixedRateTimer("", true, 0, VIDEO_INTERVAL_MS) {
                 // run segmentation on each frames.
-                imageSegmenterHelper?.segmentsVideoFile(mpImages[frameIndex])
+                imageSegmenterHelper?.segmentVideoFile(mpImages[frameIndex])
                 frameIndex++
                 if (frameIndex >= numberOfFrameToRead.toInt()) {
                     this.cancel()

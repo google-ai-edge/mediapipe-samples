@@ -224,7 +224,7 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
                     backgroundExecutor?.let { executor ->
                         it.setAnalyzer(
                             executor,
-                            imageSegmenterHelper::segmentsLiveStreamFrame
+                            imageSegmenterHelper::segmentLiveStreamFrame
                         )
                     }
                 }
@@ -262,15 +262,15 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     override fun onResults(
         resultBundle: ImageSegmenterHelper.ResultBundle
     ) {
-        if (_fragmentCameraBinding != null) {
-            fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
+        _fragmentCameraBinding?.let { binding ->
+            binding.bottomSheetLayout.inferenceTimeVal.text =
                 String.format("%d ms", resultBundle.inferenceTime)
-            fragmentCameraBinding.overlayView.setResults(
+            binding.overlayView.setResults(
                 resultBundle.results,
                 resultBundle.width,
                 resultBundle.height
             )
-            fragmentCameraBinding.overlayView.invalidate()
+            binding.overlayView.invalidate()
         }
     }
 }

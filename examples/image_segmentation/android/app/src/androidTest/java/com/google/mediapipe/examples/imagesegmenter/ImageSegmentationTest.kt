@@ -93,7 +93,7 @@ class ImageSegmentationTest {
         val mpImage = BitmapImageBuilder(testBitmap).build()
 
         // Run the image segmentation with the test image.
-        imageSegmenterHelper.segments(mpImage)
+        imageSegmenterHelper.segmentImageFile(mpImage)
 
         // Lock to wait the imageSegmenterHelper return the value.
         countDownLatch.await()

@@ -21,7 +21,6 @@ import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.os.SystemClock
 import android.util.Log
-import androidx.annotation.VisibleForTesting
 import androidx.camera.core.ImageProxy
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.ByteBufferExtractor
@@ -85,7 +84,6 @@ class ImageSegmenterHelper(
         }
         baseOptionsBuilder.setModelAssetPath(MODEL_PATH)
 
-        // Check if runningMode is consistent with imageSegmenterListener
         if (imageSegmenterListener == null) {
             throw IllegalStateException(
                 "ImageSegmenterListener must be set."
@@ -97,8 +95,9 @@ class ImageSegmenterHelper(
             val optionsBuilder = ImageSegmenter.ImageSegmenterOptions.builder()
                 .setRunningMode(runningMode).setBaseOptions(baseOptions)
                 .setOutputType(ImageSegmenter.ImageSegmenterOptions.OutputType.CATEGORY_MASK)
-                .setResultListener(this::returnLivestreamResult)
-                .setErrorListener(this::returnLivestreamError)
+                // The listeners being needed for all modes
+                .setResultListener(this::returnSegmentationResult)
+                .setErrorListener(this::returnSegmentationHelperError)
             val options = optionsBuilder.build()
             imagesegmenter = ImageSegmenter.createFromOptions(context, options)
         } catch (e: IllegalStateException) {
@@ -124,10 +123,10 @@ class ImageSegmenterHelper(
 
     // Runs image segmentation on live streaming cameras frame-by-frame and
     // returns the results asynchronously to the caller.
-    fun segmentsLiveStreamFrame(imageProxy: ImageProxy) {
+    fun segmentLiveStreamFrame(imageProxy: ImageProxy) {
         if (runningMode != RunningMode.LIVE_STREAM) {
             throw IllegalArgumentException(
-                "Attempting to call segmentsLiveStreamFrame" + " while not using RunningMode.LIVE_STREAM"
+                "Attempting to call segmentLiveStreamFrame" + " while not using RunningMode.LIVE_STREAM"
             )
         }
 
@@ -158,38 +157,33 @@ class ImageSegmenterHelper(
 
         val mpImage = BitmapImageBuilder(rotatedBitmap).build()
 
-        segmentsAsync(mpImage, frameTime)
-    }
-
-    @VisibleForTesting
-    fun segmentsAsync(mpImage: MPImage, frameTime: Long) {
         imagesegmenter?.segmentAsync(mpImage, frameTime)
     }
 
     // Runs image segmentation on single image and
     // returns the results asynchronously to the caller.
-    fun segments(mpImage: MPImage) {
+    fun segmentImageFile(mpImage: MPImage) {
         if (runningMode != RunningMode.IMAGE) {
             throw IllegalArgumentException(
-                "Attempting to call segmentsLiveStreamFrame" + " while not using RunningMode.IMAGE"
+                "Attempting to call segmentImageFile" + " while not using RunningMode.IMAGE"
             )
         }
         imagesegmenter?.segment(mpImage)
     }
 
-    fun segmentsVideoFile(
-        mpImage: MPImage,
-    ) {
+    // Runs image segmentation on each video frame and
+    // returns the results asynchronously to the caller.
+    fun segmentVideoFile(mpImage: MPImage) {
         if (runningMode != RunningMode.VIDEO) {
             throw IllegalArgumentException(
-                "Attempting to call segmentsLiveStreamFrame" + " while not using RunningMode.VIDEO"
+                "Attempting to call segmentVideoFile" + " while not using RunningMode.VIDEO"
             )
         }
         imagesegmenter?.segmentForVideo(mpImage, SystemClock.uptimeMillis())
     }
 
     // MPImage isn't necessary for this example, but the listener requires it
-    private fun returnLivestreamResult(
+    private fun returnSegmentationResult(
         result: ImageSegmenterResult, image: MPImage
     ) {
         val finishTimeMs = SystemClock.uptimeMillis()
@@ -212,12 +206,11 @@ class ImageSegmenterHelper(
 
     // Return errors thrown during segmentation to this
     // ImageSegmenterHelper's caller
-    private fun returnLivestreamError(error: RuntimeException) {
+    private fun returnSegmentationHelperError(error: RuntimeException) {
         imageSegmenterListener?.onError(
             error.message ?: "An unknown error has occurred"
         )
     }
-
 
     // Wraps results from inference, the time it takes for inference to be
     // performed.
