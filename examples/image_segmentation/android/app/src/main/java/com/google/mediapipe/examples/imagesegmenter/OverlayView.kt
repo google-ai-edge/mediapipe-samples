@@ -30,34 +30,16 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     View(context, attrs) {
     companion object {
 
-        private const val ALPHA_COLOR = 128
-        private val labelColors = listOf(
-            -16777216,
-            -8388608,
-            -16744448,
-            -8355840,
-            -16777088,
-            -8388480,
-            -16744320,
-            -8355712,
-            -12582912,
-            -4194304,
-            -12550144,
-            -4161536,
-            -12582784,
-            -4194176,
-            -12550016,
-            -4161408,
-            -16760832,
-            -8372224,
-            -16728064,
-            -8339456,
-            -16760704
-        )
+        const val ALPHA_COLOR = 128
     }
 
     private var scaleBitmap: Bitmap? = null
     private var runningMode: RunningMode = RunningMode.IMAGE
+    private var listener: OverlayViewListener? = null
+
+    fun setOnOverlayViewListener(listener: OverlayViewListener) {
+        this.listener = listener
+    }
 
     fun clear() {
         scaleBitmap = null
@@ -80,12 +62,16 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
         outputWidth: Int,
         outputHeight: Int
     ) {
+        val colorLabel = HashSet<Pair<String, Int>>()
         // Create the mask bitmap with colors and the set of detected labels.
         val pixels = IntArray(byteBuffer.capacity())
         for (i in pixels.indices) {
             val index = byteBuffer.get(i).toInt()
             val color =
-                if (index in 1..20) labelColors[index].toColor() else Color.TRANSPARENT
+                if (index in 1..20) {
+                    colorLabel.add(ImageSegmenterHelper.labelColors[index])
+                    ImageSegmenterHelper.labelColors[index].second.toAlphaColor()
+                } else Color.TRANSPARENT
             pixels[i] = color
         }
         val image = Bitmap.createBitmap(
@@ -115,11 +101,19 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
             image, scaleWidth, scaleHeight, false
         )
         invalidate()
+        listener?.onLabels(colorLabel.toList())
     }
 
-    private fun Int.toColor(): Int {
-        return Color.argb(
-            ALPHA_COLOR, Color.red(this), Color.green(this), Color.blue(this)
-        )
+    interface OverlayViewListener {
+        fun onLabels(colorLabels: List<Pair<String, Int>>)
     }
+}
+
+fun Int.toAlphaColor(): Int {
+    return Color.argb(
+        OverlayView.ALPHA_COLOR,
+        Color.red(this),
+        Color.green(this),
+        Color.blue(this)
+    )
 }

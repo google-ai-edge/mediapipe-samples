@@ -106,7 +106,7 @@ class ImageSegmentationTest {
         for (i in outputMask.indices) {
             val index = imageSegmentationResult!!.results.get(i).toInt()
             val color: Int =
-                if (index in 1..20) labelColors[index].toColor() else Color.TRANSPARENT
+                if (index in 1..20) labelColors[index].toAlphaColor() else Color.TRANSPARENT
             outputMask[i] = color
         }
 
@@ -149,11 +149,5 @@ class ImageSegmentationTest {
         val pixels = IntArray(width * height)
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
         return pixels
-    }
-
-    private fun Int.toColor(): Int {
-        return Color.argb(
-            128, Color.red(this), Color.green(this), Color.blue(this)
-        )
     }
 }

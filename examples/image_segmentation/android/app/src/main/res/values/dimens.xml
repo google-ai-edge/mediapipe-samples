@@ -31,4 +31,9 @@
 
     <integer name="bottom_sheet_control_text_min_ems">3</integer>
     <dimen name="fab_margin">16dp</dimen>
+
+    <!-- Item color labels -->
+    <dimen name="item_color_labels_radius">10dp</dimen>
+    <dimen name="item_color_labels_margin">5dp</dimen>
+    <dimen name="item_color_labels_padding">5dp</dimen>
 </resources>

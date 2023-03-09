@@ -35,8 +35,10 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.Navigation
+import androidx.recyclerview.widget.GridLayoutManager
 import com.google.mediapipe.examples.imagesegmenter.ImageSegmenterHelper
 import com.google.mediapipe.examples.imagesegmenter.MainViewModel
+import com.google.mediapipe.examples.imagesegmenter.OverlayView
 import com.google.mediapipe.examples.imagesegmenter.R
 import com.google.mediapipe.examples.imagesegmenter.databinding.FragmentCameraBinding
 import com.google.mediapipe.tasks.vision.core.RunningMode
@@ -63,7 +65,7 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
 
     /** Blocking operations are performed using this executor */
     private var backgroundExecutor: ExecutorService? = null
-
+    private val labelsAdapter: ColorLabelsAdapter by lazy { ColorLabelsAdapter() }
 
     override fun onResume() {
         super.onResume()
@@ -179,6 +181,20 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
                     /* no op */
                 }
             }
+
+        with(fragmentCameraBinding.recyclerviewResults) {
+            adapter = labelsAdapter
+            layoutManager = GridLayoutManager(requireContext(), 3)
+        }
+
+        fragmentCameraBinding.overlayView.setOnOverlayViewListener(object :
+            OverlayView.OverlayViewListener {
+            override fun onLabels(colorLabels: List<Pair<String, Int>>) {
+                activity?.runOnUiThread {
+                    labelsAdapter.updateResultLabels(colorLabels)
+                }
+            }
+        })
     }
 
     // Update the values displayed in the bottom sheet. Reset segmenter.

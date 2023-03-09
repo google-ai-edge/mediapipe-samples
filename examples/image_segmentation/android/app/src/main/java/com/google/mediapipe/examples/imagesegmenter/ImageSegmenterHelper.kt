@@ -173,6 +173,7 @@ class ImageSegmenterHelper(
 
     // Runs image segmentation on each video frame and
     // returns the results asynchronously to the caller.
+    @kotlin.jvm.Throws(Exception::class)
     fun segmentVideoFile(mpImage: MPImage) {
         if (runningMode != RunningMode.VIDEO) {
             throw IllegalArgumentException(
@@ -229,6 +230,30 @@ class ImageSegmenterHelper(
         const val MODEL_PATH = "deeplabv3.tflite"
 
         private const val TAG = "ImageSegmenterHelper"
+
+        val labelColors = listOf(
+            Pair("background", -16777216),
+            Pair("aeroplane", -8388608),
+            Pair("bicycle", -16744448),
+            Pair("bird", -8355840),
+            Pair("boat", -16777088),
+            Pair("bottle", -8388480),
+            Pair("bus", -16744320),
+            Pair("car", -8355712),
+            Pair("cat", -12582912),
+            Pair("chair", -4194304),
+            Pair("cow", -12550144),
+            Pair("diningtable", -4161536),
+            Pair("dog", -12582784),
+            Pair("horse", -4194176),
+            Pair("motorbike", -12550016),
+            Pair("person", -4161408),
+            Pair("pottedplant", -16760832),
+            Pair("sheep", -8372224),
+            Pair("sofa", -16728064),
+            Pair("train", -8339456),
+            Pair("tv", -16760704)
+        )
     }
 
     interface SegmenterListener {

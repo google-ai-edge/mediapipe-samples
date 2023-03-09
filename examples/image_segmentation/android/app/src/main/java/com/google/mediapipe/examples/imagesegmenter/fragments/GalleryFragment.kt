@@ -15,6 +15,7 @@
  */
 package com.google.mediapipe.examples.imagesegmenter.fragments
 
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.media.MediaMetadataRetriever
@@ -22,6 +23,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,8 +32,10 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.GridLayoutManager
 import com.google.mediapipe.examples.imagesegmenter.ImageSegmenterHelper
 import com.google.mediapipe.examples.imagesegmenter.MainViewModel
+import com.google.mediapipe.examples.imagesegmenter.OverlayView
 import com.google.mediapipe.examples.imagesegmenter.databinding.FragmentGalleryBinding
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.MPImage
@@ -42,7 +46,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import java.util.Timer
+import java.util.*
 import kotlin.concurrent.fixedRateTimer
 
 class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
@@ -57,6 +61,7 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     private var imageSegmenterHelper: ImageSegmenterHelper? = null
     private var backgroundScope: CoroutineScope? = null
     private var fixedRateTimer: Timer? = null
+    private val labelsAdapter: ColorLabelsAdapter by lazy { ColorLabelsAdapter() }
 
     private val getContent =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
@@ -102,7 +107,14 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
         super.onPause()
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        stopAllTasks()
+        setUiEnabled(true)
+    }
+
     private fun initBottomSheetControls() {
+
         // When clicked, change the underlying hardware used for inference. Current options are CPU
         // GPU, and NNAPI
         fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.setSelection(
@@ -122,32 +134,42 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
                     /* no op */
                 }
             }
+
+        with(fragmentGalleryBinding.recyclerviewResults) {
+            adapter = labelsAdapter
+            layoutManager = GridLayoutManager(requireContext(), 3)
+        }
+
+        fragmentGalleryBinding.overlayView.setOnOverlayViewListener(object :
+            OverlayView.OverlayViewListener {
+            override fun onLabels(colorLabels: List<Pair<String, Int>>) {
+                labelsAdapter.updateResultLabels(colorLabels)
+            }
+        })
     }
 
     private fun stopAllTasks() {
-        runBlocking {
-            with(fragmentGalleryBinding) {
-                if (videoView.isPlaying) {
-                    fragmentGalleryBinding.videoView.stopPlayback()
-                }
+        // cancel all jobs
+        fixedRateTimer?.cancel()
+        fixedRateTimer = null
+        backgroundScope?.cancel()
+        backgroundScope = null
 
-                // clear overlay view
-                overlayView.clear()
-                progress.visibility = View.GONE
-                updateDisplayView(MediaType.UNKNOWN)
-            }
+        // clear Image Segmenter
+        imageSegmenterHelper?.clearListener()
+        imageSegmenterHelper?.clearImageSegmenter()
+        imageSegmenterHelper = null
 
-            // cancel all jobs
-            fixedRateTimer?.cancel()
-            fixedRateTimer = null
-            backgroundScope?.cancel()
-            backgroundScope = null
+        with(fragmentGalleryBinding) {
+            videoView.stopPlayback()
+            videoView.setVideoURI(null)
 
-            // clear Image Segmenter
-            imageSegmenterHelper?.clearListener()
-            imageSegmenterHelper?.clearImageSegmenter()
-            imageSegmenterHelper = null
+            // clear overlay view
+            overlayView.clear()
+            progress.visibility = View.GONE
+            labelsAdapter.updateResultLabels(emptyList())
         }
+        updateDisplayView(MediaType.UNKNOWN)
     }
 
     // Load and display the image.
@@ -229,21 +251,19 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
             for (i in 0..numberOfFrameToRead) {
                 val timestampMs = i * VIDEO_INTERVAL_MS // ms
 
-                retriever
-                    .getFrameAtTime(
-                        timestampMs * 1000, // convert from ms to micro-s
-                        MediaMetadataRetriever.OPTION_CLOSEST
-                    )
-                    ?.let { frame ->
-                        // Convert the video frame to ARGB_8888 which is required by the MediaPipe
-                        val argb8888Frame =
-                            if (frame.config == Bitmap.Config.ARGB_8888) frame
-                            else frame.copy(Bitmap.Config.ARGB_8888, false)
+                retriever.getFrameAtTime(
+                    timestampMs * 1000, // convert from ms to micro-s
+                    MediaMetadataRetriever.OPTION_CLOSEST
+                )?.let { frame ->
+                    // Convert the video frame to ARGB_8888 which is required by the MediaPipe
+                    val argb8888Frame =
+                        if (frame.config == Bitmap.Config.ARGB_8888) frame
+                        else frame.copy(Bitmap.Config.ARGB_8888, false)
 
-                        // Convert the input Bitmap object to an MPImage object to run inference
-                        val mpImage = BitmapImageBuilder(argb8888Frame).build()
-                        mpImages.add(mpImage)
-                    }
+                    // Convert the input Bitmap object to an MPImage object to run inference
+                    val mpImage = BitmapImageBuilder(argb8888Frame).build()
+                    mpImages.add(mpImage)
+                }
             }
             retriever.release()
             withContext(Dispatchers.Main) {
@@ -253,7 +273,11 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
 
             fixedRateTimer = fixedRateTimer("", true, 0, VIDEO_INTERVAL_MS) {
                 // run segmentation on each frames.
-                imageSegmenterHelper?.segmentVideoFile(mpImages[frameIndex])
+                try {
+                    imageSegmenterHelper?.segmentVideoFile(mpImages[frameIndex])
+                } catch (e: Exception) {
+                    Log.d(TAG, "${e.message}")
+                }
                 frameIndex++
                 if (frameIndex >= numberOfFrameToRead.toInt()) {
                     this.cancel()
@@ -298,7 +322,6 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     private fun segmentationError() {
         stopAllTasks()
         setUiEnabled(true)
-        updateDisplayView(MediaType.UNKNOWN)
     }
 
     // convert Uri to bitmap image.
@@ -323,8 +346,7 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
                     .show()
                 if (errorCode == ImageSegmenterHelper.GPU_ERROR) {
                     fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.setSelection(
-                        ImageSegmenterHelper.DELEGATE_CPU,
-                        false
+                        ImageSegmenterHelper.DELEGATE_CPU, false
                     )
                 }
             }

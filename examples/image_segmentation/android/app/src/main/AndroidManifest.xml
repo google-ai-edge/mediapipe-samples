@@ -39,6 +39,7 @@
         <activity
             android:name="com.google.mediapipe.examples.imagesegmenter.MainActivity"
             android:clearTaskOnLaunch="true"
+            android:configChanges="orientation|screenLayout|screenSize|smallestScreenSize"
             android:exported="true"
             android:resizeableActivity="true"
             android:rotationAnimation="seamless"
