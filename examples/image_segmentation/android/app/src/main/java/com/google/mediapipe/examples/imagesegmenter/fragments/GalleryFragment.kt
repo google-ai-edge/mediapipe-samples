@@ -96,6 +96,7 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         fragmentGalleryBinding.fabGetContent.setOnClickListener {
+            stopAllTasks()
             getContent.launch(arrayOf("image/*", "video/*"))
             updateDisplayView(MediaType.UNKNOWN)
         }
