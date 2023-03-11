@@ -42,7 +42,7 @@ class AudioClassifierHelperTest {
         private const val AUDIO_CAT_SOUND = "cat_sound.wav"
         private const val AUDIO_DURATION = 6000L // milliseconds
         private val expectedResult =
-            setOf("Cat", "Meow", "Animal", "Speech", "Domestic animals, pets")
+            setOf("Cat", "Meow", "Domestic animals, pets", "Speech")
     }
 
     private lateinit var audioClassifierHelper: AudioClassifierHelper
