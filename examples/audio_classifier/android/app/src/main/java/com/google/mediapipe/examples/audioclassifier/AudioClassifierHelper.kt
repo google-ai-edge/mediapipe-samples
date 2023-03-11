@@ -83,15 +83,10 @@ class AudioClassifierHelper(
                 AudioClassifier.createFromOptions(context, options)
             if (runningMode == RunningMode.AUDIO_STREAM) {
 
-                recorder = AudioRecord(
-                    MediaRecorder.AudioSource.VOICE_RECOGNITION,
+                recorder = audioClassifier!!.createAudioRecord(
+                    AudioFormat.CHANNEL_IN_DEFAULT,
                     SAMPLING_RATE_IN_HZ,
-                    CHANNEL_CONFIG,
-                    AUDIO_FORMAT,
-                    BUFFER_SIZE_IN_BYTES.toInt()
-                )
-
-//                recorder = AudioClassifier.createAudioRecord(AudioFormat.CHANNEL_IN_DEFAULT, SAMPLING_RATE_IN_HZ)
+                    BUFFER_SIZE_IN_BYTES.toInt())
 
                 startAudioClassification()
             }
@@ -202,8 +197,6 @@ class AudioClassifierHelper(
         const val YAMNET_MODEL = "yamnet.tflite"
 
         private const val SAMPLING_RATE_IN_HZ = 16000
-        private const val CHANNEL_CONFIG: Int = AudioFormat.CHANNEL_IN_FRONT
-        private const val AUDIO_FORMAT: Int = AudioFormat.ENCODING_PCM_FLOAT
         private const val BUFFER_SIZE_FACTOR: Int = 2
         const val EXPECTED_INPUT_LENGTH = 0.975F
         private const val REQUIRE_INPUT_BUFFER_SIZE =
