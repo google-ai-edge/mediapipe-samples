@@ -40,9 +40,4 @@
         <item>50%</item>
         <item>75%</item>
     </string-array>
-
-    <string-array name="delegate_spinner_titles">
-        <item>CPU</item>
-        <item>GPU</item>
-    </string-array>
 </resources>

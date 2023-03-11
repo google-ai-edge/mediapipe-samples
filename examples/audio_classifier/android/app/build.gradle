@@ -81,5 +81,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
 
     // Mediapipe Library
-    implementation 'com.google.mediapipe:tasks-audio:0.1.0-alpha-5'
+    implementation 'com.google.mediapipe:tasks-audio:0.1.0-alpha-6'
 }

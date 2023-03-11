@@ -38,7 +38,6 @@ class AudioClassifierHelper(
     var classificationThreshold: Float = DISPLAY_THRESHOLD,
     var overlap: Int = DEFAULT_OVERLAP,
     var numOfResults: Int = DEFAULT_NUM_OF_RESULTS,
-    var currentDelegate: Int = DELEGATE_CPU,
     var runningMode: RunningMode = RunningMode.AUDIO_CLIPS,
     var listener: ClassifierListener? = null,
 ) {
@@ -58,20 +57,6 @@ class AudioClassifierHelper(
     fun initClassifier() {
         // Set general detection options, e.g. number of used threads
         val baseOptionsBuilder = BaseOptions.builder()
-
-        // Use the specified hardware for running the model. Default to CPU.
-        // Possible to also use a GPU delegate, but this requires that the classifier be created
-        // on the same thread that is using the classifier, which is outside of the scope of this
-        // sample's design.
-        when (currentDelegate) {
-            DELEGATE_CPU -> {
-                // Default
-                baseOptionsBuilder.setDelegate(Delegate.CPU)
-            }
-            DELEGATE_GPU -> {
-                baseOptionsBuilder.setDelegate(Delegate.GPU)
-            }
-        }
 
         baseOptionsBuilder.setModelAssetPath(YAMNET_MODEL)
 
@@ -97,13 +82,12 @@ class AudioClassifierHelper(
             audioClassifier =
                 AudioClassifier.createFromOptions(context, options)
             if (runningMode == RunningMode.AUDIO_STREAM) {
-                recorder = AudioRecord(
-                    MediaRecorder.AudioSource.DEFAULT,
+
+                recorder = audioClassifier!!.createAudioRecord(
+                    AudioFormat.CHANNEL_IN_DEFAULT,
                     SAMPLING_RATE_IN_HZ,
-                    CHANNEL_CONFIG,
-                    AUDIO_FORMAT,
-                    BUFFER_SIZE_IN_BYTES.toInt()
-                )
+                    BUFFER_SIZE_IN_BYTES.toInt())
+
                 startAudioClassification()
             }
         } catch (e: IllegalStateException) {
@@ -151,16 +135,12 @@ class AudioClassifierHelper(
     }
 
     private fun classifyAudioAsync(audioRecord: AudioRecord) {
-        // create audio data for recording.
         val audioData = AudioData.create(
-            AudioDataFormat.builder().setNumOfChannels(
-                AudioFormat.CHANNEL_IN_DEFAULT
-            ).setSampleRate(SAMPLING_RATE_IN_HZ.toFloat()).build(),
-            REQUIRE_INPUT_BUFFER_SIZE.toInt()
+            AudioDataFormat.create(recorder!!.getFormat()),  /* sampleCounts= */SAMPLING_RATE_IN_HZ
         )
         audioData.load(audioRecord)
+
         val inferenceTime = SystemClock.uptimeMillis()
-        // run audio classifier
         audioClassifier?.classifyAsync(audioData, inferenceTime)
     }
 
@@ -211,16 +191,12 @@ class AudioClassifierHelper(
 
     companion object {
         private const val TAG = "AudioClassifierHelper"
-        const val DELEGATE_CPU = 0
-        const val DELEGATE_GPU = 1
         const val DISPLAY_THRESHOLD = 0.3f
         const val DEFAULT_NUM_OF_RESULTS = 2
         const val DEFAULT_OVERLAP = 2
         const val YAMNET_MODEL = "yamnet.tflite"
 
         private const val SAMPLING_RATE_IN_HZ = 16000
-        private const val CHANNEL_CONFIG: Int = AudioFormat.CHANNEL_IN_FRONT
-        private const val AUDIO_FORMAT: Int = AudioFormat.ENCODING_PCM_FLOAT
         private const val BUFFER_SIZE_FACTOR: Int = 2
         const val EXPECTED_INPUT_LENGTH = 0.975F
         private const val REQUIRE_INPUT_BUFFER_SIZE =
