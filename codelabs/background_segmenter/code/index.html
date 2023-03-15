@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MediaPipe Segmentation Task</title>
+
+    <!-- Compiled and minified CSS materialize library -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+    <!-- Compiled and minified JavaScript materialize library-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <script src="index.js" type="module"></script>
+</head>
+<body>
+
+<div class="container">
+    <div class="col s1 center">
+        <h3>Segmenting the background using the MediaPipe Image Segmentation Task</h3>
+    </div>
+    <div class="col s1 center">
+        <video id="video" style="display: none;" autoplay></video>
+        <canvas id="canvas" width="400" height="400" style="border: gray solid 2px"></canvas>
+    </div>
+    <div class="col s1 center">
+        <label for="selectVideoSource">Select the video device: </label>
+        <select id="selectVideoSource"></select>
+    </div>
+    <div class="col s1 center">
+        <label for="txtBackgroundImage">
+            Enter the url of the Background Image
+        </label>
+        <input type="url"
+               id="txtBackgroundImage"
+               placeholder="Enter the url of the Background Image"
+               value="https://storage.googleapis.com/mediapipe-assets/bridge-image-seg.jpg"/>
+
+        <button id="btnStart" class="btn waves-effect waves-light">start camera</button>
+        <button id="btnStop" class="btn waves-effect waves-light">stop camera</button>
+
+    </div>
+</div>
+</body>
+</html>
