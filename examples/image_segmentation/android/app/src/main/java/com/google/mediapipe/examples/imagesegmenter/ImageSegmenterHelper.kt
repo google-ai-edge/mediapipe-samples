@@ -96,8 +96,12 @@ class ImageSegmenterHelper(
                 .setRunningMode(runningMode).setBaseOptions(baseOptions)
                 .setOutputType(ImageSegmenter.ImageSegmenterOptions.OutputType.CATEGORY_MASK)
                 // The listeners being needed for all modes
-                .setResultListener(this::returnSegmentationResult)
-                .setErrorListener(this::returnSegmentationHelperError)
+
+            if( runningMode == RunningMode.LIVE_STREAM ) {
+                optionsBuilder.setResultListener(this::returnSegmentationResult)
+                    .setErrorListener(this::returnSegmentationHelperError)
+            }
+
             val options = optionsBuilder.build()
             imagesegmenter = ImageSegmenter.createFromOptions(context, options)
         } catch (e: IllegalStateException) {
@@ -162,25 +166,26 @@ class ImageSegmenterHelper(
 
     // Runs image segmentation on single image and
     // returns the results asynchronously to the caller.
-    fun segmentImageFile(mpImage: MPImage) {
+    fun segmentImageFile(mpImage: MPImage) : ImageSegmenterResult? {
         if (runningMode != RunningMode.IMAGE) {
             throw IllegalArgumentException(
                 "Attempting to call segmentImageFile" + " while not using RunningMode.IMAGE"
             )
         }
-        imagesegmenter?.segment(mpImage)
+        return imagesegmenter?.segment(mpImage)
     }
 
     // Runs image segmentation on each video frame and
     // returns the results asynchronously to the caller.
     @kotlin.jvm.Throws(Exception::class)
-    fun segmentVideoFile(mpImage: MPImage) {
+    fun segmentVideoFile(mpImage: MPImage) : ImageSegmenterResult? {
         if (runningMode != RunningMode.VIDEO) {
             throw IllegalArgumentException(
                 "Attempting to call segmentVideoFile" + " while not using RunningMode.VIDEO"
             )
         }
-        imagesegmenter?.segmentForVideo(mpImage, SystemClock.uptimeMillis())
+
+        return imagesegmenter?.segmentForVideo(mpImage, SystemClock.uptimeMillis())
     }
 
     // MPImage isn't necessary for this example, but the listener requires it
