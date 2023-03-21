@@ -38,8 +38,10 @@ import com.google.mediapipe.examples.imagesegmenter.MainViewModel
 import com.google.mediapipe.examples.imagesegmenter.OverlayView
 import com.google.mediapipe.examples.imagesegmenter.databinding.FragmentGalleryBinding
 import com.google.mediapipe.framework.image.BitmapImageBuilder
+import com.google.mediapipe.framework.image.ByteBufferExtractor
 import com.google.mediapipe.framework.image.MPImage
 import com.google.mediapipe.tasks.vision.core.RunningMode
+import com.google.mediapipe.tasks.vision.imagesegmenter.ImageSegmenterResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -194,7 +196,8 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
         // Run image segmentation on the input image
         backgroundScope?.launch {
             val mpImage = BitmapImageBuilder(uri.toBitmap()).build()
-            imageSegmenterHelper?.segmentImageFile(mpImage)
+            val result = imageSegmenterHelper?.segmentImageFile(mpImage)
+            updateOverlay(result!!)
         }
     }
 
@@ -275,7 +278,8 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
             fixedRateTimer = fixedRateTimer("", true, 0, VIDEO_INTERVAL_MS) {
                 // run segmentation on each frames.
                 try {
-                    imageSegmenterHelper?.segmentVideoFile(mpImages[frameIndex])
+                    val result = imageSegmenterHelper?.segmentVideoFile(mpImages[frameIndex])
+                    updateOverlay(result!!)
                 } catch (e: Exception) {
                     Log.d(TAG, "${e.message}")
                 }
@@ -320,6 +324,33 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
             enabled
     }
 
+    private fun updateOverlay(result: ImageSegmenterResult) {
+        val newImage = result.segmentations().get(0)
+        updateOverlay(ImageSegmenterHelper.ResultBundle(
+            ByteBufferExtractor.extract(newImage),
+            newImage.width,
+            newImage.height,
+            result.timestampMs()
+        ))
+    }
+
+    private fun updateOverlay(resultBundle: ImageSegmenterHelper.ResultBundle) {
+        if (_fragmentGalleryBinding != null) {
+            runBlocking {
+                withContext(Dispatchers.Main) {
+                    setUiEnabled(true)
+                    fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
+                        String.format("%d ms", resultBundle.inferenceTime)
+                    fragmentGalleryBinding.overlayView.setResults(
+                        resultBundle.results,
+                        resultBundle.width,
+                        resultBundle.height
+                    )
+                }
+            }
+        }
+    }
+
     private fun segmentationError() {
         stopAllTasks()
         setUiEnabled(true)
@@ -355,20 +386,7 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     }
 
     override fun onResults(resultBundle: ImageSegmenterHelper.ResultBundle) {
-        runBlocking {
-            withContext(Dispatchers.Main) {
-                if (_fragmentGalleryBinding != null) {
-                    setUiEnabled(true)
-                    fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
-                        String.format("%d ms", resultBundle.inferenceTime)
-                    fragmentGalleryBinding.overlayView.setResults(
-                        resultBundle.results,
-                        resultBundle.width,
-                        resultBundle.height
-                    )
-                }
-            }
-        }
+        updateOverlay(resultBundle)
     }
 
     companion object {
