@@ -15,8 +15,8 @@ const selVideoResolution = document.getElementById('selectVideoResolution');
 const txtBackgroundImageInput = document.getElementById('txtBackgroundImage');
 
 // get a reference to the canvas element and its context
-const canvas = document.getElementById('canvas');
-const canvasCtx = canvas.getContext('2d');
+const videCanvas = document.getElementById('canvas');
+const videoCanvasCtx = videCanvas.getContext('2d');
 
 // create a new camera instance
 const camera = new Camera(video, video.videoWidth, video.videoHeight);
@@ -164,7 +164,7 @@ async function setBackgroundImage(){
             backgroundImage = null;
             return;
         }
-        backgroundImage = await downloadImage(image_uri, canvas.width, canvas.height);
+        backgroundImage = await downloadImage(image_uri, videCanvas.width, videCanvas.height);
     }
     catch (e) {
         backgroundImage = null;
@@ -177,7 +177,7 @@ function clearCanvas(){
     /**
      * Clears the canvas
      */
-    canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+    videoCanvasCtx.clearRect(0, 0, videCanvas.width, videCanvas.height);
 }
 
 
@@ -206,7 +206,45 @@ btnStop.addEventListener('click', async () => {
     clearCanvas();
 });
 
-function drawSegmentationMask({ 0 : SegmentationMaskLabels} = SegmentationResult){
+function createSegmentationMaskFromLabels(SegmentationMaskLabels) {
+    /**
+     * Creates a segmentation mask from the segmentation mask labels
+     * @type {Uint8ClampedArray}
+     */
+
+    // create Uint8ClampedArray to hold the segmentation mask data
+    let segmentationMask = new Uint8ClampedArray(
+        video.videoWidth * video.videoHeight * 4
+    );
+
+    // we loop through the segmentation mask labels and create the segmentation mask
+    for (let i in SegmentationMaskLabels) {
+
+        // for each pixel we get the label index from the segmentation mask labels and
+        // we get the label from the labels array
+        const labelIdx = SegmentationMaskLabels[i];
+        const label = labels[labelIdx];
+
+        // we check if the label is in the labelsToSegment array
+        if (labelsToSegment.includes(label)) {
+            // if the label is in the labelsToSegment array, we set the pixel to white.
+            // It could be a person or a sofa or a tv
+            segmentationMask[i * 4] = 255;
+            segmentationMask[i * 4 + 1] = 255;
+            segmentationMask[i * 4 + 2] = 255;
+            segmentationMask[i * 4 + 3] = 255;
+        } else {
+            // we set the pixel to black if it is not in the labelsToSegment array
+            segmentationMask[i * 4] = 0;
+            segmentationMask[i * 4 + 1] = 0;
+            segmentationMask[i * 4 + 2] = 0;
+            segmentationMask[i * 4 + 3] = 255;
+        }
+    }
+    return segmentationMask;
+}
+
+async function drawSegmentationMask({ 0 : SegmentationMaskLabels} = SegmentationResult){
 
     /**
      * Draws the segmentation mask on the canvas
@@ -214,8 +252,8 @@ function drawSegmentationMask({ 0 : SegmentationMaskLabels} = SegmentationResult
      */
 
     // get the canvas dimensions
-    const canvasWidth = canvas.width;
-    const canvasHeight = canvas.height;
+    const canvasWidth = videCanvas.width;
+    const canvasHeight = videCanvas.height;
     const videoWidth = video.videoWidth;
     const videoHeight = video.videoHeight;
 
@@ -228,55 +266,45 @@ function drawSegmentationMask({ 0 : SegmentationMaskLabels} = SegmentationResult
     const scaledWidth = videoWidth * scale;
     const scaledHeight = videoHeight * scale;
 
+    // calculate the offset to center the video on the canvas
+    const offsetX = (canvasWidth - scaledWidth) / 2;
+    const offsetY = (canvasHeight - scaledHeight) / 2;
 
-    // create Uint8ClampedArray to hold the segmentation mask data
-    let segmentationMask = new Uint8ClampedArray(
-        video.videoWidth * video.videoHeight * 4
-    );
 
-    // we loop through the segmentation mask labels
-    for (let i in SegmentationMaskLabels) {
-
-        // we get the label
-        const labelIdx = SegmentationMaskLabels[i];
-        const label = labels[labelIdx];
-
-        // labelsToSegment is an array of labels that we want to segment
-
-        // we check if the label is in the labelsToSegment array
-        if(labelsToSegment.includes(label)) {
-            // if the label is in the labelsToSegment array, we set the pixel to white. It could be a person or a sofa or a tv
-            segmentationMask[i * 4] = 255;
-            segmentationMask[i * 4 + 1] = 255;
-            segmentationMask[i * 4 + 2] = 255;
-            segmentationMask[i * 4 + 3] = 255;
-        }
-        else {
-            // we set the pixel to black if it is not in the labelsToSegment array
-            segmentationMask[i * 4] = 0;
-            segmentationMask[i * 4 + 1] = 0;
-            segmentationMask[i * 4 + 2] = 0;
-            segmentationMask[i * 4 + 3] = 255;
-        }
-    }
-
-    // we scale the segmentation mask to fit the canvas dimensions
+    // create the segmentation mask from the segmentation mask labels
+    let segmentationMask = createSegmentationMaskFromLabels(SegmentationMaskLabels);
+    // create an ImageData object from the segmentation mask
     let segmentationMaskImageData = new ImageData(segmentationMask, video.videoWidth, video.videoHeight);
+    // scale the segmentation mask to the video canvas size
     segmentationMaskImageData = scaleImageData(segmentationMaskImageData, scaledWidth, scaledHeight);
-    //canvasCtx.putImageData(segmentationMaskImageData, offsetX, offsetY);
+    // create an ImageBitmap from the scaled segmentation mask
+    const segmentationMaskBitmap = await createImageBitmap(segmentationMaskImageData);
+    // create a canvas to hold the scaled segmentation mask and mirror it
+    const canvasMask = document.createElement('canvas');
+    const canvasMaskCtx = canvasMask.getContext('2d');
+    canvasMask.width = canvasWidth;
+    canvasMask.height = canvasHeight;
+    canvasMaskCtx.save();
+    canvasMaskCtx.translate(canvasWidth, 0);
+    canvasMaskCtx.scale(-1, 1);
+    canvasMaskCtx.drawImage(segmentationMaskBitmap, offsetX, offsetY, scaledWidth, scaledHeight);
+    canvasMaskCtx.restore();
 
 
     // draw the video frame  at the center of the canvas
-    const offsetX = (canvasWidth - scaledWidth) / 2;
-    const offsetY = (canvasHeight - scaledHeight) / 2;
-    canvasCtx.save();
-    canvasCtx.clearRect(0, 0, canvasWidth, canvasHeight);
-    canvasCtx.drawImage(video, offsetX, offsetY, scaledWidth, scaledHeight);
-    canvasCtx.restore();
+    videoCanvasCtx.save();
+    // mirror the canvas
+    videoCanvasCtx.translate(canvasWidth, 0);
+    videoCanvasCtx.scale(-1, 1);
+    videoCanvasCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+    // draw the video
+    videoCanvasCtx.drawImage(video, offsetX, offsetY, scaledWidth, scaledHeight);
+    videoCanvasCtx.restore();
 
-    // we get the canvas data and the segmentation mask data to apply the segmentation mask on the canvas
-    const canvasData = canvasCtx.getImageData(offsetX, offsetY, scaledWidth, scaledHeight).data; // canvas data
-    const binaryMaskData = segmentationMaskImageData.data; // segmentation mask data
+
+    // we get the canvas data and the segmentation mask data to apply the segmentation
+    const canvasData = videoCanvasCtx.getImageData(offsetX, offsetY, scaledWidth, scaledHeight).data; // canvas data
+    const binaryMaskData = canvasMaskCtx.getImageData(offsetX, offsetY, scaledWidth, scaledHeight).data; // segmentation mask data
 
     // we check if the background image is null or not
     if(backgroundImage === null) {
@@ -306,7 +334,8 @@ function drawSegmentationMask({ 0 : SegmentationMaskLabels} = SegmentationResult
         }
     }
     // update the canvas with the new canvas data after applying the segmentation mask
-    canvasCtx.putImageData(new ImageData(canvasData, scaledWidth, scaledHeight), offsetX, offsetY);
+    videoCanvasCtx.putImageData(new ImageData(canvasData, scaledWidth, scaledHeight), offsetX, offsetY);
+
 }
 
 
