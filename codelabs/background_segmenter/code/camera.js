@@ -15,11 +15,15 @@ navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia 
 export default class Camera {
     constructor(videoElement,
                 width=250,
-                height=250) {
+                height=250,
+                facingMode='user',
+                audio=false) {
         this.width = width;
         this.height = height;
         this.videoElement = videoElement;
         this.stream = null;
+        this.facingMode = facingMode;
+        this.audio = audio;
         this.isRunning = false;
     }
     async start(deviceId){
@@ -31,10 +35,10 @@ export default class Camera {
         try {
             await Camera.checkCameraPermission();
             const constraints = {
-                audio: false,
+                audio: this.audio,
                 video: {
                     deviceId: deviceId,
-                    //facingMode: 'user',
+                    facingMode: this.facingMode,
                     width: this.width,
                     height: this.height
                 }
@@ -51,6 +55,16 @@ export default class Camera {
         catch (e) {
             throw new Error("Error starting the camera: " + e.message);
         }
+    }
+    async setResolution(width, height){
+        /**
+         * Sets the camera resolution
+         * @param width {number}
+         * @param height {number}
+         * @returns {Promise<void>}
+         */
+        this.width = width;
+        this.height = height;
     }
 
     async takePicture(fileName){

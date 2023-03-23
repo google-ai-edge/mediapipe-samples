@@ -6,11 +6,12 @@ import Camera from "./camera.js";
 import {downloadImage, scaleImageData} from "./utils.js";
 const { ImageSegmenter, SegmentationMask, FilesetResolver } = vision;
 
-// get a reference to the the DOM elements that we will use
+// get a reference to the DOM elements that we wil use
 const btnStart = document.getElementById('btnStart');
 const btnStop = document.getElementById('btnStop');
 const video = document.getElementById('video');
 const selVideoSource = document.getElementById('selectVideoSource');
+const selVideoResolution = document.getElementById('selectVideoResolution');
 const txtBackgroundImageInput = document.getElementById('txtBackgroundImage');
 
 // get a reference to the canvas element and its context
@@ -48,8 +49,17 @@ const labels = [
     'train',
     'tv'];
 
-// segmentation stuff
+// this function will be called when the webpage is loaded
+document.addEventListener('DOMContentLoaded', async () =>{
+    // populate the video source select with the available video sources
+    await populateVideoSourceSelect();
+    // create a new image segmenter instance using the mediapipe wasm runtime
+    imageSegmenter = await createImageSegmenter();
+    // initialize the materialize components
+    M.AutoInit();
+});
 
+// segmentation stuff
 async function createImageSegmenter() {
     /**
      * Creates a new image segmenter
@@ -69,18 +79,20 @@ async function createImageSegmenter() {
     })
 }
 
-const segmentationCallback = (segmentationMask) => {
+
+
+// draw the segmentation mask on the canvas
+function segmentationCallback(segmentationMask){
     /**
      * Callback function called when the segmentation is done
      * @param segmentationMask {SegmentationMask} the segmentation mask
      */
     if(camera.isRunning) {
         drawSegmentationMask(segmentationMask);
-        requestAnimationFrameId = window.requestAnimationFrame(dispatchSegmentationTask);
+        requestAnimationFrameId = window.requestAnimationFrame(startSegmentationTask);
     }
 }
-
-const dispatchSegmentationTask= ()=>{
+function startSegmentationTask(){
     /**
      * Dispatches the segmentation task
      */
@@ -88,7 +100,16 @@ const dispatchSegmentationTask= ()=>{
     imageSegmenter.segmentForVideo(video, nowInMs, segmentationCallback);
 }
 
-const populateVideoSourceSelect = async () => {
+function stopSegmentationTask(){
+    /**
+     * Stops the segmentation task
+     */
+    if(requestAnimationFrameId) {
+        window.cancelAnimationFrame(requestAnimationFrameId);
+    }
+}
+
+async function populateVideoSourceSelect() {
     /**
      * Populates the video source select with the available devices
      * @type {HTMLElement}
@@ -103,37 +124,36 @@ const populateVideoSourceSelect = async () => {
 }
 
 
-const startCamera = async () => {
+async function startCamera(){
     /**
      * Starts the camera and starts the segmentation
      */
+    // before starting the camera we make sure that the segmentation task is not running
+    stopSegmentationTask();
     // we stop the camera first to make sure that the camera is not running
     await stopCamera();
-
     // start the camera and get the video stream
     const deviceId = selVideoSource.value;
+    const resolution = selVideoResolution.value;
+    const [width, height] = resolution.split('x');
+    await camera.setResolution(width, height);
     await camera.start(deviceId);
-
-    // start segmentation task
-    dispatchSegmentationTask();
 }
 
-const stopCamera = async () => {
+async function stopCamera(){
     /**
      * Stops the camera and segmentation task
      */
-    if(requestAnimationFrameId && camera.isRunning) {
-        // stop the segmentation task
-        window.cancelAnimationFrame(requestAnimationFrameId);
+    if(camera.isRunning) {
+        // stop the segmentation task if it is running
+        stopSegmentationTask();
         // stop the camera
         await camera.stop();
-        // clear the canvas
-        canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
     }
 }
 
 
-const setBackgroundImage = async () => {
+async function setBackgroundImage(){
     /**
      * Changes the background image
      */
@@ -153,38 +173,53 @@ const setBackgroundImage = async () => {
 
 }
 
+function clearCanvas(){
+    /**
+     * Clears the canvas
+     */
+    canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+
 // add event listeners
 btnStart.addEventListener('click', async () => {
     try {
+        // set image background
         await setBackgroundImage();
         // start the camera
         await startCamera();
+        // dispatch segmentation task
+        startSegmentationTask();
     }
     catch (e) {
         M.toast({html: e.toString(), displayLength: 5000})
     }
 });
 
-btnStop.addEventListener('click', async () => {
 
+btnStop.addEventListener('click', async () => {
     // stop the camera
     await stopCamera();
+    // stop segmentation task
+    stopSegmentationTask();
+    // clear the canvas
+    clearCanvas();
 });
 
-
-const drawSegmentationMask = ({ 0 : SegmentationMaskLabels} = SegmentationResult) => {
+function drawSegmentationMask({ 0 : SegmentationMaskLabels} = SegmentationResult){
 
     /**
      * Draws the segmentation mask on the canvas
      * @param SegmentationMaskLabels {Array} the segmentation mask labels
      */
 
-
+    // get the canvas dimensions
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
     const videoWidth = video.videoWidth;
     const videoHeight = video.videoHeight;
 
+    // calculate the scale
     const scaleX = canvasWidth / videoWidth;
     const scaleY = canvasHeight / videoHeight;
     const scale = Math.min(scaleX, scaleY);
@@ -194,26 +229,30 @@ const drawSegmentationMask = ({ 0 : SegmentationMaskLabels} = SegmentationResult
     const scaledHeight = videoHeight * scale;
 
 
-    // create segmentation mask image data
+    // create Uint8ClampedArray to hold the segmentation mask data
     let segmentationMask = new Uint8ClampedArray(
         video.videoWidth * video.videoHeight * 4
     );
 
+    // we loop through the segmentation mask labels
     for (let i in SegmentationMaskLabels) {
 
+        // we get the label
         const labelIdx = SegmentationMaskLabels[i];
         const label = labels[labelIdx];
 
+        // labelsToSegment is an array of labels that we want to segment
+
+        // we check if the label is in the labelsToSegment array
         if(labelsToSegment.includes(label)) {
-            // we set the pixel to white if it is a person
+            // if the label is in the labelsToSegment array, we set the pixel to white. It could be a person or a sofa or a tv
             segmentationMask[i * 4] = 255;
             segmentationMask[i * 4 + 1] = 255;
             segmentationMask[i * 4 + 2] = 255;
             segmentationMask[i * 4 + 3] = 255;
         }
         else {
-
-            // we set the pixel to black if it is not a person
+            // we set the pixel to black if it is not in the labelsToSegment array
             segmentationMask[i * 4] = 0;
             segmentationMask[i * 4 + 1] = 0;
             segmentationMask[i * 4 + 2] = 0;
@@ -221,7 +260,7 @@ const drawSegmentationMask = ({ 0 : SegmentationMaskLabels} = SegmentationResult
         }
     }
 
-    // we scale the segmentation mask to fit the canvas
+    // we scale the segmentation mask to fit the canvas dimensions
     let segmentationMaskImageData = new ImageData(segmentationMask, video.videoWidth, video.videoHeight);
     segmentationMaskImageData = scaleImageData(segmentationMaskImageData, scaledWidth, scaledHeight);
     //canvasCtx.putImageData(segmentationMaskImageData, offsetX, offsetY);
@@ -235,13 +274,14 @@ const drawSegmentationMask = ({ 0 : SegmentationMaskLabels} = SegmentationResult
     canvasCtx.drawImage(video, offsetX, offsetY, scaledWidth, scaledHeight);
     canvasCtx.restore();
 
-    // change the canvas image data to the background image
-
+    // we get the canvas data and the segmentation mask data to apply the segmentation mask on the canvas
     const canvasData = canvasCtx.getImageData(offsetX, offsetY, scaledWidth, scaledHeight).data; // canvas data
     const binaryMaskData = segmentationMaskImageData.data; // segmentation mask data
 
+    // we check if the background image is null or not
     if(backgroundImage === null) {
         for (let i = 0; i < canvasData.length; i += 4) {
+            // we check if the pixel is a background pixel or not and we set the pixel to black if it is a background pixel
             const isBackgroundPixel = binaryMaskData[i] === 0 && binaryMaskData[i + 1] === 0 && binaryMaskData[i + 2] === 0;
             if (isBackgroundPixel) {
                 canvasData[i + 0] = 0;
@@ -252,8 +292,10 @@ const drawSegmentationMask = ({ 0 : SegmentationMaskLabels} = SegmentationResult
         }
     }
     else {
+        // we get the background image data
         const backgroundData = scaleImageData(backgroundImage, scaledWidth, scaledHeight).data; // background image data
         for (let i = 0; i < canvasData.length; i += 4) {
+            // we check if the pixel is a background pixel or not and we set the pixel to the background image pixel if it is a background pixel
             const isBackgroundPixel = binaryMaskData[i] === 0 && binaryMaskData[i + 1] === 0 && binaryMaskData[i + 2] === 0;
             if (isBackgroundPixel) {
                 canvasData[i + 0] = backgroundData[i + 0];
@@ -263,14 +305,9 @@ const drawSegmentationMask = ({ 0 : SegmentationMaskLabels} = SegmentationResult
             }
         }
     }
-    // draw the canvas image data
+    // update the canvas with the new canvas data after applying the segmentation mask
     canvasCtx.putImageData(new ImageData(canvasData, scaledWidth, scaledHeight), offsetX, offsetY);
 }
 
 
 
-document.addEventListener('DOMContentLoaded', async () =>{
-    await populateVideoSourceSelect();
-    imageSegmenter = await createImageSegmenter();
-    M.AutoInit();
-});

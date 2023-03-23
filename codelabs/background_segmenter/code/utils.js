@@ -23,7 +23,7 @@ export function scaleImageData(imageData, newWidth, newHeight) {
     return newCtx.getImageData(0, 0, newWidth, newHeight);
 }
 
-export const downloadImage = async (imageUrl, targetWidth, targetHeight) => {
+export async function downloadImage(imageUrl, targetWidth, targetHeight){
     /**
      * Downloads an image from the given url and returns the image data
      * @param imageUrl
