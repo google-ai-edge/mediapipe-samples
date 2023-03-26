@@ -56,7 +56,7 @@ export default class Camera {
             throw new Error("Error starting the camera: " + e.message);
         }
     }
-    async setResolution(width, height){
+    setResolution(width, height){
         /**
          * Sets the camera resolution
          * @param width {number}

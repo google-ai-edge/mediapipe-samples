@@ -1,4 +1,4 @@
-export function scaleImageData(imageData, newWidth, newHeight) {
+export function resizeImageData(imageData, newWidth, newHeight) {
     /**
      * Scales the given image data to the given width and height
      * @param imageData {ImageData} The image data to scale
