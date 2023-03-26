@@ -15,7 +15,7 @@
  */
 
 task downloadTaskFile(type: Download) {
-    src 'https://storage.googleapis.com/mediapipe-assets/gesture_recognizer.task'
+    src 'https://storage.googleapis.com/mediapipe-assets/gesture_recognizer.task?generation=1677051715043311'
     dest project.ext.ASSET_DIR + '/gesture_recognizer.task'
     overwrite false
 }

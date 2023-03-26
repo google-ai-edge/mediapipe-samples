@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+ * Copyright 2023 The TensorFlow Authors. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-task downloadTaskFile(type: Download) {
-    src 'https://storage.googleapis.com/mediapipe-assets/hand_landmarker.task?generation=1677051718270846'
-    dest project.ext.ASSET_DIR + '/hand_landmarker.task'
-    overwrite false
-}
+package com.google.mediapipe.examples.imagesegmenter
 
-preBuild.dependsOn downloadTaskFile
+import androidx.lifecycle.ViewModel
+
+/**
+ *  This ViewModel is used to store image segmenter helper settings
+ */
+class MainViewModel : ViewModel() {
+
+    private var _delegate: Int = ImageSegmenterHelper.DELEGATE_CPU
+
+    val currentDelegate: Int get() = _delegate
+
+    fun setDelegate(delegate: Int) {
+        _delegate = delegate
+    }
+}
