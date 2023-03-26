@@ -19,30 +19,39 @@ export async function createPortrait(photo, border = 20, footerOffset = 40, corn
     portraitCanvas.width = portraitWidth;
     portraitCanvas.height = portraitHeight;
 
-    // create a gradient to use as a filter
-    const gradient = toasterGradient(photo.width, photo.height);
 
     // apply filter and border to the portrait
-    const photoBlended = blend(gradient, photo, (backgroundPixel, foregroundPixel) => {
-        // https://en.wikipedia.org/wiki/Blend_modes#Screen
-        return 255 - (255 - backgroundPixel) * (255 - foregroundPixel) / 255;
-    });
-    const photoBordered = await addBorder(photoBlended, border, footerOffset, cornerRadius);
+    photo = addGradientFilter(photo);
+    photo = await addBorder(photo, border, footerOffset, cornerRadius);
 
     // draw the portrait on the canvas
-    const photoBorderedBitmap = await createImageBitmap(photoBordered)
-    portraitCtx.drawImage(photoBorderedBitmap, 0, 0);
+    const photoBitmap = await createImageBitmap(photo)
+    portraitCtx.drawImage(photoBitmap, 0, 0);
 
     // add media pipe logo to the portrait
     const logo = await fetchImage(logoUrl);
     const logoBitmap = await createImageBitmap(logo)
-    portraitCtx.drawImage(logoBitmap, photoBorderedBitmap.width - logo.width / 2, photoBorderedBitmap.height - logo.height / 2 - 10, logo.width / 2, logo.height / 2);
+    portraitCtx.drawImage(logoBitmap, photoBitmap.width - logo.width / 2, photoBitmap.height - logo.height / 2 - 10, logo.width / 2, logo.height / 2);
 
     return portraitCanvas.toDataURL('image/png', 1.0);
 
 }
 
-function blend (backgroundImage, foregroundImage, transformFunction, alpha = 255) {
+function addGradientFilter (photo) {
+    /**
+     * Applies a filter to the given photo
+     * @type {ImageData}
+     */
+    // create a gradient to use as a filter
+    const gradient = createGradientFilter(photo.width, photo.height);
+    // apply filter and border to the portrait
+    return applyTransform(gradient, photo, (backgroundPixel, foregroundPixel) => {
+        // https://en.wikipedia.org/wiki/Blend_modes#Screen
+        return 255 - (255 - backgroundPixel) * (255 - foregroundPixel) / 255;
+    });
+}
+
+function applyTransform (backgroundImage, foregroundImage, transformFunction, alpha = 255) {
     /**
      * Blends the foreground image with the background image using the given transform function
      * @param backgroundImage {ImageData} The background image
@@ -119,9 +128,9 @@ async function addBorder(imageData, imageOffset = 20, footerOffset = 90, cornerR
 
 }
 
-function toasterGradient (width, height) {
+function createGradientFilter (width, height) {
     /**
-     * Creates a gradient that looks like a toaster
+     * Creates a gradient filter
      * @param width : width of the gradient
      * @param height : height of the gradient
      * @returns {ImageData} The gradient
