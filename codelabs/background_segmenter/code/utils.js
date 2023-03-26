@@ -1,6 +1,6 @@
 export function resizeImageData(imageData, newWidth, newHeight) {
     /**
-     * Scales the given image data to the given width and height
+     * resize an image data object
      * @param imageData {ImageData} The image data to scale
      * @param newWidth {number} The new width
      * @param newHeight {number} The new height
@@ -23,33 +23,31 @@ export function resizeImageData(imageData, newWidth, newHeight) {
     return newCtx.getImageData(0, 0, newWidth, newHeight);
 }
 
-export async function downloadImage(imageUrl, targetWidth, targetHeight){
+export async function fetchImage(imageUrl){
     /**
-     * Downloads an image from the given url and returns the image data
+     * fetch an image and return its ImageData
      * @param imageUrl
      * @param targetWidth
      * @param targetHeight
      * @returns {Promise<ImageData>}
      */
-    try {
-        const image = await fetch(imageUrl)
-        const imageBlog = await image.blob()
-        const imageURL = URL.createObjectURL(imageBlog)
-        const imageElement = document.createElement('img')
-        imageElement.src = imageURL
-        return new Promise((resolve) => {
-            imageElement.onload = () => {
-                const canvas = document.createElement('canvas')
-                const ctx = canvas.getContext('2d')
-                canvas.width = targetWidth
-                canvas.height = targetHeight
-                ctx.drawImage(imageElement, 0, 0, targetWidth, targetHeight)
-                const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight)
-                resolve(imageData)
-            }
-        })
-    }
-    catch (e) {
-        throw new Error('Error downloading the image, trying with another one')
-    }
+    const image = await fetch(imageUrl)
+    const imageBlog = await image.blob()
+    imageUrl = URL.createObjectURL(imageBlog)
+    const imageElement = document.createElement('img')
+    imageElement.src = imageUrl
+    return new Promise((resolve, reject) => {
+        imageElement.onload = () => {
+            const canvas = document.createElement('canvas')
+            const ctx = canvas.getContext('2d')
+            canvas.width = imageElement.width;
+            canvas.height = imageElement.height;
+            ctx.drawImage(imageElement, 0, 0, imageElement.width, imageElement.height)
+            const imageData = ctx.getImageData(0, 0, imageElement.width, imageElement.height)
+            resolve(imageData)
+        }
+        imageElement.onerror = () => {
+            reject(new Error('Error downloading the image, trying with another one'))
+        }
+    });
 }

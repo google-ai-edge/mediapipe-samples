@@ -1,63 +1,63 @@
-// we start by importing the tasks-vision module from the CDN
-import vision from "https://cdn.skypack.dev/@mediapipe/tasks-vision";
+// we start by importing mediapipe tasks vision module
+import vision from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision";
 
-// the Camera class will help us to interact with the webcam
+// we then import the camera class and the utils functions
 import Camera from "./camera.js";
-import {downloadImage, resizeImageData} from "./utils.js";
+import {fetchImage, resizeImageData} from "./utils.js";
+import {createPortrait} from "./portrait.js";
 const { ImageSegmenter, SegmentationMask, FilesetResolver } = vision;
 
-// get a reference to the DOM elements that we wil use
+// Here, we get a reference to the DOM elements
 const btnStart = document.getElementById('btnStart');
 const btnStop = document.getElementById('btnStop');
+const btnTakePicture = document.getElementById('btnTakePicture');
 const video = document.getElementById('video');
 const selVideoSource = document.getElementById('selectVideoSource');
 const selVideoResolution = document.getElementById('selectVideoResolution');
-const txtBackgroundImageInput = document.getElementById('txtBackgroundImage');
+
+// background change options
+const blurBackgroundOptIn = document.getElementById('blurBackgroundOptIn');
+const chooseBackgroundImgOptIn = document.getElementById('chooseBackgroundImgOptIn');
+const uploadBackgroundImgOptIn = document.getElementById('uploadBackgroundImgOptIn');
+
+// select for users to choose a background image
+const selBackgroundImg = document.getElementById('selBackgroundImg');
+const selBackgroundImgDivContainer = document.getElementById('selBackgroundImgDivContainer');
+
+// file input for users to upload a background image
+const fileBackgroundImg = document.getElementById('fileBackgroundImg');
+const fileBackgroundImgDivContainer = document.getElementById('fileBackgroundImgDivContainer');
+
 
 // get a reference to the canvas element and its context
-const videCanvas = document.getElementById('canvas');
-const videoCanvasCtx = videCanvas.getContext('2d');
-const segmenterOutputType = "CATEGORY_MASK"
-// const segmenterOutputType = "CONFIDENCE_MASK"
+const videoCanvas = document.getElementById('canvas');
+const videoCanvasCtx = videoCanvas.getContext('2d');
 
-// create a new camera instance
+// create a new Camera class instance to interact with the camera
 const camera = new Camera(video, video.videoWidth, video.videoHeight);
 
 // initialize variables that will be used later
 let backgroundImage = null;
 let requestAnimationFrameId = null;
 let imageSegmenter = null;
-let labelsToSegment = ["dog", "person"]
-const labels = [
-    "background",
-    "aeroplane",
-    "bicycle",
-    "bird",
-    "boat",
-    "bottle",
-    "bus",
-    "car",
-    "cat",
-    "chair",
-    "cow",
-    "dining table",
-    "dog",
-    "horse",
-    "motorbike",
-    "person",
-    "potted plant",
-    "sheep",
-    "sofa",
-    "train",
-    "tv"
-]
 
-// this function will be called when the webpage is loaded
+const backgroundImageList = [
+    "https://storage.googleapis.com/mediapipe-assets/bridge-image-seg.jpg",
+    "https://storage.googleapis.com/mediapipe-assets/chairs-image-seg.jpg",
+    "https://storage.googleapis.com/mediapipe-assets/stars-image-seg.jpg"
+];
+
+
+
+// this code will be executed when the DOM is loaded
 document.addEventListener('DOMContentLoaded', async () =>{
-    // populate the video source select with the available video sources
+    // populate the video source and background image select with the available devices and images respectively
     await populateVideoSourceSelect();
+    await populateBackgroundImageSelect();
+
     // create a new image segmenter instance using the mediapipe wasm runtime
     imageSegmenter = await createImageSegmenter();
+
     // initialize the materialize components
     M.AutoInit();
 });
@@ -75,25 +75,13 @@ async function createImageSegmenter() {
     return await  ImageSegmenter.createFromOptions(wasmFileset, {
         baseOptions: {
             modelAssetPath:
-                "https://storage.googleapis.com/mediapipe-assets/deeplabv3.tflite?generation=1661875711618421"
+                "https://storage.googleapis.com/mediapipe-tasks/image_segmenter/selfie_segmentation.tflite"
 
         },
-        outputType: segmenterOutputType,
         runningMode: "VIDEO",
     })
 }
 
-// draw the segmentation mask on the canvas
-function segmentationCallback(segmentationMask){
-    /**
-     * Callback function called when the segmentation is done
-     * @param segmentationMask {SegmentationMask} the segmentation mask
-     */
-    if(camera.isRunning) {
-        drawSegmentationMask(segmentationMask);
-        requestAnimationFrameId = window.requestAnimationFrame(startSegmentationTask);
-    }
-}
 function startSegmentationTask(){
     /**
      * Dispatches the segmentation task
@@ -111,6 +99,20 @@ function stopSegmentationTask(){
     }
 }
 
+async function segmentationCallback(segmentationMask){
+    /**
+     * Callback function called when the segmentation task is completed for every frame
+     * @param segmentationMask {SegmentationMask} the segmentation mask
+     */
+    if(camera.isRunning) {
+        // draw the segmentation mask on the canvas
+        await drawSegmentationResult(segmentationMask);
+        // start the segmentation task loop using requestAnimationFrame
+        requestAnimationFrameId = window.requestAnimationFrame(startSegmentationTask);
+    }
+}
+
+
 async function populateVideoSourceSelect() {
     /**
      * Populates the video source select with the available devices
@@ -125,10 +127,25 @@ async function populateVideoSourceSelect() {
     });
 }
 
+async function populateBackgroundImageSelect(){
+    /**
+     * Populates the background image select with the available images
+     * @type {HTMLElement}
+     */
+    backgroundImageList.forEach((imageUrl) => {
+        const filename = imageUrl.substring(imageUrl.lastIndexOf('/')+1);
+        const option = document.createElement('option');
+        option.value = imageUrl;
+        option.text = filename;
+        option.setAttribute('data-icon', imageUrl);
+        selBackgroundImg.appendChild(option);
+    });
+}
+
 
 async function startCamera(){
     /**
-     * Starts the camera and starts the segmentation
+     * Starts the camera
      */
     // before starting the camera we make sure that the segmentation task is not running
     stopSegmentationTask();
@@ -144,7 +161,7 @@ async function startCamera(){
 
 async function stopCamera(){
     /**
-     * Stops the camera and segmentation task
+     * Stops the camera
      */
     if(camera.isRunning) {
         // stop the segmentation task if it is running
@@ -154,46 +171,95 @@ async function stopCamera(){
     }
 }
 
-
-async function setBackgroundImage(){
-    /**
-     * Changes the background image
-     */
-    try {
-        // set the background image to the image selected by the user
-        const image_uri = txtBackgroundImageInput.value;
-        if(image_uri === '') {
-            backgroundImage = null;
-            return;
-        }
-        backgroundImage = await downloadImage(image_uri, videCanvas.width, videCanvas.height);
-    }
-    catch (e) {
-        backgroundImage = null;
-        M.toast({html: e.toString(), displayLength: 5000})
-    }
-
-}
-
 function clearCanvas(){
     /**
      * Clears the canvas
      */
-    videoCanvasCtx.clearRect(0, 0, videCanvas.width, videCanvas.height);
+    videoCanvasCtx.clearRect(0, 0, videoCanvas.width, videoCanvas.height);
 }
 
 
 // add event listeners
 btnStart.addEventListener('click', async () => {
     try {
-        // set image background
-        await setBackgroundImage();
         // start the camera
         await startCamera();
         // dispatch segmentation task
         startSegmentationTask();
     }
     catch (e) {
+        M.toast({html: e.toString(), displayLength: 5000})
+    }
+});
+
+// set background image from the select
+selBackgroundImg.addEventListener('change', async () => {
+    // set image background
+    try {
+        backgroundImage = null;
+        // set the background image to the image selected by the user
+        const image_uri = selBackgroundImg.value;
+        if(image_uri === '') {
+            backgroundImage = null;
+            return;
+        }
+        backgroundImage = await fetchImage(image_uri);
+    }
+    catch (e) {
+        backgroundImage = null;
+        M.toast({html: e.toString(), displayLength: 5000})
+    }
+});
+
+// select background image from file
+fileBackgroundImg.addEventListener('change', async (evt) => {
+    try {
+        backgroundImage = null;
+        // set the background image to the image selected by the user
+        const files = evt.target.files;
+        const allowedExtReg = /(\.jpg|\.jpeg|\.png)$/i;
+        // we only allow one file to be selected
+        if (files && files.length) {
+            let myFile = files[0];
+            let myFileName = myFile.name;
+            // check if the file extension is allowed
+            if (allowedExtReg.test(myFileName)) {
+                // we create a base64 image from the user uploaded image
+                const fr = new FileReader()
+                fr.readAsDataURL(myFile);
+                const base64Img = await new Promise((resolve, reject) => {
+                    fr.onload = () => {
+                        resolve(fr.result);
+                    }
+                    fr.onerror = () => {
+                        reject(fr.error);
+                    }
+                });
+
+                // we create a tem canvas to hold the user uploaded image
+                const tempCanvas = document.createElement('canvas');
+                const tempCanvasCtx = tempCanvas.getContext('2d');
+                const img = new Image();
+                img.src = base64Img;
+
+                // we set the background image to the image selected by the user
+                backgroundImage = await new Promise((resolve, reject) => {
+                    img.onload = () => {
+                        tempCanvas.width = img.width;
+                        tempCanvas.height = img.height;
+                        tempCanvasCtx.drawImage(img, 0, 0);
+                        const imageData = tempCanvasCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+                        resolve(imageData);
+                    }
+                    img.onerror = () => {
+                        reject();
+                    }
+                });
+            }
+        }
+    }
+    catch (e) {
+        backgroundImage = null;
         M.toast({html: e.toString(), displayLength: 5000})
     }
 });
@@ -208,106 +274,43 @@ btnStop.addEventListener('click', async () => {
     clearCanvas();
 });
 
-function createSegmentationMaskFromCategoryMask(categoryMask, targetWidth= null, targetHeight = null){
-    /**
-     * Creates a segmentation mask from the segmentation mask labels
-     * @param SegmentationMaskLabels {Array} each value in this array corresponds
-     * to the label associated with the pixel at each index in the segmentation mask
-     * @param targetWidth {number} the target width of the segmentation mask
-     * @param targetHeight {number} the target height of the segmentation mask
-     * @returns {ImageData} the segmentation mask
-     */
+btnTakePicture.addEventListener('click', async () => {
+    // take a picture
+    const photo = videoCanvasCtx.getImageData(0, 0, videoCanvas.width, videoCanvas.height);
+    const portrait = await createPortrait(photo);
+    const link = document.createElement('a');
+    link.download = 'image.jpg';
+    link.href = portrait;
+    link.click();
 
-    // create Uint8ClampedArray to hold the segmentation mask data
-    let segmentationMask = new Uint8ClampedArray(
-        video.videoWidth * video.videoHeight * 4
-    );
+});
 
-    // we loop through the segmentation mask labels and create the segmentation mask
-    for (let i in categoryMask) {
+blurBackgroundOptIn.addEventListener('change', () => {
+    selBackgroundImgDivContainer.classList.add('hide');
+    fileBackgroundImgDivContainer.classList.add('hide');
+});
 
-        // for each pixel we get the label index from the segmentation mask labels and
-        // we get the label from the labels array
-        const labelIdx = categoryMask[i];
-        const label = labels[labelIdx];
-
-        // we check if the label is in the labelsToSegment array
-        if (labelsToSegment.includes(label)) {
-            // if the label is in the labelsToSegment array, we set the pixel to white.
-            // It could be a person or a sofa or a tv
-            segmentationMask[i * 4] = 255;
-            segmentationMask[i * 4 + 1] = 255;
-            segmentationMask[i * 4 + 2] = 255;
-            segmentationMask[i * 4 + 3] = 255;
-        } else {
-            // we set the pixel to black if it is not in the labelsToSegment array
-            segmentationMask[i * 4] = 0;
-            segmentationMask[i * 4 + 1] = 0;
-            segmentationMask[i * 4 + 2] = 0;
-            segmentationMask[i * 4 + 3] = 255;
-        }
+chooseBackgroundImgOptIn.addEventListener('change', () => {
+    if(chooseBackgroundImgOptIn.checked) {
+        selBackgroundImgDivContainer.classList.remove('hide');
+        fileBackgroundImgDivContainer.classList.add('hide');
     }
-    // we create an ImageData object from the segmentation mask
-    let segmentationMaskImageData = new ImageData(segmentationMask, video.videoWidth, video.videoHeight);
-    if(targetWidth && targetHeight){
-        // if the target width and height are defined, we resize the segmentation mask
-        segmentationMaskImageData = resizeImageData(segmentationMaskImageData, targetWidth, targetHeight);
+    selBackgroundImg.dispatchEvent(new Event('change'));
+});
+uploadBackgroundImgOptIn.addEventListener('change', () => {
+    if(uploadBackgroundImgOptIn.checked) {
+        selBackgroundImgDivContainer.classList.add('hide');
+        fileBackgroundImgDivContainer.classList.remove('hide');
     }
-    return segmentationMaskImageData;
-}
-
-function createSegmentationMaskFromConfidenceMask(SegmentationMaskLabels, targetWidth= null, targetHeight = null, threshold = 20.0){
-    /**
-     * Creates a segmentation mask from the segmentation mask labels
-     * @param SegmentationMaskLabels {Array} each value in this array corresponds
-     * to the label associated with the pixel at each index in the segmentation mask
-     * @param targetWidth {number} the target width of the segmentation mask
-     * @param targetHeight {number} the target height of the segmentation mask
-     * @returns {ImageData} the segmentation mask
-     */
-
-        // create Uint8ClampedArray to hold the segmentation mask data
-    let segmentationMask = new Uint8ClampedArray(
-        video.videoWidth * video.videoHeight * 4
-    );
-    labelsToSegment.forEach((label, idx) => {
-         const labelMaskIdx = labels.indexOf(label);
-         const labelMask = SegmentationMaskLabels[labelMaskIdx];
-            for (let i in labelMask) {
-                if (labelMask[i] > threshold) {
-                    segmentationMask[i * 4 + 0] = 255;
-                    segmentationMask[i * 4 + 1] = 255;
-                    segmentationMask[i * 4 + 2] = 255;
-                    segmentationMask[i * 4 + 3] = 255;
-                } else {
-                    segmentationMask[i * 4 + 0] = 0;
-                    segmentationMask[i * 4 + 1] = 0;
-                    segmentationMask[i * 4 + 2] = 0;
-                    segmentationMask[i * 4 + 3] = 255;
-                }
-            }
-    });
-    // we create an ImageData object from the segmentation mask
-    let segmentationMaskImageData = new ImageData(segmentationMask, video.videoWidth, video.videoHeight);
-    if(targetWidth && targetHeight){
-        // if the target width and height are defined, we resize the segmentation mask
-        segmentationMaskImageData = resizeImageData(segmentationMaskImageData, targetWidth, targetHeight);
-    }
-    return segmentationMaskImageData;
-}
+    fileBackgroundImg.dispatchEvent(new Event('change'));
+});
 
 
-
-async function drawSegmentationMask(SegmentationResult){
-
-    /**
-     * Draws the segmentation results on the canvas
-     * @param SegmentationMaskLabels {Array} the segmentation mask labels
-     */
+async function drawSegmentationResult(segmentationResult){
 
     // get the canvas dimensions
-    const canvasWidth = videCanvas.width;
-    const canvasHeight = videCanvas.height;
+    const canvasWidth = videoCanvas.width;
+    const canvasHeight = videoCanvas.height;
     const videoWidth = video.videoWidth;
     const videoHeight = video.videoHeight;
 
@@ -324,76 +327,163 @@ async function drawSegmentationMask(SegmentationResult){
     const offsetX = (canvasWidth - scaledWidth) / 2;
     const offsetY = (canvasHeight - scaledHeight) / 2;
 
+    // create segmentation mask
+    const segmentationMask = segmentationResult[0];
+    const segmentationMaskData = new ImageData(video.videoWidth, video.videoHeight);
+    const pixelCount = segmentationMask.length;
+    for (let i = 0; i < pixelCount; i++) {
+        const maskValue = segmentationMask[i];
+        const maskValueRGB = maskValue * 255;
+        segmentationMaskData.data[i * 4] = maskValueRGB;
+        segmentationMaskData.data[i * 4 + 1] = maskValueRGB;
+        segmentationMaskData.data[i * 4 + 2] = maskValueRGB;
+        segmentationMaskData.data[i * 4 + 3] = 255;
+    }
 
-    // create the segmentation mask from the segmentation mask labels
-    let segmentationMask = null;
-    if(segmenterOutputType === "CATEGORY_MASK"){
-        segmentationMask = createSegmentationMaskFromCategoryMask(SegmentationResult[0], scaledWidth, scaledHeight);
-    }
-    else {
-        segmentationMask = createSegmentationMaskFromConfidenceMask(SegmentationResult, scaledWidth, scaledHeight);
-    }
-    // create an ImageBitmap from the scaled segmentation mask
-    const segmentationMaskBitmap = await createImageBitmap(segmentationMask);
-    // create a canvas to hold the scaled segmentation mask and mirror it
-    const canvasMask = document.createElement('canvas');
-    const canvasMaskCtx = canvasMask.getContext('2d');
-    canvasMask.width = canvasWidth;
-    canvasMask.height = canvasHeight;
+    // scale and flip the segmentation mask to fit the canvas
+    const segmentationMaskCanvas = document.createElement('canvas');
+    const canvasMaskCtx = segmentationMaskCanvas.getContext('2d');
+    segmentationMaskCanvas.width = canvasWidth;
+    segmentationMaskCanvas.height = canvasHeight;
     canvasMaskCtx.save();
     canvasMaskCtx.translate(canvasWidth, 0);
     canvasMaskCtx.scale(-1, 1);
+    const segmentationMaskBitmap = await createImageBitmap(segmentationMaskData);
     canvasMaskCtx.drawImage(segmentationMaskBitmap, offsetX, offsetY, scaledWidth, scaledHeight);
     canvasMaskCtx.restore();
 
 
-    // draw the video frame  at the center of the canvas
+    // scale, flip and draw the video to fit the canvas
     videoCanvasCtx.save();
-    // mirror the canvas
     videoCanvasCtx.translate(canvasWidth, 0);
     videoCanvasCtx.scale(-1, 1);
     videoCanvasCtx.clearRect(0, 0, canvasWidth, canvasHeight);
-    // draw the video
     videoCanvasCtx.drawImage(video, offsetX, offsetY, scaledWidth, scaledHeight);
     videoCanvasCtx.restore();
 
+    // we get the canvas data and the segmentation mask data to apply the segmentation
+    const canvasVideoData = videoCanvasCtx.getImageData(offsetX, offsetY, scaledWidth, scaledHeight); // canvas data
+    const canvasMaskData = canvasMaskCtx.getImageData(offsetX, offsetY, scaledWidth, scaledHeight); // segmentation mask data
+
+    // apply background segmentation
+    if(blurBackgroundOptIn.checked) {
+        blurBackground(canvasVideoData, canvasMaskData);
+    }
+    else {
+        changeBackground(canvasVideoData, canvasMaskData);
+    }
+
+    videoCanvasCtx.putImageData(canvasVideoData, offsetX, offsetY);
+
+}
+
+const blurBackground = (canvasVideoData, canvasMaskData, blurRadius = 8) => {
+    /**
+     * Applies the segmentation mask to the canvas data
+     * @param canvasVideoData: canvas data
+     * @param canvasMaskData: segmentation mask data
+     */
+    let width = canvasVideoData.width;
+    let height = canvasVideoData.height;
+    let videoPixels = canvasVideoData.data;
+    let maskPixels = canvasMaskData.data;
+
+
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            // get the pixel index
+            const i = (y * width + x) * 4;
+
+            // check if the pixel is a background pixel
+            const isBackgroundPixel = (
+                maskPixels[i] === 0 &&
+                maskPixels[i + 1] === 0 &&
+                maskPixels[i + 2] === 0
+            );
+
+            // if the pixel is a background pixel, we blur it
+            if (isBackgroundPixel) {
+                // we get the average color of the neighboring pixels and set it to the current pixel
+                let r = 0, g = 0, b = 0, a = 0;
+                let pixelCount = 0;
+                // we loop through the neighboring pixels
+                for (let dy = -blurRadius; dy <= blurRadius; dy++) {
+                    for (let dx = -blurRadius; dx <= blurRadius; dx++) {
+                        let nx = x + dx;
+                        let ny = y + dy;
+                        // Check if the neighboring pixel is within the bounds of the image
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                            let offset = (ny * width + nx) * 4;
+                            r += videoPixels[offset];
+                            g += videoPixels[offset + 1];
+                            b += videoPixels[offset + 2];
+                            a += videoPixels[offset + 3];
+                            pixelCount++;
+                        }
+                    }
+                }
+
+                // Compute the average color of the neighboring pixels
+                let avgR = r / pixelCount;
+                let avgG = g / pixelCount;
+                let avgB = b / pixelCount;
+                let avgA = a / pixelCount;
+
+                // Write the blurred pixel to the video canvas
+                videoPixels[i] = avgR;
+                videoPixels[i + 1] = avgG;
+                videoPixels[i + 2] = avgB;
+                videoPixels[i + 3] = avgA;
+
+            }
+        }
+    }
+
+}
+
+
+const changeBackground = (canvasVideoData, canvasMaskData) => {
+    /**
+     * Applies the segmentation mask to the canvas data
+     * @param canvasVideoData: canvas data
+     * @param canvasMaskData: segmentation mask data
+     */
 
     // we get the canvas data and the segmentation mask data to apply the segmentation
-    const canvasData = videoCanvasCtx.getImageData(offsetX, offsetY, scaledWidth, scaledHeight).data; // canvas data
-    const binaryMaskData = canvasMaskCtx.getImageData(offsetX, offsetY, scaledWidth, scaledHeight).data; // segmentation mask data
+    let width = canvasVideoData.width;
+    let height = canvasVideoData.height;
+    const videoPixels = canvasVideoData.data; // canvas data
+    const maskPixels = canvasMaskData.data; // segmentation mask data
 
-    // we check if the background image is null or not
     if(backgroundImage === null) {
-        for (let i = 0; i < canvasData.length; i += 4) {
-            // we check if the pixel is a background pixel or not and we set the pixel to black if it is a background pixel
-            const isBackgroundPixel = binaryMaskData[i] === 0 && binaryMaskData[i + 1] === 0 && binaryMaskData[i + 2] === 0;
+        for (let i = 0; i < videoPixels.length; i += 4) {
+            // we check if the pixel is a background pixel
+            const isBackgroundPixel = maskPixels[i] === 0 && maskPixels[i + 1] === 0 && maskPixels[i + 2] === 0;
             if (isBackgroundPixel) {
-                canvasData[i + 0] = 0;
-                canvasData[i + 1] = 0;
-                canvasData[i + 2] = 0;
-                canvasData[i + 3] = 255;
+                // we set the pixel to black
+                videoPixels[i + 0] = 0;
+                videoPixels[i + 1] = 0;
+                videoPixels[i + 2] = 0;
+                videoPixels[i + 3] = 255;
             }
         }
     }
     else {
         // we get the background image data
-        const backgroundData = resizeImageData(backgroundImage, scaledWidth, scaledHeight).data; // background image data
-        for (let i = 0; i < canvasData.length; i += 4) {
-            // we check if the pixel is a background pixel or not and we set the pixel to the background image pixel if it is a background pixel
-            const isBackgroundPixel = binaryMaskData[i] === 0 && binaryMaskData[i + 1] === 0 && binaryMaskData[i + 2] === 0;
+        const backgroundImagePixels = resizeImageData(backgroundImage, width, height).data; // background image data
+        for (let i = 0; i < videoPixels.length; i += 4) {
+            // we check if the pixel is a background pixel
+            const isBackgroundPixel = maskPixels[i] === 0 && maskPixels[i + 1] === 0 && maskPixels[i + 2] === 0;
             if (isBackgroundPixel) {
-                canvasData[i + 0] = backgroundData[i + 0];
-                canvasData[i + 1] = backgroundData[i + 1];
-                canvasData[i + 2] = backgroundData[i + 2];
-                canvasData[i + 3] = backgroundData[i + 3];
+                // we set the pixel to the background image pixel
+                videoPixels[i + 0] = backgroundImagePixels[i + 0];
+                videoPixels[i + 1] = backgroundImagePixels[i + 1];
+                videoPixels[i + 2] = backgroundImagePixels[i + 2];
+                videoPixels[i + 3] = backgroundImagePixels[i + 3];
             }
         }
     }
-    // update the canvas with the new canvas data after applying the segmentation mask
-    videoCanvasCtx.putImageData(new ImageData(canvasData, scaledWidth, scaledHeight), offsetX, offsetY);
-
 }
-
 
 
 
