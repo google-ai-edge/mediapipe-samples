@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MediaPipe Segmentation Task</title>
+
+    <!-- Compiled and minified CSS materialize library -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/materialize-css@1.0.0/dist/css/materialize.min.css">
+
+    <!-- Compiled and minified JavaScript materialize library-->
+    <script src="https://cdn.jsdelivr.net/npm/materialize-css@1.0.0/dist/js/materialize.min.js"></script>
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <script src="index.js" type="module"></script>
+</head>
+<body>
+
+<div class="container">
+    <div class="col s1 center">
+        <h3>Segmenting the background using the MediaPipe Image Segmentation Task</h3>
+    </div>
+    <div class="col s1 center">
+        <video id="video" style="display: none; transform: scaleX(-1)" autoplay></video>
+        <canvas id="canvas" width="480" height="360" style="border: gray solid 2px"></canvas>
+    </div>
+    <div class="col s1 center">
+        <button id="btnStart" class="btn waves-effect waves-light" title="Start Camera" >  <i class="material-icons">videocam</i></button>
+        <button id="btnTakePicture" class="btn waves-effect waves-light" title="Take Picture"><i class="material-icons">camera</i></button>
+        <button id="btnStop" class="btn waves-effect waves-light" title="Stop Camera"><i class="material-icons">videocam_off</i></button>
+    </div>
+
+    <div class="col s1">
+        <label for="selectVideoSource">Select the video device: </label>
+        <select id="selectVideoSource"></select>
+    </div>
+    <div class="col s1">
+        <label for="selectVideoResolution">Select the video resolution: </label>
+        <select id="selectVideoResolution">
+            <option value="640x480">640x480</option>
+            <option value="800x600">800x600</option>
+            <option value="1280x720">1280x720</option>
+        </select>
+    </div>
+    <div class="col s1">
+        <label>
+            <input id="blurBackgroundOptIn" name="group1" type="radio" class="with-gap" checked />
+            <span>Blur Background</span>
+        </label>
+        <label>
+            <input id="chooseBackgroundImgOptIn" name="group1" type="radio" class="with-gap"/>
+            <span>Choose Background Image</span>
+        </label>
+        <label>
+            <input id="uploadBackgroundImgOptIn" name="group1" type="radio" class="with-gap"/>
+            <span>Upload Background Image</span>
+        </label>
+    </div>
+    <div id="selBackgroundImgDivContainer" class="col s1 hide">
+        <label for="selBackgroundImg">Choose background image: </label>
+        <select class="icons" id="selBackgroundImg" ></select>
+    </div>
+    <div id="fileBackgroundImgDivContainer" class="col s1 hide" >
+        <label>Upload Background Image: </label>
+        <div class="file-field input-field">
+            <div class="btn">
+                <span>Upload Image</span>
+                <input type="file" id="fileBackgroundImg" accept="image/*">
+            </div>
+            <div class="file-path-wrapper">
+                <input class="file-path validate" type="text">
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
