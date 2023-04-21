@@ -325,7 +325,7 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     }
 
     private fun updateOverlay(result: ImageSegmenterResult) {
-        val newImage = result.segmentations().get(0)
+        val newImage = result.categoryMask().get()
         updateOverlay(ImageSegmenterHelper.ResultBundle(
             ByteBufferExtractor.extract(newImage),
             newImage.width,
