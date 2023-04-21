@@ -54,11 +54,14 @@ class InteractiveSegmentationHelper(
             val optionsBuilder =
                 InteractiveSegmenter.InteractiveSegmenterOptions.builder()
                     .setBaseOptions(baseOptions)
+                    .setOutputCategoryMask(true)
+                    .setOutputConfidenceMasks(false)
                     .setResultListener(this::returnSegmeneterResults)
                     .setErrorListener(this::returnSegmenterError)
 
             val options = optionsBuilder.build()
-            interactiveSegmenter = InteractiveSegmenter.createFromOptions(context, options)
+            interactiveSegmenter =
+                InteractiveSegmenter.createFromOptions(context, options)
 
         } catch (e: IllegalStateException) {
             listener.onError(
@@ -116,18 +119,13 @@ class InteractiveSegmentationHelper(
         result: ImageSegmenterResult,
         mpImage: MPImage
     ) {
-        if (result.segmentations().isNotEmpty()) {
+        // Extract first MPImage and convert to byte buffer to display
+        val byteBuffer =
+            ByteBufferExtractor.extract(result.categoryMask().get())
 
-            // Extract first MPImage and convert to byte buffer to display
-            val byteBuffer =
-                ByteBufferExtractor.extract(result.segmentations().first())
-
-            val resultBundle =
-                ResultBundle(byteBuffer, mpImage.width, mpImage.height)
-            listener.onResults(resultBundle)
-        } else {
-            listener.onResults(null)
-        }
+        val resultBundle =
+            ResultBundle(byteBuffer, mpImage.width, mpImage.height)
+        listener.onResults(resultBundle)
     }
 
     private fun returnSegmenterError(error: RuntimeException) {
