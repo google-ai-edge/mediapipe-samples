@@ -119,6 +119,6 @@ dependencies {
     androidTestImplementation "androidx.test:runner:1.4.0"
     androidTestImplementation "androidx.test.espresso:espresso-core:3.4.0"
 
-    implementation 'com.google.mediapipe:tasks-vision:0.1.0-alpha-7'
+    implementation 'com.google.mediapipe:tasks-vision:0.1.0-alpha-8'
 
 }
