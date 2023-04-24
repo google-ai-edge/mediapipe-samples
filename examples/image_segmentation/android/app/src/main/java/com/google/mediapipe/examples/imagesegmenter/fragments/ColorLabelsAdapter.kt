@@ -41,7 +41,7 @@ class ColorLabelsAdapter :
                 tvLabel.text = label
                 val drawable =
                     flBackgroundLabel.background.mutate() as GradientDrawable
-                drawable.setColor(rgbColor.toAlphaColor())
+                drawable.setColor(rgbColor.toAlphaColor(1.0f))
                 drawable.invalidateSelf()
             }
         }

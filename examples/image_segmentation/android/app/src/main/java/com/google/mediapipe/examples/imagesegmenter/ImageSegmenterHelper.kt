@@ -31,6 +31,7 @@ import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.imagesegmenter.ImageSegmenter
 import com.google.mediapipe.tasks.vision.imagesegmenter.ImageSegmenterResult
 import java.nio.ByteBuffer
+import java.nio.FloatBuffer
 
 class ImageSegmenterHelper(
     var currentDelegate: Int = DELEGATE_CPU,
@@ -91,12 +92,13 @@ class ImageSegmenterHelper(
         }
 
         try {
-            val baseOptions = baseOptionsBuilder.build()
+            val baseOptions = baseOptionsBuilder
+                .build()
             val optionsBuilder = ImageSegmenter.ImageSegmenterOptions.builder()
                 .setRunningMode(runningMode)
                 .setBaseOptions(baseOptions)
-                .setOutputCategoryMask(true)
-                .setOutputConfidenceMasks(false)
+//                .setOutputCategoryMask(true)
+                .setOutputConfidenceMasks(true)
 
             if (runningMode == RunningMode.LIVE_STREAM) {
                 optionsBuilder.setResultListener(this::returnSegmentationResult)
@@ -203,16 +205,22 @@ class ImageSegmenterHelper(
 
         // We only need the first mask for this sample because we are using
         // the OutputType CATEGORY_MASK, which only provides a single mask.
-        val mpImage = result.categoryMask().get()
+        val mpImage = result.confidenceMasks().get().first()
 
         imageSegmenterListener?.onResults(
             ResultBundle(
-                ByteBufferExtractor.extract(mpImage),
+                ByteBufferExtractor.extract(mpImage).asFloatBuffer(),
                 mpImage.width,
                 mpImage.height,
                 inferenceTime
             )
         )
+
+//        val mpImage = result.confidenceMasks().get()
+//
+//        val extracted = ByteBufferExtractor.extract(mpImage.first()).asFloatBuffer()
+//        Log.e("Test", "0: " + extracted.get(0).toString())
+
     }
 
     // Return errors thrown during segmentation to this
@@ -226,7 +234,7 @@ class ImageSegmenterHelper(
     // Wraps results from inference, the time it takes for inference to be
     // performed.
     data class ResultBundle(
-        val results: ByteBuffer,
+        val results: FloatBuffer,
         val width: Int,
         val height: Int,
         val inferenceTime: Long,

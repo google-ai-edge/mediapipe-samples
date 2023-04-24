@@ -197,7 +197,11 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
         backgroundScope?.launch {
             val mpImage = BitmapImageBuilder(uri.toBitmap()).build()
             val result = imageSegmenterHelper?.segmentImageFile(mpImage)
-            updateOverlay(result!!)
+            try {
+                updateOverlay(result!!)
+            } catch(e: Exception) {
+
+            }
         }
     }
 
@@ -325,9 +329,9 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     }
 
     private fun updateOverlay(result: ImageSegmenterResult) {
-        val newImage = result.categoryMask().get()
+        val newImage = result.confidenceMasks().get().first()
         updateOverlay(ImageSegmenterHelper.ResultBundle(
-            ByteBufferExtractor.extract(newImage),
+            ByteBufferExtractor.extract(newImage).asFloatBuffer(),
             newImage.width,
             newImage.height,
             result.timestampMs()

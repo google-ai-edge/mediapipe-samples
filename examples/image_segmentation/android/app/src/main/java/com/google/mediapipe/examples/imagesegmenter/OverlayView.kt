@@ -20,9 +20,11 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import java.nio.ByteBuffer
+import java.nio.FloatBuffer
 import kotlin.math.max
 import kotlin.math.min
 
@@ -58,20 +60,17 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     }
 
     fun setResults(
-        byteBuffer: ByteBuffer,
+        byteBuffer: FloatBuffer,
         outputWidth: Int,
         outputHeight: Int
     ) {
-        val colorLabel = HashSet<Pair<String, Int>>()
-        // Create the mask bitmap with colors and the set of detected labels.
+//        val colorLabel = HashSet<Pair<String, Int>>()
+//        // Create the mask bitmap with colors and the set of detected labels.
         val pixels = IntArray(byteBuffer.capacity())
         for (i in pixels.indices) {
             val index = byteBuffer.get(i).toInt()
             val color =
-                if (index in 1..20) {
-                    colorLabel.add(ImageSegmenterHelper.labelColors[index])
-                    ImageSegmenterHelper.labelColors[index].second.toAlphaColor()
-                } else Color.TRANSPARENT
+                ImageSegmenterHelper.labelColors[0].second.toAlphaColor(byteBuffer.get(i))
             pixels[i] = color
         }
         val image = Bitmap.createBitmap(
@@ -101,7 +100,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
             image, scaleWidth, scaleHeight, false
         )
         invalidate()
-        listener?.onLabels(colorLabel.toList())
+//        listener?.onLabels(colorLabel.toList())
     }
 
     interface OverlayViewListener {
@@ -109,9 +108,9 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     }
 }
 
-fun Int.toAlphaColor(): Int {
+fun Int.toAlphaColor(transparent: Float): Int {
     return Color.argb(
-        OverlayView.ALPHA_COLOR,
+        (255 * transparent).toInt(),
         Color.red(this),
         Color.green(this),
         Color.blue(this)
