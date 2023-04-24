@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 task downloadTaskFile(type: Download) {
-    src 'https://storage.googleapis.com/mediapipe-assets/face_landmarker_with_blendshapes.task?generation=1678504998301299'
+    src 'https://storage.googleapis.com/mediapipe-assets/face_landmarker_v2_with_blendshapes.task?generation=1681322467931433'
     dest project.ext.ASSET_DIR + '/face_landmarker.task'
     overwrite false
 }
