@@ -24,11 +24,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
 import com.google.mediapipe.framework.image.BitmapImageBuilder
+import com.google.mediapipe.framework.image.ByteBufferExtractor
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.InputStream
-import java.util.concurrent.CountDownLatch
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -70,22 +70,16 @@ class ImageSegmentationTest {
 
     @Test
     fun segmentationResultShouldNotBeChanged() {
-        val countDownLatch = CountDownLatch(1)
-
-        var imageSegmentationResult: ImageSegmenterHelper.ResultBundle? = null
         imageSegmenterHelper =
             ImageSegmenterHelper(context = ApplicationProvider.getApplicationContext(),
                 imageSegmenterListener = object :
                     ImageSegmenterHelper.SegmenterListener {
                     override fun onError(error: String, errorCode: Int) {
                         // no-op
-                        countDownLatch.countDown()
                     }
 
                     override fun onResults(resultBundle: ImageSegmenterHelper.ResultBundle) {
-                        imageSegmentationResult = resultBundle
-                        // Release the lock and start verifying the result
-                        countDownLatch.countDown()
+                        // no-op
                     }
                 })
 
@@ -93,18 +87,20 @@ class ImageSegmentationTest {
         val mpImage = BitmapImageBuilder(testBitmap).build()
 
         // Run the image segmentation with the test image.
-        imageSegmenterHelper.segmentImageFile(mpImage)
+        val imageSegmentationResult =
+            imageSegmenterHelper.segmentImageFile(mpImage)
 
-        // Lock to wait the imageSegmenterHelper return the value.
-        countDownLatch.await()
 
         // Verify that the segmentation result is not null.
         assertNotNull(imageSegmentationResult)
 
         // Create the mask bitmap with colors
-        val outputMask = IntArray(imageSegmentationResult!!.results.capacity())
+        val byteBuffer = ByteBufferExtractor.extract(
+            imageSegmentationResult!!.categoryMask().get()
+        )
+        val outputMask = IntArray(byteBuffer.capacity())
         for (i in outputMask.indices) {
-            val index = imageSegmentationResult!!.results.get(i).toInt()
+            val index = byteBuffer.get(i).toInt()
             val color: Int =
                 if (index in 1..20) labelColors[index].toAlphaColor() else Color.TRANSPARENT
             outputMask[i] = color
@@ -112,8 +108,8 @@ class ImageSegmentationTest {
 
         val maskBitmap = Bitmap.createBitmap(
             outputMask,
-            imageSegmentationResult!!.width,
-            imageSegmentationResult!!.height,
+            mpImage.width,
+            mpImage.height,
             Bitmap.Config.ARGB_8888
         )
 

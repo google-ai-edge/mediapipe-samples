@@ -133,8 +133,7 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
                     stopAllTasks()
                 }
 
-                override fun onNothingSelected(p0: AdapterView<*>?) {
-                    /* no op */
+                override fun onNothingSelected(p0: AdapterView<*>?) {/* no op */
                 }
             }
 
@@ -180,9 +179,11 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
         fragmentGalleryBinding.overlayView.setRunningMode(RunningMode.IMAGE)
         setUiEnabled(false)
         updateDisplayView(MediaType.IMAGE)
+        var inputImage = uri.toBitmap()
+        inputImage = inputImage.scaleDown(INPUT_IMAGE_MAX_WIDTH)
 
         // display image on UI
-        fragmentGalleryBinding.imageResult.setImageBitmap(uri.toBitmap())
+        fragmentGalleryBinding.imageResult.setImageBitmap(inputImage)
 
         backgroundScope = CoroutineScope(Dispatchers.IO)
 
@@ -195,7 +196,7 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
 
         // Run image segmentation on the input image
         backgroundScope?.launch {
-            val mpImage = BitmapImageBuilder(uri.toBitmap()).build()
+            val mpImage = BitmapImageBuilder(inputImage).build()
             val result = imageSegmenterHelper?.segmentImageFile(mpImage)
             updateOverlay(result!!)
         }
@@ -260,9 +261,14 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
                     MediaMetadataRetriever.OPTION_CLOSEST
                 )?.let { frame ->
                     // Convert the video frame to ARGB_8888 which is required by the MediaPipe
-                    val argb8888Frame =
+                    var argb8888Frame =
                         if (frame.config == Bitmap.Config.ARGB_8888) frame
                         else frame.copy(Bitmap.Config.ARGB_8888, false)
+
+                    // scale down the input image size to avoid out of memory
+                    argb8888Frame = argb8888Frame.scaleDown(
+                        INPUT_IMAGE_MAX_WIDTH
+                    )
 
                     // Convert the input Bitmap object to an MPImage object to run inference
                     val mpImage = BitmapImageBuilder(argb8888Frame).build()
@@ -278,7 +284,8 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
             fixedRateTimer = fixedRateTimer("", true, 0, VIDEO_INTERVAL_MS) {
                 // run segmentation on each frames.
                 try {
-                    val result = imageSegmenterHelper?.segmentVideoFile(mpImages[frameIndex])
+                    val result =
+                        imageSegmenterHelper?.segmentVideoFile(mpImages[frameIndex])
                     updateOverlay(result!!)
                 } catch (e: Exception) {
                     Log.d(TAG, "${e.message}")
@@ -326,12 +333,14 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
 
     private fun updateOverlay(result: ImageSegmenterResult) {
         val newImage = result.categoryMask().get()
-        updateOverlay(ImageSegmenterHelper.ResultBundle(
-            ByteBufferExtractor.extract(newImage),
-            newImage.width,
-            newImage.height,
-            result.timestampMs()
-        ))
+        updateOverlay(
+            ImageSegmenterHelper.ResultBundle(
+                ByteBufferExtractor.extract(newImage),
+                newImage.width,
+                newImage.height,
+                result.timestampMs()
+            )
+        )
     }
 
     private fun updateOverlay(resultBundle: ImageSegmenterHelper.ResultBundle) {
@@ -370,6 +379,22 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
         }.copy(Bitmap.Config.ARGB_8888, true)
     }
 
+    /**
+     * Scales down the given bitmap to the specified target width while maintaining aspect ratio.
+     * If the original image is already smaller than the target width, the original image is returned.
+     */
+    private fun Bitmap.scaleDown(targetWidth: Float): Bitmap {
+        // if this image smaller than widthSize, return original image
+        if (targetWidth >= width) return this
+        val scaleFactor = targetWidth / width
+        return Bitmap.createScaledBitmap(
+            this,
+            (width * scaleFactor).toInt(),
+            (height * scaleFactor).toInt(),
+            false
+        )
+    }
+
     override fun onError(error: String, errorCode: Int) {
         backgroundScope?.launch {
             withContext(Dispatchers.Main) {
@@ -394,5 +419,6 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
 
         // Value used to get frames at specific intervals for inference (e.g. every 300ms)
         private const val VIDEO_INTERVAL_MS = 300L
+        private const val INPUT_IMAGE_MAX_WIDTH = 512F
     }
 }
