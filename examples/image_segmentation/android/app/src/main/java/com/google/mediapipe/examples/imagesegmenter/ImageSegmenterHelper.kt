@@ -93,11 +93,12 @@ class ImageSegmenterHelper(
         try {
             val baseOptions = baseOptionsBuilder.build()
             val optionsBuilder = ImageSegmenter.ImageSegmenterOptions.builder()
-                .setRunningMode(runningMode).setBaseOptions(baseOptions)
-                .setOutputType(ImageSegmenter.ImageSegmenterOptions.OutputType.CATEGORY_MASK)
-                // The listeners being needed for all modes
+                .setRunningMode(runningMode)
+                .setBaseOptions(baseOptions)
+                .setOutputCategoryMask(true)
+                .setOutputConfidenceMasks(false)
 
-            if( runningMode == RunningMode.LIVE_STREAM ) {
+            if (runningMode == RunningMode.LIVE_STREAM) {
                 optionsBuilder.setResultListener(this::returnSegmentationResult)
                     .setErrorListener(this::returnSegmentationHelperError)
             }
@@ -142,12 +143,13 @@ class ImageSegmenterHelper(
         imageProxy.use {
             bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer)
         }
-        imageProxy.close()
 
         // Used for rotating the frame image so it matches our models
         val matrix = Matrix().apply {
             postRotate(imageProxy.imageInfo.rotationDegrees.toFloat())
         }
+
+        imageProxy.close()
 
         val rotatedBitmap = Bitmap.createBitmap(
             bitmapBuffer,
@@ -166,7 +168,7 @@ class ImageSegmenterHelper(
 
     // Runs image segmentation on single image and
     // returns the results asynchronously to the caller.
-    fun segmentImageFile(mpImage: MPImage) : ImageSegmenterResult? {
+    fun segmentImageFile(mpImage: MPImage): ImageSegmenterResult? {
         if (runningMode != RunningMode.IMAGE) {
             throw IllegalArgumentException(
                 "Attempting to call segmentImageFile" + " while not using RunningMode.IMAGE"
@@ -178,14 +180,17 @@ class ImageSegmenterHelper(
     // Runs image segmentation on each video frame and
     // returns the results asynchronously to the caller.
     @kotlin.jvm.Throws(Exception::class)
-    fun segmentVideoFile(mpImage: MPImage) : ImageSegmenterResult? {
+    fun segmentVideoFile(mpImage: MPImage): ImageSegmenterResult? {
         if (runningMode != RunningMode.VIDEO) {
             throw IllegalArgumentException(
                 "Attempting to call segmentVideoFile" + " while not using RunningMode.VIDEO"
             )
         }
 
-        return imagesegmenter?.segmentForVideo(mpImage, SystemClock.uptimeMillis())
+        return imagesegmenter?.segmentForVideo(
+            mpImage,
+            SystemClock.uptimeMillis()
+        )
     }
 
     // MPImage isn't necessary for this example, but the listener requires it
@@ -198,7 +203,7 @@ class ImageSegmenterHelper(
 
         // We only need the first mask for this sample because we are using
         // the OutputType CATEGORY_MASK, which only provides a single mask.
-        val mpImage = result.segmentations().first()
+        val mpImage = result.categoryMask().get()
 
         imageSegmenterListener?.onResults(
             ResultBundle(
