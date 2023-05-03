@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
+// TODO: Add support for multiple types of segmentation: hair, multiclass, landscape, etc.
 task downloadModelFile(type: Download) {
-    src 'https://storage.googleapis.com/mediapipe-assets/deeplabv3.tflite?generation=1661875711618421'
+    src 'https://storage.googleapis.com/mediapipe-models/image_segmenter/deeplab_v3/float32/1/deeplab_v3.tflite'
     dest project.ext.ASSET_DIR + '/deeplabv3.tflite'
     overwrite false
 }
