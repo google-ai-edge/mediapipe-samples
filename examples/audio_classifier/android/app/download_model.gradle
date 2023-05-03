@@ -15,13 +15,13 @@
  */
 
 task downloadYamnetModel(type: Download) {
-    src 'https://storage.googleapis.com/download.tensorflow.org/models/tflite/task_library/audio_classification/android/lite-model_yamnet_classification_tflite_1.tflite'
+    src 'https://storage.googleapis.com/mediapipe-models/audio_classifier/yamnet/float32/1/yamnet.tflite'
     dest project.ext.ASSET_DIR + '/yamnet.tflite'
     overwrite false
 }
 
 task downloadAudioForTest(type: Download) {
-    src 'https://www.tensorflow.org/static/tutorials/audio/transfer_learning_audio_files/output_FRqpjkwB0Jjw_4.wav'
+    src 'https://storage.googleapis.com/mediapipe-models/audio_classifier/yamnet/float32/1/yamnet.tflite'
     dest project.ext.TEST_ASSET_DIR + '/cat_sound.wav'
     overwrite false
 }

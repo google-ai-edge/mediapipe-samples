@@ -15,7 +15,7 @@
  */
 
 task downloadModelFile(type: Download) {
-    src 'https://storage.googleapis.com/mediapipe-assets/face_detection_short_range.tflite?generation=1677044301978921'
+    src 'https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite'
     dest project.ext.ASSET_DIR + '/face_detection_short_range.tflite'
     overwrite false
 }
