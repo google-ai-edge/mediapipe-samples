@@ -1,5 +1,5 @@
 <!--
-    ~ Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+    ~ Copyright 2023 The TensorFlow Authors. All Rights Reserved.
     ~
     ~ Licensed under the Apache License, Version 2.0 (the "License");
     ~ you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
     ~ limitations under the License.
 -->
 <resources>
-    <string name="app_name">MP Text Classifier</string>
+    <string name="app_name">Language Detector</string>
 
     <string name="detect_btn_text">Detect</string>
     <string name="default_edit_text">你好！我爱小猫</string>
