@@ -15,13 +15,13 @@
  */
 
 task downloadSmallModel(type: Download) {
-    src 'https://storage.googleapis.com/mediapipe-tasks/image_embedder/mobilenet_v3_small_075_224_embedder.tflite'
+    src 'https://storage.googleapis.com/mediapipe-models/image_embedder/mobilenet_v3_small/float32/1/mobilenet_v3_small.tflite'
     dest project.ext.ASSET_DIR + '/mobilenet_v3_small.tflite'
     overwrite false
 }
 
 task downloadLargeModel(type: Download) {
-    src 'https://storage.googleapis.com/mediapipe-tasks/image_embedder/mobilenet_v3_large_075_224_embedder.tflite'
+    src 'https://storage.googleapis.com/mediapipe-models/image_embedder/mobilenet_v3_large/float32/1/mobilenet_v3_large.tflite'
     dest project.ext.ASSET_DIR + '/mobilenet_v3_large.tflite'
     overwrite false
 }

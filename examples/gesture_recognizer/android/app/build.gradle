@@ -98,5 +98,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     // Mediapipe Library
-    implementation 'com.google.mediapipe:tasks-vision:0.1.0-alpha-8'
+    implementation 'com.google.mediapipe:tasks-vision:0.1.0-alpha-9'
 }
