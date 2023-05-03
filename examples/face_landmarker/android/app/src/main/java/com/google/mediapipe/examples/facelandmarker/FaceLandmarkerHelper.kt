@@ -345,6 +345,9 @@ class FaceLandmarkerHelper(
                 )
             )
         }
+        else {
+            faceLandmarkerHelperListener?.onEmpty()
+        }
     }
 
     // Return errors thrown during detection to this FaceLandmarkerHelper's
@@ -386,5 +389,7 @@ class FaceLandmarkerHelper(
     interface LandmarkerListener {
         fun onError(error: String, errorCode: Int = OTHER_ERROR)
         fun onResults(resultBundle: ResultBundle)
+
+        fun onEmpty() {}
     }
 }

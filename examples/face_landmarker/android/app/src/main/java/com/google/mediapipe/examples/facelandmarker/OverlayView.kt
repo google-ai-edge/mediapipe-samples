@@ -20,10 +20,12 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.facelandmarker.FaceLandmarkerResult
+import com.google.mediapipe.tasks.vision.facelandmarker.FaceLandmarksConnections
 import kotlin.math.max
 import kotlin.math.min
 
@@ -63,8 +65,20 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
+        if(results == null || results!!.faceLandmarks().isEmpty()) {
+            clear()
+            return
+        }
+
         results?.let { faceLandmarkerResult ->
-            val points = mutableListOf<Float>()
+
+            if( faceLandmarkerResult.faceBlendshapes().isPresent) {
+                faceLandmarkerResult.faceBlendshapes().get().forEach {
+                    it.forEach {
+                        Log.e(TAG, it.displayName() + " " + it.score())
+                    }
+                }
+            }
 
             for(landmark in faceLandmarkerResult.faceLandmarks()) {
                 for(normalizedLandmark in landmark) {
@@ -72,6 +86,14 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                 }
             }
 
+            FaceLandmarksConnections.FACE_LANDMARKS_CONNECTORS.forEach {
+                canvas.drawLine(
+                    faceLandmarkerResult.faceLandmarks().get(0).get(it!!.start()).x() * imageWidth * scaleFactor,
+                    faceLandmarkerResult.faceLandmarks().get(0).get(it.start()).y() * imageHeight * scaleFactor,
+                    faceLandmarkerResult.faceLandmarks().get(0).get(it.end()).x() * imageWidth * scaleFactor,
+                    faceLandmarkerResult.faceLandmarks().get(0).get(it.end()).y() * imageHeight * scaleFactor,
+                    linePaint)
+            }
         }
     }
 
@@ -103,5 +125,6 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
     companion object {
         private const val LANDMARK_STROKE_WIDTH = 8F
+        private const val TAG = "Face Landmarker Overlay"
     }
 }

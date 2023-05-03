@@ -393,6 +393,10 @@ class CameraFragment : Fragment(), FaceLandmarkerHelper.LandmarkerListener {
         }
     }
 
+    override fun onEmpty() {
+        fragmentCameraBinding.overlay.clear()
+    }
+
     override fun onError(error: String, errorCode: Int) {
         activity?.runOnUiThread {
             Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
