@@ -66,12 +66,8 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
         // Create the mask bitmap with colors and the set of detected labels.
         val pixels = IntArray(byteBuffer.capacity())
         for (i in pixels.indices) {
-            val index = byteBuffer.get(i).toInt()
-            val color =
-                if (index in 1..20) {
-                    colorLabel.add(ImageSegmenterHelper.labelColors[index])
-                    ImageSegmenterHelper.labelColors[index].second.toAlphaColor()
-                } else Color.TRANSPARENT
+            val index = byteBuffer.get(i).toInt() % 20
+            val color = ImageSegmenterHelper.labelColors[index].toAlphaColor()
             pixels[i] = color
         }
         val image = Bitmap.createBitmap(

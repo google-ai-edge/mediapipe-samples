@@ -35,6 +35,7 @@ import java.nio.ByteBuffer
 class ImageSegmenterHelper(
     var currentDelegate: Int = DELEGATE_CPU,
     var runningMode: RunningMode = RunningMode.IMAGE,
+    var currentModel: Int = MODEL_DEEPLABV3,
     val context: Context,
     var imageSegmenterListener: SegmenterListener? = null
 ) {
@@ -82,7 +83,21 @@ class ImageSegmenterHelper(
                 baseOptionsBuilder.setDelegate(Delegate.GPU)
             }
         }
-        baseOptionsBuilder.setModelAssetPath(MODEL_PATH)
+
+        when(currentModel) {
+            MODEL_DEEPLABV3 -> {
+                baseOptionsBuilder.setModelAssetPath(MODEL_DEEPLABV3_PATH)
+            }
+            MODEL_HAIR_SEGMENTER -> {
+                baseOptionsBuilder.setModelAssetPath(MODEL_HAIR_SEGMENTER_PATH)
+            }
+            MODEL_SELFIE_SEGMENTER -> {
+                baseOptionsBuilder.setModelAssetPath(MODEL_SELFIE_SEGMENTER_PATH)
+            }
+            MODEL_SELFIE_MULTICLASS -> {
+                baseOptionsBuilder.setModelAssetPath(MODEL_SELFIE_MULTICLASS_PATH)
+            }
+        }
 
         if (imageSegmenterListener == null) {
             throw IllegalStateException(
@@ -237,32 +252,41 @@ class ImageSegmenterHelper(
         const val DELEGATE_GPU = 1
         const val OTHER_ERROR = 0
         const val GPU_ERROR = 1
-        const val MODEL_PATH = "deeplabv3.tflite"
+
+        const val MODEL_DEEPLABV3 = 0
+        const val MODEL_HAIR_SEGMENTER = 1
+        const val MODEL_SELFIE_SEGMENTER = 2
+        const val MODEL_SELFIE_MULTICLASS = 3
+
+        const val MODEL_DEEPLABV3_PATH = "deeplabv3.tflite"
+        const val MODEL_HAIR_SEGMENTER_PATH = "hair_segmenter.tflite"
+        const val MODEL_SELFIE_MULTICLASS_PATH = "selfie_multiclass.tflite"
+        const val MODEL_SELFIE_SEGMENTER_PATH = "selfie_segmenter.tflite"
 
         private const val TAG = "ImageSegmenterHelper"
 
         val labelColors = listOf(
-            Pair("background", -16777216),
-            Pair("aeroplane", -8388608),
-            Pair("bicycle", -16744448),
-            Pair("bird", -8355840),
-            Pair("boat", -16777088),
-            Pair("bottle", -8388480),
-            Pair("bus", -16744320),
-            Pair("car", -8355712),
-            Pair("cat", -12582912),
-            Pair("chair", -4194304),
-            Pair("cow", -12550144),
-            Pair("diningtable", -4161536),
-            Pair("dog", -12582784),
-            Pair("horse", -4194176),
-            Pair("motorbike", -12550016),
-            Pair("person", -4161408),
-            Pair("pottedplant", -16760832),
-            Pair("sheep", -8372224),
-            Pair("sofa", -16728064),
-            Pair("train", -8339456),
-            Pair("tv", -16760704)
+            -16777216,
+            -8388608,
+            -16744448,
+            -8355840,
+            -16777088,
+            -8388480,
+            -16744320,
+            -8355712,
+            -12582912,
+            -4194304,
+            -12550144,
+            -4161536,
+            -12582784,
+            -4194176,
+            -12550016,
+            -4161408,
+            -16760832,
+            -8372224,
+            -16728064,
+            -8339456,
+            -16760704
         )
     }
 

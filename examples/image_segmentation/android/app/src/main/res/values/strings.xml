@@ -36,4 +36,11 @@
         <item>CPU</item>
         <item>GPU</item>
     </string-array>
+
+    <string-array name="models_spinner_titles">
+        <item>DeepLabV3</item>
+        <item>Hair Segmenter</item>
+        <item>Selfie Segmenter</item>
+        <item>Selfie Multiclass</item>
+    </string-array>
 </resources>

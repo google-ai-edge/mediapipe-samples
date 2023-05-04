@@ -63,7 +63,6 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     private var imageSegmenterHelper: ImageSegmenterHelper? = null
     private var backgroundScope: CoroutineScope? = null
     private var fixedRateTimer: Timer? = null
-    private val labelsAdapter: ColorLabelsAdapter by lazy { ColorLabelsAdapter() }
 
     private val getContent =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
@@ -137,17 +136,26 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
                 }
             }
 
-        with(fragmentGalleryBinding.recyclerviewResults) {
-            adapter = labelsAdapter
-            layoutManager = GridLayoutManager(requireContext(), 3)
-        }
+        fragmentGalleryBinding.bottomSheetLayout.spinnerModel.setSelection(
+            viewModel.currentModel, false
+        )
 
-        fragmentGalleryBinding.overlayView.setOnOverlayViewListener(object :
-            OverlayView.OverlayViewListener {
-            override fun onLabels(colorLabels: List<Pair<String, Int>>) {
-                labelsAdapter.updateResultLabels(colorLabels)
+        fragmentGalleryBinding.bottomSheetLayout.spinnerModel.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    viewModel.setModel(position)
+                    stopAllTasks()
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    /* no op */
+                }
             }
-        })
     }
 
     private fun stopAllTasks() {
@@ -169,7 +177,6 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
             // clear overlay view
             overlayView.clear()
             progress.visibility = View.GONE
-            labelsAdapter.updateResultLabels(emptyList())
         }
         updateDisplayView(MediaType.UNKNOWN)
     }

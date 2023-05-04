@@ -14,11 +14,28 @@
  * limitations under the License.
  */
 
-// TODO: Add support for multiple types of segmentation: hair, multiclass, landscape, etc.
 task downloadModelFile(type: Download) {
     src 'https://storage.googleapis.com/mediapipe-models/image_segmenter/deeplab_v3/float32/1/deeplab_v3.tflite'
     dest project.ext.ASSET_DIR + '/deeplabv3.tflite'
     overwrite false
 }
 
-preBuild.dependsOn downloadModelFile
+task downloadHairSegmenterModelFile(type: Download) {
+    src 'https://storage.googleapis.com/mediapipe-models/image_segmenter/hair_segmenter/float32/1/hair_segmenter.tflite'
+    dest project.ext.ASSET_DIR + '/hair_segmenter.tflite'
+    overwrite false
+}
+
+task downloadSelfieMulticlassSegmenterModelFile(type: Download) {
+    src 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/1/selfie_multiclass_256x256.tflite'
+    dest project.ext.ASSET_DIR + '/selfie_multiclass.tflite'
+    overwrite false
+}
+
+task downloadSelfieSegmenterModelFile(type: Download) {
+    src 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/1/selfie_segmenter.tflite'
+    dest project.ext.ASSET_DIR + '/selfie_segmenter.tflite'
+    overwrite false
+}
+
+preBuild.dependsOn downloadModelFile, downloadHairSegmenterModelFile, downloadSelfieMulticlassSegmenterModelFile, downloadSelfieSegmenterModelFile, downloadSelfieSegmenterLandscapeModelFile
