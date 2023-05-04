@@ -65,7 +65,6 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
 
     /** Blocking operations are performed using this executor */
     private var backgroundExecutor: ExecutorService? = null
-    private val labelsAdapter: ColorLabelsAdapter by lazy { ColorLabelsAdapter() }
 
     override fun onResume() {
         super.onResume()
@@ -87,6 +86,7 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     override fun onPause() {
         // save ImageSegmenter settings
         viewModel.setDelegate(imageSegmenterHelper.currentDelegate)
+        viewModel.setModel(imageSegmenterHelper.currentModel)
         super.onPause()
 
         // Close the image segmenter and release resources
@@ -129,6 +129,7 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
             imageSegmenterHelper = ImageSegmenterHelper(
                 context = requireContext(),
                 runningMode = RunningMode.LIVE_STREAM,
+                currentModel = viewModel.currentModel,
                 currentDelegate = viewModel.currentDelegate,
                 imageSegmenterListener = this
             )
@@ -182,19 +183,26 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
                 }
             }
 
-        with(fragmentCameraBinding.recyclerviewResults) {
-            adapter = labelsAdapter
-            layoutManager = GridLayoutManager(requireContext(), 3)
-        }
+        fragmentCameraBinding.bottomSheetLayout.spinnerModel.setSelection(
+            viewModel.currentModel, false
+        )
 
-        fragmentCameraBinding.overlayView.setOnOverlayViewListener(object :
-            OverlayView.OverlayViewListener {
-            override fun onLabels(colorLabels: List<Pair<String, Int>>) {
-                activity?.runOnUiThread {
-                    labelsAdapter.updateResultLabels(colorLabels)
+        fragmentCameraBinding.bottomSheetLayout.spinnerModel.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    imageSegmenterHelper.currentModel = position
+                    updateControlsUi()
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    /* no op */
                 }
             }
-        })
     }
 
     // Update the values displayed in the bottom sheet. Reset segmenter.
