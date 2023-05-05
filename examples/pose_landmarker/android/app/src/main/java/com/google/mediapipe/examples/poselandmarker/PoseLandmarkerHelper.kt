@@ -37,7 +37,6 @@ class PoseLandmarkerHelper(
     var minPoseTrackingConfidence: Float = DEFAULT_POSE_TRACKING_CONFIDENCE,
     var minPosePresenceConfidence: Float = DEFAULT_POSE_PRESENCE_CONFIDENCE,
     var currentModel: Int = MODEL_POSE_LANDMARKER_FULL,
-    var maxNumPoses: Int = DEFAULT_NUM_POSES,
     var currentDelegate: Int = DELEGATE_CPU,
     var runningMode: RunningMode = RunningMode.IMAGE,
     val context: Context,
@@ -116,7 +115,6 @@ class PoseLandmarkerHelper(
                     .setMinPoseDetectionConfidence(minPoseDetectionConfidence)
                     .setMinTrackingConfidence(minPoseTrackingConfidence)
                     .setMinPosePresenceConfidence(minPosePresenceConfidence)
-                    .setNumPoses(maxNumPoses)
                     .setRunningMode(runningMode)
 
             // The ResultListener and ErrorListener only use for LIVE_STREAM mode.

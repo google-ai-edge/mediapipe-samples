@@ -221,56 +221,6 @@
             </LinearLayout>
         </RelativeLayout>
 
-        <!-- ML max num poses adjustment row -->
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/bottom_sheet_default_row_margin"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:text="@string/label_num_poses"
-                android:textColor="@color/bottom_sheet_text_color"
-                android:textSize="@dimen/bottom_sheet_text_size" />
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <androidx.appcompat.widget.AppCompatImageButton
-                    android:id="@+id/max_poses_minus"
-                    android:layout_width="@dimen/bottom_sheet_control_btn_size"
-                    android:layout_height="@dimen/bottom_sheet_control_btn_size"
-                    android:contentDescription="@string/alt_bottom_sheet_max_results_button_minus"
-                    android:src="@drawable/ic_minus" />
-
-                <TextView
-                    android:id="@+id/max_poses_value"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/bottom_sheet_control_text_side_margin"
-                    android:layout_marginRight="@dimen/bottom_sheet_control_text_side_margin"
-                    android:gravity="center"
-                    android:minEms="@integer/bottom_sheet_control_text_min_ems"
-                    android:textColor="@color/bottom_sheet_text_color"
-                    android:textSize="@dimen/bottom_sheet_text_size" />
-
-                <androidx.appcompat.widget.AppCompatImageButton
-                    android:id="@+id/max_poses_plus"
-                    android:layout_width="@dimen/bottom_sheet_control_btn_size"
-                    android:layout_height="@dimen/bottom_sheet_control_btn_size"
-                    android:contentDescription="@string/alt_bottom_sheet_max_results_button_plus"
-                    android:src="@drawable/ic_plus" />
-            </LinearLayout>
-        </RelativeLayout>
-
         <!-- Model selection row -->
         <RelativeLayout
             android:layout_width="match_parent"

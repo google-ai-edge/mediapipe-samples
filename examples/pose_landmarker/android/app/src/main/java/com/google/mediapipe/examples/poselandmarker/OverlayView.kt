@@ -25,6 +25,7 @@ import androidx.core.content.ContextCompat
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.facelandmarker.FaceLandmarksConnections
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
+import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarksConnections
 import kotlin.math.max
 import kotlin.math.min
 
@@ -73,9 +74,16 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                         pointPaint
                     )
                 }
-            }
 
-            // TODO: Add PoseLandmarksConnections
+                PoseLandmarksConnections.POSE_LANDMARKS.forEach {
+                    canvas.drawLine(
+                        poseLandmarkerResult.landmarks().get(0).get(it!!.start()).x() * imageWidth * scaleFactor,
+                        poseLandmarkerResult.landmarks().get(0).get(it.start()).y() * imageHeight * scaleFactor,
+                        poseLandmarkerResult.landmarks().get(0).get(it.end()).x() * imageWidth * scaleFactor,
+                        poseLandmarkerResult.landmarks().get(0).get(it.end()).y() * imageHeight * scaleFactor,
+                        linePaint)
+                }
+            }
         }
     }
 

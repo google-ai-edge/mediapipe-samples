@@ -107,8 +107,6 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     private fun initBottomSheetControls() {
         // init bottom sheet settings
-        fragmentGalleryBinding.bottomSheetLayout.maxPosesValue.text =
-            viewModel.currentMaxPoses.toString()
         fragmentGalleryBinding.bottomSheetLayout.detectionThresholdValue.text =
             String.format(
                 Locale.US, "%.2f", viewModel.currentMinPoseDetectionConfidence
@@ -178,22 +176,6 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             }
         }
 
-        // When clicked, reduce the number of objects that can be detected at a time
-        fragmentGalleryBinding.bottomSheetLayout.maxPosesMinus.setOnClickListener {
-            if (viewModel.currentMaxPoses > 1) {
-                viewModel.setMaxPoses(viewModel.currentMaxPoses - 1)
-                updateControlsUi()
-            }
-        }
-
-        // When clicked, increase the number of objects that can be detected at a time
-        fragmentGalleryBinding.bottomSheetLayout.maxPosesPlus.setOnClickListener {
-            if (viewModel.currentMaxPoses < 2) {
-                viewModel.setMaxPoses(viewModel.currentMaxPoses + 1)
-                updateControlsUi()
-            }
-        }
-
         // When clicked, change the underlying hardware used for inference. Current options are CPU
         // GPU, and NNAPI
         fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.setSelection(
@@ -249,8 +231,6 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         fragmentGalleryBinding.videoView.visibility = View.GONE
         fragmentGalleryBinding.imageResult.visibility = View.GONE
         fragmentGalleryBinding.overlay.clear()
-        fragmentGalleryBinding.bottomSheetLayout.maxPosesValue.text =
-            viewModel.currentMaxPoses.toString()
         fragmentGalleryBinding.bottomSheetLayout.detectionThresholdValue.text =
             String.format(
                 Locale.US, "%.2f", viewModel.currentMinPoseDetectionConfidence
@@ -299,7 +279,6 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                             minPoseDetectionConfidence = viewModel.currentMinPoseDetectionConfidence,
                             minPoseTrackingConfidence = viewModel.currentMinPoseTrackingConfidence,
                             minPosePresenceConfidence = viewModel.currentMinPosePresenceConfidence,
-                            maxNumPoses = viewModel.currentMaxPoses,
                             currentDelegate = viewModel.currentDelegate
                         )
 
@@ -344,7 +323,6 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                     minPoseDetectionConfidence = viewModel.currentMinPoseDetectionConfidence,
                     minPoseTrackingConfidence = viewModel.currentMinPoseTrackingConfidence,
                     minPosePresenceConfidence = viewModel.currentMinPosePresenceConfidence,
-                    maxNumPoses = viewModel.currentMaxPoses,
                     currentDelegate = viewModel.currentDelegate
                 )
 
@@ -437,10 +415,6 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         fragmentGalleryBinding.bottomSheetLayout.presenceThresholdMinus.isEnabled =
             enabled
         fragmentGalleryBinding.bottomSheetLayout.presenceThresholdPlus.isEnabled =
-            enabled
-        fragmentGalleryBinding.bottomSheetLayout.maxPosesPlus.isEnabled =
-            enabled
-        fragmentGalleryBinding.bottomSheetLayout.maxPosesMinus.isEnabled =
             enabled
         fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.isEnabled =
             enabled

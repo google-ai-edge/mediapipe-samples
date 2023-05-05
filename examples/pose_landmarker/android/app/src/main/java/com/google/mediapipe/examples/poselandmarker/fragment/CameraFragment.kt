@@ -89,7 +89,6 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     override fun onPause() {
         super.onPause()
         if(this::poseLandmarkerHelper.isInitialized) {
-            viewModel.setMaxPoses(poseLandmarkerHelper.maxNumPoses)
             viewModel.setMinPoseDetectionConfidence(poseLandmarkerHelper.minPoseDetectionConfidence)
             viewModel.setMinPoseTrackingConfidence(poseLandmarkerHelper.minPoseTrackingConfidence)
             viewModel.setMinPosePresenceConfidence(poseLandmarkerHelper.minPosePresenceConfidence)
@@ -143,7 +142,6 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 minPoseDetectionConfidence = viewModel.currentMinPoseDetectionConfidence,
                 minPoseTrackingConfidence = viewModel.currentMinPoseTrackingConfidence,
                 minPosePresenceConfidence = viewModel.currentMinPosePresenceConfidence,
-                maxNumPoses = viewModel.currentMaxPoses,
                 currentDelegate = viewModel.currentDelegate,
                 poseLandmarkerHelperListener = this
             )
@@ -155,8 +153,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     private fun initBottomSheetControls() {
         // init bottom sheet settings
-        fragmentCameraBinding.bottomSheetLayout.maxPosesValue.text =
-            viewModel.currentMaxPoses.toString()
+
         fragmentCameraBinding.bottomSheetLayout.detectionThresholdValue.text =
             String.format(
                 Locale.US, "%.2f", viewModel.currentMinPoseDetectionConfidence
@@ -218,24 +215,6 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             }
         }
 
-        // When clicked, reduce the number of poses that can be detected at a
-        // time
-        fragmentCameraBinding.bottomSheetLayout.maxPosesMinus.setOnClickListener {
-            if (poseLandmarkerHelper.maxNumPoses > 1) {
-                poseLandmarkerHelper.maxNumPoses--
-                updateControlsUi()
-            }
-        }
-
-        // When clicked, increase the number of poses that can be detected
-        // at a time
-        fragmentCameraBinding.bottomSheetLayout.maxPosesPlus.setOnClickListener {
-            if (poseLandmarkerHelper.maxNumPoses < 2) {
-                poseLandmarkerHelper.maxNumPoses++
-                updateControlsUi()
-            }
-        }
-
         // When clicked, change the underlying hardware used for inference.
         // Current options are CPU and GPU
         fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(
@@ -285,8 +264,6 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     // Update the values displayed in the bottom sheet. Reset Poselandmarker
     // helper.
     private fun updateControlsUi() {
-        fragmentCameraBinding.bottomSheetLayout.maxPosesValue.text =
-            poseLandmarkerHelper.maxNumPoses.toString()
         fragmentCameraBinding.bottomSheetLayout.detectionThresholdValue.text =
             String.format(
                 Locale.US,
