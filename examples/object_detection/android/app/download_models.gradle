@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+ * Copyright 2023 The TensorFlow Authors. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
  */
 
 task downloadModelFile0(type: Download) {
-    src 'https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/int8/1/efficientdet_lite0.tflite'
+    src 'https://storage.googleapis.com/mediapipe-tasks/object_detector/efficientdet_lite0_uint8.tflite'
     dest project.ext.ASSET_DIR + '/efficientdet-lite0.tflite'
     overwrite false
 }
 
 task downloadModelFile1(type: Download) {
-    src 'https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite2/int8/1/efficientdet_lite2.tflite'
+    src 'https://storage.googleapis.com/mediapipe-tasks/object_detector/efficientdet_lite2_uint8.tflite'
     dest project.ext.ASSET_DIR + '/efficientdet-lite2.tflite'
     overwrite false
 }
