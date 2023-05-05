@@ -30,7 +30,6 @@ class MainViewModel : ViewModel() {
         .DEFAULT_POSE_TRACKING_CONFIDENCE
     private var _minPosePresenceConfidence: Float = PoseLandmarkerHelper
         .DEFAULT_POSE_PRESENCE_CONFIDENCE
-    private var _maxPoses: Int = PoseLandmarkerHelper.DEFAULT_NUM_POSES
 
     val currentDelegate: Int get() = _delegate
     val currentModel: Int get() = _model
@@ -43,7 +42,6 @@ class MainViewModel : ViewModel() {
     val currentMinPosePresenceConfidence: Float
         get() =
             _minPosePresenceConfidence
-    val currentMaxPoses: Int get() = _maxPoses
 
     fun setDelegate(delegate: Int) {
         _delegate = delegate
@@ -59,10 +57,6 @@ class MainViewModel : ViewModel() {
 
     fun setMinPosePresenceConfidence(confidence: Float) {
         _minPosePresenceConfidence = confidence
-    }
-
-    fun setMaxPoses(maxResults: Int) {
-        _maxPoses = maxResults
     }
 
     fun setModel(model: Int) {

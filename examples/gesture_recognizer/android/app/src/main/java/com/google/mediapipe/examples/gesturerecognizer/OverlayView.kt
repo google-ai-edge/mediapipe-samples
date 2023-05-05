@@ -25,6 +25,7 @@ import androidx.core.content.ContextCompat
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizerResult
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmark
+import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarksConnections
 import kotlin.math.max
 import kotlin.math.min
 
@@ -65,28 +66,22 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
         results?.let { gestureRecognizerResult ->
-            val lines = mutableListOf<Float>()
-            val points = mutableListOf<Float>()
-
-            for (landmarks in gestureRecognizerResult.landmarks()) {
-                for (i in landmarkConnections.indices step 2) {
-                    val startX =
-                        landmarks[landmarkConnections[i]].x() * imageWidth * scaleFactor
-                    val startY =
-                        landmarks[landmarkConnections[i]].y() * imageHeight * scaleFactor
-                    val endX =
-                        landmarks[landmarkConnections[i + 1]].x() * imageWidth * scaleFactor
-                    val endY =
-                        landmarks[landmarkConnections[i + 1]].y() * imageHeight * scaleFactor
-                    lines.add(startX)
-                    lines.add(startY)
-                    lines.add(endX)
-                    lines.add(endY)
-                    points.add(startX)
-                    points.add(startY)
+            for(landmark in gestureRecognizerResult.landmarks()) {
+                for(normalizedLandmark in landmark) {
+                    canvas.drawPoint(
+                        normalizedLandmark.x() * imageWidth * scaleFactor,
+                        normalizedLandmark.y() * imageHeight * scaleFactor,
+                        pointPaint)
                 }
-                canvas.drawLines(lines.toFloatArray(), linePaint)
-                canvas.drawPoints(points.toFloatArray(), pointPaint)
+
+                HandLandmarksConnections.HAND_CONNECTIONS.forEach {
+                    canvas.drawLine(
+                        gestureRecognizerResult.landmarks().get(0).get(it!!.start()).x() * imageWidth * scaleFactor,
+                        gestureRecognizerResult.landmarks().get(0).get(it.start()).y() * imageHeight * scaleFactor,
+                        gestureRecognizerResult.landmarks().get(0).get(it.end()).x() * imageWidth * scaleFactor,
+                        gestureRecognizerResult.landmarks().get(0).get(it.end()).y() * imageHeight * scaleFactor,
+                        linePaint)
+                }
             }
         }
     }
@@ -119,53 +114,5 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
     companion object {
         private const val LANDMARK_STROKE_WIDTH = 8F
-
-        // This list defines the lines that are drawn when visualizing the hand landmark detection
-        // results. These lines connect:
-        // landmarkConnections[2*n] and landmarkConnections[2*n+1]
-        private val landmarkConnections = listOf(
-            HandLandmark.WRIST,
-            HandLandmark.THUMB_CMC,
-            HandLandmark.THUMB_CMC,
-            HandLandmark.THUMB_MCP,
-            HandLandmark.THUMB_MCP,
-            HandLandmark.THUMB_IP,
-            HandLandmark.THUMB_IP,
-            HandLandmark.THUMB_TIP,
-            HandLandmark.WRIST,
-            HandLandmark.INDEX_FINGER_MCP,
-            HandLandmark.INDEX_FINGER_MCP,
-            HandLandmark.INDEX_FINGER_PIP,
-            HandLandmark.INDEX_FINGER_PIP,
-            HandLandmark.INDEX_FINGER_DIP,
-            HandLandmark.INDEX_FINGER_DIP,
-            HandLandmark.INDEX_FINGER_TIP,
-            HandLandmark.INDEX_FINGER_MCP,
-            HandLandmark.MIDDLE_FINGER_MCP,
-            HandLandmark.MIDDLE_FINGER_MCP,
-            HandLandmark.MIDDLE_FINGER_PIP,
-            HandLandmark.MIDDLE_FINGER_PIP,
-            HandLandmark.MIDDLE_FINGER_DIP,
-            HandLandmark.MIDDLE_FINGER_DIP,
-            HandLandmark.MIDDLE_FINGER_TIP,
-            HandLandmark.MIDDLE_FINGER_MCP,
-            HandLandmark.RING_FINGER_MCP,
-            HandLandmark.RING_FINGER_MCP,
-            HandLandmark.RING_FINGER_PIP,
-            HandLandmark.RING_FINGER_PIP,
-            HandLandmark.RING_FINGER_DIP,
-            HandLandmark.RING_FINGER_DIP,
-            HandLandmark.RING_FINGER_TIP,
-            HandLandmark.RING_FINGER_MCP,
-            HandLandmark.PINKY_MCP,
-            HandLandmark.WRIST,
-            HandLandmark.PINKY_MCP,
-            HandLandmark.PINKY_MCP,
-            HandLandmark.PINKY_PIP,
-            HandLandmark.PINKY_PIP,
-            HandLandmark.PINKY_DIP,
-            HandLandmark.PINKY_DIP,
-            HandLandmark.PINKY_TIP
-        )
     }
 }
