@@ -38,4 +38,4 @@ task downloadSelfieSegmenterModelFile(type: Download) {
     overwrite false
 }
 
-preBuild.dependsOn downloadModelFile, downloadHairSegmenterModelFile, downloadSelfieMulticlassSegmenterModelFile, downloadSelfieSegmenterModelFile, downloadSelfieSegmenterLandscapeModelFile
+preBuild.dependsOn downloadModelFile, downloadHairSegmenterModelFile, downloadSelfieMulticlassSegmenterModelFile, downloadSelfieSegmenterModelFile

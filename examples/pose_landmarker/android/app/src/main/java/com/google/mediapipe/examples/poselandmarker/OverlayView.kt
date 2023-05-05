@@ -21,7 +21,9 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
+import androidx.core.content.ContextCompat
 import com.google.mediapipe.tasks.vision.core.RunningMode
+import com.google.mediapipe.tasks.vision.facelandmarker.FaceLandmarksConnections
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
 import kotlin.math.max
 import kotlin.math.min
@@ -31,6 +33,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
     private var results: PoseLandmarkerResult? = null
     private var pointPaint = Paint()
+    private var linePaint = Paint()
 
     private var scaleFactor: Float = 1f
     private var imageWidth: Int = 1
@@ -43,11 +46,17 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     fun clear() {
         results = null
         pointPaint.reset()
+        linePaint.reset()
         invalidate()
         initPaints()
     }
 
     private fun initPaints() {
+        linePaint.color =
+            ContextCompat.getColor(context!!, R.color.mp_color_primary)
+        linePaint.strokeWidth = LANDMARK_STROKE_WIDTH
+        linePaint.style = Paint.Style.STROKE
+
         pointPaint.color = Color.YELLOW
         pointPaint.strokeWidth = LANDMARK_STROKE_WIDTH
         pointPaint.style = Paint.Style.FILL
@@ -65,6 +74,8 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                     )
                 }
             }
+
+            // TODO: Add PoseLandmarksConnections
         }
     }
 
