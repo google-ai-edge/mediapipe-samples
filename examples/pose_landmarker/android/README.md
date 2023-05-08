@@ -8,6 +8,9 @@ The task file is downloaded by a Gradle script when you build and run the app. Y
 
 This application should be run on a physical Android device to take advantage of the camera.
 
+![Pose Landmarker Demo](pose_landmarker.png?raw=true "Pose Landmarker Demo")
+[Public domain video from Lance Foss](https://www.youtube.com/watch?v=KALIKOd1pbA)
+
 ## Build the demo using Android Studio
 
 ### Prerequisites

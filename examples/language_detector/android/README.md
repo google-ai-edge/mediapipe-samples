@@ -12,6 +12,8 @@ app. You don't need to do any steps to download TFLite models into the project
 explicitly.
 
 
+![Language Detector Demo](language_detector.png?raw=true "Language Detector Demo")
+
 ## Build the demo using Android Studio
 
 ### Prerequisites

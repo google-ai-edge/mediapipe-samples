@@ -11,7 +11,7 @@ app. You don't need to do any steps to download TFLite models into the project
 explicitly unless you wish to use your own models. If you do use your own
 models, place them into the app's *assets* directory.
 
-![Audio Classifier Demo](audioclassifier.png?raw=true "Audio Embedder Demo")
+![Audio Classifier Demo](audioclassifier.png?raw=true "Audio Classifier Demo")
 
 ## Build the demo using Android Studio
 
