@@ -14,6 +14,8 @@ This application should be run on a physical Android device to take advantage of
 the physical camera, though the gallery option will allow you to use an emulator
 for opening locally stored files.
 
+![Interactive Segmenter Demo](interactive_segmenter.png?raw=true "Interactive Segmenter Demo")
+
 ## Build the demo using Android Studio
 
 ### Prerequisites
