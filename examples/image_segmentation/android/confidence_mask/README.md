@@ -16,7 +16,7 @@ This application should be run on a physical Android device to take advantage of
 the physical camera, though the gallery tab will enable you to use an emulator
 for opening locally stored files.
 
-![Image segmentation confidence mask demo](confidence_mask.png?raw=true "Image segmentation confidence mask demo")
+![Image segmentation confidence mask example](confidence_mask.png?raw=true "Image segmentation confidence mask example")
 
 ## Build the demo using Android Studio
 
