@@ -15,19 +15,19 @@
  */
 
 task downloadTestFile(type: Download) {
-    src 'https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite0/int8/1/efficientnet_lite0.tflite'
+    src 'https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite0/float32/1/efficientnet_lite0.tflite'
     dest project.ext.TEST_ASSETS_DIR + '/efficientnet-lite0.tflite'
     overwrite false
 }
 
 task downloadModelFile0(type: Download) {
-    src 'https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite0/int8/1/efficientnet_lite0.tflite'
+    src 'https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite0/float32/1/efficientnet_lite0.tflite'
     dest project.ext.ASSET_DIR + '/efficientnet-lite0.tflite'
     overwrite false
 }
 
 task downloadModelFile1(type: Download) {
-    src 'https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite2/int8/1/efficientnet_lite2.tflite'
+    src 'https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite2/float32/1/efficientnet_lite2.tflite'
     dest project.ext.ASSET_DIR + '/efficientnet-lite2.tflite'
     overwrite false
 }
