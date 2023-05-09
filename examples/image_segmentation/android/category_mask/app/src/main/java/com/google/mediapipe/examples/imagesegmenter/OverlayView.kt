@@ -21,6 +21,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.util.AttributeSet
 import android.view.View
+import com.google.common.primitives.UnsignedInteger
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import java.nio.ByteBuffer
 import kotlin.math.max
@@ -66,8 +67,8 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
         // Create the mask bitmap with colors and the set of detected labels.
         val pixels = IntArray(byteBuffer.capacity())
         for (i in pixels.indices) {
-            val index = byteBuffer.get(i).toInt() % 20
-            val color = ImageSegmenterHelper.labelColors[index].toAlphaColor()
+            val index = byteBuffer.get(i).toUInt() % 20U
+            val color = ImageSegmenterHelper.labelColors[index.toInt()].toAlphaColor()
             pixels[i] = color
         }
         val image = Bitmap.createBitmap(
