@@ -120,7 +120,6 @@ class ImageSegmenterHelper(
 
             val options = optionsBuilder.build()
             imagesegmenter = ImageSegmenter.createFromOptions(context, options)
-            Log.e("Test", imagesegmenter?.labels.toString())
         } catch (e: IllegalStateException) {
             imageSegmenterListener?.onError(
                 "Image segmenter failed to initialize. See error logs for details"
