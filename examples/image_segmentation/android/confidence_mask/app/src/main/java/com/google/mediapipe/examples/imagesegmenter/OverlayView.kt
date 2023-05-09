@@ -36,11 +36,6 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
     private var scaleBitmap: Bitmap? = null
     private var runningMode: RunningMode = RunningMode.IMAGE
-    private var listener: OverlayViewListener? = null
-
-    fun setOnOverlayViewListener(listener: OverlayViewListener) {
-        this.listener = listener
-    }
 
     fun clear() {
         scaleBitmap = null
@@ -63,7 +58,6 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
         outputWidth: Int,
         outputHeight: Int
     ) {
-        val colorLabel = HashSet<Pair<String, Int>>()
         // Create the mask bitmap with colors and the set of detected labels.
         val pixels = IntArray(byteBuffer.capacity())
         for (i in pixels.indices) {
@@ -100,11 +94,6 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
             image, scaleWidth, scaleHeight, false
         )
         invalidate()
-        listener?.onLabels(colorLabel.toList())
-    }
-
-    interface OverlayViewListener {
-        fun onLabels(colorLabels: List<Pair<String, Int>>)
     }
 }
 
