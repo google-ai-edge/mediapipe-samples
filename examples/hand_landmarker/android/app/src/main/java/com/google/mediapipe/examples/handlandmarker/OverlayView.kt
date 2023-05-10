@@ -23,9 +23,8 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.google.mediapipe.tasks.vision.core.RunningMode
-import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmark
+import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarker
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarkerResult
-import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarksConnections
 import kotlin.math.max
 import kotlin.math.min
 
@@ -75,7 +74,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                     )
                 }
 
-                HandLandmarksConnections.HAND_CONNECTIONS.forEach {
+                HandLandmarker.HAND_CONNECTIONS.forEach {
                     canvas.drawLine(
                         handLandmarkerResult.landmarks().get(0).get(it!!.start())
                             .x() * imageWidth * scaleFactor,
