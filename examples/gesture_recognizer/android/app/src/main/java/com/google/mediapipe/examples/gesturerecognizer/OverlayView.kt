@@ -24,8 +24,7 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizerResult
-import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmark
-import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarksConnections
+import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarker
 import kotlin.math.max
 import kotlin.math.min
 
@@ -74,7 +73,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                         pointPaint)
                 }
 
-                HandLandmarksConnections.HAND_CONNECTIONS.forEach {
+                HandLandmarker.HAND_CONNECTIONS.forEach {
                     canvas.drawLine(
                         gestureRecognizerResult.landmarks().get(0).get(it!!.start()).x() * imageWidth * scaleFactor,
                         gestureRecognizerResult.landmarks().get(0).get(it.start()).y() * imageHeight * scaleFactor,

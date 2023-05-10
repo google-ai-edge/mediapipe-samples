@@ -54,5 +54,5 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.4'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
 
-    implementation 'com.google.mediapipe:tasks-text:0.1.0-alpha-11'
+    implementation 'com.google.mediapipe:tasks-text:0.10.0'
 }

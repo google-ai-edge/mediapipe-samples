@@ -24,8 +24,8 @@ import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.google.mediapipe.tasks.vision.core.RunningMode
+import com.google.mediapipe.tasks.vision.facelandmarker.FaceLandmarker
 import com.google.mediapipe.tasks.vision.facelandmarker.FaceLandmarkerResult
-import com.google.mediapipe.tasks.vision.facelandmarker.FaceLandmarksConnections
 import kotlin.math.max
 import kotlin.math.min
 
@@ -86,7 +86,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                 }
             }
 
-            FaceLandmarksConnections.FACE_LANDMARKS_CONNECTORS.forEach {
+            FaceLandmarker.FACE_LANDMARKS_CONNECTORS.forEach {
                 canvas.drawLine(
                     faceLandmarkerResult.faceLandmarks().get(0).get(it!!.start()).x() * imageWidth * scaleFactor,
                     faceLandmarkerResult.faceLandmarks().get(0).get(it.start()).y() * imageHeight * scaleFactor,
