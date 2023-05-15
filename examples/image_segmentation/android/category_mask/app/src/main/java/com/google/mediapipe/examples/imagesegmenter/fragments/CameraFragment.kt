@@ -25,20 +25,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.Toast
-import androidx.camera.core.AspectRatio
-import androidx.camera.core.Camera
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.Preview
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.Navigation
-import androidx.recyclerview.widget.GridLayoutManager
 import com.google.mediapipe.examples.imagesegmenter.ImageSegmenterHelper
 import com.google.mediapipe.examples.imagesegmenter.MainViewModel
-import com.google.mediapipe.examples.imagesegmenter.OverlayView
 import com.google.mediapipe.examples.imagesegmenter.R
 import com.google.mediapipe.examples.imagesegmenter.databinding.FragmentCameraBinding
 import com.google.mediapipe.tasks.vision.core.RunningMode
@@ -62,6 +56,7 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
     private var imageAnalyzer: ImageAnalysis? = null
     private var camera: Camera? = null
     private var cameraProvider: ProcessCameraProvider? = null
+    private var cameraFacing = CameraSelector.LENS_FACING_FRONT
 
     /** Blocking operations are performed using this executor */
     private var backgroundExecutor: ExecutorService? = null
@@ -230,7 +225,7 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
 
         // CameraSelector - makes assumption that we're only using the back camera
         val cameraSelector = CameraSelector.Builder()
-            .requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
+            .requireLensFacing(cameraFacing).build()
 
         // Preview. Only using the 4:3 ratio because this is the closest to our models
         preview = Preview.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
@@ -245,11 +240,8 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
                 .build()
                 // The analyzer can then be assigned to the instance
                 .also {
-                    backgroundExecutor?.let { executor ->
-                        it.setAnalyzer(
-                            executor,
-                            imageSegmenterHelper::segmentLiveStreamFrame
-                        )
+                    it.setAnalyzer(backgroundExecutor!!) { image ->
+                        segment(image)
                     }
                 }
 
@@ -268,6 +260,12 @@ class CameraFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
         } catch (exc: Exception) {
             Log.e(TAG, "Use case binding failed", exc)
         }
+    }
+
+    private fun segment(imageProxy: ImageProxy) {
+        imageSegmenterHelper.segmentLiveStreamFrame(
+            imageProxy = imageProxy,
+            isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT)
     }
 
     @SuppressLint("NotifyDataSetChanged")
