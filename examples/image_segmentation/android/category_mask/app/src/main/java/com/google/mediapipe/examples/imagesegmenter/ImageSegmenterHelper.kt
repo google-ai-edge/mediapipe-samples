@@ -143,7 +143,7 @@ class ImageSegmenterHelper(
 
     // Runs image segmentation on live streaming cameras frame-by-frame and
     // returns the results asynchronously to the caller.
-    fun segmentLiveStreamFrame(imageProxy: ImageProxy) {
+    fun segmentLiveStreamFrame(imageProxy: ImageProxy, isFrontCamera: Boolean) {
         if (runningMode != RunningMode.LIVE_STREAM) {
             throw IllegalArgumentException(
                 "Attempting to call segmentLiveStreamFrame" + " while not using RunningMode.LIVE_STREAM"
@@ -162,6 +162,15 @@ class ImageSegmenterHelper(
         // Used for rotating the frame image so it matches our models
         val matrix = Matrix().apply {
             postRotate(imageProxy.imageInfo.rotationDegrees.toFloat())
+
+            if(isFrontCamera) {
+                postScale(
+                    -1f,
+                    1f,
+                    imageProxy.width.toFloat(),
+                    imageProxy.height.toFloat()
+                )
+            }
         }
 
         imageProxy.close()
