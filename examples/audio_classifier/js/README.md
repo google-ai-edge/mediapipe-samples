@@ -1,10 +1,10 @@
-# MediaPipe Text Classification task for web
+# MediaPipe Audio Classification task for web
 
 ## Overview
 
 This web sample classifies audio into one of several classes. It uses the Yamnet model.
 
-The Yamnet model is an audio event classifier trained on the [AudioSet] dataset to predict audio events from the AudioSet ontology.(https://research.google.com/audioset/).
+The Yamnet model is an audio event classifier trained on the [AudioSet](https://research.google.com/audioset/) dataset to predict audio events from the AudioSet ontology..
 
 ## Prerequisites
 

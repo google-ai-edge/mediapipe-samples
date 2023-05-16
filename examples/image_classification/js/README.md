@@ -4,7 +4,7 @@
 
 This web sample classifies images and video frames. Use one of the provided images or from camera frames seen by your device's webcam to get classifications.
 
-Classifications come from the [ImageNet dataset](https://www.image-net.org/).[See the full list of available classifications](https://storage.googleapis.com/mediapipe-tasks/image_classifier/labels.txt)
+The model was trained on the [ImageNet dataset](https://www.image-net.org/). See the [full list](https://storage.googleapis.com/mediapipe-tasks/image_classifier/labels.txt) of supported categories.
 
 ## Prerequisites
 

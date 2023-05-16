@@ -4,7 +4,7 @@
 
 This web sample segments objects in images and video frames. Objects are segmented in one of the provided images or from camera frames seen by your device's webcam.
 
-It uses the DeepLab, a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g. person, dog, cat) to every pixel in the input image.
+It uses the [DeepLabV3](https://arxiv.org/abs/1706.05587), an semantic image segmentation, where the goal is to assign semantic labels (e.g. person, dog, cat) to every pixel in the input image.
 
 ## Prerequisites
 

@@ -1,10 +1,10 @@
-# MediaPipe Image Segmentation task for web
+# MediaPipe Interactive Segmentation task for web
 
 ## Overview
 
-This web sample segments objects in images. Objects are segmented in one of the provided images or from images you provide.
+This web sample segments objects in images. Click on one of the provided images or from images you provide to segment the object on where you click.
 
-It uses the DeepLab, a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g. person, dog, cat) to every pixel in the input image.
+It uses the MagicTouch, a deep learning model that can segment objects at your region of interest from the input image.
 
 ## Prerequisites
 
