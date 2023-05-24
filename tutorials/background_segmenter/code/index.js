@@ -330,9 +330,10 @@ async function drawSegmentationResult(segmentationResult){
     // create segmentation mask
     const segmentationMask = segmentationResult[0];
     const segmentationMaskData = new ImageData(video.videoWidth, video.videoHeight);
-    const pixelCount = segmentationMask.length;
+    const dataArray = segmentationMask.getAsFloat32Array();
+    const pixelCount = dataArray.length;
     for (let i = 0; i < pixelCount; i++) {
-        const maskValue = segmentationMask[i];
+        const maskValue = dataArray[i];
         const maskValueRGB = maskValue * 255;
         segmentationMaskData.data[i * 4] = maskValueRGB;
         segmentationMaskData.data[i * 4 + 1] = maskValueRGB;
