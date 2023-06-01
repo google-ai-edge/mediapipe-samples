@@ -106,7 +106,7 @@ async function segmentationCallback(segmentationMask){
      */
     if(camera.isRunning) {
         // draw the segmentation mask on the canvas
-        await drawSegmentationResult(segmentationMask);
+        await drawSegmentationResult(segmentationMask.confidenceMasks);
         // start the segmentation task loop using requestAnimationFrame
         requestAnimationFrameId = window.requestAnimationFrame(startSegmentationTask);
     }
