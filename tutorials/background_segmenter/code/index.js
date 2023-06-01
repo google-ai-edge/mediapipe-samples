@@ -86,8 +86,8 @@ function startSegmentationTask(){
     /**
      * Dispatches the segmentation task
      */
-    let nowInMs = Date.now();
-    imageSegmenter.segmentForVideo(video, nowInMs, segmentationCallback);
+    let frameId = requestAnimationFrameId || 0;
+    imageSegmenter.segmentForVideo(video, frameId, segmentationCallback);
 }
 
 function stopSegmentationTask(){
