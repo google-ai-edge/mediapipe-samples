@@ -1,0 +1,635 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		3ED2F21540F015E27F0DF24F /* Pods_TextClassificater.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BD70F372A22A398B7EF20CA /* Pods_TextClassificater.framework */; };
+		B7E5DB7B52D6EC86C978A9C3 /* libPods-TextClassificaterTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 85A325CDD5C8100324599B48 /* libPods-TextClassificaterTests.a */; };
+		BF2B2C012A302CDB00589A11 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2C002A302CDB00589A11 /* AppDelegate.swift */; };
+		BF2B2C032A302CDB00589A11 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2C022A302CDB00589A11 /* SceneDelegate.swift */; };
+		BF2B2C052A302CDB00589A11 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2C042A302CDB00589A11 /* ViewController.swift */; };
+		BF2B2C0A2A302CDC00589A11 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2C092A302CDC00589A11 /* Assets.xcassets */; };
+		BF2B2C0D2A302CDC00589A11 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2C0B2A302CDC00589A11 /* LaunchScreen.storyboard */; };
+		BF2B2C182A302CDD00589A11 /* TextClassificaterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2C172A302CDD00589A11 /* TextClassificaterTests.swift */; };
+		BF2B2C352A303ABF00589A11 /* bert_classifier.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2C302A303ABF00589A11 /* bert_classifier.tflite */; };
+		BF2B2C362A303ABF00589A11 /* TextClassifierHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2C322A303ABF00589A11 /* TextClassifierHelper.swift */; };
+		BF2B2C372A303ABF00589A11 /* Define.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2C332A303ABF00589A11 /* Define.swift */; };
+		BF2B2C382A303ABF00589A11 /* average_word_classifier.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2C342A303ABF00589A11 /* average_word_classifier.tflite */; };
+		BF2B2C3C2A303B6800589A11 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2C3B2A303B6800589A11 /* Main.storyboard */; };
+		BF2B2C7C2A303E1400589A11 /* Pods_TextClassificater.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF2B2C7B2A303E1400589A11 /* Pods_TextClassificater.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		BF2B2C3D2A303CF500589A11 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BF2B2BF52A302CDB00589A11 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BF2B2BFC2A302CDB00589A11;
+			remoteInfo = TextClassificater;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		016F512CAAFBC659366A99D7 /* Pods-TextClassificater.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TextClassificater.release.xcconfig"; path = "Target Support Files/Pods-TextClassificater/Pods-TextClassificater.release.xcconfig"; sourceTree = "<group>"; };
+		2BC44D08BC7943C208F54D58 /* Pods-TextClassificaterTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TextClassificaterTests.debug.xcconfig"; path = "Target Support Files/Pods-TextClassificaterTests/Pods-TextClassificaterTests.debug.xcconfig"; sourceTree = "<group>"; };
+		5BD70F372A22A398B7EF20CA /* Pods_TextClassificater.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TextClassificater.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		5D19ADAD12F6F53A2E290370 /* Pods-TextClassificater-TextClassificaterTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TextClassificater-TextClassificaterTests.debug.xcconfig"; path = "Target Support Files/Pods-TextClassificater-TextClassificaterTests/Pods-TextClassificater-TextClassificaterTests.debug.xcconfig"; sourceTree = "<group>"; };
+		6C59397FDA87EA67D556D3A6 /* Pods-TextClassificaterTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TextClassificaterTests.release.xcconfig"; path = "Target Support Files/Pods-TextClassificaterTests/Pods-TextClassificaterTests.release.xcconfig"; sourceTree = "<group>"; };
+		85A325CDD5C8100324599B48 /* libPods-TextClassificaterTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TextClassificaterTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		BF2B2BFD2A302CDB00589A11 /* TextClassificater.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TextClassificater.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BF2B2C002A302CDB00589A11 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		BF2B2C022A302CDB00589A11 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		BF2B2C042A302CDB00589A11 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		BF2B2C092A302CDC00589A11 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		BF2B2C0C2A302CDC00589A11 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		BF2B2C0E2A302CDC00589A11 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BF2B2C132A302CDD00589A11 /* TextClassificaterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TextClassificaterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BF2B2C172A302CDD00589A11 /* TextClassificaterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextClassificaterTests.swift; sourceTree = "<group>"; };
+		BF2B2C302A303ABF00589A11 /* bert_classifier.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = bert_classifier.tflite; sourceTree = "<group>"; };
+		BF2B2C322A303ABF00589A11 /* TextClassifierHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextClassifierHelper.swift; sourceTree = "<group>"; };
+		BF2B2C332A303ABF00589A11 /* Define.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Define.swift; sourceTree = "<group>"; };
+		BF2B2C342A303ABF00589A11 /* average_word_classifier.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = average_word_classifier.tflite; sourceTree = "<group>"; };
+		BF2B2C3B2A303B6800589A11 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
+		BF2B2C7B2A303E1400589A11 /* Pods_TextClassificater.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Pods_TextClassificater.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C637CFAD3611C9E2A2007117 /* Pods-TextClassificater.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TextClassificater.debug.xcconfig"; path = "Target Support Files/Pods-TextClassificater/Pods-TextClassificater.debug.xcconfig"; sourceTree = "<group>"; };
+		D363975FD3C28B722D6DF851 /* Pods-TextClassificater-TextClassificaterTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TextClassificater-TextClassificaterTests.release.xcconfig"; path = "Target Support Files/Pods-TextClassificater-TextClassificaterTests/Pods-TextClassificater-TextClassificaterTests.release.xcconfig"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BF2B2BFA2A302CDB00589A11 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3ED2F21540F015E27F0DF24F /* Pods_TextClassificater.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF2B2C102A302CDD00589A11 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF2B2C7C2A303E1400589A11 /* Pods_TextClassificater.framework in Frameworks */,
+				B7E5DB7B52D6EC86C978A9C3 /* libPods-TextClassificaterTests.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		4B08085FFFF2ABF338220017 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				C637CFAD3611C9E2A2007117 /* Pods-TextClassificater.debug.xcconfig */,
+				016F512CAAFBC659366A99D7 /* Pods-TextClassificater.release.xcconfig */,
+				2BC44D08BC7943C208F54D58 /* Pods-TextClassificaterTests.debug.xcconfig */,
+				6C59397FDA87EA67D556D3A6 /* Pods-TextClassificaterTests.release.xcconfig */,
+				5D19ADAD12F6F53A2E290370 /* Pods-TextClassificater-TextClassificaterTests.debug.xcconfig */,
+				D363975FD3C28B722D6DF851 /* Pods-TextClassificater-TextClassificaterTests.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		BF2B2BF42A302CDB00589A11 = {
+			isa = PBXGroup;
+			children = (
+				BF2B2BFF2A302CDB00589A11 /* TextClassificater */,
+				BF2B2C162A302CDD00589A11 /* TextClassificaterTests */,
+				BF2B2BFE2A302CDB00589A11 /* Products */,
+				4B08085FFFF2ABF338220017 /* Pods */,
+				C11378A376FF8BF8D16ED177 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		BF2B2BFE2A302CDB00589A11 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BF2B2BFD2A302CDB00589A11 /* TextClassificater.app */,
+				BF2B2C132A302CDD00589A11 /* TextClassificaterTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BF2B2BFF2A302CDB00589A11 /* TextClassificater */ = {
+			isa = PBXGroup;
+			children = (
+				BF2B2C312A303ABF00589A11 /* Helper */,
+				BF2B2C002A302CDB00589A11 /* AppDelegate.swift */,
+				BF2B2C022A302CDB00589A11 /* SceneDelegate.swift */,
+				BF2B2C042A302CDB00589A11 /* ViewController.swift */,
+				BF2B2C092A302CDC00589A11 /* Assets.xcassets */,
+				BF2B2C0B2A302CDC00589A11 /* LaunchScreen.storyboard */,
+				BF2B2C3B2A303B6800589A11 /* Main.storyboard */,
+				BF2B2C0E2A302CDC00589A11 /* Info.plist */,
+				BF2B2C342A303ABF00589A11 /* average_word_classifier.tflite */,
+				BF2B2C302A303ABF00589A11 /* bert_classifier.tflite */,
+			);
+			path = TextClassificater;
+			sourceTree = "<group>";
+		};
+		BF2B2C162A302CDD00589A11 /* TextClassificaterTests */ = {
+			isa = PBXGroup;
+			children = (
+				BF2B2C172A302CDD00589A11 /* TextClassificaterTests.swift */,
+			);
+			path = TextClassificaterTests;
+			sourceTree = "<group>";
+		};
+		BF2B2C312A303ABF00589A11 /* Helper */ = {
+			isa = PBXGroup;
+			children = (
+				BF2B2C322A303ABF00589A11 /* TextClassifierHelper.swift */,
+				BF2B2C332A303ABF00589A11 /* Define.swift */,
+			);
+			path = Helper;
+			sourceTree = "<group>";
+		};
+		C11378A376FF8BF8D16ED177 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				BF2B2C7B2A303E1400589A11 /* Pods_TextClassificater.framework */,
+				5BD70F372A22A398B7EF20CA /* Pods_TextClassificater.framework */,
+				85A325CDD5C8100324599B48 /* libPods-TextClassificaterTests.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BF2B2BFC2A302CDB00589A11 /* TextClassificater */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BF2B2C272A302CDD00589A11 /* Build configuration list for PBXNativeTarget "TextClassificater" */;
+			buildPhases = (
+				A075DE8F9C2BF76D1818134E /* [CP] Check Pods Manifest.lock */,
+				BF2B2C392A303AE900589A11 /* Download Bert model */,
+				BF2B2C3A2A303AFD00589A11 /* Download Awc model */,
+				BF2B2BF92A302CDB00589A11 /* Sources */,
+				BF2B2BFA2A302CDB00589A11 /* Frameworks */,
+				BF2B2BFB2A302CDB00589A11 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TextClassificater;
+			productName = TextClassificater;
+			productReference = BF2B2BFD2A302CDB00589A11 /* TextClassificater.app */;
+			productType = "com.apple.product-type.application";
+		};
+		BF2B2C122A302CDD00589A11 /* TextClassificaterTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BF2B2C2A2A302CDD00589A11 /* Build configuration list for PBXNativeTarget "TextClassificaterTests" */;
+			buildPhases = (
+				1194F5F441E2E25CA672CE2B /* [CP] Check Pods Manifest.lock */,
+				BF2B2C0F2A302CDD00589A11 /* Sources */,
+				BF2B2C102A302CDD00589A11 /* Frameworks */,
+				BF2B2C112A302CDD00589A11 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BF2B2C3E2A303CF500589A11 /* PBXTargetDependency */,
+			);
+			name = TextClassificaterTests;
+			productName = TextClassificaterTests;
+			productReference = BF2B2C132A302CDD00589A11 /* TextClassificaterTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BF2B2BF52A302CDB00589A11 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1430;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					BF2B2BFC2A302CDB00589A11 = {
+						CreatedOnToolsVersion = 14.3;
+					};
+					BF2B2C122A302CDD00589A11 = {
+						CreatedOnToolsVersion = 14.3;
+						TestTargetID = BF2B2BFC2A302CDB00589A11;
+					};
+				};
+			};
+			buildConfigurationList = BF2B2BF82A302CDB00589A11 /* Build configuration list for PBXProject "TextClassificater" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = BF2B2BF42A302CDB00589A11;
+			productRefGroup = BF2B2BFE2A302CDB00589A11 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BF2B2BFC2A302CDB00589A11 /* TextClassificater */,
+				BF2B2C122A302CDD00589A11 /* TextClassificaterTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BF2B2BFB2A302CDB00589A11 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF2B2C0D2A302CDC00589A11 /* LaunchScreen.storyboard in Resources */,
+				BF2B2C3C2A303B6800589A11 /* Main.storyboard in Resources */,
+				BF2B2C352A303ABF00589A11 /* bert_classifier.tflite in Resources */,
+				BF2B2C0A2A302CDC00589A11 /* Assets.xcassets in Resources */,
+				BF2B2C382A303ABF00589A11 /* average_word_classifier.tflite in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF2B2C112A302CDD00589A11 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		1194F5F441E2E25CA672CE2B /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-TextClassificaterTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		A075DE8F9C2BF76D1818134E /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-TextClassificater-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		BF2B2C392A303AE900589A11 /* Download Bert model */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download Bert model";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Download bert_classifier.tflite from the internet if it's not exist.\nTFLITE_FILE=${SRCROOT}/TextClassifier/bert_classifier.tflite\nif test -f \"$TFLITE_FILE\"; then\n    echo \"INFO: bert_classifier.tflite existed. Skip downloading and use the local model.\"\nelse\n    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/text_classifier/bert_classifier/float32/1/bert_classifier.tflite\n    echo \"INFO: Downloaded bert_classifier.tflite to $TFLITE_FILE .\"\nfi\n";
+		};
+		BF2B2C3A2A303AFD00589A11 /* Download Awc model */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download Awc model";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Download average_word_classifier.tflite from the internet if it's not exist.\nTFLITE_FILE=${SRCROOT}/TextClassifier/average_word_classifier.tflite\nif test -f \"$TFLITE_FILE\"; then\n    echo \"INFO: average_word_classifier.tflite existed. Skip downloading and use the local model.\"\nelse\n    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/text_classifier/average_word_classifier/float32/1/average_word_classifier.tflite\n    echo \"INFO: Downloaded average_word_classifier.tflite to $TFLITE_FILE .\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BF2B2BF92A302CDB00589A11 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF2B2C052A302CDB00589A11 /* ViewController.swift in Sources */,
+				BF2B2C012A302CDB00589A11 /* AppDelegate.swift in Sources */,
+				BF2B2C032A302CDB00589A11 /* SceneDelegate.swift in Sources */,
+				BF2B2C372A303ABF00589A11 /* Define.swift in Sources */,
+				BF2B2C362A303ABF00589A11 /* TextClassifierHelper.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF2B2C0F2A302CDD00589A11 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF2B2C182A302CDD00589A11 /* TextClassificaterTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BF2B2C3E2A303CF500589A11 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BF2B2BFC2A302CDB00589A11 /* TextClassificater */;
+			targetProxy = BF2B2C3D2A303CF500589A11 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		BF2B2C0B2A302CDC00589A11 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BF2B2C0C2A302CDC00589A11 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		BF2B2C252A302CDD00589A11 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BF2B2C262A302CDD00589A11 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		BF2B2C282A302CDD00589A11 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = C637CFAD3611C9E2A2007117 /* Pods-TextClassificater.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9PLS9MU793;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TextClassificater/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = tuan.mai.TextClassificater;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BF2B2C292A302CDD00589A11 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 016F512CAAFBC659366A99D7 /* Pods-TextClassificater.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9PLS9MU793;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TextClassificater/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = tuan.mai.TextClassificater;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		BF2B2C2B2A302CDD00589A11 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2BC44D08BC7943C208F54D58 /* Pods-TextClassificaterTests.debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9PLS9MU793;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = tuan.mai.TextClassificaterTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TextClassificater.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TextClassificater";
+			};
+			name = Debug;
+		};
+		BF2B2C2C2A302CDD00589A11 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6C59397FDA87EA67D556D3A6 /* Pods-TextClassificaterTests.release.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9PLS9MU793;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = tuan.mai.TextClassificaterTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TextClassificater.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TextClassificater";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BF2B2BF82A302CDB00589A11 /* Build configuration list for PBXProject "TextClassificater" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF2B2C252A302CDD00589A11 /* Debug */,
+				BF2B2C262A302CDD00589A11 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BF2B2C272A302CDD00589A11 /* Build configuration list for PBXNativeTarget "TextClassificater" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF2B2C282A302CDD00589A11 /* Debug */,
+				BF2B2C292A302CDD00589A11 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BF2B2C2A2A302CDD00589A11 /* Build configuration list for PBXNativeTarget "TextClassificaterTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF2B2C2B2A302CDD00589A11 /* Debug */,
+				BF2B2C2C2A302CDD00589A11 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BF2B2BF52A302CDB00589A11 /* Project object */;
+}
