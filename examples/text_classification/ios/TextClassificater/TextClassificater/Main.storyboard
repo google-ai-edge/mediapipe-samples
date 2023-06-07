@@ -12,7 +12,7 @@
         <!--View Controller-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="TextClassifier" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="TextClassificater" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -40,13 +40,13 @@
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YRa-Ma-6v3">
-                                            <rect key="frame" x="12" y="165" width="89.333333333333329" height="35"/>
+                                            <rect key="frame" x="12" y="165" width="83.666666666666671" height="35"/>
                                             <color key="backgroundColor" red="0.0" green="0.49803921568627452" blue="0.54509803921568623" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             <state key="normal" title="Button"/>
-                                            <buttonConfiguration key="configuration" style="plain" title="Classtify"/>
+                                            <buttonConfiguration key="configuration" style="plain" title="Classify"/>
                                             <connections>
-                                                <action selector="classtifyButtonTouchUpInside:" destination="BYZ-38-t0r" eventType="touchUpInside" id="OC9-wg-15Q"/>
+                                                <action selector="classifyButtonTouchUpInside:" destination="BYZ-38-t0r" eventType="touchUpInside" id="g2u-vZ-OyI"/>
                                             </connections>
                                         </button>
                                     </subviews>
@@ -167,7 +167,7 @@
                                 <constraint firstAttribute="width" constant="40" id="vbh-NR-JGY"/>
                             </constraints>
                         </imageView>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="TextClasstifier" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="By2-Mc-N1O">
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="TextClassifier" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="By2-Mc-N1O">
                             <rect key="frame" x="40" y="38" width="192" height="21"/>
                             <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                             <nil key="textColor"/>

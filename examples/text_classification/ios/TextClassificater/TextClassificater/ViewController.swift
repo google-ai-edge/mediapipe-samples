@@ -39,7 +39,7 @@ class ViewController: UIViewController {
     }
 
     // IBAction
-    @IBAction func classtifyButtonTouchUpInside(_ sender: Any) {
+    @IBAction func classifyButtonTouchUpInside(_ sender: Any) {
         if inputTextView.text.isEmpty {
             print("text is empty")
         } else {
