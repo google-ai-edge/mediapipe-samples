@@ -1,15 +1,15 @@
 # Uncomment the next line to define a global platform for your project
 # platform :ios, '9.0'
 
-target 'TextClassificater' do
+target 'TextClassifier' do
   # Comment the next line if you don't want to use dynamic frameworks
     use_frameworks!
     pod 'MediaPipeTasksText', '0.10.1-alpha-2'
 
-    # Pods for TextClassificater
+    # Pods for TextClassifier
 end
 
-target 'TextClassificaterTests' do
+target 'TextClassifierTests' do
     inherit! :search_paths
     # Pods for testing
 end

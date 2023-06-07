@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import XCTest
-@testable import TextClassificater
+@testable import TextClassifier
 import MediaPipeTasksText
 
 final class TextClassifierTests: XCTestCase {
