@@ -156,9 +156,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BF2B2C272A302CDD00589A11 /* Build configuration list for PBXNativeTarget "TextClassifier" */;
 			buildPhases = (
-				A075DE8F9C2BF76D1818134E /* [CP] Check Pods Manifest.lock */,
-				BF2B2C392A303AE900589A11 /* Download Bert model */,
 				BF2B2C3A2A303AFD00589A11 /* Download Awc model */,
+				BF2B2C392A303AE900589A11 /* Download Bert model */,
+				A075DE8F9C2BF76D1818134E /* [CP] Check Pods Manifest.lock */,
 				BF2B2BF92A302CDB00589A11 /* Sources */,
 				BF2B2BFA2A302CDB00589A11 /* Frameworks */,
 				BF2B2BFB2A302CDB00589A11 /* Resources */,
@@ -312,7 +312,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Download bert_classifier.tflite from the internet if it's not exist.\nTFLITE_FILE=${SRCROOT}/TextClassificater/bert_classifier.tflite\nif test -f \"$TFLITE_FILE\"; then\n    echo \"INFO: bert_classifier.tflite existed. Skip downloading and use the local model.\"\nelse\n    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/text_classifier/bert_classifier/float32/1/bert_classifier.tflite\n    echo \"INFO: Downloaded bert_classifier.tflite to $TFLITE_FILE .\"\nfi\n";
+			shellScript = "# Download bert_classifier.tflite from the internet if it's not exist.\nTFLITE_FILE=${SRCROOT}/TextClassifier/bert_classifier.tflite\nif test -f \"$TFLITE_FILE\"; then\n    echo \"INFO: bert_classifier.tflite existed. Skip downloading and use the local model.\"\nelse\n    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/text_classifier/bert_classifier/float32/1/bert_classifier.tflite\n    echo \"INFO: Downloaded bert_classifier.tflite to $TFLITE_FILE .\"\nfi\n";
 		};
 		BF2B2C3A2A303AFD00589A11 /* Download Awc model */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -330,7 +330,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Download average_word_classifier.tflite from the internet if it's not exist.\nTFLITE_FILE=${SRCROOT}/TextClassificater/average_word_classifier.tflite\nif test -f \"$TFLITE_FILE\"; then\n    echo \"INFO: average_word_classifier.tflite existed. Skip downloading and use the local model.\"\nelse\n    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/text_classifier/average_word_classifier/float32/1/average_word_classifier.tflite\n    echo \"INFO: Downloaded average_word_classifier.tflite to $TFLITE_FILE .\"\nfi\n";
+			shellScript = "# Download average_word_classifier.tflite from the internet if it's not exist.\nTFLITE_FILE=${SRCROOT}/TextClassifier/average_word_classifier.tflite\nif test -f \"$TFLITE_FILE\"; then\n    echo \"INFO: average_word_classifier.tflite existed. Skip downloading and use the local model.\"\nelse\n    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/text_classifier/average_word_classifier/float32/1/average_word_classifier.tflite\n    echo \"INFO: Downloaded average_word_classifier.tflite to $TFLITE_FILE .\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
