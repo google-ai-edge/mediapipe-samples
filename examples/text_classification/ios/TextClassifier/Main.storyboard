@@ -49,6 +49,16 @@
                                                 <action selector="classifyButtonTouchUpInside:" destination="BYZ-38-t0r" eventType="touchUpInside" id="g2u-vZ-OyI"/>
                                             </connections>
                                         </button>
+                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MmK-1Z-Xx8">
+                                            <rect key="frame" x="111.66666666666669" y="165" width="64" height="35"/>
+                                            <color key="backgroundColor" red="0.0" green="0.49803921569999998" blue="0.5450980392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <state key="normal" title="Button"/>
+                                            <buttonConfiguration key="configuration" style="plain" title="Clear"/>
+                                            <connections>
+                                                <action selector="clearButtonTouchUpInside:" destination="BYZ-38-t0r" eventType="touchUpInside" id="JNJ-YV-CAN"/>
+                                            </connections>
+                                        </button>
                                     </subviews>
                                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                     <constraints>
@@ -58,8 +68,10 @@
                                         <constraint firstItem="I1b-C7-Saj" firstAttribute="top" secondItem="Rxl-GG-6MT" secondAttribute="bottom" constant="4" id="Nr0-uH-e94"/>
                                         <constraint firstItem="YRa-Ma-6v3" firstAttribute="top" secondItem="I1b-C7-Saj" secondAttribute="bottom" constant="12" id="PsZ-kp-Tco"/>
                                         <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="YRa-Ma-6v3" secondAttribute="trailing" constant="12" id="ZKc-MP-VaV"/>
+                                        <constraint firstItem="MmK-1Z-Xx8" firstAttribute="centerY" secondItem="YRa-Ma-6v3" secondAttribute="centerY" id="eTH-H5-t1r"/>
                                         <constraint firstItem="Rxl-GG-6MT" firstAttribute="leading" secondItem="Yxi-wP-3qh" secondAttribute="leading" constant="12" id="fzY-O9-FKh"/>
                                         <constraint firstAttribute="trailing" secondItem="I1b-C7-Saj" secondAttribute="trailing" constant="12" id="g9D-vS-FVe"/>
+                                        <constraint firstItem="MmK-1Z-Xx8" firstAttribute="leading" secondItem="YRa-Ma-6v3" secondAttribute="trailing" constant="16" id="mZ2-dN-PRG"/>
                                         <constraint firstItem="I1b-C7-Saj" firstAttribute="leading" secondItem="Yxi-wP-3qh" secondAttribute="leading" constant="12" id="sO5-3K-lM6"/>
                                     </constraints>
                                 </view>
@@ -147,7 +159,9 @@
                     </view>
                     <navigationItem key="navigationItem" id="IpS-4m-HNz"/>
                     <connections>
-                        <outlet property="choseModelButton" destination="WoM-op-6Z8" id="mgh-v6-xpF"/>
+                        <outlet property="chooseModelButton" destination="WoM-op-6Z8" id="5kg-bZ-RR9"/>
+                        <outlet property="classifyButton" destination="YRa-Ma-6v3" id="GnM-Cy-jqt"/>
+                        <outlet property="clearButton" destination="MmK-1Z-Xx8" id="zK1-Og-U8N"/>
                         <outlet property="inferenceTimeLabel" destination="1LS-eN-SHW" id="M40-oe-xc4"/>
                         <outlet property="inputTextView" destination="I1b-C7-Saj" id="bf9-4t-DDb"/>
                         <outlet property="settingViewHeightLayoutConstraint" destination="V03-eQ-15h" id="4AE-Lb-IYz"/>

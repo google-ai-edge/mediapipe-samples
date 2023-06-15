@@ -16,110 +16,120 @@ import UIKit
 import MediaPipeTasksText
 
 class ViewController: UIViewController {
-
-    // IBOutlet
-    @IBOutlet weak var tableView: UITableView!
-    @IBOutlet weak var choseModelButton: UIButton!
-    @IBOutlet weak var inputTextView: UITextView!
-    @IBOutlet var titleView: UIView!
-    @IBOutlet weak var inferenceTimeLabel: UILabel!
-    @IBOutlet weak var settingViewHeightLayoutConstraint: NSLayoutConstraint!
-
-    // variable
-    var defaultModel = Model.mobileBert
-    var textclassitifier: TextClassifierHelper!
-    var datas: [ResultCategory] = []
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupUI()
-        setupTableView()
-        textclassitifier = TextClassifierHelper(model: defaultModel)
-        hideKeyboardWhenTappedAround()
+  
+  // IBOutlet
+  @IBOutlet weak var tableView: UITableView!
+  @IBOutlet weak var chooseModelButton: UIButton!
+  @IBOutlet weak var classifyButton: UIButton!
+  @IBOutlet weak var clearButton: UIButton!
+  @IBOutlet weak var inputTextView: UITextView!
+  @IBOutlet var titleView: UIView!
+  @IBOutlet weak var inferenceTimeLabel: UILabel!
+  @IBOutlet weak var settingViewHeightLayoutConstraint: NSLayoutConstraint!
+  
+  // variable
+  var defaultModel = Model.mobileBert
+  var textClassifier: TextClassifierHelper!
+  var categories: [ResultCategory] = []
+  
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    setupUI()
+    setupTableView()
+    textClassifier = TextClassifierHelper(model: defaultModel)
+    hideKeyboardWhenTappedAround()
+    inputTextView.delegate = self
+  }
+  
+  // IBAction
+  @IBAction func classifyButtonTouchUpInside(_ sender: Any) {
+    let timeStart = Date()
+    let result = textClassifier.classify(text: inputTextView.text)
+    guard let result = result,
+          let classification = result.classificationResult.classifications.first else { return }
+    let inferenceTime = Date().timeIntervalSinceReferenceDate - timeStart.timeIntervalSinceReferenceDate
+    categories = classification.categories
+    inferenceTimeLabel.text = String(format: "%.2fms", inferenceTime * 1000)
+    tableView.reloadData()
+  }
+  
+  @IBAction func clearButtonTouchUpInside(_ sender: Any) {
+    inputTextView.text = ""
+    clearButton.isEnabled = false
+    classifyButton.isEnabled = false
+  }
+  @IBAction func expandButtonTouchUpInside(_ sender: UIButton) {
+    sender.isSelected.toggle()
+    settingViewHeightLayoutConstraint.constant = sender.isSelected ? 160 : 80
+    UIView.animate(withDuration: 0.3) {
+      self.view.layoutSubviews()
     }
-
-    // IBAction
-    @IBAction func classifyButtonTouchUpInside(_ sender: Any) {
-        if inputTextView.text.isEmpty {
-            print("text is empty")
-        } else {
-            let timeStart = Date()
-            let result = textclassitifier.classify(text: inputTextView.text)
-            guard let result = result,
-                  let classification = result.classificationResult.classifications.first else { return }
-            let inferenceTime = Date().timeIntervalSinceReferenceDate - timeStart.timeIntervalSinceReferenceDate
-            datas = classification.categories
-            inferenceTimeLabel.text = String(format: "%.2fms", inferenceTime * 1000)
-            tableView.reloadData()
-        }
+  }
+  
+  // Private function
+  private func setupUI() {
+    
+    navigationItem.titleView = titleView
+    
+    // Chose model option
+    let choseModel = {(action: UIAction) in
+      self.update(modelTitle: action.title)
     }
-
-    @IBAction func expandButtonTouchUpInside(_ sender: UIButton) {
-        sender.isSelected.toggle()
-        settingViewHeightLayoutConstraint.constant = sender.isSelected ? 160 : 80
-        UIView.animate(withDuration: 0.3) {
-            self.view.layoutSubviews()
-        }
+    let actions: [UIAction] = Model.allCases.compactMap { model in
+      let action = UIAction(title: model.rawValue, handler: choseModel)
+      if model == defaultModel {
+        action.state = .on
+      }
+      return action
     }
-
-    // Private function
-    private func setupUI() {
-
-        navigationItem.titleView = titleView
-
-        // Chose model option
-        let choseModel = {(action: UIAction) in
-                self.update(modelTitle: action.title)
-            }
-        let actions: [UIAction] = Model.allCases.compactMap { model in
-            let action = UIAction(title: model.rawValue, handler: choseModel)
-            if model == defaultModel {
-                action.state = .on
-            }
-            return action
-        }
-        choseModelButton.menu = UIMenu(children: actions)
-        choseModelButton.showsMenuAsPrimaryAction = true
-        choseModelButton.changesSelectionAsPrimaryAction = true
-        inputTextView.text = Texts.defaultText
-    }
-
-    private func setupTableView() {
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "DefaultCell")
-        tableView.dataSource = self
-        tableView.delegate = self
-        tableView.rowHeight = 44
-    }
-
-    private func hideKeyboardWhenTappedAround() {
-        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
-        tap.cancelsTouchesInView = false
-        view.addGestureRecognizer(tap)
-    }
-
-    @objc private func dismissKeyboard() {
-        view.endEditing(true)
-    }
-
-    private func update(modelTitle: String) {
-        guard let model = Model(rawValue: modelTitle) else { return }
-        textclassitifier = TextClassifierHelper(model: model)
-    }
+    chooseModelButton.menu = UIMenu(children: actions)
+    chooseModelButton.showsMenuAsPrimaryAction = true
+    chooseModelButton.changesSelectionAsPrimaryAction = true
+    inputTextView.text = Texts.defaultText
+  }
+  
+  private func setupTableView() {
+    tableView.register(UITableViewCell.self, forCellReuseIdentifier: "DefaultCell")
+    tableView.dataSource = self
+    tableView.delegate = self
+    tableView.rowHeight = 44
+  }
+  
+  private func hideKeyboardWhenTappedAround() {
+    let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+    tap.cancelsTouchesInView = false
+    view.addGestureRecognizer(tap)
+  }
+  
+  @objc private func dismissKeyboard() {
+    view.endEditing(true)
+  }
+  
+  private func update(modelTitle: String) {
+    guard let model = Model(rawValue: modelTitle) else { return }
+    textClassifier = TextClassifierHelper(model: model)
+  }
 }
 
 // MARK: - UITableViewDataSource, UITableViewDelegate
 extension ViewController: UITableViewDataSource, UITableViewDelegate {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        datas.count
-    }
+  func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    categories.count
+  }
+  
+  func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    let cell = tableView.dequeueReusableCell(withIdentifier: "DefaultCell")!
+    let categorie = categories[indexPath.row]
+    let text = (categorie.categoryName ?? "") + " (\(categorie.score))"
+    cell.textLabel?.text = text
+    return cell
+  }
+}
 
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "DefaultCell") else {
-            fatalError("cell can not load")
-        }
-        let data = datas[indexPath.row]
-        let text = (data.categoryName ?? "") + " (\(data.score))"
-        cell.textLabel?.text = text
-        return cell
-    }
+// MARK: UITextViewDelegate
+extension ViewController: UITextViewDelegate {
+  func textViewDidChange(_ textView: UITextView) {
+    clearButton.isEnabled = !textView.text.isEmpty
+    classifyButton.isEnabled = !textView.text.isEmpty
+  }
 }

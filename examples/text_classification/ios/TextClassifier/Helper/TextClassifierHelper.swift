@@ -15,18 +15,21 @@
 import MediaPipeTasksText
 
 class TextClassifierHelper {
-    var textClassifier: TextClassifier?
-
-    init(model: Model) {
-        guard let modelPath = model.modelPath else { return }
-        textClassifier = try? TextClassifier(modelPath: modelPath)
+  var textClassifier: TextClassifier?
+  
+  init(model: Model) {
+    guard let modelPath = model.modelPath else { return }
+    do {
+      textClassifier = try TextClassifier(modelPath: modelPath)
+    } catch {
+      print("TextClassifier init error: \(error)")
     }
-
-    func classify(text: String) -> TextClassifierResult? {
-        guard let textClassifier = textClassifier else {
-            print("Text classitifier can not load")
-            return nil
-        }
-        return try? textClassifier.classify(text: text)
+  }
+  
+  func classify(text: String) -> TextClassifierResult? {
+    guard let textClassifier = textClassifier else {
+      return nil
     }
+    return try? textClassifier.classify(text: text)
+  }
 }
