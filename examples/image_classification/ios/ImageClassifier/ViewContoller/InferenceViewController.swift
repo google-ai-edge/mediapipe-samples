@@ -1,9 +1,16 @@
+// Copyright 2023 The MediaPipe Authors.
 //
-//  InferenceViewController.swift
-//  ImageClassifier
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-//  Created by MBA0077 on 6/8/23.
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 import UIKit
 import MediaPipeTasksVision
@@ -29,20 +36,20 @@ class InferenceViewController: UIViewController {
 
   // MARK: Constants
   private let normalCellHeight: CGFloat = 27.0
-  private let bottomSheetButtonDisplayHeight: CGFloat = 44.0
 
   // MARK: Delegate
   var delegate: InferenceViewControllerDelegate?
 
   // MARK: Computed properties
   var collapsedHeight: CGFloat {
-    return normalCellHeight * CGFloat(maxResults - 1) + bottomSheetButtonDisplayHeight
+    return normalCellHeight * CGFloat(maxResults)
   }
 
   // MARK: Storyboards Connections
   @IBOutlet weak var choseModelButton: UIButton!
   @IBOutlet weak var tableView: UITableView!
 
+  @IBOutlet weak var infrenceTimeLabel: UILabel!
   @IBOutlet weak var thresholdStepper: UIStepper!
   @IBOutlet weak var thresholdValueLabel: UILabel!
 
@@ -50,7 +57,7 @@ class InferenceViewController: UIViewController {
   @IBOutlet weak var maxResultLabel: UILabel!
 
   // MARK: Instance Variables
-  var imageClassifierResult: ImageClassifierResult? = nil
+  var imageClassifierHelperResult: ImageClassifierHelperResult? = nil
   var maxResults = DefaultConstants.maxResults
   var scoreThreshold = DefaultConstants.scoreThreshold
   var modelChose = DefaultConstants.model
@@ -93,6 +100,13 @@ class InferenceViewController: UIViewController {
     delegate?.viewController(self, needPerformActions: .changeModel(model))
   }
 
+  // Public function
+  func updateData() {
+    tableView.reloadData()
+    if let inferenceTime = imageClassifierHelperResult?.inferenceTime {
+      infrenceTimeLabel.text = String(format: "%.2fms", inferenceTime)
+    }
+  }
   // MARK: IBAction
 
   @IBAction func expandButtonTouchUpInside(_ sender: UIButton) {
@@ -126,7 +140,7 @@ extension InferenceViewController: UITableViewDataSource {
   func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
     let cell = tableView.dequeueReusableCell(withIdentifier: "INFO_CELL") as! InfoCell
 
-    guard let imageClassifierResult = imageClassifierResult,
+    guard let imageClassifierResult = imageClassifierHelperResult?.imageClassifierResult,
           let classification = imageClassifierResult.classificationResult.classifications.first else {
       cell.fieldNameLabel.text = "--"
       cell.infoLabel.text = "--"

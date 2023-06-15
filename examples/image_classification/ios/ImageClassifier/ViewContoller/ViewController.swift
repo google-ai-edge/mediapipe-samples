@@ -1,42 +1,71 @@
+// Copyright 2023 The MediaPipe Authors.
 //
-//  ViewController.swift
-//  ImageClassifier
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-//  Created by MBA0077 on 6/8/23.
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 import UIKit
+import MediaPipeTasksVision
 
 class ViewController: UIViewController {
 
   // MARK: Storyboards Connections
   @IBOutlet weak var previewView: PreviewView!
+  @IBOutlet weak var addImageButton: UIButton!
   @IBOutlet weak var cameraUnavailableLabel: UILabel!
   @IBOutlet weak var resumeButton: UIButton!
-  @IBOutlet weak var bottomSheetView: UIView!
-
+  @IBOutlet weak var runningModelTabbar: UITabBar!
+  @IBOutlet weak var cameraTabbarItem: UITabBarItem!
+  @IBOutlet weak var photoTabbarItem: UITabBarItem!
   @IBOutlet weak var bottomSheetViewBottomSpace: NSLayoutConstraint!
   @IBOutlet weak var bottomSheetStateImageView: UIImageView!
   @IBOutlet weak var bottomViewHeightConstraint: NSLayoutConstraint!
 
   // MARK: Constants
-  private let animationDuration = 0.5
-  private let collapseTransitionThreshold: CGFloat = -40.0
-  private let expandTransitionThreshold: CGFloat = 40.0
   private let delayBetweenInferencesMs = 1000.0
+  private let inferenceBottomHeight = 220.0
+  private let expandButtonHeight = 41.0
 
   // MARK: Instance Variables
   private var previousInferenceTimeMs = Date.distantPast.timeIntervalSince1970 * 1000
-  private var initialBottomSpace: CGFloat = 0.0
   private var maxResults = DefaultConstants.maxResults {
     didSet {
       guard let inferenceVC = inferenceViewController else { return }
-      bottomViewHeightConstraint.constant = inferenceVC.collapsedHeight + 165
+      bottomViewHeightConstraint.constant = inferenceVC.collapsedHeight + inferenceBottomHeight
       view.layoutSubviews()
     }
   }
   private var scoreThreshold = DefaultConstants.scoreThreshold
   private var model = DefaultConstants.model
+  private var runingModel: RunningMode = .video {
+    didSet {
+      imageClassifierHelper = ImageClassifierHelper(
+        model: model,
+        maxResults: maxResults,
+        scoreThreshold: scoreThreshold,
+        runningModel: runingModel
+      )
+#if !targetEnvironment(simulator)
+      if runingModel == .video {
+        cameraCapture.checkCameraConfigurationAndStartSession()
+        previewView.shouldUseClipboardImage = false
+        addImageButton.isHidden = true
+      } else {
+        cameraCapture.stopSession()
+        previewView.shouldUseClipboardImage = true
+        addImageButton.isHidden = false
+      }
+#endif
+    }
+  }
 
   // MARK: Controllers that manage functionality
   // Handles all the camera related functionality
@@ -44,7 +73,7 @@ class ViewController: UIViewController {
 
   // Handles all data preprocessing and makes calls to run inference through the
   // `ImageClassificationHelper`.
-  private var imageClassificationHelper: ImageClassifierHelper? = ImageClassifierHelper(model: .efficientnetLite0, maxResults: 3, scoreThreshold: 0.5)
+  private var imageClassifierHelper: ImageClassifierHelper?
 
   // Handles the presenting of results on the screen
   private var inferenceViewController: InferenceViewController?
@@ -52,7 +81,11 @@ class ViewController: UIViewController {
   // MARK: View Handling Methods
   override func viewDidLoad() {
     super.viewDidLoad()
+    // Create image classifier helper
+    imageClassifierHelper = ImageClassifierHelper(model: model, maxResults: maxResults, scoreThreshold: scoreThreshold, runningModel: runingModel)
 
+    runningModelTabbar.selectedItem = cameraTabbarItem
+    runningModelTabbar.delegate = self
     cameraCapture.delegate = self
   }
   override func viewWillAppear(_ animated: Bool) {
@@ -81,6 +114,43 @@ class ViewController: UIViewController {
       inferenceViewController?.maxResults = maxResults
       inferenceViewController?.modelChose = model
       inferenceViewController?.delegate = self
+      guard let inferenceVC = inferenceViewController else { return }
+      bottomViewHeightConstraint.constant = inferenceVC.collapsedHeight + inferenceBottomHeight
+      bottomSheetViewBottomSpace.constant = -inferenceBottomHeight + expandButtonHeight
+      view.layoutSubviews()
+    }
+  }
+
+  // MARK: IBAction
+
+  @IBAction func addPhotoButtonTouchUpInside(_ sender: Any) {
+    openImagePickerController()
+  }
+  // MARK: Private function
+  func openImagePickerController() {
+    if UIImagePickerController.isSourceTypeAvailable(.savedPhotosAlbum){
+      let imagePicker = UIImagePickerController()
+      imagePicker.delegate = self
+      imagePicker.sourceType = .savedPhotosAlbum
+      imagePicker.allowsEditing = false
+
+      present(imagePicker, animated: true, completion: nil)
+    }
+  }
+}
+
+// MARK: UIImagePickerControllerDelegate, UINavigationControllerDelegate
+extension ViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+  func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+    picker.dismiss(animated: true)
+    guard let image = info[.originalImage] as? UIImage else { return }
+    previewView.image = image
+    // Pass the uiimage to mediapipe
+    let result = imageClassifierHelper?.classify(image: image)
+    // Display results by handing off to the InferenceViewController.
+    inferenceViewController?.imageClassifierHelperResult = result
+    DispatchQueue.main.async {
+      self.inferenceViewController?.updateData()
     }
   }
 }
@@ -96,73 +166,73 @@ extension ViewController: CameraFeedManagerDelegate {
     previousInferenceTimeMs = currentTimeMs
 
     // Pass the pixel buffer to mediapipe
-    let result = self.imageClassificationHelper?.classify(videoFrame: pixelBuffer, timeStamps: Int(currentTimeMs))
+    let result = imageClassifierHelper?.classify(videoFrame: pixelBuffer, timeStamps: Int(currentTimeMs))
 
     // Display results by handing off to the InferenceViewController.
-    inferenceViewController?.imageClassifierResult = result
+    inferenceViewController?.imageClassifierHelperResult = result
     DispatchQueue.main.async {
-      self.inferenceViewController?.tableView.reloadData()
+      self.inferenceViewController?.updateData()
     }
   }
 
-// MARK: Session Handling Alerts
-func sessionWasInterrupted(canResumeManually resumeManually: Bool) {
+  // MARK: Session Handling Alerts
+  func sessionWasInterrupted(canResumeManually resumeManually: Bool) {
 
-  // Updates the UI when session is interupted.
-  if resumeManually {
+    // Updates the UI when session is interupted.
+    if resumeManually {
+      self.resumeButton.isHidden = false
+    } else {
+      self.cameraUnavailableLabel.isHidden = false
+    }
+  }
+
+  func sessionInterruptionEnded() {
+    // Updates UI once session interruption has ended.
+    if !self.cameraUnavailableLabel.isHidden {
+      self.cameraUnavailableLabel.isHidden = true
+    }
+
+    if !self.resumeButton.isHidden {
+      self.resumeButton.isHidden = true
+    }
+  }
+
+  func sessionRunTimeErrorOccured() {
+    // Handles session run time error by updating the UI and providing a button if session can be
+    // manually resumed.
     self.resumeButton.isHidden = false
-  } else {
-    self.cameraUnavailableLabel.isHidden = false
-  }
-}
-
-func sessionInterruptionEnded() {
-  // Updates UI once session interruption has ended.
-  if !self.cameraUnavailableLabel.isHidden {
-    self.cameraUnavailableLabel.isHidden = true
+    previewView.shouldUseClipboardImage = true
   }
 
-  if !self.resumeButton.isHidden {
-    self.resumeButton.isHidden = true
+  func presentCameraPermissionsDeniedAlert() {
+    let alertController = UIAlertController(
+      title: "Camera Permissions Denied",
+      message:
+        "Camera permissions have been denied for this app. You can change this by going to Settings",
+      preferredStyle: .alert)
+
+    let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+    let settingsAction = UIAlertAction(title: "Settings", style: .default) { (action) in
+      UIApplication.shared.open(
+        URL(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
+    }
+    alertController.addAction(cancelAction)
+    alertController.addAction(settingsAction)
+
+    present(alertController, animated: true, completion: nil)
+
+    previewView.shouldUseClipboardImage = true
   }
-}
 
-func sessionRunTimeErrorOccured() {
-  // Handles session run time error by updating the UI and providing a button if session can be
-  // manually resumed.
-  self.resumeButton.isHidden = false
-  previewView.shouldUseClipboardImage = true
-}
+  func presentVideoConfigurationErrorAlert() {
+    let alert = UIAlertController(
+      title: "Camera Configuration Failed", message: "There was an error while configuring camera.",
+      preferredStyle: .alert)
+    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
 
-func presentCameraPermissionsDeniedAlert() {
-  let alertController = UIAlertController(
-    title: "Camera Permissions Denied",
-    message:
-      "Camera permissions have been denied for this app. You can change this by going to Settings",
-    preferredStyle: .alert)
-
-  let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-  let settingsAction = UIAlertAction(title: "Settings", style: .default) { (action) in
-    UIApplication.shared.open(
-      URL(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
+    self.present(alert, animated: true)
+    previewView.shouldUseClipboardImage = true
   }
-  alertController.addAction(cancelAction)
-  alertController.addAction(settingsAction)
-
-  present(alertController, animated: true, completion: nil)
-
-  previewView.shouldUseClipboardImage = true
-}
-
-func presentVideoConfigurationErrorAlert() {
-  let alert = UIAlertController(
-    title: "Camera Configuration Failed", message: "There was an error while configuring camera.",
-    preferredStyle: .alert)
-  alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-
-  self.present(alert, animated: true)
-  previewView.shouldUseClipboardImage = true
-}
 }
 
 // MARK: InferenceViewControllerDelegate Methods
@@ -189,17 +259,35 @@ extension ViewController: InferenceViewControllerDelegate {
       }
       self.model = model
     case .changeBottomSheetViewBottomSpace(let isExpand):
-      bottomSheetViewBottomSpace.constant = isExpand ? 0 : -165
+      bottomSheetViewBottomSpace.constant = isExpand ? 0 : -inferenceBottomHeight + expandButtonHeight
       UIView.animate(withDuration: 0.3) {
         self.view.layoutSubviews()
       }
     }
     if isModelNeedsRefresh {
-      imageClassificationHelper = ImageClassifierHelper(
+      imageClassifierHelper = ImageClassifierHelper(
         model: self.model,
         maxResults: self.maxResults,
-        scoreThreshold: self.scoreThreshold
+        scoreThreshold: self.scoreThreshold,
+        runningModel: self.runingModel
       )
+    }
+  }
+}
+
+extension ViewController: UITabBarDelegate {
+  func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
+    switch item {
+    case cameraTabbarItem:
+      if runingModel == .image {
+        runingModel = .video
+      }
+    case photoTabbarItem:
+      if runingModel == .video {
+        runingModel = .image
+      }
+    default:
+      break
     }
   }
 }

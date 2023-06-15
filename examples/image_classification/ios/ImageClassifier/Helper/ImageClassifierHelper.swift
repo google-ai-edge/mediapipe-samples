@@ -1,9 +1,16 @@
+// Copyright 2023 The MediaPipe Authors.
 //
-//  ImageClassifierHelper.swift
-//  ImageClassifier
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-//  Created by MBA0077 on 6/8/23.
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 import UIKit
 import MediaPipeTasksVision
@@ -12,26 +19,37 @@ class ImageClassifierHelper {
 
   var imageClassifier: ImageClassifier?
 
-  init(model: Model, maxResults: Int, scoreThreshold: Float) {
+  init(model: Model, maxResults: Int, scoreThreshold: Float, runningModel: RunningMode) {
     guard let modelPath = model.modelPath else { return }
     let imageClassifierOptions = ImageClassifierOptions()
-    imageClassifierOptions.runningMode = .video
+    imageClassifierOptions.runningMode = runningModel
     imageClassifierOptions.maxResults = maxResults
     imageClassifierOptions.scoreThreshold = scoreThreshold
     imageClassifierOptions.baseOptions.modelAssetPath = modelPath
     imageClassifier = try? ImageClassifier(options: imageClassifierOptions)
   }
 
-  func classify(image: MPImage) -> ImageClassifierResult? {
-    return try? imageClassifier?.classify(image: image)
+  func classify(image: UIImage) -> ImageClassifierHelperResult? {
+    guard let mpImage = try? MPImage(uiImage: image) else { return nil }
+    do {
+      let startDate = Date()
+      let result = try imageClassifier?.classify(image: mpImage)
+      let inferenceTime = Date().timeIntervalSince(startDate) * 1000
+      return ImageClassifierHelperResult(inferenceTime: inferenceTime, imageClassifierResult: result)
+    } catch {
+      print(error)
+      return nil
+    }
   }
 
-  func classify(videoFrame: CVPixelBuffer, timeStamps: Int) -> ImageClassifierResult? {
+  func classify(videoFrame: CVPixelBuffer, timeStamps: Int) -> ImageClassifierHelperResult? {
     guard let imageClassifier = imageClassifier,
           let image = try? MPImage(pixelBuffer: videoFrame) else { return nil }
     do {
+      let startDate = Date()
       let result = try imageClassifier.classify(videoFrame: image, timestampInMilliseconds: timeStamps)
-      return result
+      let inferenceTime = Date().timeIntervalSince(startDate) * 1000
+      return ImageClassifierHelperResult(inferenceTime: inferenceTime, imageClassifierResult: result)
     } catch {
       print(error)
       return nil
