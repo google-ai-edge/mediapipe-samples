@@ -56,7 +56,7 @@ class PreviewView: UIView {
 
   lazy private var imageView: UIImageView = {
     let imageView = UIImageView()
-    imageView.backgroundColor = .black
+    imageView.backgroundColor = .lightGray
     imageView.contentMode = .scaleAspectFill
     imageView.translatesAutoresizingMaskIntoConstraints = false
     return imageView

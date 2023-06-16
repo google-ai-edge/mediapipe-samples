@@ -2,7 +2,6 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21678"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -82,6 +81,12 @@
                                     <constraint firstItem="qUW-Nh-bwt" firstAttribute="centerX" secondItem="dZs-KB-NWb" secondAttribute="centerX" id="ksT-Pi-JRI"/>
                                 </constraints>
                             </view>
+                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Click + to add an image or a video to begin running the image classification." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9Pf-nt-exU">
+                                <rect key="frame" x="16" y="466.33333333333331" width="361" height="38.333333333333314"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6JY-4R-J6q">
                                 <rect key="frame" x="0.0" y="566" width="393" height="400"/>
                                 <subviews>
@@ -131,11 +136,14 @@
                             <constraint firstItem="qXC-o7-Gy1" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="O9J-0L-P3e"/>
                             <constraint firstItem="2tx-08-poW" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="P2o-dJ-Evv"/>
                             <constraint firstItem="dZs-KB-NWb" firstAttribute="top" secondItem="2tx-08-poW" secondAttribute="bottom" constant="1" id="V9q-cJ-w4x"/>
+                            <constraint firstItem="9Pf-nt-exU" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="XZH-nM-aei"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Mv6-xX-aXd" secondAttribute="trailing" id="Y0i-86-c5B"/>
                             <constraint firstItem="2tx-08-poW" firstAttribute="top" secondItem="qXC-o7-Gy1" secondAttribute="bottom" id="YO7-pT-V31"/>
                             <constraint firstItem="6JY-4R-J6q" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="YWX-9U-fec"/>
+                            <constraint firstItem="9Pf-nt-exU" firstAttribute="centerY" secondItem="dZs-KB-NWb" secondAttribute="centerY" id="cGH-ic-DQ7"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="Mv6-xX-aXd" secondAttribute="trailing" constant="16" id="fvB-QS-JaT"/>
                             <constraint firstItem="134-WF-shx" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="lxb-6h-94Q"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="9Pf-nt-exU" secondAttribute="trailing" constant="16" id="oZJ-Ud-B2Z"/>
                             <constraint firstAttribute="bottom" secondItem="134-WF-shx" secondAttribute="bottom" id="pZL-TR-XYi"/>
                             <constraint firstItem="2tx-08-poW" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="qbT-YI-etp"/>
                             <constraint firstAttribute="trailing" secondItem="6JY-4R-J6q" secondAttribute="trailing" id="rEI-dR-kea"/>
@@ -149,6 +157,7 @@
                         <outlet property="bottomViewHeightConstraint" destination="RNK-Er-7dj" id="mzY-d3-S6x"/>
                         <outlet property="cameraTabbarItem" destination="JHw-mu-bQ7" id="Qp3-8G-Hi2"/>
                         <outlet property="cameraUnavailableLabel" destination="4cj-4W-qlX" id="Br6-3q-3io"/>
+                        <outlet property="imageEmptyLabel" destination="9Pf-nt-exU" id="RhG-ek-CKc"/>
                         <outlet property="photoTabbarItem" destination="CCl-pe-7Af" id="DQl-aZ-tnl"/>
                         <outlet property="previewView" destination="dZs-KB-NWb" id="RPB-EM-qIe"/>
                         <outlet property="resumeButton" destination="qUW-Nh-bwt" id="OQV-fM-pF5"/>
