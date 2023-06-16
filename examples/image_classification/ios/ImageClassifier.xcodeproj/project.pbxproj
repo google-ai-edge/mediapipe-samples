@@ -23,17 +23,11 @@
 		BF2B2D152A316DB200589A11 /* InferenceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D142A316DB200589A11 /* InferenceViewController.swift */; };
 		BF2B2D172A31719900589A11 /* efficientnet_lite0.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2D162A31719800589A11 /* efficientnet_lite0.tflite */; };
 		BF2B2D192A31719F00589A11 /* efficientnet_lite2.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2D182A31719F00589A11 /* efficientnet_lite2.tflite */; };
+		BF2B2D1D2A3C012300589A11 /* cup.png in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2D1A2A3BFC1100589A11 /* cup.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
 		BF2B2CEE2A316CB200589A11 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BF2B2CCF2A316CB000589A11 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = BF2B2CD62A316CB000589A11;
-			remoteInfo = ImageClassifier;
-		};
-		BF2B2CF82A316CB200589A11 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = BF2B2CCF2A316CB000589A11 /* Project object */;
 			proxyType = 1;
@@ -57,7 +51,6 @@
 		BF2B2CE82A316CB100589A11 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BF2B2CED2A316CB200589A11 /* ImageClassifierTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ImageClassifierTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF2B2CF12A316CB200589A11 /* ImageClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageClassifierTests.swift; sourceTree = "<group>"; };
-		BF2B2CF72A316CB200589A11 /* ImageClassifierUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ImageClassifierUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF2B2D0C2A316D6000589A11 /* Define.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Define.swift; sourceTree = "<group>"; };
 		BF2B2D0E2A316D7100589A11 /* ImageClassifierHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageClassifierHelper.swift; sourceTree = "<group>"; };
 		BF2B2D102A316D9300589A11 /* CameraFeedManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedManager.swift; sourceTree = "<group>"; };
@@ -65,6 +58,7 @@
 		BF2B2D142A316DB200589A11 /* InferenceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InferenceViewController.swift; sourceTree = "<group>"; };
 		BF2B2D162A31719800589A11 /* efficientnet_lite0.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = efficientnet_lite0.tflite; sourceTree = "<group>"; };
 		BF2B2D182A31719F00589A11 /* efficientnet_lite2.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = efficientnet_lite2.tflite; sourceTree = "<group>"; };
+		BF2B2D1A2A3BFC1100589A11 /* cup.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cup.png; sourceTree = "<group>"; };
 		E52246C5465654BEC99C6748 /* Pods_ImageClassifier.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ImageClassifier.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EF5D0746976BFA97CBE182D0 /* Pods-ImageClassifierTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageClassifierTests.release.xcconfig"; path = "Target Support Files/Pods-ImageClassifierTests/Pods-ImageClassifierTests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -83,13 +77,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				8A09A75FB8580778BCA828C6 /* libPods-ImageClassifierTests.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		BF2B2CF42A316CB200589A11 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,7 +99,6 @@
 			children = (
 				BF2B2CD72A316CB000589A11 /* ImageClassifier.app */,
 				BF2B2CED2A316CB200589A11 /* ImageClassifierTests.xctest */,
-				BF2B2CF72A316CB200589A11 /* ImageClassifierUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -130,6 +116,7 @@
 				BF2B2CE82A316CB100589A11 /* Info.plist */,
 				BF2B2D162A31719800589A11 /* efficientnet_lite0.tflite */,
 				BF2B2D182A31719F00589A11 /* efficientnet_lite2.tflite */,
+				BF2B2D1A2A3BFC1100589A11 /* cup.png */,
 			);
 			path = ImageClassifier;
 			sourceTree = "<group>";
@@ -190,6 +177,8 @@
 			buildConfigurationList = BF2B2D012A316CB200589A11 /* Build configuration list for PBXNativeTarget "ImageClassifier" */;
 			buildPhases = (
 				E8E2925BFDC8144DEDD967E5 /* [CP] Check Pods Manifest.lock */,
+				BF2B2D202A3C050E00589A11 /* Download efficientnet_lite0 model */,
+				BF2B2D212A3C052900589A11 /* Download efficientnet_lite2 model */,
 				BF2B2CD32A316CB000589A11 /* Sources */,
 				BF2B2CD42A316CB000589A11 /* Frameworks */,
 				BF2B2CD52A316CB000589A11 /* Resources */,
@@ -222,24 +211,6 @@
 			productReference = BF2B2CED2A316CB200589A11 /* ImageClassifierTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		BF2B2CF62A316CB200589A11 /* ImageClassifierUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = BF2B2D072A316CB200589A11 /* Build configuration list for PBXNativeTarget "ImageClassifierUITests" */;
-			buildPhases = (
-				BF2B2CF32A316CB200589A11 /* Sources */,
-				BF2B2CF42A316CB200589A11 /* Frameworks */,
-				BF2B2CF52A316CB200589A11 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				BF2B2CF92A316CB200589A11 /* PBXTargetDependency */,
-			);
-			name = ImageClassifierUITests;
-			productName = ImageClassifierUITests;
-			productReference = BF2B2CF72A316CB200589A11 /* ImageClassifierUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -254,10 +225,6 @@
 						CreatedOnToolsVersion = 14.3;
 					};
 					BF2B2CEC2A316CB200589A11 = {
-						CreatedOnToolsVersion = 14.3;
-						TestTargetID = BF2B2CD62A316CB000589A11;
-					};
-					BF2B2CF62A316CB200589A11 = {
 						CreatedOnToolsVersion = 14.3;
 						TestTargetID = BF2B2CD62A316CB000589A11;
 					};
@@ -278,7 +245,6 @@
 			targets = (
 				BF2B2CD62A316CB000589A11 /* ImageClassifier */,
 				BF2B2CEC2A316CB200589A11 /* ImageClassifierTests */,
-				BF2B2CF62A316CB200589A11 /* ImageClassifierUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -288,6 +254,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF2B2D1D2A3C012300589A11 /* cup.png in Resources */,
 				BF2B2D172A31719900589A11 /* efficientnet_lite0.tflite in Resources */,
 				BF2B2D192A31719F00589A11 /* efficientnet_lite2.tflite in Resources */,
 				BF2B2CE72A316CB100589A11 /* LaunchScreen.storyboard in Resources */,
@@ -297,13 +264,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		BF2B2CEB2A316CB200589A11 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		BF2B2CF52A316CB200589A11 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -334,6 +294,42 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
+		};
+		BF2B2D202A3C050E00589A11 /* Download efficientnet_lite0 model */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download efficientnet_lite0 model";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Download average_word_classifier.tflite from the internet if it's not exist.\nTFLITE_FILE=${SRCROOT}/ImageClassifier/efficientnet_lite0.tflite\nif test -f \"$TFLITE_FILE\"; then\n    echo \"INFO: efficientnet_lite0.tflite existed. Skip downloading and use the local model.\"\nelse\n    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite0/float32/1/efficientnet_lite0.tflite\n    echo \"INFO: Downloaded efficientnet_lite0.tflite to $TFLITE_FILE .\"\nfi\n";
+		};
+		BF2B2D212A3C052900589A11 /* Download efficientnet_lite2 model */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download efficientnet_lite2 model";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Download average_word_classifier.tflite from the internet if it's not exist.\nTFLITE_FILE=${SRCROOT}/ImageClassifier/efficientnet_lite2.tflite\nif test -f \"$TFLITE_FILE\"; then\n    echo \"INFO: efficientnet_lite2.tflite existed. Skip downloading and use the local model.\"\nelse\n    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite2/float32/1/efficientnet_lite2.tflite\n    echo \"INFO: Downloaded efficientnet_lite2.tflite to $TFLITE_FILE .\"\nfi\n";
 		};
 		E8E2925BFDC8144DEDD967E5 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -383,13 +379,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		BF2B2CF32A316CB200589A11 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -397,11 +386,6 @@
 			isa = PBXTargetDependency;
 			target = BF2B2CD62A316CB000589A11 /* ImageClassifier */;
 			targetProxy = BF2B2CEE2A316CB200589A11 /* PBXContainerItemProxy */;
-		};
-		BF2B2CF92A316CB200589A11 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = BF2B2CD62A316CB000589A11 /* ImageClassifier */;
-			targetProxy = BF2B2CF82A316CB200589A11 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -545,9 +529,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 9PLS9MU793;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ImageClassifier/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to classify the objects that appear in the camera feed.";
@@ -564,6 +549,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.ImageClassifier;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -576,9 +562,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 9PLS9MU793;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ImageClassifier/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to classify the objects that appear in the camera feed.";
@@ -595,6 +582,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.ImageClassifier;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -607,13 +595,16 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = mediapipe.ImageClassifierTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.ImageClassifierTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -627,51 +618,20 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = mediapipe.ImageClassifierTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.ImageClassifierTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ImageClassifier.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ImageClassifier";
-			};
-			name = Release;
-		};
-		BF2B2D082A316CB200589A11 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = mediapipe.ImageClassifierUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = ImageClassifier;
-			};
-			name = Debug;
-		};
-		BF2B2D092A316CB200589A11 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = mediapipe.ImageClassifierUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = ImageClassifier;
 			};
 			name = Release;
 		};
@@ -701,15 +661,6 @@
 			buildConfigurations = (
 				BF2B2D052A316CB200589A11 /* Debug */,
 				BF2B2D062A316CB200589A11 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		BF2B2D072A316CB200589A11 /* Build configuration list for PBXNativeTarget "ImageClassifierUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				BF2B2D082A316CB200589A11 /* Debug */,
-				BF2B2D092A316CB200589A11 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

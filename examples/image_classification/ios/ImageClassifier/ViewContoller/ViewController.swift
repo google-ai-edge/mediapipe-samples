@@ -53,17 +53,19 @@ class ViewController: UIViewController {
         scoreThreshold: scoreThreshold,
         runningModel: runingModel
       )
-#if !targetEnvironment(simulator)
       if runingModel == .video {
+#if !targetEnvironment(simulator)
         cameraCapture.checkCameraConfigurationAndStartSession()
+#endif
         previewView.shouldUseClipboardImage = false
         addImageButton.isHidden = true
       } else {
+#if !targetEnvironment(simulator)
         cameraCapture.stopSession()
+#endif
         previewView.shouldUseClipboardImage = true
         addImageButton.isHidden = false
       }
-#endif
     }
   }
 
@@ -91,7 +93,9 @@ class ViewController: UIViewController {
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
 #if !targetEnvironment(simulator)
-    cameraCapture.checkCameraConfigurationAndStartSession()
+    if runingModel == .video {
+      cameraCapture.checkCameraConfigurationAndStartSession()
+    }
 #endif
   }
 
@@ -125,6 +129,15 @@ class ViewController: UIViewController {
 
   @IBAction func addPhotoButtonTouchUpInside(_ sender: Any) {
     openImagePickerController()
+  }
+  // Resume camera session when click button resume
+  @IBAction func resumeButtonTouchUpInside(_ sender: Any) {
+    cameraCapture.resumeInterruptedSession { isSessionRunning in
+      if isSessionRunning {
+        self.resumeButton.isHidden = true
+        self.cameraUnavailableLabel.isHidden = true
+      }
+    }
   }
   // MARK: Private function
   func openImagePickerController() {
@@ -275,6 +288,7 @@ extension ViewController: InferenceViewControllerDelegate {
   }
 }
 
+// MARK: UITabBarDelegate
 extension ViewController: UITabBarDelegate {
   func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
     switch item {

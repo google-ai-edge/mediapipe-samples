@@ -56,7 +56,31 @@
                             </tabBar>
                             <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dZs-KB-NWb" customClass="PreviewView" customModule="ImageClassifier" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="153" width="393" height="665"/>
+                                <subviews>
+                                    <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qUW-Nh-bwt">
+                                        <rect key="frame" x="158" y="16" width="77" height="35"/>
+                                        <color key="backgroundColor" red="0.0" green="0.49803921569999998" blue="0.5450980392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="tintColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain" title="Resum"/>
+                                        <connections>
+                                            <action selector="resumeButtonTouchUpInside:" destination="BYZ-38-t0r" eventType="touchUpInside" id="9if-CH-aXm"/>
+                                        </connections>
+                                    </button>
+                                    <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Camera unavailable" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4cj-4W-qlX">
+                                        <rect key="frame" x="122.33333333333333" y="322" width="148.66666666666669" height="21"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="qUW-Nh-bwt" firstAttribute="top" secondItem="dZs-KB-NWb" secondAttribute="top" constant="16" id="1DT-FF-eeg"/>
+                                    <constraint firstItem="4cj-4W-qlX" firstAttribute="centerY" secondItem="dZs-KB-NWb" secondAttribute="centerY" id="VQM-5x-iOL"/>
+                                    <constraint firstItem="4cj-4W-qlX" firstAttribute="centerX" secondItem="dZs-KB-NWb" secondAttribute="centerX" id="jKL-Em-unX"/>
+                                    <constraint firstItem="qUW-Nh-bwt" firstAttribute="centerX" secondItem="dZs-KB-NWb" secondAttribute="centerX" id="ksT-Pi-JRI"/>
+                                </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6JY-4R-J6q">
                                 <rect key="frame" x="0.0" y="566" width="393" height="400"/>
@@ -124,8 +148,10 @@
                         <outlet property="bottomSheetViewBottomSpace" destination="Lg7-Ti-vkX" id="Gmn-qX-8zb"/>
                         <outlet property="bottomViewHeightConstraint" destination="RNK-Er-7dj" id="mzY-d3-S6x"/>
                         <outlet property="cameraTabbarItem" destination="JHw-mu-bQ7" id="Qp3-8G-Hi2"/>
+                        <outlet property="cameraUnavailableLabel" destination="4cj-4W-qlX" id="Br6-3q-3io"/>
                         <outlet property="photoTabbarItem" destination="CCl-pe-7Af" id="DQl-aZ-tnl"/>
                         <outlet property="previewView" destination="dZs-KB-NWb" id="RPB-EM-qIe"/>
+                        <outlet property="resumeButton" destination="qUW-Nh-bwt" id="OQV-fM-pF5"/>
                         <outlet property="runningModelTabbar" destination="2tx-08-poW" id="NHg-Lu-So0"/>
                     </connections>
                 </viewController>
