@@ -15,9 +15,9 @@
 
 import argparse
 import time
-import audio_record
 
 from mediapipe.tasks import python
+from mediapipe.tasks.python.audio.core import audio_record
 from mediapipe.tasks.python.components import containers
 from mediapipe.tasks.python import audio
 from utils import Plotter
