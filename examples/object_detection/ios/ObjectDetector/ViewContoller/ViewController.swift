@@ -19,6 +19,7 @@ class ViewController: UIViewController {
 
   // MARK: Storyboards Connections
   @IBOutlet weak var previewView: PreviewView!
+  @IBOutlet weak var overlayView: OverlayView!
   @IBOutlet weak var addImageButton: UIButton!
   @IBOutlet weak var cameraUnavailableLabel: UILabel!
   @IBOutlet weak var resumeButton: UIButton!
@@ -32,6 +33,21 @@ class ViewController: UIViewController {
   private let delayBetweenInferencesMs = 100.0
   private let inferenceBottomHeight = 220.0
   private let expandButtonHeight = 41.0
+  private let edgeOffset: CGFloat = 2.0
+  private let labelOffset: CGFloat = 10.0
+  private let displayFont = UIFont.systemFont(ofSize: 14.0, weight: .medium)
+  private let colors = [
+    UIColor.red,
+    UIColor(displayP3Red: 90.0/255.0, green: 200.0/255.0, blue: 250.0/255.0, alpha: 1.0),
+    UIColor.green,
+    UIColor.orange,
+    UIColor.blue,
+    UIColor.purple,
+    UIColor.magenta,
+    UIColor.yellow,
+    UIColor.cyan,
+    UIColor.brown
+  ]
 
   // MARK: Instance Variables
   private var previousInferenceTimeMs = Date.distantPast.timeIntervalSince1970 * 1000
@@ -88,6 +104,7 @@ class ViewController: UIViewController {
     runningModelTabbar.selectedItem = cameraTabbarItem
     runningModelTabbar.delegate = self
     cameraCapture.delegate = self
+    overlayView.clearsContextBeforeDrawing = true
   }
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
@@ -149,6 +166,72 @@ class ViewController: UIViewController {
       present(imagePicker, animated: true, completion: nil)
     }
   }
+
+  // MARK: Handle ovelay function
+  /**
+   This method takes the results, translates the bounding box rects to the current view, draws the bounding boxes, classNames and confidence scores of inferences.
+   */
+  private func drawAfterPerformingCalculations(onDetections detections: [Detection], withImageSize imageSize:CGSize) {
+
+    self.overlayView.objectOverlays = []
+    self.overlayView.setNeedsDisplay()
+
+    guard !detections.isEmpty else {
+      return
+    }
+
+    var objectOverlays: [ObjectOverlay] = []
+    var index = 0
+    for detection in detections {
+      index += 1
+
+      guard let category = detection.categories.first else { continue }
+
+      // Translates bounding box rect to current view.
+      var convertedRect = detection.boundingBox.applying(CGAffineTransform(scaleX: self.overlayView.bounds.size.width / imageSize.width, y: self.overlayView.bounds.size.height / imageSize.height))
+
+      if convertedRect.origin.x < 0 {
+        convertedRect.origin.x = self.edgeOffset
+      }
+
+      if convertedRect.origin.y < 0 {
+        convertedRect.origin.y = self.edgeOffset
+      }
+
+      if convertedRect.maxY > self.overlayView.bounds.maxY {
+        convertedRect.size.height = self.overlayView.bounds.maxY - convertedRect.origin.y - self.edgeOffset
+      }
+
+      if convertedRect.maxX > self.overlayView.bounds.maxX {
+        convertedRect.size.width = self.overlayView.bounds.maxX - convertedRect.origin.x - self.edgeOffset
+      }
+
+      // if index = 0 class name is unknow
+
+      let confidenceValue = Int(category.score * 100.0)
+      let string = "\(category.categoryName ?? "Unknow")  (\(confidenceValue)%)"
+
+      let displayColor = colors[index % colors.count]
+
+      let size = string.size(withAttributes: [.font: displayFont])
+
+      let objectOverlay = ObjectOverlay(name: string, borderRect: convertedRect, nameStringSize: size, color: displayColor, font: self.displayFont)
+
+      objectOverlays.append(objectOverlay)
+    }
+
+    // Hands off drawing to the OverlayView
+    self.draw(objectOverlays: objectOverlays)
+
+  }
+
+  /** Calls methods to update overlay view with detected bounding boxes and class names.
+   */
+  private func draw(objectOverlays: [ObjectOverlay]) {
+
+    self.overlayView.objectOverlays = objectOverlays
+    self.overlayView.setNeedsDisplay()
+  }
 }
 
 // MARK: UIImagePickerControllerDelegate, UINavigationControllerDelegate
@@ -184,6 +267,7 @@ extension ViewController: CameraFeedManagerDelegate {
     inferenceViewController?.objectDetectorHelperResult = result
     DispatchQueue.main.async {
       self.inferenceViewController?.updateData()
+      self.drawAfterPerformingCalculations(onDetections: result?.objectDetectorResult?.detections ?? [], withImageSize: CVImageBufferGetDisplaySize(pixelBuffer))
     }
   }
 

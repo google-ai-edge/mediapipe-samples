@@ -306,6 +306,10 @@
                                     <constraint firstItem="uVM-qo-5yQ" firstAttribute="centerX" secondItem="e94-JX-2hi" secondAttribute="centerX" id="py2-um-mr2"/>
                                 </constraints>
                             </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jw5-1p-Jnm" customClass="OverlayView" customModule="ObjectDetector" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="153" width="393" height="665"/>
+                                <color key="backgroundColor" white="1" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XD6-Cg-UNf">
                                 <rect key="frame" x="0.0" y="566" width="393" height="400"/>
                                 <subviews>
@@ -346,6 +350,7 @@
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="ADV-S8-6lb" firstAttribute="leading" secondItem="Rcl-Zt-QUs" secondAttribute="leading" id="5AW-8v-qh4"/>
+                            <constraint firstItem="jw5-1p-Jnm" firstAttribute="bottom" secondItem="e94-JX-2hi" secondAttribute="bottom" id="6UR-l4-Dei"/>
                             <constraint firstItem="e94-JX-2hi" firstAttribute="top" secondItem="rLx-NN-4OB" secondAttribute="bottom" constant="1" id="93Z-7k-AdH"/>
                             <constraint firstItem="Rcl-Zt-QUs" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="vZ3-mH-CZg" secondAttribute="trailing" id="9bf-Si-Hec"/>
                             <constraint firstItem="Rcl-Zt-QUs" firstAttribute="bottom" secondItem="XD6-Cg-UNf" secondAttribute="bottom" constant="-148" id="9zK-rY-wQX"/>
@@ -353,11 +358,14 @@
                             <constraint firstItem="e94-JX-2hi" firstAttribute="leading" secondItem="Rcl-Zt-QUs" secondAttribute="leading" id="F1w-hA-NbQ"/>
                             <constraint firstItem="bLn-2a-h2n" firstAttribute="top" secondItem="Rcl-Zt-QUs" secondAttribute="top" id="GBc-RG-sWK"/>
                             <constraint firstItem="XD6-Cg-UNf" firstAttribute="top" secondItem="vZ3-mH-CZg" secondAttribute="bottom" constant="16" id="HpB-vv-4zA"/>
+                            <constraint firstItem="jw5-1p-Jnm" firstAttribute="leading" secondItem="e94-JX-2hi" secondAttribute="leading" id="Osk-02-a1s"/>
                             <constraint firstItem="Rcl-Zt-QUs" firstAttribute="trailing" secondItem="e94-JX-2hi" secondAttribute="trailing" id="Pay-5p-Ly3"/>
                             <constraint firstItem="Rcl-Zt-QUs" firstAttribute="trailing" secondItem="ADV-S8-6lb" secondAttribute="trailing" id="Ttl-xw-9gH"/>
                             <constraint firstItem="rLx-NN-4OB" firstAttribute="trailing" secondItem="Rcl-Zt-QUs" secondAttribute="trailing" id="ZXV-ce-SFM"/>
                             <constraint firstItem="vZ3-mH-CZg" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Rcl-Zt-QUs" secondAttribute="leading" constant="10" id="bkm-D9-N8h"/>
+                            <constraint firstItem="jw5-1p-Jnm" firstAttribute="top" secondItem="e94-JX-2hi" secondAttribute="top" id="boE-fZ-0xO"/>
                             <constraint firstAttribute="bottom" secondItem="ADV-S8-6lb" secondAttribute="bottom" id="c72-rJ-wQG"/>
+                            <constraint firstItem="jw5-1p-Jnm" firstAttribute="trailing" secondItem="e94-JX-2hi" secondAttribute="trailing" id="f95-gL-PBc"/>
                             <constraint firstItem="Rcl-Zt-QUs" firstAttribute="bottom" secondItem="e94-JX-2hi" secondAttribute="bottom" id="fv4-99-CRA"/>
                             <constraint firstItem="Rcl-Zt-QUs" firstAttribute="trailing" secondItem="vZ3-mH-CZg" secondAttribute="trailing" constant="16" id="hz5-5X-tTk"/>
                             <constraint firstItem="rLx-NN-4OB" firstAttribute="top" secondItem="bLn-2a-h2n" secondAttribute="bottom" id="nRR-wg-qMi"/>
@@ -373,6 +381,7 @@
                         <outlet property="bottomViewHeightConstraint" destination="Ns8-uI-COV" id="pl8-At-H7X"/>
                         <outlet property="cameraTabbarItem" destination="4RF-6O-Ox3" id="YIX-NZ-d2e"/>
                         <outlet property="cameraUnavailableLabel" destination="uVM-qo-5yQ" id="5fQ-Yw-00U"/>
+                        <outlet property="overlayView" destination="jw5-1p-Jnm" id="1D5-jM-LsN"/>
                         <outlet property="photoTabbarItem" destination="C2I-Ae-1Rb" id="v50-H1-rTj"/>
                         <outlet property="previewView" destination="e94-JX-2hi" id="e1I-p1-B0Z"/>
                         <outlet property="resumeButton" destination="6Qk-Hx-CxX" id="3C4-8E-KVj"/>
@@ -386,10 +395,10 @@
     </scenes>
     <resources>
         <image name="ic_add" width="50" height="50"/>
-        <image name="ic_camera" width="50" height="50"/>
+        <image name="ic_camera" width="33.333332061767578" height="33.333332061767578"/>
         <image name="ic_expand_down" width="50" height="50"/>
         <image name="ic_expand_up" width="50" height="50"/>
-        <image name="ic_library" width="50" height="50"/>
+        <image name="ic_library" width="33.333332061767578" height="33.333332061767578"/>
         <image name="ic_mediapipe" width="216" height="216"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

@@ -23,10 +23,10 @@ enum Model: String, CaseIterable {
         switch self {
         case .efficientnetLite0:
             return Bundle.main.path(
-                forResource: "efficientnet_lite0", ofType: "tflite")
+                forResource: "efficientdet_lite0", ofType: "tflite")
         case .efficientnetLite2:
             return Bundle.main.path(
-                forResource: "efficientnet_lite2", ofType: "tflite")
+                forResource: "efficientdet_lite2", ofType: "tflite")
         }
     }
 }

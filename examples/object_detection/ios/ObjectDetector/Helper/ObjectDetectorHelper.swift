@@ -26,7 +26,11 @@ class ObjectDetectorHelper {
     objectDetectorOptions.maxResults = maxResults
     objectDetectorOptions.scoreThreshold = scoreThreshold
     objectDetectorOptions.baseOptions.modelAssetPath = modelPath
-    objectDetector = try? ObjectDetector(options: objectDetectorOptions)
+    do {
+      objectDetector = try ObjectDetector(options: objectDetectorOptions)
+    } catch {
+      print(error)
+    }
   }
 
   func detect(image: UIImage) -> ObjectDetectorHelperResult? {
