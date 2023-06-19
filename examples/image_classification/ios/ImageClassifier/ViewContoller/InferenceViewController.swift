@@ -49,6 +49,7 @@ class InferenceViewController: UIViewController {
   @IBOutlet weak var choseModelButton: UIButton!
   @IBOutlet weak var tableView: UITableView!
 
+  @IBOutlet weak var infrenceTimeTitleLabel: UILabel!
   @IBOutlet weak var infrenceTimeLabel: UILabel!
   @IBOutlet weak var thresholdStepper: UIStepper!
   @IBOutlet weak var thresholdValueLabel: UILabel!
@@ -111,6 +112,8 @@ class InferenceViewController: UIViewController {
 
   @IBAction func expandButtonTouchUpInside(_ sender: UIButton) {
     sender.isSelected.toggle()
+    infrenceTimeLabel.isHidden = !sender.isSelected
+    infrenceTimeTitleLabel.isHidden = !sender.isSelected
     delegate?.viewController(self, needPerformActions: .changeBottomSheetViewBottomSpace(sender.isSelected))
   }
 
@@ -149,7 +152,7 @@ extension InferenceViewController: UITableViewDataSource {
     if indexPath.row < classification.categories.count {
       let category = classification.categories[indexPath.row]
       cell.fieldNameLabel.text = category.categoryName
-      cell.infoLabel.text = "\(category.score)"
+      cell.infoLabel.text = String(format: "%.2f", category.score)
     } else {
       cell.fieldNameLabel.text = "--"
       cell.infoLabel.text = "--"

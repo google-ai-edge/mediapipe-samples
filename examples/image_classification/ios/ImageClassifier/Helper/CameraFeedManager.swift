@@ -19,8 +19,8 @@ import AVFoundation
 protocol CameraFeedManagerDelegate: AnyObject {
 
   /**
-  This method delivers the pixel buffer of the current frame seen by the device's camera.
- */
+   This method delivers the pixel buffer of the current frame seen by the device's camera.
+   */
   func didOutput(pixelBuffer: CVPixelBuffer)
 
   /**
@@ -87,13 +87,34 @@ class CameraFeedManager: NSObject {
     self.previewView.previewLayer.connection?.videoOrientation = .portrait
     self.previewView.previewLayer.videoGravity = .resizeAspectFill
     self.attemptToConfigureSession()
+    NotificationCenter.default.addObserver(self, selector: #selector(orientationChanged), name: UIDevice.orientationDidChangeNotification, object: nil)
+  }
+
+  deinit {
+    NotificationCenter.default.removeObserver(self)
+  }
+
+  // MARK: notification methods
+  @objc func orientationChanged(notification: Notification) {
+    let orientation = UIDevice.current.orientation
+    switch orientation {
+    case .portrait:
+      previewView.previewLayer.connection?.videoOrientation = .portrait
+    case .landscapeLeft:
+      previewView.previewLayer.connection?.videoOrientation = .landscapeRight
+    case .landscapeRight:
+      previewView.previewLayer.connection?.videoOrientation = .landscapeLeft
+    default:
+      break
+    }
   }
 
   // MARK: Session Start and End methods
 
   /**
- This method starts an AVCaptureSession based on whether the camera configuration was successful.
- */
+   This method starts an AVCaptureSession based on whether the camera configuration was successful.
+   */
+
   func checkCameraConfigurationAndStartSession() {
     sessionQueue.async {
       switch self.cameraConfiguration {
@@ -141,8 +162,8 @@ class CameraFeedManager: NSObject {
   }
 
   /**
- This method starts the AVCaptureSession
- **/
+   This method starts the AVCaptureSession
+   **/
   private func startSession() {
     self.session.startRunning()
     self.isSessionRunning = self.session.isRunning
@@ -150,8 +171,8 @@ class CameraFeedManager: NSObject {
 
   // MARK: Session Configuration Methods.
   /**
- This method requests for camera permissions and handles the configuration of the session and stores the result of configuration.
- */
+   This method requests for camera permissions and handles the configuration of the session and stores the result of configuration.
+   */
   private func attemptToConfigureSession() {
     switch AVCaptureDevice.authorizationStatus(for: .video) {
     case .authorized:
@@ -217,8 +238,8 @@ class CameraFeedManager: NSObject {
   }
 
   /**
- This method tries to an AVCaptureDeviceInput to the current AVCaptureSession.
- */
+   This method tries to an AVCaptureDeviceInput to the current AVCaptureSession.
+   */
   private func addVideoDeviceInput() -> Bool {
 
     /**Tries to get the default back camera.
@@ -277,8 +298,8 @@ class CameraFeedManager: NSObject {
   @objc func sessionWasInterrupted(notification: Notification) {
 
     if let userInfoValue = notification.userInfo?[AVCaptureSessionInterruptionReasonKey] as AnyObject?,
-      let reasonIntegerValue = userInfoValue.integerValue,
-      let reason = AVCaptureSession.InterruptionReason(rawValue: reasonIntegerValue) {
+       let reasonIntegerValue = userInfoValue.integerValue,
+       let reason = AVCaptureSession.InterruptionReason(rawValue: reasonIntegerValue) {
       print("Capture session was interrupted with reason \(reason)")
 
       var canResumeManually = false
@@ -329,7 +350,7 @@ class CameraFeedManager: NSObject {
 extension CameraFeedManager: AVCaptureVideoDataOutputSampleBufferDelegate {
 
   /** This method delegates the CVPixelBuffer of the frame seen by the camera currently.
- */
+   */
   func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
 
     // Converts the CMSampleBuffer to a CVPixelBuffer.
