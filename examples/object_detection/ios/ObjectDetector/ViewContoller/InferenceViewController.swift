@@ -34,22 +34,14 @@ class InferenceViewController: UIViewController {
     case changeBottomSheetViewBottomSpace(Bool)
   }
 
-  // MARK: Constants
-  private let normalCellHeight: CGFloat = 27.0
-
   // MARK: Delegate
   var delegate: InferenceViewControllerDelegate?
 
-  // MARK: Computed properties
-  var collapsedHeight: CGFloat {
-    return normalCellHeight * CGFloat(maxResults)
-  }
-
   // MARK: Storyboards Connections
   @IBOutlet weak var choseModelButton: UIButton!
-  @IBOutlet weak var tableView: UITableView!
 
   @IBOutlet weak var infrenceTimeLabel: UILabel!
+  @IBOutlet weak var infrenceTimeTitleLabel: UILabel!
   @IBOutlet weak var thresholdStepper: UIStepper!
   @IBOutlet weak var thresholdValueLabel: UILabel!
 
@@ -90,9 +82,6 @@ class InferenceViewController: UIViewController {
     choseModelButton.menu = UIMenu(children: actions)
     choseModelButton.showsMenuAsPrimaryAction = true
     choseModelButton.changesSelectionAsPrimaryAction = true
-
-    // Setup table view cell height
-    tableView.rowHeight = normalCellHeight
   }
   
   private func updateModel(modelTitle: String) {
@@ -102,7 +91,6 @@ class InferenceViewController: UIViewController {
 
   // Public function
   func updateData() {
-    tableView.reloadData()
     if let inferenceTime = objectDetectorHelperResult?.inferenceTime {
       infrenceTimeLabel.text = String(format: "%.2fms", inferenceTime)
     }
@@ -111,6 +99,8 @@ class InferenceViewController: UIViewController {
 
   @IBAction func expandButtonTouchUpInside(_ sender: UIButton) {
     sender.isSelected.toggle()
+    infrenceTimeLabel.isHidden = !sender.isSelected
+    infrenceTimeTitleLabel.isHidden = !sender.isSelected
     delegate?.viewController(self, needPerformActions: .changeBottomSheetViewBottomSpace(sender.isSelected))
   }
 
@@ -125,41 +115,4 @@ class InferenceViewController: UIViewController {
     delegate?.viewController(self, needPerformActions: .changeMaxResults(maxResults))
     maxResultLabel.text = "\(maxResults)"
   }
-}
-
-// MARK: UITableViewDataSource
-extension InferenceViewController: UITableViewDataSource {
-  func numberOfSections(in tableView: UITableView) -> Int {
-    return 1
-  }
-
-  func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    return maxResults
-  }
-
-  func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-    let cell = tableView.dequeueReusableCell(withIdentifier: "INFO_CELL") as! InfoCell
-
-    guard let objectDetectorResult = objectDetectorHelperResult?.objectDetectorResult,
-          let detection = objectDetectorResult.detections.first else {
-      cell.fieldNameLabel.text = "--"
-      cell.infoLabel.text = "--"
-      return cell
-    }
-    if indexPath.row < detection.categories.count {
-      let category = detection.categories[indexPath.row]
-      cell.fieldNameLabel.text = category.categoryName
-      cell.infoLabel.text = "\(category.score)"
-    } else {
-      cell.fieldNameLabel.text = "--"
-      cell.infoLabel.text = "--"
-    }
-    return cell
-  }
-}
-
-// MARK: Info cell
-class InfoCell: UITableViewCell {
-  @IBOutlet weak var fieldNameLabel: UILabel!
-  @IBOutlet weak var infoLabel: UILabel!
 }

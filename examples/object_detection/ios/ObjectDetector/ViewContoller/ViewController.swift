@@ -54,7 +54,7 @@ class ViewController: UIViewController {
   private var maxResults = DefaultConstants.maxResults {
     didSet {
       guard let inferenceVC = inferenceViewController else { return }
-      bottomViewHeightConstraint.constant = inferenceVC.collapsedHeight + inferenceBottomHeight
+      bottomViewHeightConstraint.constant = inferenceBottomHeight
       view.layoutSubviews()
     }
   }
@@ -135,7 +135,7 @@ class ViewController: UIViewController {
       inferenceViewController?.modelChose = model
       inferenceViewController?.delegate = self
       guard let inferenceVC = inferenceViewController else { return }
-      bottomViewHeightConstraint.constant = inferenceVC.collapsedHeight + inferenceBottomHeight
+      bottomViewHeightConstraint.constant = inferenceBottomHeight
       bottomSheetViewBottomSpace.constant = -inferenceBottomHeight + expandButtonHeight
       view.layoutSubviews()
     }
