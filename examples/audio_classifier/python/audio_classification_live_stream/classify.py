@@ -15,9 +15,9 @@
 
 import argparse
 import time
-import audio_record
 
 from mediapipe.tasks import python
+from mediapipe.tasks.python.audio.core import audio_record
 from mediapipe.tasks.python.components import containers
 from mediapipe.tasks.python import audio
 from utils import Plotter
@@ -93,7 +93,6 @@ def run(model: str, max_results: int, score_threshold: float,
     audio_data.load_from_array(data)
     classifier.classify_async(audio_data, round(last_inference_time * 1000))
 
-    # print(classification_result_list)
     # # Plot the classification results.
     if classification_result_list:
       print(classification_result_list)
