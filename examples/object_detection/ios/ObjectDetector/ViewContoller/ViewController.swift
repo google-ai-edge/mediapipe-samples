@@ -33,7 +33,7 @@ class ViewController: UIViewController {
   @IBOutlet weak var bottomViewHeightConstraint: NSLayoutConstraint!
 
   // MARK: Constants
-  private let delayBetweenInferencesMs = 100.0
+  private let delayBetweenInferencesMs = 50.0
   private let inferenceBottomHeight = 220.0
   private let expandButtonHeight = 41.0
   private let edgeOffset: CGFloat = 2.0
@@ -75,6 +75,7 @@ class ViewController: UIViewController {
       )
     }
   }
+  private var isProcess = false
 
   // MARK: Controllers that manage functionality
   // Handles all the camera related functionality
@@ -319,12 +320,13 @@ extension ViewController: CameraFeedManagerDelegate {
     // Make sure the model will not run too often, making the results changing quickly and hard to
     // read.
     let currentTimeMs = Date().timeIntervalSince1970 * 1000
-    guard (currentTimeMs - previousInferenceTimeMs) >= delayBetweenInferencesMs else { return }
+    guard (currentTimeMs - previousInferenceTimeMs) >= delayBetweenInferencesMs && !isProcess else { return }
     previousInferenceTimeMs = currentTimeMs
 
     // Pass the pixel buffer to mediapipe
+    isProcess = true
     let result = objectDetectorHelper?.detect(videoFrame: pixelBuffer, timeStamps: Int(currentTimeMs))
-
+    isProcess = false
     // Display results by handing off to the InferenceViewController.
     inferenceViewController?.objectDetectorHelperResult = result
 
