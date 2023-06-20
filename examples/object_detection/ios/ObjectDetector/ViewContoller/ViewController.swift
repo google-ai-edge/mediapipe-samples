@@ -57,12 +57,7 @@ class ViewController: UIViewController {
   // MARK: Instance Variables
   private var videoDetectTimer: Timer?
   private var previousInferenceTimeMs = Date.distantPast.timeIntervalSince1970 * 1000
-  private var maxResults = DefaultConstants.maxResults {
-    didSet {
-      bottomViewHeightConstraint.constant = inferenceBottomHeight
-      view.layoutSubviews()
-    }
-  }
+  private var maxResults = DefaultConstants.maxResults
   private var scoreThreshold = DefaultConstants.scoreThreshold
   private var model = DefaultConstants.model
   private var runingModel: RunningMode = .video {
