@@ -163,7 +163,7 @@
                             </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="2Cd-sg-sA6"/>
-                        <color key="backgroundColor" white="1" alpha="0.82971938779999999" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="backgroundColor" white="1" alpha="0.79745960888843537" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="AOI-Gh-SLK" firstAttribute="leading" secondItem="Knd-PN-meG" secondAttribute="leading" id="7P2-zE-HaO"/>
                             <constraint firstItem="AOI-Gh-SLK" firstAttribute="top" secondItem="Knd-PN-meG" secondAttribute="top" id="N8h-sR-kbF"/>
@@ -262,6 +262,12 @@
                                 <rect key="frame" x="0.0" y="153" width="393" height="699"/>
                                 <color key="backgroundColor" white="1" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
+                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Click + to add an image or a video to begin running the object detection." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yOT-8U-tJY">
+                                <rect key="frame" x="16" y="483.33333333333331" width="361" height="38.333333333333314"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XD6-Cg-UNf">
                                 <rect key="frame" x="0.0" y="566" width="393" height="400"/>
                                 <subviews>
@@ -280,6 +286,13 @@
                                     <constraint firstAttribute="trailing" secondItem="9zO-1R-WuS" secondAttribute="trailing" id="Szo-T7-Zkg"/>
                                     <constraint firstAttribute="bottom" secondItem="9zO-1R-WuS" secondAttribute="bottom" id="YN7-Qv-h1S"/>
                                     <constraint firstItem="9zO-1R-WuS" firstAttribute="leading" secondItem="XD6-Cg-UNf" secondAttribute="leading" id="fPz-ZK-XRC"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ukb-iz-YVC">
+                                <rect key="frame" x="0.0" y="966" width="393" height="50"/>
+                                <color key="backgroundColor" white="1" alpha="0.79993090986394555" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="Gd0-1d-9D7"/>
                                 </constraints>
                             </view>
                             <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vZ3-mH-CZg">
@@ -301,14 +314,19 @@
                             <constraint firstItem="e94-JX-2hi" firstAttribute="top" secondItem="rLx-NN-4OB" secondAttribute="bottom" constant="1" id="93Z-7k-AdH"/>
                             <constraint firstItem="Rcl-Zt-QUs" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="vZ3-mH-CZg" secondAttribute="trailing" id="9bf-Si-Hec"/>
                             <constraint firstItem="Rcl-Zt-QUs" firstAttribute="bottom" secondItem="XD6-Cg-UNf" secondAttribute="bottom" constant="-148" id="9zK-rY-wQX"/>
+                            <constraint firstItem="yOT-8U-tJY" firstAttribute="leading" secondItem="Rcl-Zt-QUs" secondAttribute="leading" constant="16" id="EWx-YC-U31"/>
                             <constraint firstItem="e94-JX-2hi" firstAttribute="leading" secondItem="Rcl-Zt-QUs" secondAttribute="leading" id="F1w-hA-NbQ"/>
                             <constraint firstItem="bLn-2a-h2n" firstAttribute="top" secondItem="Rcl-Zt-QUs" secondAttribute="top" id="GBc-RG-sWK"/>
                             <constraint firstItem="XD6-Cg-UNf" firstAttribute="top" secondItem="vZ3-mH-CZg" secondAttribute="bottom" constant="16" id="HpB-vv-4zA"/>
                             <constraint firstItem="jw5-1p-Jnm" firstAttribute="leading" secondItem="e94-JX-2hi" secondAttribute="leading" id="Osk-02-a1s"/>
                             <constraint firstItem="Rcl-Zt-QUs" firstAttribute="trailing" secondItem="e94-JX-2hi" secondAttribute="trailing" id="Pay-5p-Ly3"/>
+                            <constraint firstItem="Rcl-Zt-QUs" firstAttribute="trailing" secondItem="yOT-8U-tJY" secondAttribute="trailing" constant="16" id="SBs-fV-dhB"/>
+                            <constraint firstAttribute="trailing" secondItem="Ukb-iz-YVC" secondAttribute="trailing" id="YJT-GA-c8b"/>
                             <constraint firstItem="rLx-NN-4OB" firstAttribute="trailing" secondItem="Rcl-Zt-QUs" secondAttribute="trailing" id="ZXV-ce-SFM"/>
+                            <constraint firstItem="yOT-8U-tJY" firstAttribute="centerY" secondItem="e94-JX-2hi" secondAttribute="centerY" id="bd7-zd-Fih"/>
                             <constraint firstItem="vZ3-mH-CZg" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Rcl-Zt-QUs" secondAttribute="leading" constant="10" id="bkm-D9-N8h"/>
                             <constraint firstItem="jw5-1p-Jnm" firstAttribute="top" secondItem="e94-JX-2hi" secondAttribute="top" id="boE-fZ-0xO"/>
+                            <constraint firstItem="Ukb-iz-YVC" firstAttribute="leading" secondItem="914-Wq-nbc" secondAttribute="leading" id="e83-34-AAE"/>
                             <constraint firstItem="jw5-1p-Jnm" firstAttribute="trailing" secondItem="e94-JX-2hi" secondAttribute="trailing" id="f95-gL-PBc"/>
                             <constraint firstAttribute="bottom" secondItem="e94-JX-2hi" secondAttribute="bottom" id="fv4-99-CRA"/>
                             <constraint firstItem="Rcl-Zt-QUs" firstAttribute="trailing" secondItem="vZ3-mH-CZg" secondAttribute="trailing" constant="16" id="hz5-5X-tTk"/>
@@ -317,6 +335,7 @@
                             <constraint firstItem="XD6-Cg-UNf" firstAttribute="leading" secondItem="914-Wq-nbc" secondAttribute="leading" id="vad-gU-cBV"/>
                             <constraint firstAttribute="trailing" secondItem="XD6-Cg-UNf" secondAttribute="trailing" id="xyD-ih-A8j"/>
                             <constraint firstItem="rLx-NN-4OB" firstAttribute="leading" secondItem="Rcl-Zt-QUs" secondAttribute="leading" id="yAH-zO-pyM"/>
+                            <constraint firstItem="Ukb-iz-YVC" firstAttribute="top" secondItem="XD6-Cg-UNf" secondAttribute="bottom" id="zxh-ar-HX0"/>
                         </constraints>
                     </view>
                     <connections>
@@ -325,6 +344,7 @@
                         <outlet property="bottomViewHeightConstraint" destination="Ns8-uI-COV" id="pl8-At-H7X"/>
                         <outlet property="cameraTabbarItem" destination="4RF-6O-Ox3" id="YIX-NZ-d2e"/>
                         <outlet property="cameraUnavailableLabel" destination="uVM-qo-5yQ" id="5fQ-Yw-00U"/>
+                        <outlet property="imageEmptyLabel" destination="yOT-8U-tJY" id="D8M-Jw-05f"/>
                         <outlet property="overlayView" destination="jw5-1p-Jnm" id="1D5-jM-LsN"/>
                         <outlet property="photoTabbarItem" destination="C2I-Ae-1Rb" id="v50-H1-rTj"/>
                         <outlet property="previewView" destination="e94-JX-2hi" id="e1I-p1-B0Z"/>

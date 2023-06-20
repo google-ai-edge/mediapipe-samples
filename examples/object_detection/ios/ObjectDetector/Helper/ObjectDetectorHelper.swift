@@ -33,6 +33,9 @@ class ObjectDetectorHelper {
     }
   }
 
+  /**
+   This method return ObjectDetectorResult and infrenceTime when receive an image
+   **/
   func detect(image: UIImage) -> ObjectDetectorHelperResult? {
     guard let mpImage = try? MPImage(uiImage: image) else { return nil }
     do {
@@ -46,6 +49,9 @@ class ObjectDetectorHelper {
     }
   }
 
+  /**
+   This method return ObjectDetectorResult and infrenceTime when receive videoFrame
+   **/
   func detect(videoFrame: CVPixelBuffer, timeStamps: Int) -> ObjectDetectorHelperResult? {
     guard let objectDetector = objectDetector,
           let image = try? MPImage(pixelBuffer: videoFrame) else { return nil }

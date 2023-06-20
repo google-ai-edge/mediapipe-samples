@@ -14,6 +14,8 @@
 
 import UIKit
 import MediaPipeTasksVision
+import UniformTypeIdentifiers
+import AVKit
 
 class ViewController: UIViewController {
 
@@ -22,6 +24,7 @@ class ViewController: UIViewController {
   @IBOutlet weak var overlayView: OverlayView!
   @IBOutlet weak var addImageButton: UIButton!
   @IBOutlet weak var cameraUnavailableLabel: UILabel!
+  @IBOutlet weak var imageEmptyLabel: UILabel!
   @IBOutlet weak var resumeButton: UIButton!
   @IBOutlet weak var runningModelTabbar: UITabBar!
   @IBOutlet weak var cameraTabbarItem: UITabBarItem!
@@ -48,12 +51,14 @@ class ViewController: UIViewController {
     UIColor.cyan,
     UIColor.brown
   ]
+  private let playerViewController = AVPlayerViewController()
+  private let videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: [String(kCVPixelBufferPixelFormatTypeKey): NSNumber(value: kCVPixelFormatType_32BGRA)])
 
   // MARK: Instance Variables
+  private var videoDetectTimer: Timer?
   private var previousInferenceTimeMs = Date.distantPast.timeIntervalSince1970 * 1000
   private var maxResults = DefaultConstants.maxResults {
     didSet {
-      guard let inferenceVC = inferenceViewController else { return }
       bottomViewHeightConstraint.constant = inferenceBottomHeight
       view.layoutSubviews()
     }
@@ -68,19 +73,6 @@ class ViewController: UIViewController {
         scoreThreshold: scoreThreshold,
         runningModel: runingModel
       )
-      if runingModel == .video {
-#if !targetEnvironment(simulator)
-        cameraCapture.checkCameraConfigurationAndStartSession()
-#endif
-        previewView.shouldUseClipboardImage = false
-        addImageButton.isHidden = true
-      } else {
-#if !targetEnvironment(simulator)
-        cameraCapture.stopSession()
-#endif
-        previewView.shouldUseClipboardImage = true
-        addImageButton.isHidden = false
-      }
     }
   }
 
@@ -134,7 +126,6 @@ class ViewController: UIViewController {
       inferenceViewController?.maxResults = maxResults
       inferenceViewController?.modelChose = model
       inferenceViewController?.delegate = self
-      guard let inferenceVC = inferenceViewController else { return }
       bottomViewHeightConstraint.constant = inferenceBottomHeight
       bottomSheetViewBottomSpace.constant = -inferenceBottomHeight + expandButtonHeight
       view.layoutSubviews()
@@ -156,15 +147,72 @@ class ViewController: UIViewController {
     }
   }
   // MARK: Private function
-  func openImagePickerController() {
-    if UIImagePickerController.isSourceTypeAvailable(.savedPhotosAlbum){
+  private func openImagePickerController() {
+    if UIImagePickerController.isSourceTypeAvailable(.savedPhotosAlbum) {
       let imagePicker = UIImagePickerController()
       imagePicker.delegate = self
       imagePicker.sourceType = .savedPhotosAlbum
+      imagePicker.mediaTypes = [UTType.image.identifier, UTType.movie.identifier]
       imagePicker.allowsEditing = false
-
-      present(imagePicker, animated: true, completion: nil)
+      DispatchQueue.main.async {
+        self.present(imagePicker, animated: true, completion: nil)
+      }
     }
+  }
+
+  private func removePlayerViewController() {
+    playerViewController.view.removeFromSuperview()
+    playerViewController.removeFromParent()
+  }
+
+  private func processVideo(url: URL) {
+    let player = AVPlayer(url: url)
+    playerViewController.player = player
+    playerViewController.showsPlaybackControls = false
+    playerViewController.view.frame = previewView.bounds
+    previewView.addSubview(playerViewController.view)
+    addChild(playerViewController)
+    player.play()
+    player.currentItem?.add(videoOutput)
+    NotificationCenter.default.removeObserver(self)
+    NotificationCenter.default
+      .addObserver(self,
+                   selector: #selector(playerDidFinishPlaying),
+                   name: .AVPlayerItemDidPlayToEndTime,
+                   object: player.currentItem
+      )
+
+    videoDetectTimer?.invalidate()
+    videoDetectTimer = Timer.scheduledTimer(
+      timeInterval: delayBetweenInferencesMs / 1000,
+      target: self,
+      selector: #selector(detectionVideoFrame),
+      userInfo: nil,
+      repeats: true)
+  }
+
+  @objc func detectionVideoFrame() {
+    guard let player = playerViewController.player else { return }
+    let currentTime: CMTime = player.currentTime()
+    guard let buffer = self.pixelBufferFromCurrentPlayer(currentTime: currentTime) else { return }
+    let currentTimeMs = Date().timeIntervalSince1970 * 1000
+    let result = self.objectDetectorHelper?.detect(videoFrame: buffer, timeStamps: Int(currentTimeMs))
+    // Display results by handing off to the InferenceViewController.
+    inferenceViewController?.objectDetectorHelperResult = result
+    DispatchQueue.main.async {
+      self.inferenceViewController?.updateData()
+      self.drawAfterPerformingCalculations(onDetections: result?.objectDetectorResult?.detections ?? [], withImageSize: CVImageBufferGetDisplaySize(buffer))
+    }
+  }
+
+  @objc func playerDidFinishPlaying(note: NSNotification) {
+    videoDetectTimer?.invalidate()
+    videoDetectTimer = nil
+  }
+
+  private func pixelBufferFromCurrentPlayer(currentTime: CMTime) -> CVPixelBuffer? {
+    guard let buffer: CVPixelBuffer = videoOutput.copyPixelBuffer(forItemTime: currentTime, itemTimeForDisplay: nil) else { return nil }
+    return buffer
   }
 
   // MARK: Handle ovelay function
@@ -238,14 +286,28 @@ class ViewController: UIViewController {
 extension ViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
   func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
     picker.dismiss(animated: true)
-    guard let image = info[.originalImage] as? UIImage else { return }
-    previewView.image = image
-    // Pass the uiimage to mediapipe
-    let result = objectDetectorHelper?.detect(image: image)
-    // Display results by handing off to the InferenceViewController.
-    inferenceViewController?.objectDetectorHelperResult = result
-    DispatchQueue.main.async {
-      self.inferenceViewController?.updateData()
+    if info[.mediaType] as? String == UTType.movie.identifier {
+      guard let mediaURL = info[.mediaURL] as? URL else { return }
+      if runingModel == .image {
+        runingModel = .video
+      }
+      processVideo(url: mediaURL)
+    } else {
+      guard let image = info[.originalImage] as? UIImage else { return }
+      if runingModel == .video {
+        runingModel = .image
+      }
+      removePlayerViewController()
+      previewView.image = image
+      imageEmptyLabel.isHidden = true
+      // Pass the uiimage to mediapipe
+      let result = objectDetectorHelper?.detect(image: image)
+      // Display results by handing off to the InferenceViewController.
+      inferenceViewController?.objectDetectorHelperResult = result
+      DispatchQueue.main.async {
+        self.inferenceViewController?.updateData()
+        self.drawAfterPerformingCalculations(onDetections: result?.objectDetectorResult?.detections ?? [], withImageSize: image.size)
+      }
     }
   }
 }
@@ -265,9 +327,12 @@ extension ViewController: CameraFeedManagerDelegate {
 
     // Display results by handing off to the InferenceViewController.
     inferenceViewController?.objectDetectorHelperResult = result
+
     DispatchQueue.main.async {
       self.inferenceViewController?.updateData()
-      self.drawAfterPerformingCalculations(onDetections: result?.objectDetectorResult?.detections ?? [], withImageSize: CVImageBufferGetDisplaySize(pixelBuffer))
+      if self.runningModelTabbar.selectedItem == self.cameraTabbarItem {
+        self.drawAfterPerformingCalculations(onDetections: result?.objectDetectorResult?.detections ?? [], withImageSize: CVImageBufferGetDisplaySize(pixelBuffer))
+      }
     }
   }
 
@@ -379,12 +444,26 @@ extension ViewController: UITabBarDelegate {
       if runingModel == .image {
         runingModel = .video
       }
+      removePlayerViewController()
+    #if !targetEnvironment(simulator)
+      cameraCapture.checkCameraConfigurationAndStartSession()
+    #endif
+      previewView.shouldUseClipboardImage = false
+      addImageButton.isHidden = true
+      imageEmptyLabel.isHidden = true
     case photoTabbarItem:
-      if runingModel == .video {
-        runingModel = .image
+#if !targetEnvironment(simulator)
+      cameraCapture.stopSession()
+#endif
+      previewView.shouldUseClipboardImage = true
+      addImageButton.isHidden = false
+      if previewView.image == nil || playerViewController.parent != self {
+        imageEmptyLabel.isHidden = false
       }
     default:
       break
     }
+    overlayView.objectOverlays = []
+    overlayView.setNeedsDisplay()
   }
 }

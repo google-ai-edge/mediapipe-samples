@@ -71,7 +71,8 @@ class CameraFeedManager: NSObject {
   private let sessionQueue = DispatchQueue(label: "sessionQueue")
   private var cameraConfiguration: CameraConfiguration = .failed
   private lazy var videoDataOutput = AVCaptureVideoDataOutput()
-  private var isSessionRunning = false
+
+  var isSessionRunning = false
 
   // MARK: CameraFeedManagerDelegate
   weak var delegate: CameraFeedManagerDelegate?
@@ -87,26 +88,6 @@ class CameraFeedManager: NSObject {
     self.previewView.previewLayer.connection?.videoOrientation = .portrait
     self.previewView.previewLayer.videoGravity = .resizeAspectFill
     self.attemptToConfigureSession()
-    NotificationCenter.default.addObserver(self, selector: #selector(orientationChanged), name: UIDevice.orientationDidChangeNotification, object: nil)
-  }
-
-  deinit {
-    NotificationCenter.default.removeObserver(self)
-  }
-
-  // MARK: Notification methods
-  @objc func orientationChanged(notification: Notification) {
-    let orientation = UIDevice.current.orientation
-    switch orientation {
-    case .portrait:
-      previewView.previewLayer.connection?.videoOrientation = .portrait
-    case .landscapeLeft:
-      previewView.previewLayer.connection?.videoOrientation = .landscapeRight
-    case .landscapeRight:
-      previewView.previewLayer.connection?.videoOrientation = .landscapeLeft
-    default:
-      break
-    }
   }
 
   // MARK: Session Start and End methods
