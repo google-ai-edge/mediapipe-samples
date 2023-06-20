@@ -232,7 +232,19 @@ class ViewController: UIViewController {
       guard let category = detection.categories.first else { continue }
 
       // Translates bounding box rect to current view.
-      var convertedRect = detection.boundingBox.applying(CGAffineTransform(scaleX: self.overlayView.bounds.size.width / imageSize.width, y: self.overlayView.bounds.size.height / imageSize.height))
+      var viewWidth = overlayView.bounds.size.width
+      var viewHeight = overlayView.bounds.size.height
+      var originX: CGFloat = 0
+      var originY: CGFloat = 0
+      if viewWidth / viewHeight > imageSize.width / imageSize.height {
+        viewHeight = imageSize.height / imageSize.width  * viewWidth
+        originY = (overlayView.bounds.size.height - viewHeight) / 2
+      } else {
+        viewWidth = imageSize.width / imageSize.height * viewHeight
+        originX = (overlayView.bounds.size.width - viewWidth) / 2
+      }
+
+      var convertedRect = detection.boundingBox.applying(CGAffineTransform(scaleX: viewWidth / imageSize.width, y: viewHeight / imageSize.height)).applying(CGAffineTransform(translationX: originX, y: originY))
 
       if convertedRect.origin.x < 0 {
         convertedRect.origin.x = self.edgeOffset
