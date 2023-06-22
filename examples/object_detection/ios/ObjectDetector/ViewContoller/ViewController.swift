@@ -52,7 +52,7 @@ class ViewController: UIViewController {
     UIColor.brown
   ]
   private let playerViewController = AVPlayerViewController()
-  private let videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: [String(kCVPixelBufferPixelFormatTypeKey): NSNumber(value: kCVPixelFormatType_32BGRA)])
+  private var generator:AVAssetImageGenerator?
 
   // MARK: Instance Variables
   private var videoDetectTimer: Timer?
@@ -163,13 +163,17 @@ class ViewController: UIViewController {
 
   private func processVideo(url: URL) {
     let player = AVPlayer(url: url)
+    let asset:AVAsset = AVAsset(url: url)
+    generator = AVAssetImageGenerator(asset:asset)
+    generator?.requestedTimeToleranceBefore = CMTimeMake(value: 1, timescale: 25)
+    generator?.requestedTimeToleranceAfter = CMTimeMake(value: 1, timescale: 25)
+    generator?.appliesPreferredTrackTransform = true
     playerViewController.player = player
     playerViewController.showsPlaybackControls = false
     playerViewController.view.frame = previewView.bounds
     previewView.addSubview(playerViewController.view)
     addChild(playerViewController)
     player.play()
-    player.currentItem?.add(videoOutput)
     NotificationCenter.default.removeObserver(self)
     NotificationCenter.default
       .addObserver(self,
@@ -190,14 +194,14 @@ class ViewController: UIViewController {
   @objc func detectionVideoFrame() {
     guard let player = playerViewController.player else { return }
     let currentTime: CMTime = player.currentTime()
-    guard let buffer = self.pixelBufferFromCurrentPlayer(currentTime: currentTime) else { return }
+    guard let image = self.imageFromCurrentPlayer(fromTime: currentTime) else { return }
     let currentTimeMs = Date().timeIntervalSince1970 * 1000
-    let result = self.objectDetectorHelper?.detect(videoFrame: buffer, timeStamps: Int(currentTimeMs))
+    let result = self.objectDetectorHelper?.detect(videoFrame: image, timeStamps: Int(currentTimeMs))
     // Display results by handing off to the InferenceViewController.
     inferenceViewController?.objectDetectorHelperResult = result
     DispatchQueue.main.async {
       self.inferenceViewController?.updateData()
-      self.drawAfterPerformingCalculations(onDetections: result?.objectDetectorResult?.detections ?? [], withImageSize: CVImageBufferGetDisplaySize(buffer))
+      self.drawAfterPerformingCalculations(onDetections: result?.objectDetectorResult?.detections ?? [], withImageSize: image.size)
     }
   }
 
@@ -206,9 +210,16 @@ class ViewController: UIViewController {
     videoDetectTimer = nil
   }
 
-  private func pixelBufferFromCurrentPlayer(currentTime: CMTime) -> CVPixelBuffer? {
-    guard let buffer: CVPixelBuffer = videoOutput.copyPixelBuffer(forItemTime: currentTime, itemTimeForDisplay: nil) else { return nil }
-    return buffer
+  private func imageFromCurrentPlayer(fromTime: CMTime) -> UIImage? {
+    let image:CGImage?
+    do {
+      try image = generator?.copyCGImage(at:fromTime, actualTime:nil)
+    } catch {
+      print(error)
+       return nil
+    }
+    guard let image = image else { return nil }
+    return UIImage(cgImage:image)
   }
 
   // MARK: Handle ovelay function
@@ -236,22 +247,27 @@ class ViewController: UIViewController {
       var viewHeight = overlayView.bounds.size.height
       var originX: CGFloat = 0
       var originY: CGFloat = 0
+
       if viewWidth / viewHeight > imageSize.width / imageSize.height {
-        viewHeight = imageSize.height / imageSize.width  * viewWidth
+        viewHeight = imageSize.height / imageSize.width  * overlayView.bounds.size.width
         originY = (overlayView.bounds.size.height - viewHeight) / 2
       } else {
-        viewWidth = imageSize.width / imageSize.height * viewHeight
+        viewWidth = imageSize.width / imageSize.height * overlayView.bounds.size.height
         originX = (overlayView.bounds.size.width - viewWidth) / 2
       }
 
-      var convertedRect = detection.boundingBox.applying(CGAffineTransform(scaleX: viewWidth / imageSize.width, y: viewHeight / imageSize.height)).applying(CGAffineTransform(translationX: originX, y: originY))
+      var convertedRect = detection.boundingBox
+        .applying(CGAffineTransform(scaleX: viewWidth / imageSize.width, y: viewHeight / imageSize.height))
+        .applying(CGAffineTransform(translationX: originX, y: originY))
 
-      if convertedRect.origin.x < 0 {
-        convertedRect.origin.x = self.edgeOffset
+      if convertedRect.origin.x < 0 && convertedRect.origin.x + convertedRect.size.width > edgeOffset {
+        convertedRect.size.width += (convertedRect.origin.x - edgeOffset)
+        convertedRect.origin.x = edgeOffset
       }
 
-      if convertedRect.origin.y < 0 {
-        convertedRect.origin.y = self.edgeOffset
+      if convertedRect.origin.y < 0 && convertedRect.origin.y + convertedRect.size.height > edgeOffset {
+        convertedRect.size.height += (convertedRect.origin.y - edgeOffset)
+        convertedRect.origin.y = edgeOffset
       }
 
       if convertedRect.maxY > self.overlayView.bounds.maxY {
@@ -296,18 +312,19 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
     picker.dismiss(animated: true)
     if info[.mediaType] as? String == UTType.movie.identifier {
       guard let mediaURL = info[.mediaURL] as? URL else { return }
+      imageEmptyLabel.isHidden = true
       if runingModel == .image {
         runingModel = .video
       }
       processVideo(url: mediaURL)
     } else {
       guard let image = info[.originalImage] as? UIImage else { return }
+      imageEmptyLabel.isHidden = true
       if runingModel == .video {
         runingModel = .image
       }
       removePlayerViewController()
       previewView.image = image
-      imageEmptyLabel.isHidden = true
       // Pass the uiimage to mediapipe
       let result = objectDetectorHelper?.detect(image: image)
       // Display results by handing off to the InferenceViewController.

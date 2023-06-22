@@ -65,4 +65,18 @@ class ObjectDetectorHelper {
       return nil
     }
   }
+
+  func detect(videoFrame: UIImage, timeStamps: Int) -> ObjectDetectorHelperResult? {
+    guard let objectDetector = objectDetector,
+          let image = try? MPImage(uiImage: videoFrame) else { return nil }
+    do {
+      let startDate = Date()
+      let result = try objectDetector.detect(videoFrame: image, timestampInMilliseconds: timeStamps)
+      let inferenceTime = Date().timeIntervalSince(startDate) * 1000
+      return ObjectDetectorHelperResult(inferenceTime: inferenceTime, objectDetectorResult: result)
+    } catch {
+      print(error)
+      return nil
+    }
+  }
 }
