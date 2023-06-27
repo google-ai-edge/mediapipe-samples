@@ -80,8 +80,10 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         // Start the PoseLandmarkerHelper again when users come back
         // to the foreground.
         backgroundExecutor.execute {
-            if (poseLandmarkerHelper.isClose()) {
-                poseLandmarkerHelper.setupPoseLandmarker()
+            if(this::poseLandmarkerHelper.isInitialized) {
+                if (poseLandmarkerHelper.isClose()) {
+                    poseLandmarkerHelper.setupPoseLandmarker()
+                }
             }
         }
     }
@@ -264,32 +266,34 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     // Update the values displayed in the bottom sheet. Reset Poselandmarker
     // helper.
     private fun updateControlsUi() {
-        fragmentCameraBinding.bottomSheetLayout.detectionThresholdValue.text =
-            String.format(
-                Locale.US,
-                "%.2f",
-                poseLandmarkerHelper.minPoseDetectionConfidence
-            )
-        fragmentCameraBinding.bottomSheetLayout.trackingThresholdValue.text =
-            String.format(
-                Locale.US,
-                "%.2f",
-                poseLandmarkerHelper.minPoseTrackingConfidence
-            )
-        fragmentCameraBinding.bottomSheetLayout.presenceThresholdValue.text =
-            String.format(
-                Locale.US,
-                "%.2f",
-                poseLandmarkerHelper.minPosePresenceConfidence
-            )
+        if(this::poseLandmarkerHelper.isInitialized) {
+            fragmentCameraBinding.bottomSheetLayout.detectionThresholdValue.text =
+                String.format(
+                    Locale.US,
+                    "%.2f",
+                    poseLandmarkerHelper.minPoseDetectionConfidence
+                )
+            fragmentCameraBinding.bottomSheetLayout.trackingThresholdValue.text =
+                String.format(
+                    Locale.US,
+                    "%.2f",
+                    poseLandmarkerHelper.minPoseTrackingConfidence
+                )
+            fragmentCameraBinding.bottomSheetLayout.presenceThresholdValue.text =
+                String.format(
+                    Locale.US,
+                    "%.2f",
+                    poseLandmarkerHelper.minPosePresenceConfidence
+                )
 
-        // Needs to be cleared instead of reinitialized because the GPU
-        // delegate needs to be initialized on the thread using it when applicable
-        backgroundExecutor.execute {
-            poseLandmarkerHelper.clearPoseLandmarker()
-            poseLandmarkerHelper.setupPoseLandmarker()
+            // Needs to be cleared instead of reinitialized because the GPU
+            // delegate needs to be initialized on the thread using it when applicable
+            backgroundExecutor.execute {
+                poseLandmarkerHelper.clearPoseLandmarker()
+                poseLandmarkerHelper.setupPoseLandmarker()
+            }
+            fragmentCameraBinding.overlay.clear()
         }
-        fragmentCameraBinding.overlay.clear()
     }
 
     // Initialize CameraX, and prepare to bind the camera use cases
@@ -355,10 +359,12 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     }
 
     private fun detectPose(imageProxy: ImageProxy) {
-        poseLandmarkerHelper.detectLiveStream(
-            imageProxy = imageProxy,
-            isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
-        )
+        if(this::poseLandmarkerHelper.isInitialized) {
+            poseLandmarkerHelper.detectLiveStream(
+                imageProxy = imageProxy,
+                isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
+            )
+        }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
