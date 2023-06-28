@@ -204,8 +204,12 @@ class CameraFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
                     p2: Int,
                     p3: Long
                 ) {
-                    objectDetectorHelper.currentDelegate = p2
-                    updateControlsUi()
+                    try {
+                        objectDetectorHelper.currentDelegate = p2
+                        updateControlsUi()
+                    } catch(e: UninitializedPropertyAccessException) {
+                        Log.e(TAG, "ObjectDetectorHelper has not been initialized yet.")
+                    }
                 }
 
                 override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -226,8 +230,12 @@ class CameraFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
                     p2: Int,
                     p3: Long
                 ) {
-                    objectDetectorHelper.currentModel = p2
-                    updateControlsUi()
+                    try {
+                        objectDetectorHelper.currentDelegate = p2
+                        updateControlsUi()
+                    } catch(e: UninitializedPropertyAccessException) {
+                        Log.e(TAG, "ObjectDetectorHelper has not been initialized yet.")
+                    }
                 }
 
                 override fun onNothingSelected(p0: AdapterView<*>?) {
