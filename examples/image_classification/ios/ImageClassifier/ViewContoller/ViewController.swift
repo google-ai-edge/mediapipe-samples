@@ -48,15 +48,22 @@ class ViewController: UIViewController {
       view.layoutSubviews()
     }
   }
+  private var liveStreamDelegate: ImageClassifierLiveStreamDelegate?
   private var scoreThreshold = DefaultConstants.scoreThreshold
   private var model = DefaultConstants.model
-  private var runingModel: RunningMode = .video {
+  private var runingModel: RunningMode = .liveStream {
     didSet {
+      if runingModel != .liveStream {
+        liveStreamDelegate = nil
+      } else {
+        liveStreamDelegate = self
+      }
       imageClassifierHelper = ImageClassifierHelper(
         model: model,
         maxResults: maxResults,
         scoreThreshold: scoreThreshold,
-        runningModel: runingModel
+        runningModel: runingModel,
+        delegate: liveStreamDelegate
       )
     }
   }
@@ -76,7 +83,8 @@ class ViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     // Create image classifier helper
-    imageClassifierHelper = ImageClassifierHelper(model: model, maxResults: maxResults, scoreThreshold: scoreThreshold, runningModel: runingModel)
+    liveStreamDelegate = self
+    imageClassifierHelper = ImageClassifierHelper(model: model, maxResults: maxResults, scoreThreshold: scoreThreshold, runningModel: runingModel, delegate: liveStreamDelegate)
 
     runningModelTabbar.selectedItem = cameraTabbarItem
     runningModelTabbar.delegate = self
@@ -85,7 +93,7 @@ class ViewController: UIViewController {
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
 #if !targetEnvironment(simulator)
-    if runingModel == .video {
+    if runingModel == .liveStream {
       cameraCapture.checkCameraConfigurationAndStartSession()
     }
 #endif
@@ -205,13 +213,14 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
     picker.dismiss(animated: true)
     if info[.mediaType] as? String == UTType.movie.identifier {
       guard let mediaURL = info[.mediaURL] as? URL else { return }
-      if runingModel == .image {
+      imageEmptyLabel.isHidden = true
+      if runingModel != .video {
         runingModel = .video
       }
       processVideo(url: mediaURL)
     } else {
       guard let image = info[.originalImage] as? UIImage else { return }
-      if runingModel == .video {
+      if runingModel != .image {
         runingModel = .image
       }
       removePlayerViewController()
@@ -239,13 +248,7 @@ extension ViewController: CameraFeedManagerDelegate {
     previousInferenceTimeMs = currentTimeMs
 
     // Pass the pixel buffer to mediapipe
-    let result = imageClassifierHelper?.classify(videoFrame: pixelBuffer, timeStamps: Int(currentTimeMs))
-
-    // Display results by handing off to the InferenceViewController.
-    inferenceViewController?.imageClassifierHelperResult = result
-    DispatchQueue.main.async {
-      self.inferenceViewController?.updateData()
-    }
+    imageClassifierHelper?.classifyAsyn(videoFrame: pixelBuffer, timeStamps: Int(currentTimeMs))
   }
 
   // MARK: Session Handling Alerts
@@ -308,6 +311,23 @@ extension ViewController: CameraFeedManagerDelegate {
   }
 }
 
+// MARK: ImageClassifierLiveStreamDelegate
+extension ViewController: ImageClassifierLiveStreamDelegate {
+  func imageClassifier(_ imageClassifier: ImageClassifier, didFinishClassification result: ImageClassifierResult?, timestampInMilliseconds: Int, error: Error?) {
+    guard let result = result else {
+      print(error ?? "")
+      return
+    }
+    let imageClassifierHelperResult = ImageClassifierHelperResult(
+      inferenceTime: Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds),
+      imageClassifierResult: result)
+    DispatchQueue.main.async {
+      self.inferenceViewController?.imageClassifierHelperResult = imageClassifierHelperResult
+      self.inferenceViewController?.updateData()
+    }
+  }
+}
+
 // MARK: InferenceViewControllerDelegate Methods
 extension ViewController: InferenceViewControllerDelegate {
   func viewController(
@@ -342,7 +362,8 @@ extension ViewController: InferenceViewControllerDelegate {
         model: self.model,
         maxResults: self.maxResults,
         scoreThreshold: self.scoreThreshold,
-        runningModel: self.runingModel
+        runningModel: self.runingModel,
+        delegate: liveStreamDelegate
       )
     }
   }
@@ -353,8 +374,8 @@ extension ViewController: UITabBarDelegate {
   func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
     switch item {
     case cameraTabbarItem:
-      if runingModel == .image {
-        runingModel = .video
+      if runingModel != .liveStream {
+        runingModel = .liveStream
       }
       removePlayerViewController()
     #if !targetEnvironment(simulator)

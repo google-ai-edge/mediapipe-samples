@@ -19,12 +19,14 @@ class ImageClassifierHelper {
 
   var imageClassifier: ImageClassifier?
 
-  init(model: Model, maxResults: Int, scoreThreshold: Float, runningModel: RunningMode) {
+  // Create ImageClassifierHelper with params
+  init(model: Model, maxResults: Int, scoreThreshold: Float, runningModel: RunningMode, delegate: ImageClassifierLiveStreamDelegate?) {
     guard let modelPath = model.modelPath else { return }
     let imageClassifierOptions = ImageClassifierOptions()
     imageClassifierOptions.runningMode = runningModel
     imageClassifierOptions.maxResults = maxResults
     imageClassifierOptions.scoreThreshold = scoreThreshold
+    imageClassifierOptions.imageClassifierLiveStreamDelegate = delegate
     imageClassifierOptions.baseOptions.modelAssetPath = modelPath
     imageClassifier = try? ImageClassifier(options: imageClassifierOptions)
   }
@@ -53,6 +55,16 @@ class ImageClassifierHelper {
     } catch {
       print(error)
       return nil
+    }
+  }
+
+  func classifyAsyn(videoFrame: CVPixelBuffer, timeStamps: Int) {
+    guard let imageClassifier = imageClassifier,
+          let image = try? MPImage(pixelBuffer: videoFrame) else { return }
+    do {
+      try imageClassifier.classifyAsync(image: image, timestampInMilliseconds: timeStamps)
+    } catch {
+      print(error)
     }
   }
 }
