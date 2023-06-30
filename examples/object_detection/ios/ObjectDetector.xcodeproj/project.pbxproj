@@ -348,7 +348,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Download efficientnet_lite0.tflite from the internet if it's not exist.\nTFLITE_FILE=${SRCROOT}/ObjectDetector/efficientdet_lite0.tflite\nif test -f \"$TFLITE_FILE\"; then\n    echo \"INFO: efficientnet_lite0.tflite existed. Skip downloading and use the local model.\"\nelse\n    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float32/1/efficientdet_lite0.tflite\n    echo \"INFO: Downloaded efficientnet_lite0.tflite to $TFLITE_FILE .\"\nfi\n";
+			shellScript = "# Download efficientnet_lite0.tflite from the internet if it's not exist.\nTFLITE_FILE=${SRCROOT}/ObjectDetector/efficientdet_lite0.tflite\nif test -f \"$TFLITE_FILE\"; then\n    echo \"INFO: efficientdet_lite0.tflite existed. Skip downloading and use the local model.\"\nelse\n    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float32/1/efficientdet_lite0.tflite\n    echo \"INFO: Downloaded efficientdet_lite0.tflite to $TFLITE_FILE .\"\nfi\n";
 		};
 		BFCF181C2A405DEB00D64FA6 /* Download efficientnet_lite2 */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -366,7 +366,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Download efficientnet_lite2.tflite from the internet if it's not exist.\nTFLITE_FILE=${SRCROOT}/ObjectDetector/efficientdet_lite2.tflite\nif test -f \"$TFLITE_FILE\"; then\n    echo \"INFO: efficientnet_lite2.tflite existed. Skip downloading and use the local model.\"\nelse\n    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite2/float32/1/efficientdet_lite2.tflite\n    echo \"INFO: Downloaded efficientnet_lite0.tflite to $TFLITE_FILE .\"\nfi\n";
+			shellScript = "# Download efficientnet_lite2.tflite from the internet if it's not exist.\nTFLITE_FILE=${SRCROOT}/ObjectDetector/efficientdet_lite2.tflite\nif test -f \"$TFLITE_FILE\"; then\n    echo \"INFO: efficientdet_lite0.tflite existed. Skip downloading and use the local model.\"\nelse\n    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite2/float32/1/efficientdet_lite2.tflite\n    echo \"INFO: Downloaded efficientdet_lite0.tflite to $TFLITE_FILE .\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -555,7 +555,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -587,7 +587,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

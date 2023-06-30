@@ -17,8 +17,8 @@ import XCTest
 import MediaPipeTasksVision
 
 final class ObjectDetectorTests: XCTestCase {
-  static let efficientnetLite0 = Model.efficientnetLite0
-  static let efficientnetLite2 = Model.efficientnetLite2
+  static let efficientdetLite0 = Model.efficientdetLite0
+  static let efficientdetLite2 = Model.efficientdetLite2
 
   static let testImage = UIImage(named: "coupleanddog.jpeg")!
 

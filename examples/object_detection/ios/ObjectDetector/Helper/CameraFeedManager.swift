@@ -71,8 +71,9 @@ class CameraFeedManager: NSObject {
   private let sessionQueue = DispatchQueue(label: "sessionQueue")
   private var cameraConfiguration: CameraConfiguration = .failed
   private lazy var videoDataOutput = AVCaptureVideoDataOutput()
-
   var isSessionRunning = false
+  private var orientation = UIDevice.current.orientation
+  private var coreImageContext: CIContext
 
   // MARK: CameraFeedManagerDelegate
   weak var delegate: CameraFeedManagerDelegate?
@@ -80,6 +81,11 @@ class CameraFeedManager: NSObject {
   // MARK: Initializer
   init(previewView: PreviewView) {
     self.previewView = previewView
+    if let metalDevice = MTLCreateSystemDefaultDevice() {
+      coreImageContext = CIContext(mtlDevice: metalDevice)
+    } else {
+      coreImageContext = CIContext(options: nil)
+    }
     super.init()
 
     // Initializes the session
@@ -88,6 +94,26 @@ class CameraFeedManager: NSObject {
     self.previewView.previewLayer.connection?.videoOrientation = .portrait
     self.previewView.previewLayer.videoGravity = .resizeAspectFill
     self.attemptToConfigureSession()
+    NotificationCenter.default.addObserver(self, selector: #selector(orientationChanged), name: UIDevice.orientationDidChangeNotification, object: nil)
+  }
+
+  deinit {
+    NotificationCenter.default.removeObserver(self)
+  }
+
+  // MARK: notification methods
+  @objc func orientationChanged(notification: Notification) {
+    orientation = UIDevice.current.orientation
+    switch orientation {
+    case .portrait:
+      previewView.previewLayer.connection?.videoOrientation = .portrait
+    case .landscapeLeft:
+      previewView.previewLayer.connection?.videoOrientation = .landscapeRight
+    case .landscapeRight:
+      previewView.previewLayer.connection?.videoOrientation = .landscapeLeft
+    default:
+      break
+    }
   }
 
   // MARK: Session Start and End methods
@@ -262,6 +288,29 @@ class CameraFeedManager: NSObject {
     return false
   }
 
+  /**
+   This method Rotate CVPixelBuffer
+   */
+  private func rotate(_ pixelBuffer: CVPixelBuffer?, oriented: CGImagePropertyOrientation) -> CVPixelBuffer? {
+    guard let pixelBuffer = pixelBuffer else {
+      return nil
+    }
+    var newPixelBuffer: CVPixelBuffer?
+    let error = CVPixelBufferCreate(kCFAllocatorDefault,
+                                    CVPixelBufferGetHeight(pixelBuffer),
+                                    CVPixelBufferGetWidth(pixelBuffer),
+                                    kCVPixelFormatType_32BGRA,
+                                    nil,
+                                    &newPixelBuffer)
+    guard error == kCVReturnSuccess,
+          let buffer = newPixelBuffer else {
+      return nil
+    }
+    let ciImage = CIImage(cvPixelBuffer: pixelBuffer).oriented(oriented)
+    coreImageContext.render(ciImage, to: buffer)
+    return buffer
+  }
+
   // MARK: Notification Observer Handling
   private func addObservers() {
     NotificationCenter.default.addObserver(self, selector: #selector(CameraFeedManager.sessionRuntimeErrorOccured(notification:)), name: NSNotification.Name.AVCaptureSessionRuntimeError, object: session)
@@ -335,8 +384,15 @@ extension CameraFeedManager: AVCaptureVideoDataOutputSampleBufferDelegate {
   func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
 
     // Converts the CMSampleBuffer to a CVPixelBuffer.
-    let pixelBuffer: CVPixelBuffer? = CMSampleBufferGetImageBuffer(sampleBuffer)
-
+    var pixelBuffer: CVPixelBuffer? = CMSampleBufferGetImageBuffer(sampleBuffer)
+    switch orientation {
+    case .landscapeLeft:
+      pixelBuffer = rotate(pixelBuffer, oriented: .left)
+    case .landscapeRight:
+      pixelBuffer = rotate(pixelBuffer, oriented: .right)
+    default:
+      break
+    }
     guard let imagePixelBuffer = pixelBuffer else {
       return
     }

@@ -16,15 +16,15 @@ import Foundation
 import MediaPipeTasksVision
 
 enum Model: String, CaseIterable {
-    case efficientnetLite0 = "Efficientnet lite 0"
-    case efficientnetLite2 = "Efficientnet lite 2"
+    case efficientdetLite0 = "Efficientdet lite 0"
+    case efficientdetLite2 = "Efficientdet lite 2"
 
     var modelPath: String? {
         switch self {
-        case .efficientnetLite0:
+        case .efficientdetLite0:
             return Bundle.main.path(
                 forResource: "efficientdet_lite0", ofType: "tflite")
-        case .efficientnetLite2:
+        case .efficientdetLite2:
             return Bundle.main.path(
                 forResource: "efficientdet_lite2", ofType: "tflite")
         }
@@ -35,7 +35,7 @@ enum Model: String, CaseIterable {
 enum DefaultConstants {
   static let maxResults = 3
   static let scoreThreshold: Float = 0.2
-  static let model: Model = .efficientnetLite0
+  static let model: Model = .efficientdetLite0
 }
 
 /// A result from the `ObjectDetectorHelper`.

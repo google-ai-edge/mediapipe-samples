@@ -172,6 +172,7 @@ class ViewController: UIViewController {
     playerViewController.showsPlaybackControls = false
     playerViewController.view.frame = previewView.bounds
     previewView.addSubview(playerViewController.view)
+    playerViewController.videoGravity = .resizeAspectFill
     addChild(playerViewController)
     player.play()
     NotificationCenter.default.removeObserver(self)
