@@ -181,6 +181,7 @@ class ViewController: UIViewController {
     playerViewController.player = player
     playerViewController.showsPlaybackControls = false
     playerViewController.view.frame = previewView.bounds
+    playerViewController.videoGravity = .resizeAspectFill
     previewView.addSubview(playerViewController.view)
     addChild(playerViewController)
     player.play()
@@ -269,14 +270,6 @@ class ViewController: UIViewController {
       var convertedRect = detection.boundingBox
         .applying(CGAffineTransform(scaleX: viewWidth / imageSize.width, y: viewHeight / imageSize.height))
         .applying(CGAffineTransform(translationX: originX, y: originY))
-
-      if cameraCapture.cameraPosition == .front && cameraCapture.isSessionRunning {
-        convertedRect = CGRect(
-          x: overlayView.bounds.width - convertedRect.origin.x - convertedRect.width,
-          y: convertedRect.origin.y,
-          width: convertedRect.width,
-          height: convertedRect.height)
-      }
 
       if convertedRect.origin.x < 0 && convertedRect.origin.x + convertedRect.size.width > edgeOffset {
         convertedRect.size.width += (convertedRect.origin.x - edgeOffset)
