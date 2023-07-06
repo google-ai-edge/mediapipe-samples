@@ -28,29 +28,54 @@ class ViewController: UIViewController {
   @IBOutlet weak var settingViewHeightLayoutConstraint: NSLayoutConstraint!
   
   // variable
-  var defaultModel = Model.mobileBert
   var textClassifier: TextClassifierHelper!
   var categories: [ResultCategory] = []
+  
+  let backgroundQueue = DispatchQueue(
+    label: "com.google.mediapipe.imageclassification",
+    qos: .userInteractive
+  )
   
   override func viewDidLoad() {
     super.viewDidLoad()
     setupUI()
     setupTableView()
-    textClassifier = TextClassifierHelper(model: defaultModel)
     hideKeyboardWhenTappedAround()
     inputTextView.delegate = self
+    
+    // Setup the text classifier object.
+    weak var weakSelf = self
+    backgroundQueue.async {
+      weakSelf?.textClassifier = TextClassifierHelper(model: Constants.defaultModel)
+    }
   }
   
   // IBAction
   @IBAction func classifyButtonTouchUpInside(_ sender: Any) {
+    guard let inputText = inputTextView.text else { return }
     let timeStart = Date()
-    let result = textClassifier.classify(text: inputTextView.text)
-    guard let result = result,
-          let classification = result.classificationResult.classifications.first else { return }
-    let inferenceTime = Date().timeIntervalSinceReferenceDate - timeStart.timeIntervalSinceReferenceDate
-    categories = classification.categories
-    inferenceTimeLabel.text = String(format: "%.2fms", inferenceTime * 1000)
-    tableView.reloadData()
+    classifyButton.isEnabled = false
+    inputTextView.isUserInteractionEnabled = false
+    clearButton.isEnabled = false
+    
+    weak var weakSelf = self
+    backgroundQueue.async {
+      let result = weakSelf?.textClassifier.classify(text: inputText)
+      let categories = result?.classificationResult.classifications.first?.categories ?? []
+      
+      // Show result on UI
+      DispatchQueue.main.async {
+        let inferenceTime = Date().timeIntervalSinceReferenceDate - timeStart.timeIntervalSinceReferenceDate
+        weakSelf?.categories = categories
+        weakSelf?.inferenceTimeLabel.text = String(format: "%.2fms", inferenceTime * 1000)
+        weakSelf?.tableView.reloadData()
+        
+        // Re-enable input text UI elements
+        weakSelf?.classifyButton.isEnabled = true
+        weakSelf?.inputTextView.isUserInteractionEnabled = true
+        weakSelf?.clearButton.isEnabled = true
+      }
+    }
   }
   
   @IBAction func clearButtonTouchUpInside(_ sender: Any) {
@@ -58,6 +83,7 @@ class ViewController: UIViewController {
     clearButton.isEnabled = false
     classifyButton.isEnabled = false
   }
+  
   @IBAction func expandButtonTouchUpInside(_ sender: UIButton) {
     sender.isSelected.toggle()
     settingViewHeightLayoutConstraint.constant = sender.isSelected ? 160 : 80
@@ -77,7 +103,7 @@ class ViewController: UIViewController {
     }
     let actions: [UIAction] = Model.allCases.compactMap { model in
       let action = UIAction(title: model.rawValue, handler: choseModel)
-      if model == defaultModel {
+      if model == Constants.defaultModel {
         action.state = .on
       }
       return action
@@ -85,7 +111,10 @@ class ViewController: UIViewController {
     chooseModelButton.menu = UIMenu(children: actions)
     chooseModelButton.showsMenuAsPrimaryAction = true
     chooseModelButton.changesSelectionAsPrimaryAction = true
-    inputTextView.text = Texts.defaultText
+    
+    inputTextView.text = Constants.defaultText
+    inputTextView.layer.borderColor = UIColor.black.cgColor
+    inputTextView.layer.borderWidth = 1
   }
   
   private func setupTableView() {
@@ -132,4 +161,9 @@ extension ViewController: UITextViewDelegate {
     clearButton.isEnabled = !textView.text.isEmpty
     classifyButton.isEnabled = !textView.text.isEmpty
   }
+}
+
+struct Constants {
+  static let defaultText = "Google has released 24 versions of the Android operating system since 2008 and continues to make substantial investments to develop, grow, and improve the OS."
+  static let defaultModel = Model.mobileBert
 }

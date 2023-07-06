@@ -16,7 +16,6 @@
 		BF2B2C182A302CDD00589A11 /* TextClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2C172A302CDD00589A11 /* TextClassifierTests.swift */; };
 		BF2B2C352A303ABF00589A11 /* bert_classifier.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2C302A303ABF00589A11 /* bert_classifier.tflite */; };
 		BF2B2C362A303ABF00589A11 /* TextClassifierHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2C322A303ABF00589A11 /* TextClassifierHelper.swift */; };
-		BF2B2C372A303ABF00589A11 /* Define.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2C332A303ABF00589A11 /* Define.swift */; };
 		BF2B2C382A303ABF00589A11 /* average_word_classifier.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2C342A303ABF00589A11 /* average_word_classifier.tflite */; };
 		BF2B2C3C2A303B6800589A11 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2C3B2A303B6800589A11 /* Main.storyboard */; };
 		E97C9E6BBD4FD59920642614 /* Pods_TextClassifier.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 198A2FDFB11A06B20C00C36B /* Pods_TextClassifier.framework */; };
@@ -37,6 +36,7 @@
 		47E931451A3684250A008CEA /* Pods-TextClassifierTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TextClassifierTests.release.xcconfig"; path = "Target Support Files/Pods-TextClassifierTests/Pods-TextClassifierTests.release.xcconfig"; sourceTree = "<group>"; };
 		4B02DF995463C6DA7C7CFB68 /* libPods-TextClassifierTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TextClassifierTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		645721017410A2630DFD7498 /* Pods-TextClassifier.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TextClassifier.release.xcconfig"; path = "Target Support Files/Pods-TextClassifier/Pods-TextClassifier.release.xcconfig"; sourceTree = "<group>"; };
+		7FC03EE32A57581C00867DCE /* download_models.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = download_models.sh; sourceTree = "<group>"; };
 		BF2B2BFD2A302CDB00589A11 /* TextClassifier.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TextClassifier.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF2B2C002A302CDB00589A11 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BF2B2C022A302CDB00589A11 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -48,7 +48,6 @@
 		BF2B2C172A302CDD00589A11 /* TextClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextClassifierTests.swift; sourceTree = "<group>"; };
 		BF2B2C302A303ABF00589A11 /* bert_classifier.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = bert_classifier.tflite; sourceTree = "<group>"; };
 		BF2B2C322A303ABF00589A11 /* TextClassifierHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextClassifierHelper.swift; sourceTree = "<group>"; };
-		BF2B2C332A303ABF00589A11 /* Define.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Define.swift; sourceTree = "<group>"; };
 		BF2B2C342A303ABF00589A11 /* average_word_classifier.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = average_word_classifier.tflite; sourceTree = "<group>"; };
 		BF2B2C3B2A303B6800589A11 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		C5F0A900F68C5C43E10DC7B7 /* Pods-TextClassifierTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TextClassifierTests.debug.xcconfig"; path = "Target Support Files/Pods-TextClassifierTests/Pods-TextClassifierTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -86,9 +85,18 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
+		7FC03EE22A57580500867DCE /* RunScripts */ = {
+			isa = PBXGroup;
+			children = (
+				7FC03EE32A57581C00867DCE /* download_models.sh */,
+			);
+			path = RunScripts;
+			sourceTree = "<group>";
+		};
 		BF2B2BF42A302CDB00589A11 = {
 			isa = PBXGroup;
 			children = (
+				7FC03EE22A57580500867DCE /* RunScripts */,
 				BF2B2BFF2A302CDB00589A11 /* TextClassifier */,
 				BF2B2C162A302CDD00589A11 /* TextClassifierTests */,
 				BF2B2BFE2A302CDB00589A11 /* Products */,
@@ -135,7 +143,6 @@
 			isa = PBXGroup;
 			children = (
 				BF2B2C322A303ABF00589A11 /* TextClassifierHelper.swift */,
-				BF2B2C332A303ABF00589A11 /* Define.swift */,
 			);
 			path = Helper;
 			sourceTree = "<group>";
@@ -156,9 +163,8 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BF2B2C272A302CDD00589A11 /* Build configuration list for PBXNativeTarget "TextClassifier" */;
 			buildPhases = (
-				BF2B2C3A2A303AFD00589A11 /* Download Awc model */,
-				BF2B2C392A303AE900589A11 /* Download Bert model */,
 				A075DE8F9C2BF76D1818134E /* [CP] Check Pods Manifest.lock */,
+				BF2B2C3A2A303AFD00589A11 /* Download ML models */,
 				BF2B2BF92A302CDB00589A11 /* Sources */,
 				BF2B2BFA2A302CDB00589A11 /* Frameworks */,
 				BF2B2BFB2A302CDB00589A11 /* Resources */,
@@ -296,8 +302,9 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		BF2B2C392A303AE900589A11 /* Download Bert model */ = {
+		BF2B2C3A2A303AFD00589A11 /* Download ML models */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -305,32 +312,14 @@
 			);
 			inputPaths = (
 			);
-			name = "Download Bert model";
+			name = "Download ML models";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Download bert_classifier.tflite from the internet if it's not exist.\nTFLITE_FILE=${SRCROOT}/TextClassifier/bert_classifier.tflite\nif test -f \"$TFLITE_FILE\"; then\n    echo \"INFO: bert_classifier.tflite existed. Skip downloading and use the local model.\"\nelse\n    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/text_classifier/bert_classifier/float32/1/bert_classifier.tflite\n    echo \"INFO: Downloaded bert_classifier.tflite to $TFLITE_FILE .\"\nfi\n";
-		};
-		BF2B2C3A2A303AFD00589A11 /* Download Awc model */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Download Awc model";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Download average_word_classifier.tflite from the internet if it's not exist.\nTFLITE_FILE=${SRCROOT}/TextClassifier/average_word_classifier.tflite\nif test -f \"$TFLITE_FILE\"; then\n    echo \"INFO: average_word_classifier.tflite existed. Skip downloading and use the local model.\"\nelse\n    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/text_classifier/average_word_classifier/float32/1/average_word_classifier.tflite\n    echo \"INFO: Downloaded average_word_classifier.tflite to $TFLITE_FILE .\"\nfi\n";
+			shellScript = "\"$SRCROOT/RunScripts/download_models.sh\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -342,7 +331,6 @@
 				BF2B2C052A302CDB00589A11 /* ViewController.swift in Sources */,
 				BF2B2C012A302CDB00589A11 /* AppDelegate.swift in Sources */,
 				BF2B2C032A302CDB00589A11 /* SceneDelegate.swift in Sources */,
-				BF2B2C372A303ABF00589A11 /* Define.swift in Sources */,
 				BF2B2C362A303ABF00589A11 /* TextClassifierHelper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -498,7 +486,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
@@ -508,12 +497,13 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mediapipe.textclassifier;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.textclassification;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -529,7 +519,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
@@ -539,12 +530,13 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mediapipe.textclassifier;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.textclassification;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -563,7 +555,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9PLS9MU793;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = tuan.mai.TextClassificaterTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -584,7 +576,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9PLS9MU793;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = tuan.mai.TextClassificaterTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
