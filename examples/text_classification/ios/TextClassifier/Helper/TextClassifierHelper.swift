@@ -33,3 +33,19 @@ class TextClassifierHelper {
     return try? textClassifier.classify(text: text)
   }
 }
+
+enum Model: String, CaseIterable {
+  case mobileBert = "Mobile Bert"
+  case avgWordClassifier = "Avg Word Classifier"
+  
+  var modelPath: String? {
+    switch self {
+    case .mobileBert:
+      return Bundle.main.path(
+        forResource: "bert_classifier", ofType: "tflite")
+    case .avgWordClassifier:
+      return Bundle.main.path(
+        forResource: "average_word_classifier", ofType: "tflite")
+    }
+  }
+}
