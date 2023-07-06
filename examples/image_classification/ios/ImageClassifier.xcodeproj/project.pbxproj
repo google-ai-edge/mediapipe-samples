@@ -16,7 +16,6 @@
 		BF2B2CE42A316CB100589A11 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2CE32A316CB100589A11 /* Assets.xcassets */; };
 		BF2B2CE72A316CB100589A11 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2CE52A316CB100589A11 /* LaunchScreen.storyboard */; };
 		BF2B2CF22A316CB200589A11 /* ImageClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2CF12A316CB200589A11 /* ImageClassifierTests.swift */; };
-		BF2B2D0D2A316D6000589A11 /* Define.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D0C2A316D6000589A11 /* Define.swift */; };
 		BF2B2D0F2A316D7100589A11 /* ImageClassifierHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D0E2A316D7100589A11 /* ImageClassifierHelper.swift */; };
 		BF2B2D122A316D9300589A11 /* CameraFeedManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D102A316D9300589A11 /* CameraFeedManager.swift */; };
 		BF2B2D132A316D9300589A11 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D112A316D9300589A11 /* PreviewView.swift */; };
@@ -51,7 +50,6 @@
 		BF2B2CE82A316CB100589A11 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BF2B2CED2A316CB200589A11 /* ImageClassifierTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ImageClassifierTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF2B2CF12A316CB200589A11 /* ImageClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageClassifierTests.swift; sourceTree = "<group>"; };
-		BF2B2D0C2A316D6000589A11 /* Define.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Define.swift; sourceTree = "<group>"; };
 		BF2B2D0E2A316D7100589A11 /* ImageClassifierHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageClassifierHelper.swift; sourceTree = "<group>"; };
 		BF2B2D102A316D9300589A11 /* CameraFeedManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedManager.swift; sourceTree = "<group>"; };
 		BF2B2D112A316D9300589A11 /* PreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
@@ -143,7 +141,6 @@
 			children = (
 				BF2B2D102A316D9300589A11 /* CameraFeedManager.swift */,
 				BF2B2D112A316D9300589A11 /* PreviewView.swift */,
-				BF2B2D0C2A316D6000589A11 /* Define.swift */,
 				BF2B2D0E2A316D7100589A11 /* ImageClassifierHelper.swift */,
 			);
 			path = Helper;
@@ -364,7 +361,6 @@
 				BF2B2CDB2A316CB000589A11 /* AppDelegate.swift in Sources */,
 				BF2B2D132A316D9300589A11 /* PreviewView.swift in Sources */,
 				BF2B2D0F2A316D7100589A11 /* ImageClassifierHelper.swift in Sources */,
-				BF2B2D0D2A316D6000589A11 /* Define.swift in Sources */,
 				BF2B2D122A316D9300589A11 /* CameraFeedManager.swift in Sources */,
 				BF2B2D152A316DB200589A11 /* InferenceViewController.swift in Sources */,
 				BF2B2CDD2A316CB000589A11 /* SceneDelegate.swift in Sources */,

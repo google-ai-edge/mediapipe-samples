@@ -58,10 +58,11 @@ class InferenceViewController: UIViewController {
   @IBOutlet weak var maxResultLabel: UILabel!
 
   // MARK: Instance Variables
-  var imageClassifierHelperResult: ImageClassifierHelperResult? = nil
+  var result: ResultBundle? = nil
   var maxResults = DefaultConstants.maxResults
   var scoreThreshold = DefaultConstants.scoreThreshold
   var modelChose = DefaultConstants.model
+  private var resultIndex = 0
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -103,11 +104,21 @@ class InferenceViewController: UIViewController {
 
   // Public function
   func updateData() {
+    resultIndex = 0
     tableView.reloadData()
-    if let inferenceTime = imageClassifierHelperResult?.inferenceTime {
+    if let inferenceTime = result?.inferenceTime {
       infrenceTimeLabel.text = String(format: "%.2fms", inferenceTime)
     }
   }
+
+  func updateData(at resultIndex: Int) {
+    self.resultIndex = resultIndex
+    tableView.reloadData()
+    if let inferenceTime = result?.inferenceTime {
+      infrenceTimeLabel.text = String(format: "%.2fms", inferenceTime)
+    }
+  }
+
   // MARK: IBAction
 
   @IBAction func expandButtonTouchUpInside(_ sender: UIButton) {
@@ -142,8 +153,9 @@ extension InferenceViewController: UITableViewDataSource {
 
   func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
     let cell = tableView.dequeueReusableCell(withIdentifier: "INFO_CELL") as! InfoCell
-
-    guard let imageClassifierResult = imageClassifierHelperResult?.imageClassifierResult,
+    guard let imageClassifierResults = result?.imageClassifierResults,
+          resultIndex < imageClassifierResults.count,
+          let imageClassifierResult = imageClassifierResults[resultIndex],
           let classification = imageClassifierResult.classificationResult.classifications.first else {
       cell.fieldNameLabel.text = "--"
       cell.infoLabel.text = "--"

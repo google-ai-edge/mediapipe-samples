@@ -32,15 +32,13 @@ class ViewController: UIViewController {
   @IBOutlet weak var bottomViewHeightConstraint: NSLayoutConstraint!
 
   // MARK: Constants
-  private let delayBetweenInferencesMs = 1000.0
+  private let inferenceIntervalMs: Double = 300
   private let inferenceBottomHeight = 220.0
   private let expandButtonHeight = 41.0
   private let playerViewController = AVPlayerViewController()
-  private let videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: [String(kCVPixelBufferPixelFormatTypeKey): NSNumber(value: kCVPixelFormatType_32BGRA)])
 
   // MARK: Instance Variables
   private var videoDetectTimer: Timer?
-  private var previousInferenceTimeMs = Date.distantPast.timeIntervalSince1970 * 1000
   private var maxResults = DefaultConstants.maxResults {
     didSet {
       guard let inferenceVC = inferenceViewController else { return }
@@ -48,22 +46,17 @@ class ViewController: UIViewController {
       view.layoutSubviews()
     }
   }
-  private var liveStreamDelegate: ImageClassifierLiveStreamDelegate?
+
   private var scoreThreshold = DefaultConstants.scoreThreshold
   private var model = DefaultConstants.model
   private var runingModel: RunningMode = .liveStream {
     didSet {
-      if runingModel != .liveStream {
-        liveStreamDelegate = nil
-      } else {
-        liveStreamDelegate = self
-      }
       imageClassifierHelper = ImageClassifierHelper(
         model: model,
         maxResults: maxResults,
         scoreThreshold: scoreThreshold,
         runningModel: runingModel,
-        delegate: liveStreamDelegate
+        delegate: self
       )
     }
   }
@@ -83,8 +76,7 @@ class ViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     // Create image classifier helper
-    liveStreamDelegate = self
-    imageClassifierHelper = ImageClassifierHelper(model: model, maxResults: maxResults, scoreThreshold: scoreThreshold, runningModel: runingModel, delegate: liveStreamDelegate)
+    imageClassifierHelper = ImageClassifierHelper(model: model, maxResults: maxResults, scoreThreshold: scoreThreshold, runningModel: runingModel, delegate: self)
 
     runningModelTabbar.selectedItem = cameraTabbarItem
     runningModelTabbar.delegate = self
@@ -158,7 +150,9 @@ class ViewController: UIViewController {
     playerViewController.removeFromParent()
   }
 
-  private func processVideo(url: URL) {
+  private func processVideo(url: URL) async {
+    let result = await imageClassifierHelper?.classifyVideoFile(url: url, inferenceIntervalMs: inferenceIntervalMs)
+    inferenceViewController?.result = result
     let player = AVPlayer(url: url)
     playerViewController.player = player
     playerViewController.showsPlaybackControls = false
@@ -166,7 +160,6 @@ class ViewController: UIViewController {
     previewView.addSubview(playerViewController.view)
     addChild(playerViewController)
     player.play()
-    player.currentItem?.add(videoOutput)
     NotificationCenter.default.removeObserver(self)
     NotificationCenter.default
       .addObserver(self,
@@ -176,34 +169,18 @@ class ViewController: UIViewController {
       )
 
     videoDetectTimer?.invalidate()
-    videoDetectTimer = Timer.scheduledTimer(
-      timeInterval: delayBetweenInferencesMs / 1000,
-      target: self,
-      selector: #selector(classificationVideoFrame),
-      userInfo: nil,
-      repeats: true)
-  }
-
-  @objc func classificationVideoFrame() {
-    guard let player = playerViewController.player else { return }
-    let currentTime: CMTime = player.currentTime()
-    guard let buffer = self.pixelBufferFromCurrentPlayer(currentTime: currentTime) else { return }
-    let currentTimeMs = Date().timeIntervalSince1970 * 1000
-    let result = self.imageClassifierHelper?.classify(videoFrame: buffer, timeStamps: Int(currentTimeMs))
-    // Display results by handing off to the InferenceViewController.
-    inferenceViewController?.imageClassifierHelperResult = result
-    DispatchQueue.main.async {
-      self.inferenceViewController?.updateData()
-    }
+    videoDetectTimer = Timer.scheduledTimer(withTimeInterval: inferenceIntervalMs / 1000, repeats: true, block: { _ in
+      let currentTime: CMTime = player.currentTime()
+      let index = Int(currentTime.seconds * 1000 / self.inferenceIntervalMs)
+      DispatchQueue.main.async {
+        self.inferenceViewController?.updateData(at: index)
+      }
+    })
   }
 
   @objc func playerDidFinishPlaying(note: NSNotification) {
     videoDetectTimer?.invalidate()
     videoDetectTimer = nil
-  }
-  private func pixelBufferFromCurrentPlayer(currentTime: CMTime) -> CVPixelBuffer? {
-    guard let buffer: CVPixelBuffer = videoOutput.copyPixelBuffer(forItemTime: currentTime, itemTimeForDisplay: nil) else { return nil }
-    return buffer
   }
 }
 
@@ -217,7 +194,9 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
       if runingModel != .video {
         runingModel = .video
       }
-      processVideo(url: mediaURL)
+      Task {
+        await processVideo(url: mediaURL)
+      }
     } else {
       guard let image = info[.originalImage] as? UIImage else { return }
       if runingModel != .image {
@@ -229,7 +208,7 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
       // Pass the uiimage to mediapipe
       let result = imageClassifierHelper?.classify(image: image)
       // Display results by handing off to the InferenceViewController.
-      inferenceViewController?.imageClassifierHelperResult = result
+      inferenceViewController?.result = result
       DispatchQueue.main.async {
         self.inferenceViewController?.updateData()
       }
@@ -241,14 +220,10 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
 extension ViewController: CameraFeedManagerDelegate {
 
   func didOutput(pixelBuffer: CVPixelBuffer) {
-    // Make sure the model will not run too often, making the results changing quickly and hard to
-    // read.
-    let currentTimeMs = Date().timeIntervalSince1970 * 1000
-    guard (currentTimeMs - previousInferenceTimeMs) >= delayBetweenInferencesMs else { return }
-    previousInferenceTimeMs = currentTimeMs
 
+    let currentTimeMs = Date().timeIntervalSince1970 * 1000
     // Pass the pixel buffer to mediapipe
-    imageClassifierHelper?.classifyAsyn(videoFrame: pixelBuffer, timeStamps: Int(currentTimeMs))
+    imageClassifierHelper?.classifyAsync(videoFrame: pixelBuffer, timeStamps: Int(currentTimeMs))
   }
 
   // MARK: Session Handling Alerts
@@ -311,21 +286,15 @@ extension ViewController: CameraFeedManagerDelegate {
   }
 }
 
-// MARK: ImageClassifierLiveStreamDelegate
-extension ViewController: ImageClassifierLiveStreamDelegate {
-  func imageClassifier(_ imageClassifier: ImageClassifier, didFinishClassification result: ImageClassifierResult?, timestampInMilliseconds: Int, error: Error?) {
-    guard let result = result else {
-      print(error ?? "")
-      return
-    }
-    let imageClassifierHelperResult = ImageClassifierHelperResult(
-      inferenceTime: Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds),
-      imageClassifierResult: result)
+// MARK: ImageClassifierHelperDelegate
+extension ViewController: ImageClassifierHelperDelegate {
+  func imageClassifierHelper(_ imageClassifierHelper: ImageClassifierHelper, didFinishClassification result: ResultBundle?, error: Error?) {
     DispatchQueue.main.async {
-      self.inferenceViewController?.imageClassifierHelperResult = imageClassifierHelperResult
+      self.inferenceViewController?.result = result
       self.inferenceViewController?.updateData()
     }
   }
+
 }
 
 // MARK: InferenceViewControllerDelegate Methods
@@ -363,7 +332,7 @@ extension ViewController: InferenceViewControllerDelegate {
         maxResults: self.maxResults,
         scoreThreshold: self.scoreThreshold,
         runningModel: self.runingModel,
-        delegate: liveStreamDelegate
+        delegate: self
       )
     }
   }
@@ -397,4 +366,28 @@ extension ViewController: UITabBarDelegate {
       break
     }
   }
+}
+
+// MARK: Define default constants
+enum DefaultConstants {
+  static let maxResults = 3
+  static let scoreThreshold: Float = 0.2
+  static let model: Model = .efficientnetLite0
+}
+
+// MARK: Tflite Model
+enum Model: String, CaseIterable {
+    case efficientnetLite0 = "Efficientnet lite 0"
+    case efficientnetLite2 = "Efficientnet lite 2"
+
+    var modelPath: String? {
+        switch self {
+        case .efficientnetLite0:
+            return Bundle.main.path(
+                forResource: "efficientnet_lite0", ofType: "tflite")
+        case .efficientnetLite2:
+            return Bundle.main.path(
+                forResource: "efficientnet_lite2", ofType: "tflite")
+        }
+    }
 }
