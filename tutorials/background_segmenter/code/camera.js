@@ -45,9 +45,7 @@ export default class Camera {
             };
             this.stream = await navigator.mediaDevices.getUserMedia(constraints);
             this.videoElement.srcObject = this.stream;
-            if(/^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
-                this.videoElement.play();
-            }
+            await this.videoElement.play();
             return new Promise((resolve) => {
                 this.videoElement.onloadedmetadata = () => {
                     this.isRunning = true;
