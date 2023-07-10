@@ -62,8 +62,8 @@ class ImageClassifierHelper: NSObject {
     generator.requestedTimeToleranceBefore = CMTimeMake(value: 1, timescale: 25)
     generator.requestedTimeToleranceAfter = CMTimeMake(value: 1, timescale: 25)
     generator.appliesPreferredTrackTransform = true
-    guard let videoDutationMS = try? await asset.load(.duration).seconds * 1000 else { return nil }
-    let frameCount = Int(videoDutationMS / inferenceIntervalMs)
+    guard let videoDurationMs = try? await asset.load(.duration).seconds * 1000 else { return nil }
+    let frameCount = Int(videoDurationMs / inferenceIntervalMs)
     var imageClassifierResults: [ImageClassifierResult?] = []
     for i in 0..<frameCount {
       let timestampMs = Int(inferenceIntervalMs) * i // ms
@@ -84,9 +84,18 @@ class ImageClassifierHelper: NSObject {
     return ResultBundle(inferenceTime: inferenceTime, imageClassifierResults: imageClassifierResults)
   }
 
-  func classifyAsync(videoFrame: CVPixelBuffer, timeStamps: Int) {
+  func classifyAsync(videoFrame: CMSampleBuffer, orientation: UIDeviceOrientation, timeStamps: Int) {
+    var uiimageOrientation: UIImage.Orientation = .up
+    switch orientation {
+    case .landscapeLeft:
+      uiimageOrientation = .left
+    case .landscapeRight:
+      uiimageOrientation = .right
+    default:
+      uiimageOrientation = .up
+    }
     guard let imageClassifier = imageClassifier,
-          let image = try? MPImage(pixelBuffer: videoFrame) else { return }
+          let image = try? MPImage(sampleBuffer: videoFrame, orientation: uiimageOrientation) else { return }
     do {
       try imageClassifier.classifyAsync(image: image, timestampInMilliseconds: timeStamps)
     } catch {

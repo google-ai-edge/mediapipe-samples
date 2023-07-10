@@ -21,7 +21,7 @@ protocol CameraFeedManagerDelegate: AnyObject {
   /**
    This method delivers the pixel buffer of the current frame seen by the device's camera.
    */
-  func didOutput(pixelBuffer: CVPixelBuffer)
+  func didOutput(sampleBuffer: CMSampleBuffer, orientation: UIDeviceOrientation)
 
   /**
    This method initimates that the camera permissions have been denied.
@@ -288,29 +288,6 @@ class CameraFeedManager: NSObject {
     return false
   }
 
-  /**
-   This method Rotate CVPixelBuffer
-   */
-  private func rotate(_ pixelBuffer: CVPixelBuffer?, oriented: CGImagePropertyOrientation) -> CVPixelBuffer? {
-    guard let pixelBuffer = pixelBuffer else {
-      return nil
-    }
-    var newPixelBuffer: CVPixelBuffer?
-    let error = CVPixelBufferCreate(kCFAllocatorDefault,
-                                    CVPixelBufferGetHeight(pixelBuffer),
-                                    CVPixelBufferGetWidth(pixelBuffer),
-                                    kCVPixelFormatType_32BGRA,
-                                    nil,
-                                    &newPixelBuffer)
-    guard error == kCVReturnSuccess,
-          let buffer = newPixelBuffer else {
-      return nil
-    }
-    let ciImage = CIImage(cvPixelBuffer: pixelBuffer).oriented(oriented)
-    coreImageContext.render(ciImage, to: buffer)
-    return buffer
-  }
-
   // MARK: Notification Observer Handling
   private func addObservers() {
     NotificationCenter.default.addObserver(self, selector: #selector(CameraFeedManager.sessionRuntimeErrorOccured(notification:)), name: NSNotification.Name.AVCaptureSessionRuntimeError, object: session)
@@ -373,7 +350,6 @@ class CameraFeedManager: NSObject {
   }
 }
 
-
 /**
  AVCaptureVideoDataOutputSampleBufferDelegate
  */
@@ -382,25 +358,7 @@ extension CameraFeedManager: AVCaptureVideoDataOutputSampleBufferDelegate {
   /** This method delegates the CVPixelBuffer of the frame seen by the camera currently.
    */
   func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-
-    // Converts the CMSampleBuffer to a CVPixelBuffer.
-    var pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
-
-    switch orientation {
-    case .landscapeLeft:
-      pixelBuffer = rotate(pixelBuffer, oriented: .left)
-    case .landscapeRight:
-      pixelBuffer = rotate(pixelBuffer, oriented: .right)
-    default:
-      break
-    }
-
-    guard let pixelBuffer = pixelBuffer else {
-      return
-    }
-
-    // Delegates the pixel buffer to the ViewController.
-    delegate?.didOutput(pixelBuffer: pixelBuffer)
+    delegate?.didOutput(sampleBuffer: sampleBuffer, orientation: orientation)
   }
 
 }

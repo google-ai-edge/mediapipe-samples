@@ -20,9 +20,9 @@
 		BF2B2D122A316D9300589A11 /* CameraFeedManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D102A316D9300589A11 /* CameraFeedManager.swift */; };
 		BF2B2D132A316D9300589A11 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D112A316D9300589A11 /* PreviewView.swift */; };
 		BF2B2D152A316DB200589A11 /* InferenceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D142A316DB200589A11 /* InferenceViewController.swift */; };
-		BF2B2D172A31719900589A11 /* efficientnet_lite0.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2D162A31719800589A11 /* efficientnet_lite0.tflite */; };
 		BF2B2D192A31719F00589A11 /* efficientnet_lite2.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2D182A31719F00589A11 /* efficientnet_lite2.tflite */; };
 		BF2B2D1D2A3C012300589A11 /* cup.png in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2D1A2A3BFC1100589A11 /* cup.png */; };
+		BF97417C2A5B9F1800701718 /* efficientnet_lite0.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF97417B2A5B9F1800701718 /* efficientnet_lite0.tflite */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,9 +54,9 @@
 		BF2B2D102A316D9300589A11 /* CameraFeedManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedManager.swift; sourceTree = "<group>"; };
 		BF2B2D112A316D9300589A11 /* PreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
 		BF2B2D142A316DB200589A11 /* InferenceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InferenceViewController.swift; sourceTree = "<group>"; };
-		BF2B2D162A31719800589A11 /* efficientnet_lite0.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = efficientnet_lite0.tflite; sourceTree = "<group>"; };
 		BF2B2D182A31719F00589A11 /* efficientnet_lite2.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = efficientnet_lite2.tflite; sourceTree = "<group>"; };
 		BF2B2D1A2A3BFC1100589A11 /* cup.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cup.png; sourceTree = "<group>"; };
+		BF97417B2A5B9F1800701718 /* efficientnet_lite0.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = efficientnet_lite0.tflite; sourceTree = "<group>"; };
 		E52246C5465654BEC99C6748 /* Pods_ImageClassifier.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ImageClassifier.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EF5D0746976BFA97CBE182D0 /* Pods-ImageClassifierTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageClassifierTests.release.xcconfig"; path = "Target Support Files/Pods-ImageClassifierTests/Pods-ImageClassifierTests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -112,7 +112,7 @@
 				BF2B2CE32A316CB100589A11 /* Assets.xcassets */,
 				BF2B2CE52A316CB100589A11 /* LaunchScreen.storyboard */,
 				BF2B2CE82A316CB100589A11 /* Info.plist */,
-				BF2B2D162A31719800589A11 /* efficientnet_lite0.tflite */,
+				BF97417B2A5B9F1800701718 /* efficientnet_lite0.tflite */,
 				BF2B2D182A31719F00589A11 /* efficientnet_lite2.tflite */,
 				BF2B2D1A2A3BFC1100589A11 /* cup.png */,
 			);
@@ -174,8 +174,6 @@
 			buildConfigurationList = BF2B2D012A316CB200589A11 /* Build configuration list for PBXNativeTarget "ImageClassifier" */;
 			buildPhases = (
 				E8E2925BFDC8144DEDD967E5 /* [CP] Check Pods Manifest.lock */,
-				BF2B2D202A3C050E00589A11 /* Download efficientnet_lite0 model */,
-				BF2B2D212A3C052900589A11 /* Download efficientnet_lite2 model */,
 				BF2B2CD32A316CB000589A11 /* Sources */,
 				BF2B2CD42A316CB000589A11 /* Frameworks */,
 				BF2B2CD52A316CB000589A11 /* Resources */,
@@ -252,10 +250,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				BF2B2D1D2A3C012300589A11 /* cup.png in Resources */,
-				BF2B2D172A31719900589A11 /* efficientnet_lite0.tflite in Resources */,
 				BF2B2D192A31719F00589A11 /* efficientnet_lite2.tflite in Resources */,
 				BF2B2CE72A316CB100589A11 /* LaunchScreen.storyboard in Resources */,
 				BF2B2CE42A316CB100589A11 /* Assets.xcassets in Resources */,
+				BF97417C2A5B9F1800701718 /* efficientnet_lite0.tflite in Resources */,
 				BF2B2CE22A316CB000589A11 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -291,42 +289,6 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
-		};
-		BF2B2D202A3C050E00589A11 /* Download efficientnet_lite0 model */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Download efficientnet_lite0 model";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Download average_word_classifier.tflite from the internet if it's not exist.\nTFLITE_FILE=${SRCROOT}/ImageClassifier/efficientnet_lite0.tflite\nif test -f \"$TFLITE_FILE\"; then\n    echo \"INFO: efficientnet_lite0.tflite existed. Skip downloading and use the local model.\"\nelse\n    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite0/float32/1/efficientnet_lite0.tflite\n    echo \"INFO: Downloaded efficientnet_lite0.tflite to $TFLITE_FILE .\"\nfi\n";
-		};
-		BF2B2D212A3C052900589A11 /* Download efficientnet_lite2 model */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Download efficientnet_lite2 model";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Download average_word_classifier.tflite from the internet if it's not exist.\nTFLITE_FILE=${SRCROOT}/ImageClassifier/efficientnet_lite2.tflite\nif test -f \"$TFLITE_FILE\"; then\n    echo \"INFO: efficientnet_lite2.tflite existed. Skip downloading and use the local model.\"\nelse\n    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite2/float32/1/efficientnet_lite2.tflite\n    echo \"INFO: Downloaded efficientnet_lite2.tflite to $TFLITE_FILE .\"\nfi\n";
 		};
 		E8E2925BFDC8144DEDD967E5 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -537,13 +499,14 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.ImageClassifier;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.imageclassification;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -570,13 +533,14 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.ImageClassifier;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.imageclassification;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;

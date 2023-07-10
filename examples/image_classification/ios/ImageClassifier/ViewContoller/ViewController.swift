@@ -61,6 +61,11 @@ class ViewController: UIViewController {
     }
   }
 
+  let backgroundQueue = DispatchQueue(
+      label: "com.google.mediapipe.imageclassification",
+      qos: .userInteractive
+    )
+
   // MARK: Controllers that manage functionality
   // Handles all the camera related functionality
   private lazy var cameraCapture = CameraFeedManager(previewView: previewView)
@@ -150,32 +155,39 @@ class ViewController: UIViewController {
     playerViewController.removeFromParent()
   }
 
-  private func processVideo(url: URL) async {
-    let result = await imageClassifierHelper?.classifyVideoFile(url: url, inferenceIntervalMs: inferenceIntervalMs)
-    inferenceViewController?.result = result
-    let player = AVPlayer(url: url)
-    playerViewController.player = player
-    playerViewController.showsPlaybackControls = false
-    playerViewController.view.frame = previewView.bounds
-    previewView.addSubview(playerViewController.view)
-    addChild(playerViewController)
-    player.play()
-    NotificationCenter.default.removeObserver(self)
-    NotificationCenter.default
-      .addObserver(self,
-                   selector: #selector(playerDidFinishPlaying),
-                   name: .AVPlayerItemDidPlayToEndTime,
-                   object: player.currentItem
-      )
+  private func processVideo(url: URL) {
+    backgroundQueue.async { [weak self] in
+      guard let weakSelf = self else { return }
+      Task {
+        let result = await weakSelf.imageClassifierHelper?.classifyVideoFile(url: url, inferenceIntervalMs: weakSelf.inferenceIntervalMs)
+        DispatchQueue.main.async {
+          weakSelf.inferenceViewController?.result = result
+          let player = AVPlayer(url: url)
+          weakSelf.playerViewController.player = player
+          weakSelf.playerViewController.showsPlaybackControls = false
+          weakSelf.playerViewController.view.frame = weakSelf.previewView.bounds
+          weakSelf.previewView.addSubview(weakSelf.playerViewController.view)
+          weakSelf.addChild(weakSelf.playerViewController)
+          player.play()
+          NotificationCenter.default.removeObserver(weakSelf)
+          NotificationCenter.default
+            .addObserver(weakSelf,
+                         selector: #selector(weakSelf.playerDidFinishPlaying),
+                         name: .AVPlayerItemDidPlayToEndTime,
+                         object: player.currentItem
+            )
 
-    videoDetectTimer?.invalidate()
-    videoDetectTimer = Timer.scheduledTimer(withTimeInterval: inferenceIntervalMs / 1000, repeats: true, block: { _ in
-      let currentTime: CMTime = player.currentTime()
-      let index = Int(currentTime.seconds * 1000 / self.inferenceIntervalMs)
-      DispatchQueue.main.async {
-        self.inferenceViewController?.updateData(at: index)
+          weakSelf.videoDetectTimer?.invalidate()
+          weakSelf.videoDetectTimer = Timer.scheduledTimer(withTimeInterval: weakSelf.inferenceIntervalMs / 1000, repeats: true, block: { _ in
+            let currentTime: CMTime = player.currentTime()
+            let index = Int(currentTime.seconds * 1000 / weakSelf.inferenceIntervalMs)
+            DispatchQueue.main.async {
+              weakSelf.inferenceViewController?.updateData(at: index)
+            }
+          })
+        }
       }
-    })
+    }
   }
 
   @objc func playerDidFinishPlaying(note: NSNotification) {
@@ -194,9 +206,7 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
       if runingModel != .video {
         runingModel = .video
       }
-      Task {
-        await processVideo(url: mediaURL)
-      }
+      processVideo(url: mediaURL)
     } else {
       guard let image = info[.originalImage] as? UIImage else { return }
       if runingModel != .image {
@@ -206,11 +216,14 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
       previewView.image = image
       imageEmptyLabel.isHidden = true
       // Pass the uiimage to mediapipe
-      let result = imageClassifierHelper?.classify(image: image)
-      // Display results by handing off to the InferenceViewController.
-      inferenceViewController?.result = result
-      DispatchQueue.main.async {
-        self.inferenceViewController?.updateData()
+      backgroundQueue.async { [weak self] in
+        guard let weakSelf = self else { return }
+        let result = weakSelf.imageClassifierHelper?.classify(image: image)
+        // Display results by handing off to the InferenceViewController.
+        weakSelf.inferenceViewController?.result = result
+        DispatchQueue.main.async {
+          weakSelf.inferenceViewController?.updateData()
+        }
       }
     }
   }
@@ -219,11 +232,13 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
 // MARK: CameraFeedManagerDelegate Methods
 extension ViewController: CameraFeedManagerDelegate {
 
-  func didOutput(pixelBuffer: CVPixelBuffer) {
+  func didOutput(sampleBuffer: CMSampleBuffer, orientation: UIDeviceOrientation) {
 
     let currentTimeMs = Date().timeIntervalSince1970 * 1000
     // Pass the pixel buffer to mediapipe
-    imageClassifierHelper?.classifyAsync(videoFrame: pixelBuffer, timeStamps: Int(currentTimeMs))
+    backgroundQueue.async { [weak self] in
+      self?.imageClassifierHelper?.classifyAsync(videoFrame: sampleBuffer, orientation: orientation, timeStamps: Int(currentTimeMs))
+    }
   }
 
   // MARK: Session Handling Alerts
