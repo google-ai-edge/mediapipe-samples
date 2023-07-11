@@ -72,10 +72,10 @@ class CameraFeedManager: NSObject {
   private var cameraConfiguration: CameraConfiguration = .failed
   private lazy var videoDataOutput = AVCaptureVideoDataOutput()
   private var isSessionRunning = false
-  private var orientation = UIDevice.current.orientation
   private var coreImageContext: CIContext
   private var needCalculationSize = true
 
+  var orientation = UIDevice.current.orientation
   var videoFrameSize: CGSize = .zero
 
   // MARK: CameraFeedManagerDelegate

@@ -32,6 +32,8 @@ class ViewController: UIViewController {
   @IBOutlet weak var bottomSheetViewBottomSpace: NSLayoutConstraint!
   @IBOutlet weak var bottomViewHeightConstraint: NSLayoutConstraint!
 
+  private var coreImageContext: CIContext!
+
   // MARK: Constants
   private let inferenceIntervalMs: Double = 300
   private let inferenceBottomHeight = 220.0
@@ -100,6 +102,12 @@ class ViewController: UIViewController {
     runningModelTabbar.delegate = self
     cameraCapture.delegate = self
     overlayView.clearsContextBeforeDrawing = true
+
+    if let metalDevice = MTLCreateSystemDefaultDevice() {
+      coreImageContext = CIContext(mtlDevice: metalDevice)
+    } else {
+      coreImageContext = CIContext(options: nil)
+    }
   }
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
@@ -411,7 +419,17 @@ extension ViewController: ObjectDetectorHelperDelegate {
       self.inferenceViewController?.updateData()
       if let objectDetectorResult = result?.objectDetectorResults.first,
          let objectDetectorResult = objectDetectorResult {
-        let cvImageBuffer = CMSampleBufferGetImageBuffer(self.samp!)
+        var cvImageBuffer = CMSampleBufferGetImageBuffer(self.samp!)
+        // Rotate if need
+//        switch self.cameraCapture.orientation {
+//        case .landscapeLeft:
+//          cvImageBuffer = self.rotate(cvImageBuffer, oriented: .left)
+//        case .landscapeRight:
+//          cvImageBuffer = self.rotate(cvImageBuffer, oriented: .right)
+//        default:
+//          break
+//        }
+
         guard cvImageBuffer != nil else { return  }
         let ciImage = CIImage(cvImageBuffer: cvImageBuffer!, options: nil)
 
@@ -527,6 +545,7 @@ enum Model: String, CaseIterable {
 // MARK: - test function
 
 extension ViewController {
+
   func drawOnImage(_ image: UIImage, detections: [Detection]) -> UIImage? {
     UIGraphicsBeginImageContext(image.size)
     image.draw(at: CGPoint.zero)
@@ -543,4 +562,25 @@ extension ViewController {
     UIGraphicsEndImageContext()
     return newImage
   }
+
+  func rotate(_ pixelBuffer: CVPixelBuffer?, oriented: CGImagePropertyOrientation) -> CVPixelBuffer? {
+    guard let pixelBuffer = pixelBuffer else {
+      return nil
+    }
+    var newPixelBuffer: CVPixelBuffer?
+    let error = CVPixelBufferCreate(kCFAllocatorDefault,
+                                    CVPixelBufferGetHeight(pixelBuffer),
+                                    CVPixelBufferGetWidth(pixelBuffer),
+                                    kCVPixelFormatType_32BGRA,
+                                    nil,
+                                    &newPixelBuffer)
+    guard error == kCVReturnSuccess,
+          let buffer = newPixelBuffer else {
+      return nil
+    }
+    let ciImage = CIImage(cvPixelBuffer: pixelBuffer).oriented(oriented)
+    coreImageContext.render(ciImage, to: buffer)
+    return buffer
+  }
+
 }
