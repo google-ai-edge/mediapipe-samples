@@ -49,10 +49,11 @@ class InferenceViewController: UIViewController {
   @IBOutlet weak var maxResultLabel: UILabel!
 
   // MARK: Instance Variables
-  var objectDetectorHelperResult: ObjectDetectorHelperResult? = nil
+  var result: ResultBundle? = nil
   var maxResults = DefaultConstants.maxResults
   var scoreThreshold = DefaultConstants.scoreThreshold
   var modelChose = DefaultConstants.model
+  private var resultIndex = 0
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -91,10 +92,11 @@ class InferenceViewController: UIViewController {
 
   // Public function
   func updateData() {
-    if let inferenceTime = objectDetectorHelperResult?.inferenceTime {
+    if let inferenceTime = result?.inferenceTime {
       infrenceTimeLabel.text = String(format: "%.2fms", inferenceTime)
     }
   }
+
   // MARK: IBAction
 
   @IBAction func expandButtonTouchUpInside(_ sender: UIButton) {

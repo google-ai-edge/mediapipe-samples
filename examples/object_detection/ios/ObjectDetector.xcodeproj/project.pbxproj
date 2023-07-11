@@ -18,7 +18,6 @@
 		BF2B2D462A3C09E300589A11 /* ObjectDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D452A3C09E300589A11 /* ObjectDetectorTests.swift */; };
 		BF2B2D632A3C0C2900589A11 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D5F2A3C0C2900589A11 /* PreviewView.swift */; };
 		BF2B2D642A3C0C2900589A11 /* CameraFeedManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D602A3C0C2900589A11 /* CameraFeedManager.swift */; };
-		BF2B2D652A3C0C2900589A11 /* Define.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D612A3C0C2900589A11 /* Define.swift */; };
 		BF2B2D6B2A3C0C3F00589A11 /* InferenceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D692A3C0C3F00589A11 /* InferenceViewController.swift */; };
 		BF2B2D6D2A3C0EF900589A11 /* ObjectDetectorHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D6C2A3C0EF900589A11 /* ObjectDetectorHelper.swift */; };
 		BFCF181A2A405D3600D64FA6 /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCF18192A405D3600D64FA6 /* OverlayView.swift */; };
@@ -55,7 +54,6 @@
 		BF2B2D512A3C09E300589A11 /* ObjectDetectorUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectDetectorUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		BF2B2D5F2A3C0C2900589A11 /* PreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
 		BF2B2D602A3C0C2900589A11 /* CameraFeedManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedManager.swift; sourceTree = "<group>"; };
-		BF2B2D612A3C0C2900589A11 /* Define.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Define.swift; sourceTree = "<group>"; };
 		BF2B2D692A3C0C3F00589A11 /* InferenceViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceViewController.swift; sourceTree = "<group>"; };
 		BF2B2D6C2A3C0EF900589A11 /* ObjectDetectorHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectDetectorHelper.swift; sourceTree = "<group>"; };
 		BFCF18192A405D3600D64FA6 /* OverlayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OverlayView.swift; sourceTree = "<group>"; };
@@ -169,7 +167,6 @@
 				BFCF18192A405D3600D64FA6 /* OverlayView.swift */,
 				BF2B2D5F2A3C0C2900589A11 /* PreviewView.swift */,
 				BF2B2D602A3C0C2900589A11 /* CameraFeedManager.swift */,
-				BF2B2D612A3C0C2900589A11 /* Define.swift */,
 				BF2B2D6C2A3C0EF900589A11 /* ObjectDetectorHelper.swift */,
 			);
 			path = Helper;
@@ -381,7 +378,6 @@
 				BF2B2D6B2A3C0C3F00589A11 /* InferenceViewController.swift in Sources */,
 				BF2B2D642A3C0C2900589A11 /* CameraFeedManager.swift in Sources */,
 				BF2B2D2F2A3C09E200589A11 /* AppDelegate.swift in Sources */,
-				BF2B2D652A3C0C2900589A11 /* Define.swift in Sources */,
 				BF2B2D6D2A3C0EF900589A11 /* ObjectDetectorHelper.swift in Sources */,
 				BF2B2D312A3C09E200589A11 /* SceneDelegate.swift in Sources */,
 			);
