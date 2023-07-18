@@ -86,7 +86,7 @@ class CameraFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
         super.onPause()
 
         // save ObjectDetector settings
-        if(this::objectDetectorHelper.isInitialized) {
+        if (this::objectDetectorHelper.isInitialized) {
             viewModel.setModel(objectDetectorHelper.currentModel)
             viewModel.setDelegate(objectDetectorHelper.currentDelegate)
             viewModel.setThreshold(objectDetectorHelper.threshold)
@@ -149,6 +149,7 @@ class CameraFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
 
         // Attach listeners to UI control widgets
         initBottomSheetControls()
+        fragmentCameraBinding.overlay.setRunningMode(RunningMode.LIVE_STREAM)
     }
 
     private fun initBottomSheetControls() {
@@ -207,8 +208,11 @@ class CameraFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
                     try {
                         objectDetectorHelper.currentDelegate = p2
                         updateControlsUi()
-                    } catch(e: UninitializedPropertyAccessException) {
-                        Log.e(TAG, "ObjectDetectorHelper has not been initialized yet.")
+                    } catch (e: UninitializedPropertyAccessException) {
+                        Log.e(
+                            TAG,
+                            "ObjectDetectorHelper has not been initialized yet."
+                        )
                     }
                 }
 
@@ -233,8 +237,11 @@ class CameraFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
                     try {
                         objectDetectorHelper.currentDelegate = p2
                         updateControlsUi()
-                    } catch(e: UninitializedPropertyAccessException) {
-                        Log.e(TAG, "ObjectDetectorHelper has not been initialized yet.")
+                    } catch (e: UninitializedPropertyAccessException) {
+                        Log.e(
+                            TAG,
+                            "ObjectDetectorHelper has not been initialized yet."
+                        )
                     }
                 }
 

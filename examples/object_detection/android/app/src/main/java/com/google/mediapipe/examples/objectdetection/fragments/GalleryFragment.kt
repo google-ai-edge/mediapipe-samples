@@ -205,6 +205,7 @@ class GalleryFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
 
     // Load and display the image.
     private fun runDetectionOnImage(uri: Uri) {
+        fragmentGalleryBinding.overlay.setRunningMode(RunningMode.IMAGE)
         setUiEnabled(false)
         backgroundExecutor = Executors.newSingleThreadScheduledExecutor()
         updateDisplayView(MediaType.IMAGE)
@@ -264,6 +265,7 @@ class GalleryFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
     }
 
     private fun runDetectionOnVideo(uri: Uri) {
+        fragmentGalleryBinding.overlay.setRunningMode(RunningMode.VIDEO)
         setUiEnabled(false)
         updateDisplayView(MediaType.VIDEO)
 
