@@ -32,8 +32,6 @@ class ViewController: UIViewController {
   @IBOutlet weak var bottomSheetViewBottomSpace: NSLayoutConstraint!
   @IBOutlet weak var bottomViewHeightConstraint: NSLayoutConstraint!
 
-  private var coreImageContext: CIContext!
-
   // MARK: Constants
   private let inferenceIntervalMs: Double = 300
   private let inferenceBottomHeight = 220.0
@@ -102,12 +100,6 @@ class ViewController: UIViewController {
     runningModelTabbar.delegate = self
     cameraCapture.delegate = self
     overlayView.clearsContextBeforeDrawing = true
-
-    if let metalDevice = MTLCreateSystemDefaultDevice() {
-      coreImageContext = CIContext(mtlDevice: metalDevice)
-    } else {
-      coreImageContext = CIContext(options: nil)
-    }
   }
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
@@ -254,8 +246,20 @@ class ViewController: UIViewController {
         viewWidth = imageSize.width / imageSize.height * overlayView.bounds.size.height
         originX = (overlayView.bounds.size.width - viewWidth) / 2
       }
-
       var convertedRect = detection.boundingBox
+      
+      switch cameraCapture.orientation {
+      case .landscapeLeft:
+        convertedRect = CGRect(
+          x: convertedRect.origin.y, y: imageSize.height - convertedRect.origin.x - convertedRect.width, width: convertedRect.height, height: convertedRect.width)
+      case .landscapeRight:
+        convertedRect = CGRect(
+          x: imageSize.width - convertedRect.origin.y - convertedRect.height, y: convertedRect.origin.x, width: convertedRect.height, height: convertedRect.width)
+      default:
+        break
+      }
+
+      convertedRect = convertedRect
         .applying(CGAffineTransform(scaleX: viewWidth / imageSize.width, y: viewHeight / imageSize.height))
         .applying(CGAffineTransform(translationX: originX, y: originY))
 
@@ -414,32 +418,12 @@ extension ViewController: CameraFeedManagerDelegate {
 extension ViewController: ObjectDetectorHelperDelegate {
   func objectDetectorHelper(_ objectDetectorHelper: ObjectDetectorHelper, didFinishDetection result: ResultBundle?, error: Error?) {
     DispatchQueue.main.async {
-      self.previewView.shouldUseClipboardImage = true
       self.inferenceViewController?.result = result
       self.inferenceViewController?.updateData()
       if let objectDetectorResult = result?.objectDetectorResults.first,
-         let objectDetectorResult = objectDetectorResult {
-        var cvImageBuffer = CMSampleBufferGetImageBuffer(self.samp!)
-        // Rotate if need
-//        switch self.cameraCapture.orientation {
-//        case .landscapeLeft:
-//          cvImageBuffer = self.rotate(cvImageBuffer, oriented: .left)
-//        case .landscapeRight:
-//          cvImageBuffer = self.rotate(cvImageBuffer, oriented: .right)
-//        default:
-//          break
-//        }
-
-        guard cvImageBuffer != nil else { return  }
-        let ciImage = CIImage(cvImageBuffer: cvImageBuffer!, options: nil)
-
-        let image = UIImage(ciImage: ciImage)
-        self.previewView.image = self.drawOnImage(image, detections: objectDetectorResult.detections)
+         self.runningModelTabbar.selectedItem == self.cameraTabbarItem {
+        self.drawAfterPerformingCalculations(onDetections: objectDetectorResult?.detections ?? [], withImageSize: self.cameraCapture.videoFrameSize)
       }
-//      if let objectDetectorResult = result?.objectDetectorResults.first,
-//         self.runningModelTabbar.selectedItem == self.cameraTabbarItem {
-//        self.drawAfterPerformingCalculations(onDetections: objectDetectorResult?.detections ?? [], withImageSize: self.cameraCapture.videoFrameSize)
-//      }
     }
   }
 }
@@ -539,48 +523,4 @@ enum Model: String, CaseIterable {
                 forResource: "efficientdet_lite2", ofType: "tflite")
         }
     }
-}
-
-
-// MARK: - test function
-
-extension ViewController {
-
-  func drawOnImage(_ image: UIImage, detections: [Detection]) -> UIImage? {
-    UIGraphicsBeginImageContext(image.size)
-    image.draw(at: CGPoint.zero)
-    let context = UIGraphicsGetCurrentContext()!
-
-    context.setStrokeColor(UIColor.green.cgColor)
-    context.setAlpha(0.5)
-    context.setLineWidth(10.0)
-    for detection in detections {
-      context.addRect(detection.boundingBox)
-      context.drawPath(using: .stroke)
-    }
-    let newImage = UIGraphicsGetImageFromCurrentImageContext()
-    UIGraphicsEndImageContext()
-    return newImage
-  }
-
-  func rotate(_ pixelBuffer: CVPixelBuffer?, oriented: CGImagePropertyOrientation) -> CVPixelBuffer? {
-    guard let pixelBuffer = pixelBuffer else {
-      return nil
-    }
-    var newPixelBuffer: CVPixelBuffer?
-    let error = CVPixelBufferCreate(kCFAllocatorDefault,
-                                    CVPixelBufferGetHeight(pixelBuffer),
-                                    CVPixelBufferGetWidth(pixelBuffer),
-                                    kCVPixelFormatType_32BGRA,
-                                    nil,
-                                    &newPixelBuffer)
-    guard error == kCVReturnSuccess,
-          let buffer = newPixelBuffer else {
-      return nil
-    }
-    let ciImage = CIImage(cvPixelBuffer: pixelBuffer).oriented(oriented)
-    coreImageContext.render(ciImage, to: buffer)
-    return buffer
-  }
-
 }
