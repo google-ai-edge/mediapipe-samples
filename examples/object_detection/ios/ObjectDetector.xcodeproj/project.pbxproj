@@ -189,7 +189,6 @@
 			buildConfigurationList = BF2B2D552A3C09E300589A11 /* Build configuration list for PBXNativeTarget "ObjectDetector" */;
 			buildPhases = (
 				3517CB632BA5E9CE4A1938C9 /* [CP] Check Pods Manifest.lock */,
-				BFCF181B2A405DE900D64FA6 /* Download efficientnet_lite0 */,
 				BFCF181C2A405DEB00D64FA6 /* Download efficientnet_lite2 */,
 				BF2B2D272A3C09E200589A11 /* Sources */,
 				BF2B2D282A3C09E200589A11 /* Frameworks */,
@@ -328,24 +327,6 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
-		};
-		BFCF181B2A405DE900D64FA6 /* Download efficientnet_lite0 */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Download efficientnet_lite0";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Download efficientnet_lite0.tflite from the internet if it's not exist.\nTFLITE_FILE=${SRCROOT}/ObjectDetector/efficientdet_lite0.tflite\nif test -f \"$TFLITE_FILE\"; then\n    echo \"INFO: efficientdet_lite0.tflite existed. Skip downloading and use the local model.\"\nelse\n    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float32/1/efficientdet_lite0.tflite\n    echo \"INFO: Downloaded efficientdet_lite0.tflite to $TFLITE_FILE .\"\nfi\n";
 		};
 		BFCF181C2A405DEB00D64FA6 /* Download efficientnet_lite2 */ = {
 			isa = PBXShellScriptBuildPhase;

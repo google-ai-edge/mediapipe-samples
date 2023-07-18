@@ -72,8 +72,6 @@ class ViewController: UIViewController {
     }
   }
 
-  var samp: CMSampleBuffer?
-
   let backgroundQueue = DispatchQueue(
       label: "com.google.mediapipe.ObjectDetection",
       qos: .userInteractive
@@ -247,16 +245,18 @@ class ViewController: UIViewController {
         originX = (overlayView.bounds.size.width - viewWidth) / 2
       }
       var convertedRect = detection.boundingBox
-      
-      switch cameraCapture.orientation {
-      case .landscapeLeft:
-        convertedRect = CGRect(
-          x: convertedRect.origin.y, y: imageSize.height - convertedRect.origin.x - convertedRect.width, width: convertedRect.height, height: convertedRect.width)
-      case .landscapeRight:
-        convertedRect = CGRect(
-          x: imageSize.width - convertedRect.origin.y - convertedRect.height, y: convertedRect.origin.x, width: convertedRect.height, height: convertedRect.width)
-      default:
-        break
+
+      if runingModel == .liveStream {
+        switch cameraCapture.orientation {
+        case .landscapeLeft:
+          convertedRect = CGRect(
+            x: convertedRect.origin.y, y: imageSize.height - convertedRect.origin.x - convertedRect.width, width: convertedRect.height, height: convertedRect.width)
+        case .landscapeRight:
+          convertedRect = CGRect(
+            x: imageSize.width - convertedRect.origin.y - convertedRect.height, y: convertedRect.origin.x, width: convertedRect.height, height: convertedRect.width)
+        default:
+          break
+        }
       }
 
       convertedRect = convertedRect
@@ -316,26 +316,28 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
     if info[.mediaType] as? String == UTType.movie.identifier {
       guard let mediaURL = info[.mediaURL] as? URL else { return }
       imageEmptyLabel.isHidden = true
-      if runingModel == .image {
+      if runingModel != .video {
         runingModel = .video
       }
       processVideo(url: mediaURL)
     } else {
       guard let image = info[.originalImage] as? UIImage else { return }
       imageEmptyLabel.isHidden = true
-      if runingModel == .video {
+      if runingModel != .image {
         runingModel = .image
       }
       removePlayerViewController()
       previewView.image = image
       // Pass the uiimage to mediapipe
-      let result = objectDetectorHelper?.detect(image: image)
-      // Display results by handing off to the InferenceViewController.
-      inferenceViewController?.result = result
-      DispatchQueue.main.async {
-        self.inferenceViewController?.updateData()
-        if let objectDetectorResult = result?.objectDetectorResults.first {
-          self.drawAfterPerformingCalculations(onDetections: objectDetectorResult?.detections ?? [], withImageSize: image.size)
+      backgroundQueue.async {
+        let result = self.objectDetectorHelper?.detect(image: image)
+        // Display results by handing off to the InferenceViewController.
+        self.inferenceViewController?.result = result
+        DispatchQueue.main.async {
+          self.inferenceViewController?.updateData()
+          if let objectDetectorResult = result?.objectDetectorResults.first {
+            self.drawAfterPerformingCalculations(onDetections: objectDetectorResult?.detections ?? [], withImageSize: image.size)
+          }
         }
       }
     }
@@ -347,7 +349,6 @@ extension ViewController: CameraFeedManagerDelegate {
 
   func didOutput(sampleBuffer: CMSampleBuffer, orientation: UIDeviceOrientation) {
     let currentTimeMs = Date().timeIntervalSince1970 * 1000
-    samp = sampleBuffer
     // Pass the pixel buffer to mediapipe
     backgroundQueue.async { [weak self] in
       self?.objectDetectorHelper?.detectAsync(videoFrame: sampleBuffer, orientation: orientation, timeStamps: Int(currentTimeMs))
