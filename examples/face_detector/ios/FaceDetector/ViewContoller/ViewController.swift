@@ -33,6 +33,7 @@ class ViewController: UIViewController {
   @IBOutlet weak var bottomViewHeightConstraint: NSLayoutConstraint!
 
   // MARK: Constants
+  private let inferenceIntervalMs: Double = 300
   private let delayBetweenInferencesMs = 50.0
   private let inferenceBottomHeight = 170.0
   private let expandButtonHeight = 41.0
@@ -49,17 +50,21 @@ class ViewController: UIViewController {
   private var minSuppressionThreshold = DefaultConstants.minSuppressionThreshold
   private var minDetectionConfidence = DefaultConstants.minDetectionConfidence
   private var modelPath = DefaultConstants.modelPath
-  private var runingModel: RunningMode = .video {
+  private var runingModel: RunningMode = .liveStream {
     didSet {
       faceDetectorHelper = FaceDetectorHelper(
         modelPath: modelPath,
         minDetectionConfidence: minDetectionConfidence,
         minSuppressionThreshold: minSuppressionThreshold,
-        runningModel: runingModel
+        runningModel: runingModel,
+        delegate: self
       )
     }
   }
-  private var isProcess = false
+  let backgroundQueue = DispatchQueue(
+      label: "com.google.mediapipe.ObjectDetection",
+      qos: .userInteractive
+    )
 
   // MARK: Controllers that manage functionality
   // Handles all the camera related functionality
@@ -80,7 +85,8 @@ class ViewController: UIViewController {
       modelPath: modelPath,
       minDetectionConfidence: minDetectionConfidence,
       minSuppressionThreshold: minSuppressionThreshold,
-      runningModel: runingModel
+      runningModel: runingModel,
+      delegate: self
     )
 
     runningModelTabbar.selectedItem = cameraTabbarItem
@@ -91,7 +97,7 @@ class ViewController: UIViewController {
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
 #if !targetEnvironment(simulator)
-    if runingModel == .video {
+    if runingModel == .liveStream {
       cameraCapture.checkCameraConfigurationAndStartSession()
     }
 #endif
@@ -137,22 +143,6 @@ class ViewController: UIViewController {
     }
   }
 
-  // MARK: - Test
-  func drawOnImage(_ image: UIImage, boxs: [CGRect]) -> UIImage {
-
-    UIGraphicsBeginImageContext(image.size)
-    image.draw(at: CGPoint.zero)
-    let context = UIGraphicsGetCurrentContext()!
-    context.setStrokeColor(UIColor.red.cgColor)
-    context.setLineWidth(20)
-    context.addRects(boxs)
-    context.drawPath(using: .stroke)
-    let myImage = UIGraphicsGetImageFromCurrentImageContext()
-    UIGraphicsEndImageContext()
-
-    return myImage!
-  }
-
   // MARK: Private function
   private func openImagePickerController() {
     if UIImagePickerController.isSourceTypeAvailable(.savedPhotosAlbum) {
@@ -172,48 +162,42 @@ class ViewController: UIViewController {
   }
 
   private func processVideo(url: URL) {
-    let player = AVPlayer(url: url)
-    let asset:AVAsset = AVAsset(url: url)
-    generator = AVAssetImageGenerator(asset:asset)
-    generator?.requestedTimeToleranceBefore = CMTimeMake(value: 1, timescale: 25)
-    generator?.requestedTimeToleranceAfter = CMTimeMake(value: 1, timescale: 25)
-    generator?.appliesPreferredTrackTransform = true
-    playerViewController.player = player
-    playerViewController.showsPlaybackControls = false
-    playerViewController.view.frame = previewView.bounds
-    playerViewController.videoGravity = .resizeAspectFill
-    previewView.addSubview(playerViewController.view)
-    addChild(playerViewController)
-    player.play()
-    NotificationCenter.default.removeObserver(self)
-    NotificationCenter.default
-      .addObserver(self,
-                   selector: #selector(playerDidFinishPlaying),
-                   name: .AVPlayerItemDidPlayToEndTime,
-                   object: player.currentItem
-      )
+    backgroundQueue.async { [weak self] in
+      guard let weakSelf = self else { return }
+      Task {
+        let result = await weakSelf.faceDetectorHelper?.detectVideoFile(url: url, inferenceIntervalMs: weakSelf.inferenceIntervalMs)
+        DispatchQueue.main.async {
+          weakSelf.inferenceViewController?.result = result
+          weakSelf.inferenceViewController?.updateData()
+          let player = AVPlayer(url: url)
+          weakSelf.playerViewController.player = player
+          weakSelf.playerViewController.showsPlaybackControls = false
+          weakSelf.playerViewController.view.frame = weakSelf.previewView.bounds
+          weakSelf.previewView.addSubview(weakSelf.playerViewController.view)
+          weakSelf.addChild(weakSelf.playerViewController)
+          player.play()
+          NotificationCenter.default.removeObserver(weakSelf)
+          NotificationCenter.default
+            .addObserver(weakSelf,
+                         selector: #selector(weakSelf.playerDidFinishPlaying),
+                         name: .AVPlayerItemDidPlayToEndTime,
+                         object: player.currentItem
+            )
 
-    videoDetectTimer?.invalidate()
-    videoDetectTimer = Timer.scheduledTimer(
-      timeInterval: delayBetweenInferencesMs/1000,
-      target: self,
-      selector: #selector(detectionVideoFrame),
-      userInfo: nil,
-      repeats: true)
-  }
-
-  @objc func detectionVideoFrame() {
-    guard let player = playerViewController.player else { return }
-    let currentTime: CMTime = player.currentTime()
-    guard let image = self.imageFromCurrentPlayer(fromTime: currentTime) else { return }
-    let currentTimeMs = Date().timeIntervalSince1970 * 1000
-    let result = self.faceDetectorHelper?.detect(videoFrame: image, timeStamps: Int(currentTimeMs))
-
-    // Display results by handing off to the InferenceViewController.
-    inferenceViewController?.faceDetectorHelperResult = result
-    DispatchQueue.main.async {
-      self.inferenceViewController?.updateData()
-      self.drawAfterPerformingCalculations(onDetections: result?.faceDetectorResult?.detections ?? [], withImageSize: image.size)
+          weakSelf.videoDetectTimer?.invalidate()
+          weakSelf.videoDetectTimer = Timer.scheduledTimer(
+            withTimeInterval: weakSelf.inferenceIntervalMs / 1000,
+            repeats: true, block: { _ in
+              let currentTime: CMTime = player.currentTime()
+              let index = Int(currentTime.seconds * 1000 / weakSelf.inferenceIntervalMs)
+              guard let faceDetectorResults = result?.faceDetectorResults,
+                    index < faceDetectorResults.count else { return }
+              DispatchQueue.main.async {
+                weakSelf.drawAfterPerformingCalculations(onDetections: faceDetectorResults[index]?.detections ?? [], withImageSize:result?.imageSize ?? .zero)
+              }
+          })
+        }
+      }
     }
   }
 
@@ -222,26 +206,14 @@ class ViewController: UIViewController {
     videoDetectTimer = nil
   }
 
-  private func imageFromCurrentPlayer(fromTime: CMTime) -> UIImage? {
-    let image:CGImage?
-    do {
-      try image = generator?.copyCGImage(at:fromTime, actualTime:nil)
-    } catch {
-      print(error)
-       return nil
-    }
-    guard let image = image else { return nil }
-    return UIImage(cgImage:image)
-  }
-
   // MARK: Handle ovelay function
   /**
    This method takes the results, translates the bounding box rects to the current view, draws the bounding boxes, classNames and confidence scores of inferences.
    */
-  private func drawAfterPerformingCalculations(onDetections detections: [Detection], withImageSize imageSize:CGSize) {
+  private func drawAfterPerformingCalculations(onDetections detections: [Detection], withImageSize imageSize: CGSize) {
 
-    overlayView.objectOverlays = []
-    overlayView.setNeedsDisplay()
+    self.overlayView.objectOverlays = []
+    self.overlayView.setNeedsDisplay()
 
     guard !detections.isEmpty else {
       return
@@ -253,6 +225,7 @@ class ViewController: UIViewController {
       index += 1
 
       guard let category = detection.categories.first else { continue }
+
       // Translates bounding box rect to current view.
       var viewWidth = overlayView.bounds.size.width
       var viewHeight = overlayView.bounds.size.height
@@ -266,8 +239,34 @@ class ViewController: UIViewController {
         viewWidth = imageSize.width / imageSize.height * overlayView.bounds.size.height
         originX = (overlayView.bounds.size.width - viewWidth) / 2
       }
-
       var convertedRect = detection.boundingBox
+
+      if runingModel == .liveStream {
+        var newWidth = imageSize.width
+        if cameraCapture.orientation == .landscapeLeft || cameraCapture.orientation == .landscapeRight {
+          newWidth = imageSize.height
+        }
+        if cameraCapture.cameraPosition == .front {
+          convertedRect = CGRect(
+            x: newWidth - convertedRect.origin.x - convertedRect.width,
+            y: convertedRect.origin.y,
+            width: convertedRect.width,
+            height: convertedRect.height)
+        }
+
+        switch cameraCapture.orientation {
+        case .landscapeLeft:
+          convertedRect = CGRect(
+            x: convertedRect.origin.y, y: imageSize.height - convertedRect.origin.x - convertedRect.width, width: convertedRect.height, height: convertedRect.width)
+        case .landscapeRight:
+          convertedRect = CGRect(
+            x: imageSize.width - convertedRect.origin.y - convertedRect.height, y: convertedRect.origin.x, width: convertedRect.height, height: convertedRect.width)
+        default:
+          break
+        }
+      }
+
+      convertedRect = convertedRect
         .applying(CGAffineTransform(scaleX: viewWidth / imageSize.width, y: viewHeight / imageSize.height))
         .applying(CGAffineTransform(translationX: originX, y: originY))
 
@@ -281,13 +280,15 @@ class ViewController: UIViewController {
         convertedRect.origin.y = edgeOffset
       }
 
-      if convertedRect.maxY > overlayView.bounds.maxY {
-        convertedRect.size.height = overlayView.bounds.maxY - convertedRect.origin.y - edgeOffset
+      if convertedRect.maxY > self.overlayView.bounds.maxY {
+        convertedRect.size.height = self.overlayView.bounds.maxY - convertedRect.origin.y - self.edgeOffset
       }
 
-      if convertedRect.maxX > overlayView.bounds.maxX {
-        convertedRect.size.width = overlayView.bounds.maxX - convertedRect.origin.x - edgeOffset
+      if convertedRect.maxX > self.overlayView.bounds.maxX {
+        convertedRect.size.width = self.overlayView.bounds.maxX - convertedRect.origin.x - self.edgeOffset
       }
+
+      // if index = 0 class name is unknow
 
       let confidenceValue = Int(category.score * 100.0)
       let string = "\(category.categoryName ?? "") (\(confidenceValue)%) "
@@ -302,7 +303,7 @@ class ViewController: UIViewController {
     }
 
     // Hands off drawing to the OverlayView
-    draw(objectOverlays: objectOverlays)
+    self.draw(objectOverlays: objectOverlays)
 
   }
 
@@ -319,16 +320,17 @@ class ViewController: UIViewController {
 extension ViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
   func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
     picker.dismiss(animated: true)
-    imageEmptyLabel.isHidden = true
     if info[.mediaType] as? String == UTType.movie.identifier {
       guard let mediaURL = info[.mediaURL] as? URL else { return }
-      if runingModel == .image {
+      imageEmptyLabel.isHidden = true
+      if runingModel != .video {
         runingModel = .video
       }
       processVideo(url: mediaURL)
     } else {
       guard let image = info[.originalImage] as? UIImage else { return }
-      if runingModel == .video {
+      imageEmptyLabel.isHidden = true
+      if runingModel != .image {
         runingModel = .image
       }
       removePlayerViewController()
@@ -336,10 +338,12 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
       // Pass the uiimage to mediapipe
       let result = faceDetectorHelper?.detect(image: image)
       // Display results by handing off to the InferenceViewController.
-      inferenceViewController?.faceDetectorHelperResult = result
+      inferenceViewController?.result = result
       DispatchQueue.main.async {
         self.inferenceViewController?.updateData()
-        self.drawAfterPerformingCalculations(onDetections: result?.faceDetectorResult?.detections ?? [], withImageSize: image.size)
+        if let faceDetectorResult = result?.faceDetectorResults.first {
+          self.drawAfterPerformingCalculations(onDetections: faceDetectorResult?.detections ?? [], withImageSize: image.size)
+        }
       }
     }
   }
@@ -347,26 +351,11 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
 
 // MARK: CameraFeedManagerDelegate Methods
 extension ViewController: CameraFeedManagerDelegate {
-
-  func didOutput(pixelBuffer: CVPixelBuffer) {
-    // Make sure the model will not run too often, making the results changing quickly and hard to
-    // read.
+  func didOutput(sampleBuffer: CMSampleBuffer, orientation: UIDeviceOrientation) {
     let currentTimeMs = Date().timeIntervalSince1970 * 1000
-    guard (currentTimeMs - previousInferenceTimeMs) >= delayBetweenInferencesMs && !isProcess else { return }
-    previousInferenceTimeMs = currentTimeMs
-
     // Pass the pixel buffer to mediapipe
-    isProcess = true
-    let result = faceDetectorHelper?.detect(videoFrame: pixelBuffer, timeStamps: Int(currentTimeMs))
-    isProcess = false
-    // Display results by handing off to the InferenceViewController.
-    inferenceViewController?.faceDetectorHelperResult = result
-
-    DispatchQueue.main.async {
-      self.inferenceViewController?.updateData()
-      if self.runningModelTabbar.selectedItem == self.cameraTabbarItem {
-        self.drawAfterPerformingCalculations(onDetections: result?.faceDetectorResult?.detections ?? [], withImageSize: CVImageBufferGetDisplaySize(pixelBuffer))
-      }
+    backgroundQueue.async { [weak self] in
+      self?.faceDetectorHelper?.detectAsync(videoFrame: sampleBuffer, orientation: orientation, timeStamps: Int(currentTimeMs))
     }
   }
 
@@ -430,6 +419,20 @@ extension ViewController: CameraFeedManagerDelegate {
   }
 }
 
+// MARK: FaceDetectorHelperDelegate
+extension ViewController: FaceDetectorHelperDelegate {
+  func faceDetectorHelper(_ faceDetectorHelper: FaceDetectorHelper, didFinishDetection result: ResultBundle?, error: Error?) {
+    DispatchQueue.main.async {
+      self.inferenceViewController?.result = result
+      self.inferenceViewController?.updateData()
+      if let faceDetectorResult = result?.faceDetectorResults.first,
+         self.runningModelTabbar.selectedItem == self.cameraTabbarItem {
+        self.drawAfterPerformingCalculations(onDetections: faceDetectorResult?.detections ?? [], withImageSize: self.cameraCapture.videoFrameSize)
+      }
+    }
+  }
+}
+
 // MARK: InferenceViewControllerDelegate Methods
 extension ViewController: InferenceViewControllerDelegate {
   func viewController(
@@ -459,7 +462,8 @@ extension ViewController: InferenceViewControllerDelegate {
         modelPath: modelPath,
         minDetectionConfidence: minDetectionConfidence,
         minSuppressionThreshold: minSuppressionThreshold,
-        runningModel: runingModel
+        runningModel: runingModel,
+        delegate: self
       )
     }
   }
@@ -470,13 +474,13 @@ extension ViewController: UITabBarDelegate {
   func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
     switch item {
     case cameraTabbarItem:
-      if runingModel == .image {
-        runingModel = .video
+      if runingModel != .liveStream {
+        runingModel = .liveStream
       }
       removePlayerViewController()
-#if !targetEnvironment(simulator)
+    #if !targetEnvironment(simulator)
       cameraCapture.checkCameraConfigurationAndStartSession()
-#endif
+    #endif
       previewView.shouldUseClipboardImage = false
       addImageButton.isHidden = true
       imageEmptyLabel.isHidden = true
@@ -497,17 +501,9 @@ extension ViewController: UITabBarDelegate {
   }
 }
 
-import VideoToolbox
-
-extension UIImage {
-    public convenience init?(pixelBuffer: CVPixelBuffer) {
-        var cgImage: CGImage?
-        VTCreateCGImageFromCVPixelBuffer(pixelBuffer, options: nil, imageOut: &cgImage)
-
-        guard let cgImage = cgImage else {
-            return nil
-        }
-
-        self.init(cgImage: cgImage)
-    }
+// MARK: Define default constants
+enum DefaultConstants {
+  static let minSuppressionThreshold: Float = 0.5
+  static let minDetectionConfidence: Float = 0.5
+  static let modelPath: String? = Bundle.main.path(forResource: "blaze_face_short_range", ofType: "tflite")
 }

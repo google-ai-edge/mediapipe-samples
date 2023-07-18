@@ -19,7 +19,6 @@
 		BFCF186D2A415C2100D64FA6 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCF18682A415C2100D64FA6 /* PreviewView.swift */; };
 		BFCF186E2A415C2100D64FA6 /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCF18692A415C2100D64FA6 /* OverlayView.swift */; };
 		BFCF186F2A415C2100D64FA6 /* CameraFeedManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCF186A2A415C2100D64FA6 /* CameraFeedManager.swift */; };
-		BFCF18702A415C2100D64FA6 /* Define.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCF186B2A415C2100D64FA6 /* Define.swift */; };
 		BFCF18722A415C3400D64FA6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BFCF18712A415C3400D64FA6 /* Assets.xcassets */; };
 		BFCF18772A415C6700D64FA6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BFCF18752A415C6700D64FA6 /* Main.storyboard */; };
 		BFCF18792A4160CA00D64FA6 /* blaze_face_short_range.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BFCF18782A4160CA00D64FA6 /* blaze_face_short_range.tflite */; };
@@ -53,7 +52,6 @@
 		BFCF18682A415C2100D64FA6 /* PreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
 		BFCF18692A415C2100D64FA6 /* OverlayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OverlayView.swift; sourceTree = "<group>"; };
 		BFCF186A2A415C2100D64FA6 /* CameraFeedManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedManager.swift; sourceTree = "<group>"; };
-		BFCF186B2A415C2100D64FA6 /* Define.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Define.swift; sourceTree = "<group>"; };
 		BFCF18712A415C3400D64FA6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BFCF18762A415C6700D64FA6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		BFCF18782A4160CA00D64FA6 /* blaze_face_short_range.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = blaze_face_short_range.tflite; sourceTree = "<group>"; };
@@ -164,7 +162,6 @@
 				BFCF18682A415C2100D64FA6 /* PreviewView.swift */,
 				BFCF18692A415C2100D64FA6 /* OverlayView.swift */,
 				BFCF186A2A415C2100D64FA6 /* CameraFeedManager.swift */,
-				BFCF186B2A415C2100D64FA6 /* Define.swift */,
 			);
 			path = Helper;
 			sourceTree = "<group>";
@@ -347,7 +344,6 @@
 				BFCF18642A415C1900D64FA6 /* ViewController.swift in Sources */,
 				BFCF186C2A415C2100D64FA6 /* FaceDetectorHelper.swift in Sources */,
 				BFCF186F2A415C2100D64FA6 /* CameraFeedManager.swift in Sources */,
-				BFCF18702A415C2100D64FA6 /* Define.swift in Sources */,
 				BFCF18342A415B9300D64FA6 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

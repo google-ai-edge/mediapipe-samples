@@ -21,7 +21,7 @@ protocol CameraFeedManagerDelegate: AnyObject {
   /**
    This method delivers the pixel buffer of the current frame seen by the device's camera.
    */
-  func didOutput(pixelBuffer: CVPixelBuffer)
+  func didOutput(sampleBuffer: CMSampleBuffer, orientation: UIDeviceOrientation)
 
   /**
    This method initimates that the camera permissions have been denied.
@@ -71,10 +71,13 @@ class CameraFeedManager: NSObject {
   private let sessionQueue = DispatchQueue(label: "sessionQueue")
   private var cameraConfiguration: CameraConfiguration = .failed
   private lazy var videoDataOutput = AVCaptureVideoDataOutput()
-  var isSessionRunning = false
-  private var cameraPosition: AVCaptureDevice.Position = .front
-  private var orientation = UIDevice.current.orientation
+  private var isSessionRunning = false
   private var coreImageContext: CIContext
+  private var needCalculationSize = true
+
+  var cameraPosition: AVCaptureDevice.Position = .front
+  var orientation = UIDevice.current.orientation
+  var videoFrameSize: CGSize = .zero
 
   // MARK: CameraFeedManagerDelegate
   weak var delegate: CameraFeedManagerDelegate?
@@ -105,6 +108,7 @@ class CameraFeedManager: NSObject {
   // MARK: notification methods
   @objc func orientationChanged(notification: Notification) {
     orientation = UIDevice.current.orientation
+    needCalculationSize = true
     switch orientation {
     case .portrait:
       previewView.previewLayer.connection?.videoOrientation = .portrait
@@ -289,41 +293,6 @@ class CameraFeedManager: NSObject {
     return false
   }
 
-  /**
-   This method Rotate CVPixelBuffer
-   */
-  private func rotate(_ pixelBuffer: CVPixelBuffer?, oriented: CGImagePropertyOrientation) -> CVPixelBuffer? {
-    guard let pixelBuffer = pixelBuffer else {
-      return nil
-    }
-    var newPixelBuffer: CVPixelBuffer?
-    let error = CVPixelBufferCreate(kCFAllocatorDefault,
-                                    CVPixelBufferGetHeight(pixelBuffer),
-                                    CVPixelBufferGetWidth(pixelBuffer),
-                                    kCVPixelFormatType_32BGRA,
-                                    nil,
-                                    &newPixelBuffer)
-    guard error == kCVReturnSuccess,
-          let buffer = newPixelBuffer else {
-      return nil
-    }
-    let ciImage = CIImage(cvPixelBuffer: pixelBuffer).oriented(oriented)
-    coreImageContext.render(ciImage, to: buffer)
-    return buffer
-  }
-
-  /**
-   This method flip CVPixelBuffer
-   */
-  private func flip(_ pixelBuffer: CVPixelBuffer?) -> CVPixelBuffer? {
-    guard let pixelBuffer = pixelBuffer else {
-      return nil
-    }
-    let ciImage = CIImage(cvPixelBuffer: pixelBuffer).oriented(.upMirrored)
-    coreImageContext.render(ciImage, to: pixelBuffer)
-    return pixelBuffer
-  }
-
   // MARK: Notification Observer Handling
   private func addObservers() {
     NotificationCenter.default.addObserver(self, selector: #selector(CameraFeedManager.sessionRuntimeErrorOccured(notification:)), name: NSNotification.Name.AVCaptureSessionRuntimeError, object: session)
@@ -386,7 +355,6 @@ class CameraFeedManager: NSObject {
   }
 }
 
-
 /**
  AVCaptureVideoDataOutputSampleBufferDelegate
  */
@@ -395,34 +363,18 @@ extension CameraFeedManager: AVCaptureVideoDataOutputSampleBufferDelegate {
   /** This method delegates the CVPixelBuffer of the frame seen by the camera currently.
    */
   func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-
-    // Converts the CMSampleBuffer to a CVPixelBuffer.
-    var pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
-
-    switch orientation {
-    case .landscapeLeft:
-      if cameraPosition == .front {
-        pixelBuffer = rotate(pixelBuffer, oriented: .leftMirrored)
-      } else {
-        pixelBuffer = rotate(pixelBuffer, oriented: .left)
+    if needCalculationSize {
+      let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)!
+      switch orientation {
+      case .landscapeLeft, .landscapeRight:
+        videoFrameSize = CGSize(width: CVPixelBufferGetHeight(imageBuffer), height: CVPixelBufferGetWidth(imageBuffer))
+      default:
+        videoFrameSize = CGSize(width: CVPixelBufferGetWidth(imageBuffer), height: CVPixelBufferGetHeight(imageBuffer))
       }
-    case .landscapeRight:
-      if cameraPosition == .front {
-        pixelBuffer = rotate(pixelBuffer, oriented: .rightMirrored)
-      } else {
-        pixelBuffer = rotate(pixelBuffer, oriented: .right)
-      }
-    default:
-      if cameraPosition == .front {
-        pixelBuffer = flip(pixelBuffer)
-      }
-    }
-    guard let imagePixelBuffer = pixelBuffer else {
-      return
+      needCalculationSize = false
+      print(videoFrameSize)
     }
 
-    // Delegates the pixel buffer to the ViewController.
-    delegate?.didOutput(pixelBuffer: imagePixelBuffer)
+    delegate?.didOutput(sampleBuffer: sampleBuffer, orientation: orientation)
   }
-
 }

@@ -14,15 +14,25 @@
 
 import UIKit
 import MediaPipeTasksVision
+import AVFoundation
 
-class FaceDetectorHelper {
+protocol FaceDetectorHelperDelegate: AnyObject {
+  func faceDetectorHelper(_ faceDetectorHelper: FaceDetectorHelper,
+                             didFinishDetection result: ResultBundle?,
+                             error: Error?)
+}
 
+class FaceDetectorHelper: NSObject {
+
+  weak var delegate: FaceDetectorHelperDelegate?
   var faceDetector: FaceDetector?
 
-  init(modelPath: String?, minDetectionConfidence: Float, minSuppressionThreshold: Float, runningModel: RunningMode) {
+  init(modelPath: String?, minDetectionConfidence: Float, minSuppressionThreshold: Float, runningModel: RunningMode, delegate: FaceDetectorHelperDelegate?) {
+    super.init()
     guard let modelPath = modelPath else { return }
     let faceDetectorOptions = FaceDetectorOptions()
     faceDetectorOptions.runningMode = runningModel
+    faceDetectorOptions.faceDetectorLiveStreamDelegate = runningModel == .liveStream ? self : nil
     faceDetectorOptions.minDetectionConfidence = minDetectionConfidence
     faceDetectorOptions.minSuppressionThreshold = minSuppressionThreshold
     faceDetectorOptions.baseOptions.modelAssetPath = modelPath
@@ -31,18 +41,19 @@ class FaceDetectorHelper {
     } catch {
       print(error)
     }
+    self.delegate = delegate
   }
 
   /**
    This method return FaceDetectorResult and infrenceTime when receive an image
    **/
-  func detect(image: UIImage) -> FaceDetectorHelperResult? {
+  func detect(image: UIImage) -> ResultBundle? {
     guard let mpImage = try? MPImage(uiImage: image) else { return nil }
     do {
       let startDate = Date()
       let result = try faceDetector?.detect(image: mpImage)
       let inferenceTime = Date().timeIntervalSince(startDate) * 1000
-      return FaceDetectorHelperResult(inferenceTime: inferenceTime, faceDetectorResult: result)
+      return ResultBundle(inferenceTime: inferenceTime, faceDetectorResults: [result])
     } catch {
       print(error)
       return nil
@@ -52,31 +63,75 @@ class FaceDetectorHelper {
   /**
    This method return FaceDetectorResult and infrenceTime when receive videoFrame
    **/
-  func detect(videoFrame: CVPixelBuffer, timeStamps: Int) -> FaceDetectorHelperResult? {
+  func detectAsync(videoFrame: CMSampleBuffer, orientation: UIDeviceOrientation, timeStamps: Int) {
+    var uiimageOrientation: UIImage.Orientation = .up
+    switch orientation {
+    case .landscapeLeft:
+      uiimageOrientation = .left
+    case .landscapeRight:
+      uiimageOrientation = .right
+    default:
+      uiimageOrientation = .up
+    }
     guard let faceDetector = faceDetector,
-          let image = try? MPImage(pixelBuffer: videoFrame) else { return nil }
+          let image = try? MPImage(sampleBuffer: videoFrame, orientation: uiimageOrientation) else { return }
     do {
-      let startDate = Date()
-      let result = try faceDetector.detect(videoFrame: image, timestampInMilliseconds: timeStamps)
-      let inferenceTime = Date().timeIntervalSince(startDate) * 1000
-      return FaceDetectorHelperResult(inferenceTime: inferenceTime, faceDetectorResult: result)
+      try faceDetector.detectAsync(image: image, timestampInMilliseconds: timeStamps)
     } catch {
       print(error)
-      return nil
     }
   }
 
-  func detect(videoFrame: UIImage, timeStamps: Int) -> FaceDetectorHelperResult? {
-    guard let faceDetector = faceDetector,
-          let image = try? MPImage(uiImage: videoFrame) else { return nil }
-    do {
-      let startDate = Date()
-      let result = try faceDetector.detect(videoFrame: image, timestampInMilliseconds: timeStamps)
-      let inferenceTime = Date().timeIntervalSince(startDate) * 1000
-      return FaceDetectorHelperResult(inferenceTime: inferenceTime, faceDetectorResult: result)
-    } catch {
-      print(error)
-      return nil
+  func detectVideoFile(url: URL, inferenceIntervalMs: Double) async -> ResultBundle? {
+    guard let faceDetector = faceDetector else { return nil }
+    let startDate = Date()
+    var size: CGSize = .zero
+    let asset: AVAsset = AVAsset(url: url)
+    let generator = AVAssetImageGenerator(asset:asset)
+    generator.requestedTimeToleranceBefore = CMTimeMake(value: 1, timescale: 25)
+    generator.requestedTimeToleranceAfter = CMTimeMake(value: 1, timescale: 25)
+    generator.appliesPreferredTrackTransform = true
+    guard let videoDurationMs = try? await asset.load(.duration).seconds * 1000 else { return nil }
+    let frameCount = Int(videoDurationMs / inferenceIntervalMs)
+    var faceDetectorResults: [FaceDetectorResult?] = []
+    for i in 0..<frameCount {
+      let timestampMs = Int(inferenceIntervalMs) * i // ms
+      let image:CGImage?
+      do {
+        let time = CMTime(seconds: Double(timestampMs) / 1000, preferredTimescale: 600)
+        try image = generator.copyCGImage(at: time, actualTime:nil)
+      } catch {
+        print(error)
+         return nil
+      }
+      guard let image = image else { return nil }
+      let uiImage = UIImage(cgImage:image)
+      size = uiImage.size
+      let result = try? faceDetector.detect(videoFrame: MPImage(uiImage: uiImage), timestampInMilliseconds: timestampMs)
+      faceDetectorResults.append(result)
     }
+    let inferenceTime = Date().timeIntervalSince(startDate) / Double(frameCount) * 1000
+    return ResultBundle(inferenceTime: inferenceTime, faceDetectorResults: faceDetectorResults, imageSize: size)
   }
+}
+
+// MARK: - FaceDetectorLiveStreamDelegate
+extension FaceDetectorHelper: FaceDetectorLiveStreamDelegate {
+  func faceDetector(_ faceDetector: FaceDetector, didFinishDetection result: FaceDetectorResult?, timestampInMilliseconds: Int, error: Error?) {
+    guard let result = result else {
+      delegate?.faceDetectorHelper(self, didFinishDetection: nil, error: error)
+      return
+    }
+    let resultBundle = ResultBundle(
+      inferenceTime: Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds),
+      faceDetectorResults: [result])
+    delegate?.faceDetectorHelper(self, didFinishDetection: resultBundle, error: nil)
+  }
+}
+
+/// A result from the `FaceDetectorHelper`.
+struct ResultBundle {
+  let inferenceTime: Double
+  let faceDetectorResults: [FaceDetectorResult?]
+  var imageSize: CGSize = .zero
 }

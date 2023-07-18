@@ -42,7 +42,8 @@ final class FaceDetectorTests: XCTestCase {
     let faceDetectorHelper = FaceDetectorHelper(modelPath: modelPath,
                                                 minDetectionConfidence: minDetectionConfidence,
                                                 minSuppressionThreshold: minSuppressionThreshold,
-                                                runningModel: .image)
+                                                runningModel: .image,
+                                                delegate: nil)
     return faceDetectorHelper
   }
 
@@ -123,7 +124,7 @@ final class FaceDetectorTests: XCTestCase {
     equals expectedDetections: [Detection]
   ) throws {
     let faceDetectorResult =
-    try XCTUnwrap(faceDetector.detect(image: image)!.faceDetectorResult)
+    try XCTUnwrap(faceDetector.detect(image: image)!.faceDetectorResults[0])
     print(faceDetectorResult)
     assertFaceDetectionResultHasOneHead(faceDetectorResult)
     assertEqualDetectionArrays(

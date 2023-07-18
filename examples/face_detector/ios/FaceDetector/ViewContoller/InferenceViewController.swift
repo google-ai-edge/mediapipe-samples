@@ -48,7 +48,7 @@ class InferenceViewController: UIViewController {
   // MARK: Instance Variables
   var minDetectionConfidence = DefaultConstants.minDetectionConfidence
   var minSuppressionThreshold = DefaultConstants.minSuppressionThreshold
-  var faceDetectorHelperResult: FaceDetectorHelperResult? = nil
+  var result: ResultBundle? = nil
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -67,7 +67,7 @@ class InferenceViewController: UIViewController {
 
   // Public function
   func updateData() {
-    if let inferenceTime = faceDetectorHelperResult?.inferenceTime {
+    if let inferenceTime = result?.inferenceTime {
       infrenceTimeLabel.text = String(format: "%.2fms", inferenceTime)
     }
   }
