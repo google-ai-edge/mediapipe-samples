@@ -90,6 +90,7 @@ class ObjectDetectorHelper: NSObject {
     guard let videoDurationMs = try? await asset.load(.duration).seconds * 1000 else { return nil }
     let frameCount = Int(videoDurationMs / inferenceIntervalMs)
     var objectDetectorResults: [ObjectDetectorResult?] = []
+    var videoSize: CGSize = .zero
     for i in 0..<frameCount {
       let timestampMs = Int(inferenceIntervalMs) * i // ms
       let image:CGImage?
@@ -102,11 +103,16 @@ class ObjectDetectorHelper: NSObject {
       }
       guard let image = image else { return nil }
       let uiImage = UIImage(cgImage:image)
-      let result = try? objectDetector.detect(videoFrame: MPImage(uiImage: uiImage), timestampInMilliseconds: timestampMs)
-      objectDetectorResults.append(result)
+      videoSize = uiImage.size
+      do {
+        let result = try objectDetector.detect(videoFrame: MPImage(uiImage: uiImage), timestampInMilliseconds: timestampMs)
+        objectDetectorResults.append(result)
+      } catch {
+        print(error)
+      }
     }
     let inferenceTime = Date().timeIntervalSince(startDate) / Double(frameCount) * 1000
-    return ResultBundle(inferenceTime: inferenceTime, objectDetectorResults: objectDetectorResults)
+    return ResultBundle(inferenceTime: inferenceTime, objectDetectorResults: objectDetectorResults, size: videoSize)
   }
 }
 
@@ -128,4 +134,5 @@ extension ObjectDetectorHelper: ObjectDetectorLiveStreamDelegate {
 struct ResultBundle {
   let inferenceTime: Double
   let objectDetectorResults: [ObjectDetectorResult?]
+  var size: CGSize = .zero
 }

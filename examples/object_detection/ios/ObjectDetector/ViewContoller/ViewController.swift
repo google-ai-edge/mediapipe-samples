@@ -195,10 +195,12 @@ class ViewController: UIViewController {
             repeats: true, block: { _ in
               let currentTime: CMTime = player.currentTime()
               let index = Int(currentTime.seconds * 1000 / weakSelf.inferenceIntervalMs)
-              guard let objectDetectorResults = result?.objectDetectorResults,
-                    index < objectDetectorResults.count else { return }
+              guard let result = result,
+                    index < result.objectDetectorResults.count else { return }
               DispatchQueue.main.async {
-                weakSelf.drawAfterPerformingCalculations(onDetections: objectDetectorResults[index]?.detections ?? [], withImageSize: player.accessibilityFrame.size)
+                weakSelf.drawAfterPerformingCalculations(
+                  onDetections: result.objectDetectorResults[index]?.detections ?? [],
+                  withImageSize: result.size)
               }
           })
         }
