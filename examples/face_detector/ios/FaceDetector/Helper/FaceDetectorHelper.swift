@@ -67,9 +67,9 @@ class FaceDetectorHelper: NSObject {
     var uiimageOrientation: UIImage.Orientation = .up
     switch orientation {
     case .landscapeLeft:
-      uiimageOrientation = .left
-    case .landscapeRight:
       uiimageOrientation = .right
+    case .landscapeRight:
+      uiimageOrientation = .left
     default:
       uiimageOrientation = .up
     }

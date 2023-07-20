@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		629572FFF2BAB322C3839FC2 /* libPods-FaceDetectorTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 15DF2CEEC8D516547819C1DD /* libPods-FaceDetectorTests.a */; };
 		7978F075EC7307167927DA96 /* Pods_FaceDetector.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CAEB266A0C128CFE39B4E963 /* Pods_FaceDetector.framework */; };
+		A62955674D0B99A7D0E9C379 /* libPods-FaceDetectorTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CD418693247CFB204F2604A /* libPods-FaceDetectorTests.a */; };
 		BFCF18322A415B9300D64FA6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCF18312A415B9300D64FA6 /* AppDelegate.swift */; };
 		BFCF18342A415B9300D64FA6 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCF18332A415B9300D64FA6 /* SceneDelegate.swift */; };
 		BFCF183E2A415B9400D64FA6 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BFCF183C2A415B9400D64FA6 /* LaunchScreen.storyboard */; };
@@ -36,7 +36,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		15DF2CEEC8D516547819C1DD /* libPods-FaceDetectorTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-FaceDetectorTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4CD418693247CFB204F2604A /* libPods-FaceDetectorTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-FaceDetectorTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5F8235CC8350146B717267AD /* Pods-FaceDetector.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FaceDetector.release.xcconfig"; path = "Target Support Files/Pods-FaceDetector/Pods-FaceDetector.release.xcconfig"; sourceTree = "<group>"; };
 		BB9395FBA7FB71903009034C /* Pods-FaceDetectorTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FaceDetectorTests.debug.xcconfig"; path = "Target Support Files/Pods-FaceDetectorTests/Pods-FaceDetectorTests.debug.xcconfig"; sourceTree = "<group>"; };
 		BFCF182E2A415B9300D64FA6 /* FaceDetector.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FaceDetector.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -74,7 +74,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				629572FFF2BAB322C3839FC2 /* libPods-FaceDetectorTests.a in Frameworks */,
+				A62955674D0B99A7D0E9C379 /* libPods-FaceDetectorTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,7 +85,7 @@
 			isa = PBXGroup;
 			children = (
 				CAEB266A0C128CFE39B4E963 /* Pods_FaceDetector.framework */,
-				15DF2CEEC8D516547819C1DD /* libPods-FaceDetectorTests.a */,
+				4CD418693247CFB204F2604A /* libPods-FaceDetectorTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -436,7 +436,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -490,7 +490,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -518,12 +518,13 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.FaceDetector;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.facedetection;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -550,12 +551,13 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.FaceDetector;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.facedetection;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
