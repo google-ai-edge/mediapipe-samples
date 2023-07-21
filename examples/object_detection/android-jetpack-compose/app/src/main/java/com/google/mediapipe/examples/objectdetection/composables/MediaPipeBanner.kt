@@ -46,14 +46,14 @@ fun MediaPipeBanner(
             ) {
                 Icon(
                     Icons.Filled.ArrowBack,
-                    contentDescription = null,
+                    contentDescription = "Backward arrow icon",
                     tint = Turquoise
                 )
             }
         }
         Image(
             painter = painterResource(id = R.drawable.media_pipe_banner),
-            contentDescription = null,
+            contentDescription = "MediaPipe logo",
             contentScale = ContentScale.Fit,
             modifier = Modifier.align(Alignment.Center)
         )
@@ -64,7 +64,7 @@ fun MediaPipeBanner(
             ) {
                 Icon(
                     Icons.Filled.Settings,
-                    contentDescription = null,
+                    contentDescription = "Settings icon",
                     tint = Turquoise
                 )
             }
