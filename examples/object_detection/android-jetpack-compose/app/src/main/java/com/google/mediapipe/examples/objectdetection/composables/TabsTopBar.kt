@@ -30,7 +30,7 @@ fun TabsTopBar(
             icon = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_baseline_photo_camera_24),
-                    contentDescription = ""
+                    contentDescription = "Camera icon"
                 )
             },
         )
@@ -44,7 +44,7 @@ fun TabsTopBar(
             icon = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_baseline_photo_library_24),
-                    contentDescription = ""
+                    contentDescription = "Gallery icon"
                 )
             },
         )
