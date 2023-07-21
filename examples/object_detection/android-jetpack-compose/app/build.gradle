@@ -4,12 +4,12 @@ plugins {
 }
 
 android {
-    namespace 'com.example.objectdetection'
+    namespace 'com.google.mediapipe.examples.objectdetection'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.example.objectdetection"
-        minSdk 28
+        applicationId "com.google.mediapipe.examples.objectdetection"
+        minSdk 24
         targetSdk 33
         versionCode 1
         versionName "1.0"
