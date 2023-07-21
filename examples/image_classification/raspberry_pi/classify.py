@@ -133,7 +133,8 @@ def run(model: str, max_results: int, score_threshold: float, camera_id: int,
                     cv2.FONT_HERSHEY_DUPLEX, label_font_size, label_text_color,
                     label_thickness, cv2.LINE_AA)
         legend_y += (label_rect_size + label_margin)
-
+      
+      classification_result_list.clear()
     
     cv2.imshow('image_classification', current_frame)
 
