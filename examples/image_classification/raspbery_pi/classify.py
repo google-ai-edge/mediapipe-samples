@@ -49,7 +49,7 @@ def run(model: str, max_results: int, score_threshold: float, camera_id: int,
   # Visualization parameters
   row_size = 20  # pixels
   left_margin = 24  # pixels
-  text_color = (0, 0, 255)  # red
+  text_color = (0, 0, 0)  # black
   font_size = 1
   font_thickness = 1
   fps_avg_frame_count = 10

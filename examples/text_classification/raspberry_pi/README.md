@@ -14,25 +14,15 @@ These instructions walk you through building and running the demo on a Raspberry
 
 Before you begin, you need to
 [set up your Raspberry Pi](https://projects.raspberrypi.org/en/projects/raspberry-pi-setting-up)
-with Raspberry Pi OS (preferably updated to Buster).
+with Raspberry 64-bit Pi OS (preferably updated to Buster).
 
 ## Install MediaPipe
 
-This project requires the installation of MediaPipe for running inference.
-
-You can install the dependency by using the provided script.
-
-```
-sh setup.sh
-```
+You can install the required dependencies using the setup.sh script provided with this project.
 
 ## Download the examples repository
 
-First, clone this Git repo onto your Raspberry Pi like this:
-
-```
-https://github.com/googlesamples/mediapipe.git
-```
+First, clone this Git repo onto your Raspberry Pi.
 
 Run this script to install the required dependencies and download the TFLite models:
 
@@ -45,3 +35,13 @@ sh setup.sh
 ```
 python3 classify.py --inputText "Your text goes here"
 ```
+
+*   You can optionally specify the `model` parameter to set the TensorFlow Lite
+    model to be used:
+    *   The default value is `classifier.tflite`
+*   Example usage:
+    ```
+    python3 classify.py \
+        --model classifier.tflite \
+        --inputText "Your text goes here"
+    ```

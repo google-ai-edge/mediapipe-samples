@@ -1,4 +1,4 @@
-# MediaPipe Object Detection example with Raspberry Pi.
+# MediaPipe Object Detection example with Raspberry Pi
 
 This example uses [MediaPipe](https://github.com/google/mediapipe) with Python on
 a Raspberry Pi to perform real-time object detection using images streamed from
@@ -9,7 +9,7 @@ preview (when the object score is above a given threshold).
 
 Before you begin, you need to
 [set up your Raspberry Pi](https://projects.raspberrypi.org/en/projects/raspberry-pi-setting-up)
-with Raspberry Pi OS (preferably updated to Buster).
+with Raspberry 64-bit Pi OS (preferably updated to Buster).
 
 You also need to [connect and configure the Pi Camera](
 https://www.raspberrypi.org/documentation/configuration/camera.md) if you use
@@ -22,21 +22,11 @@ attached to the Pi to see the camera stream.
 
 ## Install MediaPipe
 
-This project requires the installation of MediaPipe for running inference.
-
-You can install the dependency by using the provided script.
-
-```
-sh setup.sh
-```
+You can install the required dependencies using the setup.sh script provided with this project.
 
 ## Download the examples repository
 
-First, clone this Git repo onto your Raspberry Pi like this:
-
-```
-https://github.com/googlesamples/mediapipe.git
-```
+First, clone this Git repo onto your Raspberry Pi.
 
 Run this script to install the required dependencies and download the TFLite models:
 

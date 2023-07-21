@@ -1,4 +1,4 @@
-# MediaPipe Audio classifier example with Raspberry Pi.
+# MediaPipe Audio classifier example with Raspberry Pi
 
 This example uses [MediaPipe](https://github.com/google/mediapipe) with Python on
 a Raspberry Pi to perform real-time audio classification using audio streamed
@@ -8,28 +8,18 @@ from the microphone.
 
 Before you begin, you need to
 [set up your Raspberry Pi](https://projects.raspberrypi.org/en/projects/raspberry-pi-setting-up)
-with Raspberry Pi OS (preferably updated to Buster).
+with Raspberry 64-bit Pi OS (preferably updated to Buster).
 
 Raspberry Pi doesn't have a microphone integrated on its board, so you need to
 plug in a USB microphone to record audio.
 
 ## Install PortAudio and MediaPipe
 
-This project requires the installation of the PortAudio library and MediaPipe for running inference.
-
-You can install these dependencies by using the provided script.
-
-```
-sh setup.sh
-```
+You can install the required dependencies using the setup.sh script provided with this project.
 
 ## Download the examples repository
 
-First, clone this Git repo onto your Raspberry Pi like this:
-
-```
-https://github.com/googlesamples/mediapipe.git
-```
+First, clone this Git repo onto your Raspberry Pi.
 
 Run this script to install the required dependencies and download the TFLite models:
 
@@ -50,6 +40,14 @@ python3 classify.py
     classification results:
     *   Supported value: A positive integer.
     *   Default value: `5`.
+*   You can optionally specify the `overlappingFactor` parameter that targets
+    overlapping between adjacent inferences:
+    *   Supported value: A floating-point number.
+    *   Default value: `0.5`.
+*   You can optionally specify the `scoreThreshold` parameter to adjust the
+    score threshold of classification results:
+    *   Supported value: A floating-point number.
+    *   Default value: `0.5`.
 *   Example usage:
     ```
     python3 classify.py \

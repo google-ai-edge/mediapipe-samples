@@ -27,7 +27,7 @@ def run(model: str, input_text: str) -> None:
     input_text: The input text to be classified.
   """
   # Initialize the text classifier model.
-  base_options = python.BaseOptions(model_asset_path="classifier.tflite")
+  base_options = python.BaseOptions(model_asset_path=model)
   options = text.TextClassifierOptions(base_options=base_options)
   classifier = text.TextClassifier.create_from_options(options)
 
