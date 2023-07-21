@@ -26,11 +26,14 @@ from mediapipe.tasks.python import vision
 from utils import visualize
 
 
-def run(model: str, camera_id: int, width: int, height: int) -> None:
+def run(model: str, max_results: int, score_threshold: float, 
+        camera_id: int, width: int, height: int) -> None:
   """Continuously run inference on images acquired from the camera.
 
   Args:
     model: Name of the TFLite object detection model.
+    max_results: Max of classification results.
+    score_threshold: The score threshold of detection results.
     camera_id: The camera id to be passed to OpenCV.
     width: The width of the frame captured from the camera.
     height: The height of the frame captured from the camera.
@@ -63,7 +66,7 @@ def run(model: str, camera_id: int, width: int, height: int) -> None:
   base_options = python.BaseOptions(model_asset_path=model)
   options = vision.ObjectDetectorOptions(base_options=base_options,
                                          running_mode=vision.RunningMode.LIVE_STREAM,
-                                         max_results=3, score_threshold=0.3,
+                                         max_results=max_results, score_threshold=score_threshold,
                                          result_callback=save_result)
   detector = vision.ObjectDetector.create_from_options(options)
 
@@ -97,10 +100,11 @@ def run(model: str, camera_id: int, width: int, height: int) -> None:
     # Show the FPS
     fps_text = 'FPS = {:.1f}'.format(fps)
     text_location = (left_margin, row_size)
-    cv2.putText(current_frame, fps_text, text_location, cv2.FONT_HERSHEY_PLAIN,
-                font_size, text_color, font_thickness)
+    cv2.putText(current_frame, fps_text, text_location, cv2.FONT_HERSHEY_DUPLEX,
+                font_size, text_color, font_thickness, cv2.LINE_AA)
 
     if detection_result_list:
+	# print(detection_result_list)
         current_frame = visualize(current_frame, detection_result_list[0])
         detection_result_list.clear()
 
@@ -124,6 +128,21 @@ def main():
       required=False,
       default='efficientdet.tflite')
   parser.add_argument(
+      '--maxResults',
+      help='Max number of detection results.',
+      required=False,
+      default=5)
+  parser.add_argument(
+      '--scoreThreshold',
+      help='The score threshold of detection results.',
+      required=False,
+      type=float,
+      default=0.0)
+  # Finding the camera ID can be very reliant on platform-dependent methods. 
+  # One common approach is to use the fact that camera IDs are usually indexed sequentially by the OS, starting from 0. 
+  # Here, we use OpenCV and create a VideoCapture object for each potential ID with 'cap = cv2.VideoCapture(i)'.
+  # If 'cap' is None or not 'cap.isOpened()', it indicates the camera ID is not available.
+  parser.add_argument(
       '--cameraId', help='Id of camera.', required=False, type=int, default=0)
   parser.add_argument(
       '--frameWidth',
@@ -139,7 +158,8 @@ def main():
       default=720)
   args = parser.parse_args()
 
-  run(args.model, int(args.cameraId), args.frameWidth, args.frameHeight)
+  run(args.model, int(args.maxResults),
+      args.scoreThreshold, int(args.cameraId), args.frameWidth, args.frameHeight)
 
 
 if __name__ == '__main__':

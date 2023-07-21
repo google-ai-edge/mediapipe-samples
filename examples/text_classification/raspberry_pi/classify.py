@@ -20,7 +20,7 @@ from mediapipe.tasks.python import text
 
 
 def run(model: str, input_text: str) -> None:
-  """Classiy input text using a Text Classifier TFLite model.
+  """Classify input text using a Text Classifier TFLite model.
 
   Args:
     model: Name of the TFLite text classifier model.

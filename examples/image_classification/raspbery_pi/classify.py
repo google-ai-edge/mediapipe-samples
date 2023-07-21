@@ -54,6 +54,16 @@ def run(model: str, max_results: int, score_threshold: float, camera_id: int,
   font_thickness = 1
   fps_avg_frame_count = 10
 
+  # Label box parameters
+  label_text_color = (0, 0, 0)  # red
+  label_background_color = (255, 255, 255)  # white
+  label_font_size = 1
+  label_thickness = 2
+  label_width = 50  # pixels
+  label_rect_size = 16  # pixels
+  label_margin = 40
+  label_padding_width = 500  # pixels
+
   classification_result_list = []
 
   def save_result(result: vision.ImageClassifierResult,
@@ -98,25 +108,38 @@ def run(model: str, max_results: int, score_threshold: float, camera_id: int,
     # Show the FPS
     fps_text = 'FPS = {:.1f}'.format(fps)
     text_location = (left_margin, row_size)
-    cv2.putText(current_frame, fps_text, text_location, cv2.FONT_HERSHEY_PLAIN,
-                font_size, text_color, font_thickness)
+    cv2.putText(current_frame, fps_text, text_location, cv2.FONT_HERSHEY_DUPLEX,
+                font_size, text_color, font_thickness, cv2.LINE_AA)
 
+    # Initialize the origin coordinates of the label.
+    legend_x = current_frame.shape[1] + label_margin
+    legend_y = current_frame.shape[0] // label_width + label_margin
+
+    # Expand the frame to show the labels.
+    current_frame = cv2.copyMakeBorder(current_frame, 0, 0, 0, label_padding_width,
+                                       cv2.BORDER_CONSTANT, None,
+                                       label_background_color)
+
+    # Show the labels on right-side frame.
     if classification_result_list:
-        # Show classification results on the image
-        for idx, category in enumerate(classification_result_list[0].classifications[0].categories):
-            category_name = category.category_name
-            score = round(category.score, 2)
-            result_text = category_name + ' (' + str(score) + ')'
-            text_location = (left_margin, (idx + 2) * row_size)
-            cv2.putText(current_frame, result_text, text_location, cv2.FONT_HERSHEY_PLAIN,
-                        font_size, text_color, font_thickness)
+      # Show classification results.
+      for idx, category in enumerate(classification_result_list[0].classifications[0].categories):
+        category_name = category.category_name
+        score = round(category.score, 2)
+        result_text = category_name + ' (' + str(score) + ')'
 
-        classification_result_list.clear()
+        label_location = legend_x + label_rect_size + label_margin, legend_y + label_margin
+        cv2.putText(current_frame, result_text, label_location,
+                    cv2.FONT_HERSHEY_DUPLEX, label_font_size, label_text_color,
+                    label_thickness, cv2.LINE_AA)
+        legend_y += (label_rect_size + label_margin)
+
+    
+    cv2.imshow('image_classification', current_frame)
 
     # Stop the program if the ESC key is pressed.
     if cv2.waitKey(1) == 27:
         break
-    cv2.imshow('image_classification', current_frame)
 
   classifier.close()
   cap.release()
@@ -133,7 +156,7 @@ def main():
       default='classifier.tflite')
   parser.add_argument(
       '--maxResults',
-      help='Max of classification results.',
+      help='Max number of classification results.',
       required=False,
       default=5)
   parser.add_argument(
@@ -142,6 +165,10 @@ def main():
       required=False,
       type=float,
       default=0.0)
+  # Finding the camera ID can be very reliant on platform-dependent methods. 
+  # One common approach is to use the fact that camera IDs are usually indexed sequentially by the OS, starting from 0. 
+  # Here, we use OpenCV and create a VideoCapture object for each potential ID with 'cap = cv2.VideoCapture(i)'.
+  # If 'cap' is None or not 'cap.isOpened()', it indicates the camera ID is not available.
   parser.add_argument(
       '--cameraId', help='Id of camera.', required=False, default=0)
   parser.add_argument(

@@ -34,8 +34,8 @@ def run(model: str, max_results: int, score_threshold: float,
     overlapping_factor: Target overlapping between adjacent inferences.
   """
 
-  if (overlapping_factor <= 0) or (overlapping_factor >= 1.0):
-    raise ValueError('Overlapping factor must be between 0 and 1.')
+  if (overlapping_factor < 0) or (overlapping_factor >= 1.0):
+    raise ValueError('Overlapping factor must be between 0.0 and 0.9')
 
   if (score_threshold < 0) or (score_threshold > 1.0):
     raise ValueError('Score threshold must be between (inclusive) 0 and 1.')
@@ -94,8 +94,9 @@ def run(model: str, max_results: int, score_threshold: float,
     audio_data.load_from_array(data)
     classifier.classify_async(audio_data, time.time_ns() // 1_000_000)
 
-    # # Plot the classification results.
+    # Plot the classification results.
     if classification_result_list:
+      # print(classification_result_list)
       plotter.plot(classification_result_list[0])
       classification_result_list.clear()
 
