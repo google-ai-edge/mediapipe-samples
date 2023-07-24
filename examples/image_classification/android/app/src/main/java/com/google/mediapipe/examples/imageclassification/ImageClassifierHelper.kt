@@ -18,7 +18,6 @@ package com.google.mediapipe.examples.imageclassification
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.Matrix
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.SystemClock
@@ -27,9 +26,9 @@ import androidx.annotation.VisibleForTesting
 import androidx.camera.core.ImageProxy
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.MPImage
-import com.google.mediapipe.tasks.components.processors.ClassifierOptions
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
+import com.google.mediapipe.tasks.vision.core.ImageProcessingOptions
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.imageclassifier.ImageClassifier
 import com.google.mediapipe.tasks.vision.imageclassifier.ImageClassifierResult
@@ -75,6 +74,7 @@ class ImageClassifierHelper(
             DELEGATE_CPU -> {
                 baseOptionsBuilder.setDelegate(Delegate.CPU)
             }
+
             DELEGATE_GPU -> {
                 baseOptionsBuilder.setDelegate(Delegate.GPU)
             }
@@ -98,6 +98,7 @@ class ImageClassifierHelper(
                     )
                 }
             }
+
             else -> {
                 // no-op
             }
@@ -162,33 +163,23 @@ class ImageClassifierHelper(
             bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer)
         }
         imageProxy.close()
-
-        // Used for rotating the frame image so it matches our models
-        val matrix = Matrix().apply {
-            postRotate(imageProxy.imageInfo.rotationDegrees.toFloat())
-        }
-
-        val rotatedBitmap = Bitmap.createBitmap(
-            bitmapBuffer,
-            0,
-            0,
-            bitmapBuffer.width,
-            bitmapBuffer.height,
-            matrix,
-            true
-        )
-
-        val mpImage = BitmapImageBuilder(rotatedBitmap).build()
-
-        classifyAsync(mpImage, frameTime)
+        val mpImage = BitmapImageBuilder(bitmapBuffer).build()
+        classifyAsync(mpImage, imageProxy.imageInfo.rotationDegrees, frameTime)
     }
 
     // Run object detection using MediaPipe Object Detector API
     @VisibleForTesting
-    fun classifyAsync(mpImage: MPImage, frameTime: Long) {
+    fun classifyAsync(mpImage: MPImage, imageDegree: Int, frameTime: Long) {
+        val imageProcessingOptions =
+            ImageProcessingOptions.builder().setRotationDegrees(imageDegree)
+                .build()
         // As we're using running mode LIVE_STREAM, the classification result will
         // be returned in returnLivestreamResult function
-        imageClassifier?.classifyAsync(mpImage, frameTime)
+        imageClassifier?.classifyAsync(
+            mpImage,
+            imageProcessingOptions,
+            frameTime
+        )
     }
 
     // Accepted a Bitmap and runs image classification inference on it to
