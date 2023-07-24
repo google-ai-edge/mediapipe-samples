@@ -60,18 +60,9 @@ class ObjectDetectorHelper: NSObject {
     }
   }
 
-  func detectAsync(videoFrame: CMSampleBuffer, orientation: UIDeviceOrientation, timeStamps: Int) {
-    var uiimageOrientation: UIImage.Orientation = .up
-    switch orientation {
-    case .landscapeLeft:
-      uiimageOrientation = .right
-    case .landscapeRight:
-      uiimageOrientation = .left
-    default:
-      uiimageOrientation = .up
-    }
+  func detectAsync(videoFrame: CMSampleBuffer, orientation: UIImage.Orientation, timeStamps: Int) {
     guard let objectDetector = objectDetector,
-          let image = try? MPImage(sampleBuffer: videoFrame, orientation: uiimageOrientation) else { return }
+          let image = try? MPImage(sampleBuffer: videoFrame, orientation: orientation) else { return }
     do {
       try objectDetector.detectAsync(image: image, timestampInMilliseconds: timeStamps)
     } catch {
