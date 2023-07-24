@@ -165,7 +165,12 @@ class ViewController: UIViewController {
     backgroundQueue.async { [weak self] in
       guard let weakSelf = self else { return }
       Task {
-        let result = await weakSelf.faceDetectorHelper?.detectVideoFile(url: url, inferenceIntervalMs: weakSelf.inferenceIntervalMs)
+        let faceDetectorHelper = FaceDetectorHelper(modelPath: weakSelf.modelPath,
+                                                    minDetectionConfidence: weakSelf.minDetectionConfidence,
+                                                    minSuppressionThreshold: weakSelf.minSuppressionThreshold,
+                                                    runningModel: .video,
+                                                    delegate: nil)
+        let result = await faceDetectorHelper.detectVideoFile(url: url, inferenceIntervalMs: weakSelf.inferenceIntervalMs)
         DispatchQueue.main.async {
           weakSelf.inferenceViewController?.result = result
           weakSelf.inferenceViewController?.updateData()
@@ -242,7 +247,7 @@ class ViewController: UIViewController {
       }
       var convertedRect = detection.boundingBox
 
-      if runingModel == .liveStream {
+      if runningModelTabbar.selectedItem == cameraTabbarItem {
         if cameraCapture.cameraPosition == .front {
           var newWidth = imageSize.width
           if cameraCapture.orientation == .left || cameraCapture.orientation == .right {
@@ -325,9 +330,6 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
     if info[.mediaType] as? String == UTType.movie.identifier {
       guard let mediaURL = info[.mediaURL] as? URL else { return }
       imageEmptyLabel.isHidden = true
-      if runingModel != .video {
-        runingModel = .video
-      }
       processVideo(url: mediaURL)
     } else {
       guard let image = info[.originalImage] as? UIImage else { return }
