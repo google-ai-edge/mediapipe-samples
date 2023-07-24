@@ -21,7 +21,7 @@ protocol CameraFeedManagerDelegate: AnyObject {
   /**
    This method delivers the pixel buffer of the current frame seen by the device's camera.
    */
-  func didOutput(sampleBuffer: CMSampleBuffer, orientation: UIDeviceOrientation)
+  func didOutput(sampleBuffer: CMSampleBuffer, orientation: UIImage.Orientation)
 
   /**
    This method initimates that the camera permissions have been denied.
@@ -76,7 +76,18 @@ class CameraFeedManager: NSObject {
   private var needCalculationSize = true
 
   var cameraPosition: AVCaptureDevice.Position = .front
-  var orientation = UIDevice.current.orientation
+  var orientation: UIImage.Orientation {
+    get {
+      switch UIDevice.current.orientation {
+      case .landscapeLeft:
+          return .left
+      case .landscapeRight:
+          return .right
+      default:
+          return .up
+      }
+    }
+  }
   var videoFrameSize: CGSize = .zero
 
   // MARK: CameraFeedManagerDelegate
@@ -107,14 +118,13 @@ class CameraFeedManager: NSObject {
 
   // MARK: notification methods
   @objc func orientationChanged(notification: Notification) {
-    orientation = UIDevice.current.orientation
     needCalculationSize = true
     switch orientation {
-    case .portrait:
+    case .up:
       previewView.previewLayer.connection?.videoOrientation = .portrait
-    case .landscapeLeft:
+    case .left:
       previewView.previewLayer.connection?.videoOrientation = .landscapeRight
-    case .landscapeRight:
+    case .right:
       previewView.previewLayer.connection?.videoOrientation = .landscapeLeft
     default:
       break
@@ -366,7 +376,7 @@ extension CameraFeedManager: AVCaptureVideoDataOutputSampleBufferDelegate {
     if needCalculationSize {
       let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)!
       switch orientation {
-      case .landscapeLeft, .landscapeRight:
+      case .left, .right:
         videoFrameSize = CGSize(width: CVPixelBufferGetHeight(imageBuffer), height: CVPixelBufferGetWidth(imageBuffer))
       default:
         videoFrameSize = CGSize(width: CVPixelBufferGetWidth(imageBuffer), height: CVPixelBufferGetHeight(imageBuffer))

@@ -27,6 +27,8 @@ class FaceDetectorHelper: NSObject {
   weak var delegate: FaceDetectorHelperDelegate?
   var faceDetector: FaceDetector?
 
+  private var timestampMs = 0
+
   init(modelPath: String?, minDetectionConfidence: Float, minSuppressionThreshold: Float, runningModel: RunningMode, delegate: FaceDetectorHelperDelegate?) {
     super.init()
     guard let modelPath = modelPath else { return }
@@ -63,18 +65,9 @@ class FaceDetectorHelper: NSObject {
   /**
    This method return FaceDetectorResult and infrenceTime when receive videoFrame
    **/
-  func detectAsync(videoFrame: CMSampleBuffer, orientation: UIDeviceOrientation, timeStamps: Int) {
-    var uiimageOrientation: UIImage.Orientation = .up
-    switch orientation {
-    case .landscapeLeft:
-      uiimageOrientation = .right
-    case .landscapeRight:
-      uiimageOrientation = .left
-    default:
-      uiimageOrientation = .up
-    }
+  func detectAsync(videoFrame: CMSampleBuffer, orientation: UIImage.Orientation, timeStamps: Int) {
     guard let faceDetector = faceDetector,
-          let image = try? MPImage(sampleBuffer: videoFrame, orientation: uiimageOrientation) else { return }
+          let image = try? MPImage(sampleBuffer: videoFrame, orientation: orientation) else { return }
     do {
       try faceDetector.detectAsync(image: image, timestampInMilliseconds: timeStamps)
     } catch {
@@ -95,10 +88,10 @@ class FaceDetectorHelper: NSObject {
     let frameCount = Int(videoDurationMs / inferenceIntervalMs)
     var faceDetectorResults: [FaceDetectorResult?] = []
     for i in 0..<frameCount {
-      let timestampMs = Int(inferenceIntervalMs) * i // ms
+      timestampMs += Int(inferenceIntervalMs) // ms
       let image:CGImage?
       do {
-        let time = CMTime(seconds: Double(timestampMs) / 1000, preferredTimescale: 600)
+        let time = CMTime(seconds: inferenceIntervalMs * Double(i) / 1000, preferredTimescale: 600)
         try image = generator.copyCGImage(at: time, actualTime:nil)
       } catch {
         print(error)
@@ -106,9 +99,15 @@ class FaceDetectorHelper: NSObject {
       }
       guard let image = image else { return nil }
       let uiImage = UIImage(cgImage:image)
+      print(uiImage.imageOrientation.rawValue)
       size = uiImage.size
-      let result = try? faceDetector.detect(videoFrame: MPImage(uiImage: uiImage), timestampInMilliseconds: timestampMs)
-      faceDetectorResults.append(result)
+      do {
+        let result = try faceDetector.detect(videoFrame: MPImage(uiImage: uiImage), timestampInMilliseconds: timestampMs)
+        faceDetectorResults.append(result)
+      } catch {
+        print(error)
+        faceDetectorResults.append(nil)
+      }
     }
     let inferenceTime = Date().timeIntervalSince(startDate) / Double(frameCount) * 1000
     return ResultBundle(inferenceTime: inferenceTime, faceDetectorResults: faceDetectorResults, imageSize: size)

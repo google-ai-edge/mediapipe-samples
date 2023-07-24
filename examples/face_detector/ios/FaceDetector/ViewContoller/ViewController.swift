@@ -33,7 +33,7 @@ class ViewController: UIViewController {
   @IBOutlet weak var bottomViewHeightConstraint: NSLayoutConstraint!
 
   // MARK: Constants
-  private let inferenceIntervalMs: Double = 300
+  private let inferenceIntervalMs: Double = 100
   private let delayBetweenInferencesMs = 50.0
   private let inferenceBottomHeight = 170.0
   private let expandButtonHeight = 41.0
@@ -171,6 +171,7 @@ class ViewController: UIViewController {
           weakSelf.inferenceViewController?.updateData()
           let player = AVPlayer(url: url)
           weakSelf.playerViewController.player = player
+          weakSelf.playerViewController.videoGravity = .resizeAspectFill
           weakSelf.playerViewController.showsPlaybackControls = false
           weakSelf.playerViewController.view.frame = weakSelf.previewView.bounds
           weakSelf.previewView.addSubview(weakSelf.playerViewController.view)
@@ -193,7 +194,7 @@ class ViewController: UIViewController {
               guard let faceDetectorResults = result?.faceDetectorResults,
                     index < faceDetectorResults.count else { return }
               DispatchQueue.main.async {
-                weakSelf.drawAfterPerformingCalculations(onDetections: faceDetectorResults[index]?.detections ?? [], withImageSize:result?.imageSize ?? .zero)
+                weakSelf.drawAfterPerformingCalculations(onDetections: faceDetectorResults[index]?.detections ?? [], orientation: .up, withImageSize:result?.imageSize ?? .zero)
               }
           })
         }
@@ -210,7 +211,7 @@ class ViewController: UIViewController {
   /**
    This method takes the results, translates the bounding box rects to the current view, draws the bounding boxes, classNames and confidence scores of inferences.
    */
-  private func drawAfterPerformingCalculations(onDetections detections: [Detection], withImageSize imageSize: CGSize) {
+  private func drawAfterPerformingCalculations(onDetections detections: [Detection], orientation: UIImage.Orientation, withImageSize imageSize: CGSize) {
 
     self.overlayView.objectOverlays = []
     self.overlayView.setNeedsDisplay()
@@ -242,28 +243,28 @@ class ViewController: UIViewController {
       var convertedRect = detection.boundingBox
 
       if runingModel == .liveStream {
-        var newWidth = imageSize.width
-        if cameraCapture.orientation == .landscapeLeft || cameraCapture.orientation == .landscapeRight {
-          newWidth = imageSize.height
-        }
         if cameraCapture.cameraPosition == .front {
+          var newWidth = imageSize.width
+          if cameraCapture.orientation == .left || cameraCapture.orientation == .right {
+            newWidth = imageSize.height
+          }
           convertedRect = CGRect(
             x: newWidth - convertedRect.origin.x - convertedRect.width,
             y: convertedRect.origin.y,
             width: convertedRect.width,
             height: convertedRect.height)
         }
+      }
 
-        switch cameraCapture.orientation {
-        case .landscapeLeft:
-          convertedRect = CGRect(
-            x: convertedRect.origin.y, y: imageSize.height - convertedRect.origin.x - convertedRect.width, width: convertedRect.height, height: convertedRect.width)
-        case .landscapeRight:
-          convertedRect = CGRect(
-            x: imageSize.width - convertedRect.origin.y - convertedRect.height, y: convertedRect.origin.x, width: convertedRect.height, height: convertedRect.width)
-        default:
-          break
-        }
+      switch orientation {
+      case .left:
+        convertedRect = CGRect(
+          x: convertedRect.origin.y, y: imageSize.height - convertedRect.origin.x - convertedRect.width, width: convertedRect.height, height: convertedRect.width)
+      case .right:
+        convertedRect = CGRect(
+          x: imageSize.width - convertedRect.origin.y - convertedRect.height, y: convertedRect.origin.x, width: convertedRect.height, height: convertedRect.width)
+      default:
+        break
       }
 
       convertedRect = convertedRect
@@ -318,6 +319,7 @@ class ViewController: UIViewController {
 
 // MARK: UIImagePickerControllerDelegate, UINavigationControllerDelegate
 extension ViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+
   func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
     picker.dismiss(animated: true)
     if info[.mediaType] as? String == UTType.movie.identifier {
@@ -342,7 +344,7 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
       DispatchQueue.main.async {
         self.inferenceViewController?.updateData()
         if let faceDetectorResult = result?.faceDetectorResults.first {
-          self.drawAfterPerformingCalculations(onDetections: faceDetectorResult?.detections ?? [], withImageSize: image.size)
+          self.drawAfterPerformingCalculations(onDetections: faceDetectorResult?.detections ?? [], orientation: image.imageOrientation, withImageSize: image.size)
         }
       }
     }
@@ -351,7 +353,7 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
 
 // MARK: CameraFeedManagerDelegate Methods
 extension ViewController: CameraFeedManagerDelegate {
-  func didOutput(sampleBuffer: CMSampleBuffer, orientation: UIDeviceOrientation) {
+  func didOutput(sampleBuffer: CMSampleBuffer, orientation: UIImage.Orientation) {
     let currentTimeMs = Date().timeIntervalSince1970 * 1000
     // Pass the pixel buffer to mediapipe
     backgroundQueue.async { [weak self] in
@@ -422,12 +424,12 @@ extension ViewController: CameraFeedManagerDelegate {
 // MARK: FaceDetectorHelperDelegate
 extension ViewController: FaceDetectorHelperDelegate {
   func faceDetectorHelper(_ faceDetectorHelper: FaceDetectorHelper, didFinishDetection result: ResultBundle?, error: Error?) {
-    DispatchQueue.main.async {
+    DispatchQueue.main.async { [self] in
       self.inferenceViewController?.result = result
       self.inferenceViewController?.updateData()
       if let faceDetectorResult = result?.faceDetectorResults.first,
          self.runningModelTabbar.selectedItem == self.cameraTabbarItem {
-        self.drawAfterPerformingCalculations(onDetections: faceDetectorResult?.detections ?? [], withImageSize: self.cameraCapture.videoFrameSize)
+        self.drawAfterPerformingCalculations(onDetections: faceDetectorResult?.detections ?? [],orientation: cameraCapture.orientation, withImageSize: self.cameraCapture.videoFrameSize)
       }
     }
   }
