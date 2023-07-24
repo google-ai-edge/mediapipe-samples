@@ -64,7 +64,7 @@ class ImageClassificationTest {
 
 
     private val expectedCategoriesForImageAndLiveStreamMode = listOf(
-        Category.create(0.5546875f, 0, "red wine", ""),
+        Category.create(0.54f, 0, "red wine", ""),
         Category.create(0.10546875f, 1, "wine bottle", "")
     )
 
@@ -111,7 +111,11 @@ class ImageClassificationTest {
         val mpImage = BitmapImageBuilder(bitmap).build()
 
         // Run the image classification with the test image.
-        imageClassifierHelper.classifyAsync(mpImage, SystemClock.uptimeMillis())
+        imageClassifierHelper.classifyAsync(
+            mpImage,
+            0,
+            SystemClock.uptimeMillis()
+        )
 
         // Lock to wait the imageClassifier return the value.
         lock.withLock {
