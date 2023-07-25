@@ -64,8 +64,17 @@ class FaceDetectorHelper: NSObject {
    This method return FaceDetectorResult and infrenceTime when receive videoFrame
    **/
   func detectAsync(videoFrame: CMSampleBuffer, orientation: UIImage.Orientation, timeStamps: Int) {
+    var newOrientation: UIImage.Orientation = .up
+    switch orientation {
+    case .left:
+      newOrientation = .right
+    case .right:
+      newOrientation = .left
+    default:
+      break
+    }
     guard let faceDetector = faceDetector,
-          let image = try? MPImage(sampleBuffer: videoFrame, orientation: orientation) else { return }
+          let image = try? MPImage(sampleBuffer: videoFrame, orientation: newOrientation) else { return }
     do {
       try faceDetector.detectAsync(image: image, timestampInMilliseconds: timeStamps)
     } catch {
