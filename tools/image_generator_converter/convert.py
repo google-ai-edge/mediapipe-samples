@@ -13,7 +13,7 @@ _CKPT_PATH = flags.DEFINE_string(
 _OUTPUT_PATH = flags.DEFINE_string(
     "output_path", default="bins", help="Output folder path", required=False)
 
-VOCAB_URL = "https://openaipublic.blob.core.window.net/clip/bpe_simple_vocab_16e6.txt"
+VOCAB_URL = "https://openaipublic.blob.core.windows.net/clip/bpe_simple_vocab_16e6.txt"
 
 
 def run(ckpt_path, output_path):
