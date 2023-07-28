@@ -27,15 +27,15 @@ class ObjectDetectorHelper: NSObject {
   weak var delegate: ObjectDetectorHelperDelegate?
   var objectDetector: ObjectDetector?
 
-  init(model: Model, maxResults: Int, scoreThreshold: Float, runningModel: RunningMode, delegate: ObjectDetectorHelperDelegate?) {
+  init(model: Model, maxResults: Int, scoreThreshold: Float, runningMode: RunningMode, delegate: ObjectDetectorHelperDelegate?) {
     super.init()
     guard let modelPath = model.modelPath else { return }
     let objectDetectorOptions = ObjectDetectorOptions()
-    objectDetectorOptions.runningMode = runningModel
+    objectDetectorOptions.runningMode = runningMode
     objectDetectorOptions.maxResults = maxResults
     objectDetectorOptions.scoreThreshold = scoreThreshold
     objectDetectorOptions.baseOptions.modelAssetPath = modelPath
-    objectDetectorOptions.objectDetectorLiveStreamDelegate = runningModel == .liveStream ? self : nil
+    objectDetectorOptions.objectDetectorLiveStreamDelegate = runningMode == .liveStream ? self : nil
     do {
       objectDetector = try ObjectDetector(options: objectDetectorOptions)
     } catch {
