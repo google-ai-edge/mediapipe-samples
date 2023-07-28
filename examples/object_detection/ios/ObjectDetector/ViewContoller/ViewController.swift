@@ -26,7 +26,7 @@ class ViewController: UIViewController {
   @IBOutlet weak var cameraUnavailableLabel: UILabel!
   @IBOutlet weak var imageEmptyLabel: UILabel!
   @IBOutlet weak var resumeButton: UIButton!
-  @IBOutlet weak var runningModelTabbar: UITabBar!
+  @IBOutlet weak var runningModeTabbar: UITabBar!
   @IBOutlet weak var cameraTabbarItem: UITabBarItem!
   @IBOutlet weak var photoTabbarItem: UITabBarItem!
   @IBOutlet weak var bottomSheetViewBottomSpace: NSLayoutConstraint!
@@ -39,7 +39,7 @@ class ViewController: UIViewController {
   private let edgeOffset: CGFloat = 2.0
   private let labelOffset: CGFloat = 10.0
   private let displayFont = UIFont.systemFont(ofSize: 14.0, weight: .medium)
-  private let colors = [
+  private let labelColors = [
     UIColor.red,
     UIColor(displayP3Red: 90.0/255.0, green: 200.0/255.0, blue: 250.0/255.0, alpha: 1.0),
     UIColor.green,
@@ -60,13 +60,13 @@ class ViewController: UIViewController {
   private var maxResults = DefaultConstants.maxResults
   private var scoreThreshold = DefaultConstants.scoreThreshold
   private var model = DefaultConstants.model
-  private var runingModel: RunningMode = .liveStream {
+  private var runningMode: RunningMode = .liveStream {
     didSet {
       objectDetectorHelper = ObjectDetectorHelper(
         model: model,
         maxResults: maxResults,
         scoreThreshold: scoreThreshold,
-        runningModel: runingModel,
+        runningMode: runningMode,
         delegate: self
       )
     }
@@ -92,17 +92,17 @@ class ViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     // Create object detector helper
-    objectDetectorHelper = ObjectDetectorHelper(model: model, maxResults: maxResults, scoreThreshold: scoreThreshold, runningModel: runingModel, delegate: self)
+    objectDetectorHelper = ObjectDetectorHelper(model: model, maxResults: maxResults, scoreThreshold: scoreThreshold, runningMode: runningMode, delegate: self)
 
-    runningModelTabbar.selectedItem = cameraTabbarItem
-    runningModelTabbar.delegate = self
+    runningModeTabbar.selectedItem = cameraTabbarItem
+    runningModeTabbar.delegate = self
     cameraCapture.delegate = self
     overlayView.clearsContextBeforeDrawing = true
   }
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
 #if !targetEnvironment(simulator)
-    if runingModel == .liveStream {
+    if runningMode == .liveStream {
       cameraCapture.checkCameraConfigurationAndStartSession()
     }
 #endif
@@ -172,7 +172,7 @@ class ViewController: UIViewController {
       let objectDetectorHelper = ObjectDetectorHelper(model: weakSelf.model,
                                                       maxResults: weakSelf.maxResults,
                                                       scoreThreshold: weakSelf.scoreThreshold,
-                                                      runningModel: .video,
+                                                      runningMode: .video,
                                                       delegate: nil)
       Task {
         let result = await objectDetectorHelper.detectVideoFile(url: url, inferenceIntervalMs: weakSelf.inferenceIntervalMs)
@@ -292,7 +292,7 @@ class ViewController: UIViewController {
       let confidenceValue = Int(category.score * 100.0)
       let string = "\(category.categoryName ?? "Unknow")  (\(confidenceValue)%)"
 
-      let displayColor = colors[index % colors.count]
+      let displayColor = labelColors[index % labelColors.count]
 
       let size = string.size(withAttributes: [.font: displayFont])
 
@@ -326,8 +326,8 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
     } else {
       guard let image = info[.originalImage] as? UIImage else { return }
       imageEmptyLabel.isHidden = true
-      if runingModel != .image {
-        runingModel = .image
+      if runningMode != .image {
+        runningMode = .image
       }
       removePlayerViewController()
       previewView.image = image
@@ -425,7 +425,7 @@ extension ViewController: ObjectDetectorHelperDelegate {
       self.inferenceViewController?.result = result
       self.inferenceViewController?.updateData()
       if let objectDetectorResult = result?.objectDetectorResults.first,
-         self.runningModelTabbar.selectedItem == self.cameraTabbarItem {
+         self.runningModeTabbar.selectedItem == self.cameraTabbarItem {
         self.drawAfterPerformingCalculations(onDetections: objectDetectorResult?.detections ?? [], orientation: self.cameraCapture.orientation, withImageSize: self.cameraCapture.videoFrameSize)
       }
     }
@@ -466,7 +466,7 @@ extension ViewController: InferenceViewControllerDelegate {
         model: self.model,
         maxResults: self.maxResults,
         scoreThreshold: self.scoreThreshold,
-        runningModel: self.runingModel,
+        runningMode: self.runningMode,
         delegate: self
       )
     }
@@ -478,8 +478,8 @@ extension ViewController: UITabBarDelegate {
   func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
     switch item {
     case cameraTabbarItem:
-      if runingModel != .liveStream {
-        runingModel = .liveStream
+      if runningMode != .liveStream {
+        runningMode = .liveStream
       }
       removePlayerViewController()
     #if !targetEnvironment(simulator)
@@ -514,8 +514,8 @@ enum DefaultConstants {
 
 // MARK: Model
 enum Model: String, CaseIterable {
-    case efficientdetLite0 = "Efficientdet lite 0"
-    case efficientdetLite2 = "Efficientdet lite 2"
+    case efficientdetLite0 = "EfficientDet-Lite0"
+    case efficientdetLite2 = "EfficientDet-Lite2"
 
     var modelPath: String? {
         switch self {

@@ -74,7 +74,7 @@ class CameraFeedManager: NSObject {
   private var isSessionRunning = false
   private var coreImageContext: CIContext
   private var needCalculationSize = true
-  private let cameraPosition: AVCaptureDevice.Position = .front
+  private let cameraPosition: AVCaptureDevice.Position = .back
 
   var orientation: UIImage.Orientation {
     get {
