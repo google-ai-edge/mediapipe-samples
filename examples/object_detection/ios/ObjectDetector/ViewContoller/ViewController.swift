@@ -514,8 +514,8 @@ enum DefaultConstants {
 
 // MARK: Model
 enum Model: String, CaseIterable {
-    case efficientdetLite0 = "Efficientdet lite 0"
-    case efficientdetLite2 = "Efficientdet lite 2"
+    case efficientdetLite0 = "EfficientDet-Lite0"
+    case efficientdetLite2 = "EfficientDet-Lite2"
 
     var modelPath: String? {
         switch self {
