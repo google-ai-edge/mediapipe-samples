@@ -1,0 +1,15 @@
+# Uncomment the next line to define a global platform for your project
+# platform :ios, '9.0'
+
+target 'ObjectDetector' do
+
+  use_frameworks!
+  pod 'MediaPipeTasksVision', '0.10.2-alpha-3'
+
+  # Pods for ObjectDetector
+end
+
+target 'ObjectDetectorTests' do
+    inherit! :search_paths
+    # Pods for testing
+ end
