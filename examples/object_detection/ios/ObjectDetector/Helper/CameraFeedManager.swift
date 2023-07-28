@@ -74,6 +74,7 @@ class CameraFeedManager: NSObject {
   private var isSessionRunning = false
   private var coreImageContext: CIContext
   private var needCalculationSize = true
+  private let cameraPosition: AVCaptureDevice.Position = .front
 
   var orientation: UIImage.Orientation {
     get {
@@ -265,7 +266,7 @@ class CameraFeedManager: NSObject {
 
     /**Tries to get the default back camera.
      */
-    guard let camera  = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
+    guard let camera  = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: cameraPosition) else {
       return false
     }
 
@@ -297,6 +298,10 @@ class CameraFeedManager: NSObject {
     if session.canAddOutput(videoDataOutput) {
       session.addOutput(videoDataOutput)
       videoDataOutput.connection(with: .video)?.videoOrientation = .portrait
+      if videoDataOutput.connection(with: .video)?.isVideoOrientationSupported == true
+          && cameraPosition == .front {
+        videoDataOutput.connection(with: .video)?.isVideoMirrored = true
+      }
       return true
     }
     return false
