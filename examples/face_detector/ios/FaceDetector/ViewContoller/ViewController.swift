@@ -247,20 +247,6 @@ class ViewController: UIViewController {
       }
       var convertedRect = detection.boundingBox
 
-      if runningModelTabbar.selectedItem == cameraTabbarItem {
-        if cameraCapture.cameraPosition == .front {
-          var newWidth = imageSize.width
-          if cameraCapture.orientation == .left || cameraCapture.orientation == .right {
-            newWidth = imageSize.height
-          }
-          convertedRect = CGRect(
-            x: newWidth - convertedRect.origin.x - convertedRect.width,
-            y: convertedRect.origin.y,
-            width: convertedRect.width,
-            height: convertedRect.height)
-        }
-      }
-
       switch orientation {
       case .left:
         convertedRect = CGRect(

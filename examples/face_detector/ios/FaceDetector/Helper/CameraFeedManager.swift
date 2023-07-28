@@ -294,10 +294,13 @@ class CameraFeedManager: NSObject {
     videoDataOutput.setSampleBufferDelegate(self, queue: sampleBufferQueue)
     videoDataOutput.alwaysDiscardsLateVideoFrames = true
     videoDataOutput.videoSettings = [ String(kCVPixelBufferPixelFormatTypeKey) : kCMPixelFormat_32BGRA]
-
     if session.canAddOutput(videoDataOutput) {
       session.addOutput(videoDataOutput)
       videoDataOutput.connection(with: .video)?.videoOrientation = .portrait
+      if videoDataOutput.connection(with: .video)?.isVideoOrientationSupported == true
+          && cameraPosition == .front {
+        videoDataOutput.connection(with: .video)?.isVideoMirrored = true
+      }
       return true
     }
     return false
