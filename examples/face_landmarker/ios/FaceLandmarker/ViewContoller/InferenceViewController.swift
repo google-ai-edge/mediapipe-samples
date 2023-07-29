@@ -29,6 +29,9 @@ class InferenceViewController: UIViewController {
 
   enum Action {
     case changeNumFaces(Int)
+    case changeDetectionConfidence(Float)
+    case changePresenceConfidence(Float)
+    case changeTrackingConfidence(Float)
     case changeBottomSheetViewBottomSpace(Bool)
   }
 
@@ -36,12 +39,16 @@ class InferenceViewController: UIViewController {
   var delegate: InferenceViewControllerDelegate?
 
   // MARK: Storyboards Connections
-  @IBOutlet weak var choseModelButton: UIButton!
-
   @IBOutlet weak var infrenceTimeLabel: UILabel!
   @IBOutlet weak var infrenceTimeTitleLabel: UILabel!
-  @IBOutlet weak var thresholdStepper: UIStepper!
-  @IBOutlet weak var thresholdValueLabel: UILabel!
+  @IBOutlet weak var detectionConfidenceStepper: UIStepper!
+  @IBOutlet weak var detectionConfidenceValueLabel: UILabel!
+
+  @IBOutlet weak var presenceConfidenceStepper: UIStepper!
+  @IBOutlet weak var presenceConfidenceValueLabel: UILabel!
+
+  @IBOutlet weak var minTrackingConfidenceStepper: UIStepper!
+  @IBOutlet weak var minTrackingConfidenceValueLabel: UILabel!
 
   @IBOutlet weak var numFacesStepper: UIStepper!
   @IBOutlet weak var numFacestLabel: UILabel!
@@ -49,6 +56,9 @@ class InferenceViewController: UIViewController {
   // MARK: Instance Variables
   var result: ResultBundle? = nil
   var numFaces = DefaultConstants.numFaces
+  var minFaceDetectionConfidence = DefaultConstants.detectionConfidence
+  var minFacePresenceConfidence = DefaultConstants.presenceConfidence
+  var minTrackingConfidence = DefaultConstants.trackingConfidence
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -57,6 +67,15 @@ class InferenceViewController: UIViewController {
 
   // Private function
   private func setupUI() {
+
+    detectionConfidenceStepper.value = Double(minFaceDetectionConfidence)
+    detectionConfidenceValueLabel.text = "\(minFaceDetectionConfidence)"
+
+    presenceConfidenceStepper.value = Double(minFacePresenceConfidence)
+    presenceConfidenceValueLabel.text = "\(minFacePresenceConfidence)"
+
+    minTrackingConfidenceStepper.value = Double(minTrackingConfidence)
+    minTrackingConfidenceValueLabel.text = "\(minTrackingConfidence)"
 
     numFacesStepper.value = Double(numFaces)
     numFacestLabel.text = "\(numFaces)"
@@ -77,7 +96,22 @@ class InferenceViewController: UIViewController {
     delegate?.viewController(self, needPerformActions: .changeBottomSheetViewBottomSpace(sender.isSelected))
   }
 
-  @IBAction func thresholdStepperValueChanged(_ sender: UIStepper) {
+  @IBAction func detectionConfidenceStepperValueChanged(_ sender: UIStepper) {
+    minFaceDetectionConfidence = Float(sender.value)
+    delegate?.viewController(self, needPerformActions: .changeDetectionConfidence(minFaceDetectionConfidence))
+    detectionConfidenceValueLabel.text = "\(minFaceDetectionConfidence)"
+  }
+
+  @IBAction func presenceConfidenceStepperValueChanged(_ sender: UIStepper) {
+    minFacePresenceConfidence = Float(sender.value)
+    delegate?.viewController(self, needPerformActions: .changePresenceConfidence(minFacePresenceConfidence))
+    presenceConfidenceValueLabel.text = "\(minFacePresenceConfidence)"
+  }
+
+  @IBAction func minTrackingConfidenceStepperValueChanged(_ sender: UIStepper) {
+    minTrackingConfidence = Float(sender.value)
+    delegate?.viewController(self, needPerformActions: .changeTrackingConfidence(minTrackingConfidence))
+    minTrackingConfidenceValueLabel.text = "\(minTrackingConfidence)"
   }
 
   @IBAction func numFacesStepperValueChanged(_ sender: UIStepper) {

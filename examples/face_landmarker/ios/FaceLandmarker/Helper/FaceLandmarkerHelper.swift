@@ -27,7 +27,7 @@ class FaceLandmarkerHelper: NSObject {
   weak var delegate: FaceLandmarkerHelperDelegate?
   var faceLandmarker: FaceLandmarker?
 
-  init(modelPath: String?, numFaces: Int, minFaceDetectionConfidence: Float, minFacePresenceConfidence: Float, minTrackingConfidence: Float, outputFaceBlendshapes: Bool, runningModel: RunningMode, delegate: FaceLandmarkerHelperDelegate?) {
+  init(modelPath: String?, numFaces: Int, minFaceDetectionConfidence: Float, minFacePresenceConfidence: Float, minTrackingConfidence: Float, runningModel: RunningMode, delegate: FaceLandmarkerHelperDelegate?) {
     super.init()
     guard let modelPath = modelPath else { return }
     let faceLandmarkerOptions = FaceLandmarkerOptions()
@@ -36,7 +36,6 @@ class FaceLandmarkerHelper: NSObject {
     faceLandmarkerOptions.minFaceDetectionConfidence = minFaceDetectionConfidence
     faceLandmarkerOptions.minFacePresenceConfidence = minFacePresenceConfidence
     faceLandmarkerOptions.minTrackingConfidence = minTrackingConfidence
-    faceLandmarkerOptions.outputFaceBlendshapes = outputFaceBlendshapes
     faceLandmarkerOptions.faceLandmarkerLiveStreamDelegate = runningModel == .liveStream ? self : nil
     self.delegate = delegate
     faceLandmarkerOptions.baseOptions.modelAssetPath = modelPath
@@ -67,17 +66,8 @@ class FaceLandmarkerHelper: NSObject {
    This method return FaceLandmarkerResult and infrenceTime when receive videoFrame
    **/
   func detectAsync(videoFrame: CMSampleBuffer, orientation: UIImage.Orientation, timeStamps: Int) {
-    var newOrientation: UIImage.Orientation = .up
-    switch orientation {
-    case .left:
-      newOrientation = .right
-    case .right:
-      newOrientation = .left
-    default:
-      break
-    }
     guard let faceLandmarker = faceLandmarker,
-          let image = try? MPImage(sampleBuffer: videoFrame, orientation: newOrientation) else { return }
+          let image = try? MPImage(sampleBuffer: videoFrame, orientation: orientation) else { return }
     do {
       try faceLandmarker.detectAsync(image: image, timestampInMilliseconds: timeStamps)
     } catch {

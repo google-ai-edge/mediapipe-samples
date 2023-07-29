@@ -298,6 +298,10 @@ class CameraFeedManager: NSObject {
     if session.canAddOutput(videoDataOutput) {
       session.addOutput(videoDataOutput)
       videoDataOutput.connection(with: .video)?.videoOrientation = .portrait
+      if videoDataOutput.connection(with: .video)?.isVideoOrientationSupported == true
+          && cameraPosition == .front {
+        videoDataOutput.connection(with: .video)?.isVideoMirrored = true
+      }
       return true
     }
     return false

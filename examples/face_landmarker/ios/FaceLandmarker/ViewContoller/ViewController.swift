@@ -32,7 +32,6 @@ class ViewController: UIViewController {
   @IBOutlet weak var bottomSheetViewBottomSpace: NSLayoutConstraint!
   @IBOutlet weak var bottomViewHeightConstraint: NSLayoutConstraint!
 
-
   // MARK: Constants
   private var videoDetectTimer: Timer?
   private let inferenceIntervalMs: Double = 100
@@ -57,20 +56,18 @@ class ViewController: UIViewController {
 
   // MARK: Instance Variables
   private var numFaces = DefaultConstants.numFaces
-  private var minFaceDetectionConfidence = DefaultConstants.minFaceDetectionConfidence
-  private var minFacePresenceConfidence = DefaultConstants.minFacePresenceConfidence
-  private var minTrackingConfidence = DefaultConstants.minTrackingConfidence
-  private var outputFaceBlendshapes = DefaultConstants.outputFaceBlendshapes
+  private var detectionConfidence = DefaultConstants.detectionConfidence
+  private var presenceConfidence = DefaultConstants.presenceConfidence
+  private var trackingConfidence = DefaultConstants.trackingConfidence
   private let modelPath = DefaultConstants.modelPath
   private var runingModel: RunningMode = .liveStream {
     didSet {
       faceLandmarkerHelper = FaceLandmarkerHelper(
         modelPath: modelPath,
         numFaces: numFaces,
-        minFaceDetectionConfidence: minFaceDetectionConfidence,
-        minFacePresenceConfidence: minFacePresenceConfidence,
-        minTrackingConfidence: minTrackingConfidence,
-        outputFaceBlendshapes: outputFaceBlendshapes,
+        minFaceDetectionConfidence: detectionConfidence,
+        minFacePresenceConfidence: presenceConfidence,
+        minTrackingConfidence: trackingConfidence,
         runningModel: runingModel,
         delegate: self)
     }
@@ -99,10 +96,9 @@ class ViewController: UIViewController {
     faceLandmarkerHelper = FaceLandmarkerHelper(
       modelPath: modelPath,
       numFaces: numFaces,
-      minFaceDetectionConfidence: minFaceDetectionConfidence,
-      minFacePresenceConfidence: minFacePresenceConfidence,
-      minTrackingConfidence: minTrackingConfidence,
-      outputFaceBlendshapes: outputFaceBlendshapes,
+      minFaceDetectionConfidence: detectionConfidence,
+      minFacePresenceConfidence: presenceConfidence,
+      minTrackingConfidence: trackingConfidence,
       runningModel: runingModel,
       delegate: self)
 
@@ -183,10 +179,9 @@ class ViewController: UIViewController {
       let faceLandmarkerHelper = FaceLandmarkerHelper(
         modelPath: weakSelf.modelPath,
         numFaces: weakSelf.numFaces,
-        minFaceDetectionConfidence: weakSelf.minFaceDetectionConfidence,
-        minFacePresenceConfidence: weakSelf.minFacePresenceConfidence,
-        minTrackingConfidence: weakSelf.minTrackingConfidence,
-        outputFaceBlendshapes: weakSelf.outputFaceBlendshapes,
+        minFaceDetectionConfidence: weakSelf.detectionConfidence,
+        minFacePresenceConfidence: weakSelf.presenceConfidence,
+        minTrackingConfidence: weakSelf.trackingConfidence,
         runningModel: .video,
         delegate: nil)
       Task {
@@ -220,7 +215,9 @@ class ViewController: UIViewController {
                     index < result.faceLandmarkerResults.count,
                     let faceLandmarkerResult = result.faceLandmarkerResults[index] else { return }
               DispatchQueue.main.async {
-                weakSelf.drawAfterPerformingCalculations(onLandmarks: faceLandmarkerResult.faceLandmarks, orientation: .up, withImageSize: result.imageSize)
+                weakSelf.overlayView.drawLandmarks(faceLandmarkerResult.faceLandmarks,
+                                                   orientation: .up,
+                                                   withImageSize: result.imageSize)
               }
           })
         }
@@ -231,90 +228,6 @@ class ViewController: UIViewController {
   @objc func playerDidFinishPlaying(note: NSNotification) {
     videoDetectTimer?.invalidate()
     videoDetectTimer = nil
-  }
-
-  // MARK: Handle ovelay function
-  /**
-   This method takes the results, translates the bounding box rects to the current view, draws the bounding boxes, classNames and confidence scores of inferences.
-   */
-  private func drawAfterPerformingCalculations(onLandmarks landmarks: [[NormalizedLandmark]], orientation: UIImage.Orientation, withImageSize imageSize: CGSize) {
-    guard !landmarks.isEmpty else {
-      overlayView.objectOverlays = []
-      overlayView.setNeedsDisplay()
-      return
-    }
-
-    var viewWidth = overlayView.bounds.size.width
-    var viewHeight = overlayView.bounds.size.height
-    var originX: CGFloat = 0
-    var originY: CGFloat = 0
-
-    if viewWidth / viewHeight > imageSize.width / imageSize.height {
-      viewHeight = imageSize.height / imageSize.width  * overlayView.bounds.size.width
-      originY = (overlayView.bounds.size.height - viewHeight) / 2
-    } else {
-      viewWidth = imageSize.width / imageSize.height * overlayView.bounds.size.height
-      originX = (overlayView.bounds.size.width - viewWidth) / 2
-    }
-
-    var objectOverlays: [ObjectOverlay] = []
-
-    for landmark in landmarks {
-      var transformedLandmark: [CGPoint]!
-      if runningModelTabbar.selectedItem == cameraTabbarItem && cameraCapture.cameraPosition == .front {
-        transformedLandmark = landmark.map({CGPoint(x: 1-CGFloat($0.x), y: CGFloat($0.y))})
-      } else {
-        transformedLandmark = landmark.map({CGPoint(x: CGFloat($0.x), y: CGFloat($0.y))})
-      }
-
-      switch orientation {
-      case .left:
-        transformedLandmark = transformedLandmark.map({CGPoint(x: $0.y, y: 1 - $0.x)})
-      case .right:
-        transformedLandmark = transformedLandmark.map({CGPoint(x: 1 - $0.y, y: $0.x)})
-      default:
-        break
-      }
-
-      let dots: [CGPoint] = transformedLandmark.map({CGPoint(x: CGFloat($0.x) * viewWidth + originX, y: CGFloat($0.y) * viewHeight + originY)})
-      var lines: [Line] = FaceLandmarker.faceOvalConnections()
-        .map({ connection in
-        let start = transformedLandmark[Int(connection.start)]
-        let end = transformedLandmark[Int(connection.end)]
-          return Line(from: CGPoint(x: CGFloat(start.x) * viewWidth + originX, y: CGFloat(start.y) * viewHeight + originY),
-                      to: CGPoint(x: CGFloat(end.x) * viewWidth + originX, y: CGFloat(end.y) * viewHeight + originY))
-        })
-      lines.append(contentsOf: FaceLandmarker.rightEyeConnections()
-        .map({ connection in
-        let start = transformedLandmark[Int(connection.start)]
-        let end = transformedLandmark[Int(connection.end)]
-          return Line(from: CGPoint(x: CGFloat(start.x) * viewWidth + originX, y: CGFloat(start.y) * viewHeight + originY),
-                      to: CGPoint(x: CGFloat(end.x) * viewWidth + originX, y: CGFloat(end.y) * viewHeight + originY))
-      }))
-      lines.append(contentsOf: FaceLandmarker.leftEyeConnections()
-        .map({ connection in
-        let start = transformedLandmark[Int(connection.start)]
-        let end = transformedLandmark[Int(connection.end)]
-          return Line(from: CGPoint(x: CGFloat(start.x) * viewWidth + originX, y: CGFloat(start.y) * viewHeight + originY),
-                      to: CGPoint(x: CGFloat(end.x) * viewWidth + originX, y: CGFloat(end.y) * viewHeight + originY))
-      }))
-      lines.append(contentsOf: FaceLandmarker.lipsConnections()
-        .map({ connection in
-        let start = transformedLandmark[Int(connection.start)]
-        let end = transformedLandmark[Int(connection.end)]
-          return Line(from: CGPoint(x: CGFloat(start.x) * viewWidth + originX, y: CGFloat(start.y) * viewHeight + originY),
-                      to: CGPoint(x: CGFloat(end.x) * viewWidth + originX, y: CGFloat(end.y) * viewHeight + originY))
-      }))
-      objectOverlays.append(ObjectOverlay(dots: dots, lines: lines))
-    }
-
-    self.draw(objectOverlays: objectOverlays)
-
-  }
-
-  private func draw(objectOverlays: [ObjectOverlay]) {
-    overlayView.objectOverlays = objectOverlays
-    overlayView.setNeedsDisplay()
   }
 }
 
@@ -343,7 +256,9 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
         guard let result = result,
               let faceLandmarkerResult = result.faceLandmarkerResults.first,
               let faceLandmarkerResult = faceLandmarkerResult else { return }
-        self.drawAfterPerformingCalculations(onLandmarks: faceLandmarkerResult.faceLandmarks, orientation: image.imageOrientation, withImageSize: image.size)
+        self.overlayView.drawLandmarks(faceLandmarkerResult.faceLandmarks,
+                                       orientation: image.imageOrientation,
+                                       withImageSize: image.size)
       }
     }
   }
@@ -440,6 +355,21 @@ extension ViewController: InferenceViewControllerDelegate {
         isModelNeedsRefresh = true
       }
       self.numFaces = numFaces
+    case .changeDetectionConfidence(let detectionConfidence):
+      if self.detectionConfidence != detectionConfidence {
+        isModelNeedsRefresh = true
+      }
+      self.detectionConfidence = detectionConfidence
+    case .changePresenceConfidence(let presenceConfidence):
+      if self.presenceConfidence != presenceConfidence {
+        isModelNeedsRefresh = true
+      }
+      self.presenceConfidence = presenceConfidence
+    case .changeTrackingConfidence(let trackingConfidence):
+      if self.trackingConfidence != trackingConfidence {
+        isModelNeedsRefresh = true
+      }
+      self.trackingConfidence = trackingConfidence
     case .changeBottomSheetViewBottomSpace(let isExpand):
       bottomSheetViewBottomSpace.constant = isExpand ? 0 : -inferenceBottomHeight + expandButtonHeight
       UIView.animate(withDuration: 0.3) {
@@ -450,10 +380,9 @@ extension ViewController: InferenceViewControllerDelegate {
       faceLandmarkerHelper = FaceLandmarkerHelper(
         modelPath: modelPath,
         numFaces: numFaces,
-        minFaceDetectionConfidence: minFaceDetectionConfidence,
-        minFacePresenceConfidence: minFacePresenceConfidence,
-        minTrackingConfidence: minTrackingConfidence,
-        outputFaceBlendshapes: outputFaceBlendshapes,
+        minFaceDetectionConfidence: detectionConfidence,
+        minFacePresenceConfidence: presenceConfidence,
+        minTrackingConfidence: trackingConfidence,
         runningModel: runingModel,
         delegate: self)
     }
@@ -467,7 +396,9 @@ extension ViewController: FaceLandmarkerHelperDelegate {
           let faceLandmarkerResult = faceLandmarkerResult else { return }
     DispatchQueue.main.async {
       if self.runningModelTabbar.selectedItem != self.cameraTabbarItem { return }
-      self.drawAfterPerformingCalculations(onLandmarks: faceLandmarkerResult.faceLandmarks, orientation: self.cameraCapture.orientation, withImageSize: self.cameraCapture.videoFrameSize)
+      self.overlayView.drawLandmarks(faceLandmarkerResult.faceLandmarks,
+                                     orientation: self.cameraCapture.orientation,
+                                     withImageSize: self.cameraCapture.videoFrameSize)
     }
   }
 }
@@ -507,9 +438,9 @@ extension ViewController: UITabBarDelegate {
 // MARK: Define default constants
 enum DefaultConstants {
   static let numFaces = 3
-  static let minFaceDetectionConfidence: Float = 0.5
-  static let minFacePresenceConfidence: Float = 0.5
-  static let minTrackingConfidence: Float = 0.5
+  static let detectionConfidence: Float = 0.5
+  static let presenceConfidence: Float = 0.5
+  static let trackingConfidence: Float = 0.5
   static let outputFaceBlendshapes: Bool = false
   static let modelPath: String? = Bundle.main.path(forResource: "face_landmarker", ofType: "task")
 }
