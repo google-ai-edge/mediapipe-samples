@@ -27,12 +27,12 @@ class FaceDetectorHelper: NSObject {
   weak var delegate: FaceDetectorHelperDelegate?
   var faceDetector: FaceDetector?
 
-  init(modelPath: String?, minDetectionConfidence: Float, minSuppressionThreshold: Float, runningModel: RunningMode, delegate: FaceDetectorHelperDelegate?) {
+  init(modelPath: String?, minDetectionConfidence: Float, minSuppressionThreshold: Float, runningMode: RunningMode, delegate: FaceDetectorHelperDelegate?) {
     super.init()
     guard let modelPath = modelPath else { return }
     let faceDetectorOptions = FaceDetectorOptions()
-    faceDetectorOptions.runningMode = runningModel
-    faceDetectorOptions.faceDetectorLiveStreamDelegate = runningModel == .liveStream ? self : nil
+    faceDetectorOptions.runningMode = runningMode
+    faceDetectorOptions.faceDetectorLiveStreamDelegate = runningMode == .liveStream ? self : nil
     faceDetectorOptions.minDetectionConfidence = minDetectionConfidence
     faceDetectorOptions.minSuppressionThreshold = minSuppressionThreshold
     faceDetectorOptions.baseOptions.modelAssetPath = modelPath

@@ -26,7 +26,7 @@ class ViewController: UIViewController {
   @IBOutlet weak var cameraUnavailableLabel: UILabel!
   @IBOutlet weak var imageEmptyLabel: UILabel!
   @IBOutlet weak var resumeButton: UIButton!
-  @IBOutlet weak var runningModelTabbar: UITabBar!
+  @IBOutlet weak var runningModeTabbar: UITabBar!
   @IBOutlet weak var cameraTabbarItem: UITabBarItem!
   @IBOutlet weak var photoTabbarItem: UITabBarItem!
   @IBOutlet weak var bottomSheetViewBottomSpace: NSLayoutConstraint!
@@ -50,19 +50,19 @@ class ViewController: UIViewController {
   private var minSuppressionThreshold = DefaultConstants.minSuppressionThreshold
   private var minDetectionConfidence = DefaultConstants.minDetectionConfidence
   private var modelPath = DefaultConstants.modelPath
-  private var runingModel: RunningMode = .liveStream {
+  private var runningMode: RunningMode = .liveStream {
     didSet {
       faceDetectorHelper = FaceDetectorHelper(
         modelPath: modelPath,
         minDetectionConfidence: minDetectionConfidence,
         minSuppressionThreshold: minSuppressionThreshold,
-        runningModel: runingModel,
+        runningMode: runningMode,
         delegate: self
       )
     }
   }
   let backgroundQueue = DispatchQueue(
-      label: "com.google.mediapipe.ObjectDetection",
+      label: "com.google.mediapipe.FaceDetector",
       qos: .userInteractive
     )
 
@@ -85,19 +85,19 @@ class ViewController: UIViewController {
       modelPath: modelPath,
       minDetectionConfidence: minDetectionConfidence,
       minSuppressionThreshold: minSuppressionThreshold,
-      runningModel: runingModel,
+      runningMode: runningMode,
       delegate: self
     )
 
-    runningModelTabbar.selectedItem = cameraTabbarItem
-    runningModelTabbar.delegate = self
+    runningModeTabbar.selectedItem = cameraTabbarItem
+    runningModeTabbar.delegate = self
     cameraCapture.delegate = self
     overlayView.clearsContextBeforeDrawing = true
   }
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
 #if !targetEnvironment(simulator)
-    if runingModel == .liveStream {
+    if runningMode == .liveStream {
       cameraCapture.checkCameraConfigurationAndStartSession()
     }
 #endif
@@ -168,7 +168,7 @@ class ViewController: UIViewController {
         let faceDetectorHelper = FaceDetectorHelper(modelPath: weakSelf.modelPath,
                                                     minDetectionConfidence: weakSelf.minDetectionConfidence,
                                                     minSuppressionThreshold: weakSelf.minSuppressionThreshold,
-                                                    runningModel: .video,
+                                                    runningMode: .video,
                                                     delegate: nil)
         let result = await faceDetectorHelper.detectVideoFile(url: url, inferenceIntervalMs: weakSelf.inferenceIntervalMs)
         DispatchQueue.main.async {
@@ -320,8 +320,8 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
     } else {
       guard let image = info[.originalImage] as? UIImage else { return }
       imageEmptyLabel.isHidden = true
-      if runingModel != .image {
-        runingModel = .image
+      if runningMode != .image {
+        runningMode = .image
       }
       removePlayerViewController()
       previewView.image = image
@@ -416,7 +416,7 @@ extension ViewController: FaceDetectorHelperDelegate {
       self.inferenceViewController?.result = result
       self.inferenceViewController?.updateData()
       if let faceDetectorResult = result?.faceDetectorResults.first,
-         self.runningModelTabbar.selectedItem == self.cameraTabbarItem {
+         self.runningModeTabbar.selectedItem == self.cameraTabbarItem {
         self.drawAfterPerformingCalculations(onDetections: faceDetectorResult?.detections ?? [],orientation: cameraCapture.orientation, withImageSize: self.cameraCapture.videoFrameSize)
       }
     }
@@ -452,7 +452,7 @@ extension ViewController: InferenceViewControllerDelegate {
         modelPath: modelPath,
         minDetectionConfidence: minDetectionConfidence,
         minSuppressionThreshold: minSuppressionThreshold,
-        runningModel: runingModel,
+        runningMode: runningMode,
         delegate: self
       )
     }
@@ -464,8 +464,8 @@ extension ViewController: UITabBarDelegate {
   func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
     switch item {
     case cameraTabbarItem:
-      if runingModel != .liveStream {
-        runingModel = .liveStream
+      if runningMode != .liveStream {
+        runningMode = .liveStream
       }
       removePlayerViewController()
     #if !targetEnvironment(simulator)

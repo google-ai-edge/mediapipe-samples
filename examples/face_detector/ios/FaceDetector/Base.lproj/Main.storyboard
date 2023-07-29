@@ -2,7 +2,7 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="l9g-3L-U89">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21678"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -317,7 +317,7 @@
                         <outlet property="photoTabbarItem" destination="C2I-Ae-1Rb" id="v50-H1-rTj"/>
                         <outlet property="previewView" destination="e94-JX-2hi" id="e1I-p1-B0Z"/>
                         <outlet property="resumeButton" destination="6Qk-Hx-CxX" id="3C4-8E-KVj"/>
-                        <outlet property="runningModelTabbar" destination="rLx-NN-4OB" id="u0I-OR-hAT"/>
+                        <outlet property="runningModeTabbar" destination="rLx-NN-4OB" id="u0I-OR-hAT"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Tmp-6I-weL" sceneMemberID="firstResponder"/>
