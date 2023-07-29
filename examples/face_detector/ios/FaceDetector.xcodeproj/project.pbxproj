@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		7978F075EC7307167927DA96 /* Pods_FaceDetector.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CAEB266A0C128CFE39B4E963 /* Pods_FaceDetector.framework */; };
+		7F7641A72A74865000DDCE4E /* testImg.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BFCF187A2A43E0F200D64FA6 /* testImg.jpeg */; };
 		A62955674D0B99A7D0E9C379 /* libPods-FaceDetectorTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CD418693247CFB204F2604A /* libPods-FaceDetectorTests.a */; };
 		BFCF18322A415B9300D64FA6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCF18312A415B9300D64FA6 /* AppDelegate.swift */; };
 		BFCF18342A415B9300D64FA6 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCF18332A415B9300D64FA6 /* SceneDelegate.swift */; };
@@ -22,7 +23,6 @@
 		BFCF18722A415C3400D64FA6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BFCF18712A415C3400D64FA6 /* Assets.xcassets */; };
 		BFCF18772A415C6700D64FA6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BFCF18752A415C6700D64FA6 /* Main.storyboard */; };
 		BFCF18792A4160CA00D64FA6 /* blaze_face_short_range.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BFCF18782A4160CA00D64FA6 /* blaze_face_short_range.tflite */; };
-		BFCF187B2A43E0F200D64FA6 /* testImg.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BFCF187A2A43E0F200D64FA6 /* testImg.jpeg */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,6 +38,7 @@
 /* Begin PBXFileReference section */
 		4CD418693247CFB204F2604A /* libPods-FaceDetectorTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-FaceDetectorTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5F8235CC8350146B717267AD /* Pods-FaceDetector.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FaceDetector.release.xcconfig"; path = "Target Support Files/Pods-FaceDetector/Pods-FaceDetector.release.xcconfig"; sourceTree = "<group>"; };
+		7F7641A92A74869900DDCE4E /* download_models.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = download_models.sh; sourceTree = "<group>"; };
 		BB9395FBA7FB71903009034C /* Pods-FaceDetectorTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FaceDetectorTests.debug.xcconfig"; path = "Target Support Files/Pods-FaceDetectorTests/Pods-FaceDetectorTests.debug.xcconfig"; sourceTree = "<group>"; };
 		BFCF182E2A415B9300D64FA6 /* FaceDetector.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FaceDetector.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BFCF18312A415B9300D64FA6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -101,11 +102,20 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
+		7F7641A82A74866200DDCE4E /* RunScripts */ = {
+			isa = PBXGroup;
+			children = (
+				7F7641A92A74869900DDCE4E /* download_models.sh */,
+			);
+			path = RunScripts;
+			sourceTree = "<group>";
+		};
 		BFCF18252A415B9300D64FA6 = {
 			isa = PBXGroup;
 			children = (
 				BFCF18302A415B9300D64FA6 /* FaceDetector */,
 				BFCF18472A415B9400D64FA6 /* FaceDetectorTests */,
+				7F7641A82A74866200DDCE4E /* RunScripts */,
 				BFCF182F2A415B9300D64FA6 /* Products */,
 				41F49856BEA82C0CA8302671 /* Pods */,
 				2BE5FB4E5F72B13EA3808555 /* Frameworks */,
@@ -131,7 +141,6 @@
 				BFCF18712A415C3400D64FA6 /* Assets.xcassets */,
 				BFCF18752A415C6700D64FA6 /* Main.storyboard */,
 				BFCF183C2A415B9400D64FA6 /* LaunchScreen.storyboard */,
-				BFCF187A2A43E0F200D64FA6 /* testImg.jpeg */,
 				BFCF183F2A415B9400D64FA6 /* Info.plist */,
 				BFCF18782A4160CA00D64FA6 /* blaze_face_short_range.tflite */,
 			);
@@ -141,6 +150,7 @@
 		BFCF18472A415B9400D64FA6 /* FaceDetectorTests */ = {
 			isa = PBXGroup;
 			children = (
+				BFCF187A2A43E0F200D64FA6 /* testImg.jpeg */,
 				BFCF18482A415B9400D64FA6 /* FaceDetectorTests.swift */,
 			);
 			path = FaceDetectorTests;
@@ -252,7 +262,6 @@
 			files = (
 				BFCF18772A415C6700D64FA6 /* Main.storyboard in Resources */,
 				BFCF183E2A415B9400D64FA6 /* LaunchScreen.storyboard in Resources */,
-				BFCF187B2A43E0F200D64FA6 /* testImg.jpeg in Resources */,
 				BFCF18792A4160CA00D64FA6 /* blaze_face_short_range.tflite in Resources */,
 				BFCF18722A415C3400D64FA6 /* Assets.xcassets in Resources */,
 			);
@@ -262,6 +271,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7F7641A72A74865000DDCE4E /* testImg.jpeg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -314,7 +324,8 @@
 		};
 		BFCF187C2A43E4C600D64FA6 /* Download model */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
+			alwaysOutOfDate = 1;
+			buildActionMask = 12;
 			files = (
 			);
 			inputFileListPaths = (
@@ -328,7 +339,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Download blaze_face_short_range.tflite from the internet if it's not exist.\nTFLITE_FILE=${SRCROOT}/FaceDetector/blaze_face_short_range.tflite\nif test -f \"$TFLITE_FILE\"; then\n    echo \"INFO: blaze_face_short_range.tflite existed. Skip downloading and use the local model.\"\nelse\n    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite\n    echo \"INFO: Downloaded blaze_face_short_range.tflite to $TFLITE_FILE .\"\nfi\n";
+			shellScript = "\"$SRCROOT/RunScripts/download_models.sh\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

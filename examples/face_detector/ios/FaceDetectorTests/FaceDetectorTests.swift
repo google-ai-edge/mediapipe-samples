@@ -22,16 +22,19 @@ final class FaceDetectorTests: XCTestCase {
   static let minDetectionConfidence: Float = 0.5
   static let minSuppressionThreshold: Float = 0.5
 
-  static let testImage = UIImage(named: "testImg.jpeg")!
+  static let testImage = UIImage(
+    named: "testImg.jpeg",
+    in:Bundle(for: FaceDetectorTests.self),
+    compatibleWith: nil)!
 
   static let results: [Detection] = [
     Detection(
       categories: [ResultCategory(index: 0, score: 0.973259031, categoryName: nil, displayName: nil)],
-      boundingBox: CGRect(x: 126.0, y: 100.0, width: 464.0, height: 464.0),
+      boundingBox: CGRect(x: 126.0, y: 100.0, width: 463.0, height: 463.0),
       keypoints: nil),
     Detection(
-      categories: [ResultCategory(index: 0, score: 0.926310122, categoryName: nil, displayName: nil)],
-      boundingBox: CGRect(x: 616.0, y: 193, width: 430.0, height: 430.0),
+      categories: [ResultCategory(index: 0, score: 0.9251941, categoryName: nil, displayName: nil)],
+      boundingBox: CGRect(x: 616.0, y: 192, width: 430.0, height: 430.0),
       keypoints: nil)
   ]
 
@@ -42,7 +45,7 @@ final class FaceDetectorTests: XCTestCase {
     let faceDetectorHelper = FaceDetectorHelper(modelPath: modelPath,
                                                 minDetectionConfidence: minDetectionConfidence,
                                                 minSuppressionThreshold: minSuppressionThreshold,
-                                                runningModel: .image,
+                                                runningMode: .image,
                                                 delegate: nil)
     return faceDetectorHelper
   }
