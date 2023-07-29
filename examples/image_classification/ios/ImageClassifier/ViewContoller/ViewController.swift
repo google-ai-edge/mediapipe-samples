@@ -392,8 +392,8 @@ enum DefaultConstants {
 
 // MARK: Tflite Model
 enum Model: String, CaseIterable {
-    case efficientnetLite0 = "Efficientnet lite 0"
-    case efficientnetLite2 = "Efficientnet lite 2"
+    case efficientnetLite0 = "EfficientNet-Lite0"
+    case efficientnetLite2 = "EfficientNet-Lite2"
 
     var modelPath: String? {
         switch self {

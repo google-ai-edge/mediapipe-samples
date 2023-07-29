@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		79A4378FAA9AF241A03613FF /* Pods_ImageClassifier.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E52246C5465654BEC99C6748 /* Pods_ImageClassifier.framework */; };
+		7F7641AF2A74BC3300DDCE4E /* download_models.sh in Resources */ = {isa = PBXBuildFile; fileRef = 7F7641AE2A74BC3300DDCE4E /* download_models.sh */; };
+		7F7641B02A74BCFB00DDCE4E /* cup.png in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2D1A2A3BFC1100589A11 /* cup.png */; };
 		8A09A75FB8580778BCA828C6 /* libPods-ImageClassifierTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EFDD9A1F2B896959A7DB21F /* libPods-ImageClassifierTests.a */; };
 		BF2B2CDB2A316CB000589A11 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2CDA2A316CB000589A11 /* AppDelegate.swift */; };
 		BF2B2CDD2A316CB000589A11 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2CDC2A316CB000589A11 /* SceneDelegate.swift */; };
@@ -21,7 +23,6 @@
 		BF2B2D132A316D9300589A11 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D112A316D9300589A11 /* PreviewView.swift */; };
 		BF2B2D152A316DB200589A11 /* InferenceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D142A316DB200589A11 /* InferenceViewController.swift */; };
 		BF2B2D192A31719F00589A11 /* efficientnet_lite2.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2D182A31719F00589A11 /* efficientnet_lite2.tflite */; };
-		BF2B2D1D2A3C012300589A11 /* cup.png in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2D1A2A3BFC1100589A11 /* cup.png */; };
 		BF97417C2A5B9F1800701718 /* efficientnet_lite0.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF97417B2A5B9F1800701718 /* efficientnet_lite0.tflite */; };
 /* End PBXBuildFile section */
 
@@ -37,6 +38,7 @@
 
 /* Begin PBXFileReference section */
 		75F7F69D45338B6C4278D28B /* Pods-ImageClassifierTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageClassifierTests.debug.xcconfig"; path = "Target Support Files/Pods-ImageClassifierTests/Pods-ImageClassifierTests.debug.xcconfig"; sourceTree = "<group>"; };
+		7F7641AE2A74BC3300DDCE4E /* download_models.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = download_models.sh; sourceTree = "<group>"; };
 		8F21AD4BF9E89E22FCDB2855 /* Pods-ImageClassifier.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageClassifier.release.xcconfig"; path = "Target Support Files/Pods-ImageClassifier/Pods-ImageClassifier.release.xcconfig"; sourceTree = "<group>"; };
 		9EFDD9A1F2B896959A7DB21F /* libPods-ImageClassifierTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ImageClassifierTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ADCFF7BF41F9A043C2773BB0 /* Pods-ImageClassifier.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageClassifier.debug.xcconfig"; path = "Target Support Files/Pods-ImageClassifier/Pods-ImageClassifier.debug.xcconfig"; sourceTree = "<group>"; };
@@ -81,11 +83,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7F7641AD2A74BC3300DDCE4E /* RunScripts */ = {
+			isa = PBXGroup;
+			children = (
+				7F7641AE2A74BC3300DDCE4E /* download_models.sh */,
+			);
+			path = RunScripts;
+			sourceTree = SOURCE_ROOT;
+		};
 		BF2B2CCE2A316CB000589A11 = {
 			isa = PBXGroup;
 			children = (
 				BF2B2CD92A316CB000589A11 /* ImageClassifier */,
 				BF2B2CF02A316CB200589A11 /* ImageClassifierTests */,
+				7F7641AD2A74BC3300DDCE4E /* RunScripts */,
 				BF2B2CD82A316CB000589A11 /* Products */,
 				E977B2FD21B5AC3A654B76C4 /* Pods */,
 				DE7FACF9B1AD0C5A8F58A56D /* Frameworks */,
@@ -114,7 +125,6 @@
 				BF2B2CE82A316CB100589A11 /* Info.plist */,
 				BF97417B2A5B9F1800701718 /* efficientnet_lite0.tflite */,
 				BF2B2D182A31719F00589A11 /* efficientnet_lite2.tflite */,
-				BF2B2D1A2A3BFC1100589A11 /* cup.png */,
 			);
 			path = ImageClassifier;
 			sourceTree = "<group>";
@@ -123,6 +133,7 @@
 			isa = PBXGroup;
 			children = (
 				BF2B2CF12A316CB200589A11 /* ImageClassifierTests.swift */,
+				BF2B2D1A2A3BFC1100589A11 /* cup.png */,
 			);
 			path = ImageClassifierTests;
 			sourceTree = "<group>";
@@ -174,6 +185,7 @@
 			buildConfigurationList = BF2B2D012A316CB200589A11 /* Build configuration list for PBXNativeTarget "ImageClassifier" */;
 			buildPhases = (
 				E8E2925BFDC8144DEDD967E5 /* [CP] Check Pods Manifest.lock */,
+				7F7641AA2A74BBCF00DDCE4E /* Download models */,
 				BF2B2CD32A316CB000589A11 /* Sources */,
 				BF2B2CD42A316CB000589A11 /* Frameworks */,
 				BF2B2CD52A316CB000589A11 /* Resources */,
@@ -249,7 +261,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BF2B2D1D2A3C012300589A11 /* cup.png in Resources */,
 				BF2B2D192A31719F00589A11 /* efficientnet_lite2.tflite in Resources */,
 				BF2B2CE72A316CB100589A11 /* LaunchScreen.storyboard in Resources */,
 				BF2B2CE42A316CB100589A11 /* Assets.xcassets in Resources */,
@@ -262,12 +273,33 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7F7641B02A74BCFB00DDCE4E /* cup.png in Resources */,
+				7F7641AF2A74BC3300DDCE4E /* download_models.sh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		7F7641AA2A74BBCF00DDCE4E /* Download models */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download models";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/RunScripts/download_models.sh\"\n";
+		};
 		9764F8E34375CF689F26838A /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;

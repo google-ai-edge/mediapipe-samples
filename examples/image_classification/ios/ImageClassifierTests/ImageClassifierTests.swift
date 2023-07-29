@@ -20,8 +20,11 @@ final class ImageClassifierTests: XCTestCase {
 
   static let efficientnetLite0 = Model.efficientnetLite0
   static let efficientnetLite2 = Model.efficientnetLite2
-
-  static let testImage = UIImage(named: "cup.png")!
+  
+  static let testImage = UIImage(
+    named: "cup.png",
+    in:Bundle(for: ImageClassifierTests.self),
+    compatibleWith: nil)!
 
   static let efficientnetLite0Results = [
     ResultCategory(
@@ -62,7 +65,7 @@ final class ImageClassifierTests: XCTestCase {
   func imageClassifierWithModel(
     _ model: Model
   ) throws -> ImageClassifierHelper {
-    let imageClassifierHelper = ImageClassifierHelper(model: model, maxResults: 3, scoreThreshold: 0, runningModel: .image)
+    let imageClassifierHelper = ImageClassifierHelper(model: model, maxResults: 3, scoreThreshold: 0, runningModel: .image, delegate: nil)
     return imageClassifierHelper
   }
 
@@ -136,7 +139,7 @@ final class ImageClassifierTests: XCTestCase {
   ) throws {
     let imageClassifierResult =
     try XCTUnwrap(
-      imageClassifier.classify(image: image)!.imageClassifierResult)
+      imageClassifier.classify(image: image)!.imageClassifierResults[0])
     print(imageClassifierResult)
     assertImageClassifierResultHasOneHead(imageClassifierResult)
     assertEqualCategoryArrays(
