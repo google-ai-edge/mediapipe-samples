@@ -17,7 +17,6 @@ package com.google.mediapipe.examples.objectdetection
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.Matrix
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.SystemClock
@@ -28,9 +27,10 @@ import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.MPImage
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
+import com.google.mediapipe.tasks.vision.core.ImageProcessingOptions
 import com.google.mediapipe.tasks.vision.core.RunningMode
-import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetectionResult
 import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetector
+import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetectorResult
 
 class ObjectDetectorHelper(
     var threshold: Float = THRESHOLD_DEFAULT,
@@ -46,6 +46,8 @@ class ObjectDetectorHelper(
     // For this example this needs to be a var so it can be reset on changes. If the ObjectDetector
     // will not change, a lazy val would be preferable.
     private var objectDetector: ObjectDetector? = null
+    private var imageRotation = 0
+    private lateinit var imageProcessingOptions: ImageProcessingOptions
 
     init {
         setupObjectDetector()
@@ -69,18 +71,18 @@ class ObjectDetectorHelper(
             DELEGATE_CPU -> {
                 baseOptionsBuilder.setDelegate(Delegate.CPU)
             }
+
             DELEGATE_GPU -> {
                 // Is there a check for GPU being supported?
                 baseOptionsBuilder.setDelegate(Delegate.GPU)
             }
         }
 
-        val modelName =
-            when (currentModel) {
-                MODEL_EFFICIENTDETV0 -> "efficientdet-lite0.tflite"
-                MODEL_EFFICIENTDETV2 -> "efficientdet-lite2.tflite"
-                else -> "efficientdet-lite0.tflite"
-            }
+        val modelName = when (currentModel) {
+            MODEL_EFFICIENTDETV0 -> "efficientdet-lite0.tflite"
+            MODEL_EFFICIENTDETV2 -> "efficientdet-lite2.tflite"
+            else -> "efficientdet-lite0.tflite"
+        }
 
         baseOptionsBuilder.setModelAssetPath(modelName)
 
@@ -93,27 +95,30 @@ class ObjectDetectorHelper(
                     )
                 }
             }
-            RunningMode.IMAGE,
-            RunningMode.VIDEO -> {
+
+            RunningMode.IMAGE, RunningMode.VIDEO -> {
                 // no-op
             }
         }
 
         try {
-            val optionsBuilder =
-                ObjectDetector.ObjectDetectorOptions.builder()
-                    .setBaseOptions(baseOptionsBuilder.build())
-                    .setScoreThreshold(threshold)
-                    .setRunningMode(runningMode)
-                    .setMaxResults(maxResults)
+            val optionsBuilder = ObjectDetector.ObjectDetectorOptions.builder()
+                .setBaseOptions(baseOptionsBuilder.build())
+                .setScoreThreshold(threshold).setRunningMode(runningMode)
+                .setMaxResults(maxResults)
+
+            imageProcessingOptions = ImageProcessingOptions.builder()
+                .setRotationDegrees(imageRotation).build()
 
             when (runningMode) {
-                RunningMode.IMAGE,
-                RunningMode.VIDEO -> optionsBuilder.setRunningMode(runningMode)
-                RunningMode.LIVE_STREAM ->
-                    optionsBuilder.setRunningMode(runningMode)
-                        .setResultListener(this::returnLivestreamResult)
-                        .setErrorListener(this::returnLivestreamError)
+                RunningMode.IMAGE, RunningMode.VIDEO -> optionsBuilder.setRunningMode(
+                    runningMode
+                )
+
+                RunningMode.LIVE_STREAM -> optionsBuilder.setRunningMode(
+                    runningMode
+                ).setResultListener(this::returnLivestreamResult)
+                    .setErrorListener(this::returnLivestreamError)
             }
 
             val options = optionsBuilder.build()
@@ -125,8 +130,8 @@ class ObjectDetectorHelper(
             Log.e(TAG, "TFLite failed to load model with error: " + e.message)
         } catch (e: RuntimeException) {
             objectDetectorListener?.onError(
-                "Object detector failed to initialize. See error logs for " +
-                        "details", GPU_ERROR
+                "Object detector failed to initialize. See error logs for " + "details",
+                GPU_ERROR
             )
             Log.e(
                 TAG,
@@ -144,14 +149,12 @@ class ObjectDetectorHelper(
     // object detection inference on the video. This process will evaluate every frame in
     // the video and attach the results to a bundle that will be returned.
     fun detectVideoFile(
-        videoUri: Uri,
-        inferenceIntervalMs: Long
+        videoUri: Uri, inferenceIntervalMs: Long
     ): ResultBundle? {
 
         if (runningMode != RunningMode.VIDEO) {
             throw IllegalArgumentException(
-                "Attempting to call detectVideoFile" +
-                        " while not using RunningMode.VIDEO"
+                "Attempting to call detectVideoFile" + " while not using RunningMode.VIDEO"
             )
         }
 
@@ -181,46 +184,40 @@ class ObjectDetectorHelper(
         if ((videoLengthMs == null) || (width == null) || (height == null)) return null
 
         // Next, we'll get one frame every frameInterval ms, then run detection on these frames.
-        val resultList = mutableListOf<ObjectDetectionResult>()
+        val resultList = mutableListOf<ObjectDetectorResult>()
         val numberOfFrameToRead = videoLengthMs.div(inferenceIntervalMs)
 
         for (i in 0..numberOfFrameToRead) {
             val timestampMs = i * inferenceIntervalMs // ms
 
-            retriever
-                .getFrameAtTime(
-                    timestampMs * 1000, // convert from ms to micro-s
-                    MediaMetadataRetriever.OPTION_CLOSEST
-                )
-                ?.let { frame ->
-                    // Convert the video frame to ARGB_8888 which is required by the MediaPipe
-                    val argb8888Frame =
-                        if (frame.config == Bitmap.Config.ARGB_8888) frame
-                        else frame.copy(Bitmap.Config.ARGB_8888, false)
+            retriever.getFrameAtTime(
+                timestampMs * 1000, // convert from ms to micro-s
+                MediaMetadataRetriever.OPTION_CLOSEST
+            )?.let { frame ->
+                // Convert the video frame to ARGB_8888 which is required by the MediaPipe
+                val argb8888Frame =
+                    if (frame.config == Bitmap.Config.ARGB_8888) frame
+                    else frame.copy(Bitmap.Config.ARGB_8888, false)
 
-                    // Convert the input Bitmap object to an MPImage object to run inference
-                    val mpImage = BitmapImageBuilder(argb8888Frame).build()
+                // Convert the input Bitmap object to an MPImage object to run inference
+                val mpImage = BitmapImageBuilder(argb8888Frame).build()
 
-                    // Run object detection using MediaPipe Object Detector API
-                    objectDetector?.detectForVideo(mpImage, timestampMs)
-                        ?.let { detectionResult ->
-                            resultList.add(detectionResult)
-                        }
-                        ?: {
-                            didErrorOccurred = true
-                            objectDetectorListener?.onError(
-                                "ResultBundle could not be returned" +
-                                        " in detectVideoFile"
-                            )
-                        }
-                }
-                ?: run {
+                // Run object detection using MediaPipe Object Detector API
+                objectDetector?.detectForVideo(mpImage, timestampMs)
+                    ?.let { detectionResult ->
+                        resultList.add(detectionResult)
+                    } ?: {
                     didErrorOccurred = true
                     objectDetectorListener?.onError(
-                        "Frame at specified time could not be" +
-                                " retrieved when detecting in video."
+                        "ResultBundle could not be returned" + " in detectVideoFile"
                     )
                 }
+            } ?: run {
+                didErrorOccurred = true
+                objectDetectorListener?.onError(
+                    "Frame at specified time could not be" + " retrieved when detecting in video."
+                )
+            }
         }
 
         retriever.release()
@@ -241,39 +238,29 @@ class ObjectDetectorHelper(
 
         if (runningMode != RunningMode.LIVE_STREAM) {
             throw IllegalArgumentException(
-                "Attempting to call detectLivestreamFrame" +
-                        " while not using RunningMode.LIVE_STREAM"
+                "Attempting to call detectLivestreamFrame" + " while not using RunningMode.LIVE_STREAM"
             )
         }
 
         val frameTime = SystemClock.uptimeMillis()
 
         // Copy out RGB bits from the frame to a bitmap buffer
-        val bitmapBuffer =
-            Bitmap.createBitmap(
-                imageProxy.width,
-                imageProxy.height,
-                Bitmap.Config.ARGB_8888
-            )
+        val bitmapBuffer = Bitmap.createBitmap(
+            imageProxy.width, imageProxy.height, Bitmap.Config.ARGB_8888
+        )
         imageProxy.use { bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer) }
         imageProxy.close()
-        // Rotate the frame received from the camera to be in the same direction as it'll be shown
-        val matrix =
-            Matrix().apply { postRotate(imageProxy.imageInfo.rotationDegrees.toFloat()) }
 
-        val rotatedBitmap =
-            Bitmap.createBitmap(
-                bitmapBuffer,
-                0,
-                0,
-                bitmapBuffer.width,
-                bitmapBuffer.height,
-                matrix,
-                true
-            )
+        // If the input image rotation is change, stop all detector
+        if (imageProxy.imageInfo.rotationDegrees != imageRotation) {
+            imageRotation = imageProxy.imageInfo.rotationDegrees
+            clearObjectDetector()
+            setupObjectDetector()
+            return
+        }
 
         // Convert the input Bitmap object to an MPImage object to run inference
-        val mpImage = BitmapImageBuilder(rotatedBitmap).build()
+        val mpImage = BitmapImageBuilder(bitmapBuffer).build()
 
         detectAsync(mpImage, frameTime)
     }
@@ -283,13 +270,12 @@ class ObjectDetectorHelper(
     fun detectAsync(mpImage: MPImage, frameTime: Long) {
         // As we're using running mode LIVE_STREAM, the detection result will be returned in
         // returnLivestreamResult function
-        objectDetector?.detectAsync(mpImage, frameTime)
+        objectDetector?.detectAsync(mpImage, imageProcessingOptions, frameTime)
     }
 
     // Return the detection result to this ObjectDetectorHelper's caller
     private fun returnLivestreamResult(
-        result: ObjectDetectionResult,
-        input: MPImage
+        result: ObjectDetectorResult, input: MPImage
     ) {
         val finishTimeMs = SystemClock.uptimeMillis()
         val inferenceTime = finishTimeMs - result.timestampMs()
@@ -299,7 +285,8 @@ class ObjectDetectorHelper(
                 listOf(result),
                 inferenceTime,
                 input.height,
-                input.width
+                input.width,
+                imageRotation
             )
         )
     }
@@ -317,8 +304,7 @@ class ObjectDetectorHelper(
 
         if (runningMode != RunningMode.IMAGE) {
             throw IllegalArgumentException(
-                "Attempting to call detectImage" +
-                        " while not using RunningMode.IMAGE"
+                "Attempting to call detectImage" + " while not using RunningMode.IMAGE"
             )
         }
 
@@ -350,10 +336,11 @@ class ObjectDetectorHelper(
     // Wraps results from inference, the time it takes for inference to be performed, and
     // the input image and height for properly scaling UI to return back to callers
     data class ResultBundle(
-        val results: List<ObjectDetectionResult>,
+        val results: List<ObjectDetectorResult>,
         val inferenceTime: Long,
         val inputImageHeight: Int,
         val inputImageWidth: Int,
+        val inputImageRotation: Int = 0
     )
 
     companion object {

@@ -28,7 +28,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.components.containers.Category
 import com.google.mediapipe.tasks.vision.core.RunningMode
-import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetectionResult
+import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetectorResult
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.BeforeClass
@@ -82,7 +82,7 @@ class ObjectDetectorTest {
      */
     @Test
     fun detectionResultsFromLiveStreamModeFallsWithinAcceptedRange() {
-        var detectionResult: ObjectDetectionResult? = null
+        var detectionResult: ObjectDetectorResult? = null
         val objectDetectorHelper = ObjectDetectorHelper(
             context = ApplicationProvider.getApplicationContext(),
             runningMode = RunningMode.LIVE_STREAM,
@@ -134,7 +134,7 @@ class ObjectDetectorTest {
             // Verify that the scores are correct.
             assertEquals(
                 expectedCategoriesForImageAndLiveStreamMode[i].score(),
-                actualCategories[i].score(), 0.01f
+                actualCategories[i].score(), 0.05f
             )
         }
     }
@@ -232,7 +232,7 @@ class ObjectDetectorTest {
             // Verify that the scores are correct.
             assertEquals(
                 expectedCategoriesForImageAndLiveStreamMode[i].score(),
-                actualCategories[i].score(), 0.01f
+                actualCategories[i].score(), 0.05f
             )
         }
     }

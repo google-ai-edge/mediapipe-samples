@@ -352,7 +352,8 @@ class CameraFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
                     fragmentCameraBinding.overlay.setResults(
                         detectionResult,
                         resultBundle.inputImageHeight,
-                        resultBundle.inputImageWidth
+                        resultBundle.inputImageWidth,
+                        resultBundle.inputImageRotation
                     )
                 }
 
