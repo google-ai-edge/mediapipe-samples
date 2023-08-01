@@ -149,6 +149,7 @@ class CameraFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
 
         // Attach listeners to UI control widgets
         initBottomSheetControls()
+        fragmentCameraBinding.overlay.setRunningMode(RunningMode.LIVE_STREAM)
     }
 
     private fun initBottomSheetControls() {

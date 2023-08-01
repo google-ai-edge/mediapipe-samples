@@ -21,7 +21,9 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
+import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetectorResult
+import kotlin.math.max
 import kotlin.math.min
 
 class OverlayView(context: Context?, attrs: AttributeSet?) :
@@ -36,6 +38,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     private var outputWidth = 0
     private var outputHeight = 0
     private var outputRotate = 0
+    private var runningMode: RunningMode = RunningMode.IMAGE
 
     init {
         initPaints()
@@ -48,6 +51,10 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
         boxPaint.reset()
         invalidate()
         initPaints()
+    }
+
+    fun setRunningMode(runningMode: RunningMode) {
+        this.runningMode = runningMode
     }
 
     private fun initPaints() {
@@ -156,13 +163,26 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
             else -> return
         }
 
-        // Images, videos and camera live streams are displayed in FIT_START mode. So we need to scale
+        // Images, videos are displayed in FIT_START mode.
+        // Camera live streams is displayed in FILL_START mode. So we need to scale
         // up the bounding box to match with the size that the images/videos/live streams being
         // displayed.
-        scaleFactor = min(
-            width * 1f / rotatedWidthHeight.first,
-            height * 1f / rotatedWidthHeight.second
-        )
+        scaleFactor = when (runningMode) {
+            RunningMode.IMAGE,
+            RunningMode.VIDEO -> {
+                min(
+                    width * 1f / rotatedWidthHeight.first,
+                    height * 1f / rotatedWidthHeight.second
+                )
+            }
+
+            RunningMode.LIVE_STREAM -> {
+                max(
+                    width * 1f / rotatedWidthHeight.first,
+                    height * 1f / rotatedWidthHeight.second
+                )
+            }
+        }
 
         invalidate()
     }
