@@ -123,7 +123,7 @@ def main():
       '--scoreThreshold',
       help='The score threshold of classification results.',
       required=False,
-      default=0.5)
+      default=0.0)
   args = parser.parse_args()
 
   run(args.model, int(args.maxResults), float(args.scoreThreshold),

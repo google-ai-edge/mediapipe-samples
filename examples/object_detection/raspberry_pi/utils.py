@@ -17,7 +17,7 @@ import numpy as np
 
 
 MARGIN = 10  # pixels
-ROW_SIZE = 10  # pixels
+ROW_SIZE = 30  # pixels
 FONT_SIZE = 1
 FONT_THICKNESS = 1
 TEXT_COLOR = (0, 0, 0)  # black
@@ -40,7 +40,7 @@ def visualize(
     start_point = bbox.origin_x, bbox.origin_y
     end_point = bbox.origin_x + bbox.width, bbox.origin_y + bbox.height
     # Use the orange color for high visibility.
-    cv2.rectangle(image, start_point, end_point, (255, 165, 0), 3)
+    cv2.rectangle(image, start_point, end_point, (0, 165, 255), 3)
 
     # Draw label and score
     category = detection.categories[0]

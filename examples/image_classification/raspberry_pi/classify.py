@@ -23,6 +23,10 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
+# Global variables to calculate FPS
+COUNTER, FPS = 0, 0
+START_TIME = time.time()
+
 
 def run(model: str, max_results: int, score_threshold: float, camera_id: int,
         width: int, height: int) -> None:
@@ -37,17 +41,13 @@ def run(model: str, max_results: int, score_threshold: float, camera_id: int,
       height: The height of the frame captured from the camera.
   """
 
-  # Variables to calculate FPS
-  counter, fps = 0, 0
-  start_time = time.time()
-
   # Start capturing video input from the camera
   cap = cv2.VideoCapture(camera_id)
   cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
   cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
   # Visualization parameters
-  row_size = 20  # pixels
+  row_size = 50  # pixels
   left_margin = 24  # pixels
   text_color = (0, 0, 0)  # black
   font_size = 1
@@ -62,13 +62,21 @@ def run(model: str, max_results: int, score_threshold: float, camera_id: int,
   label_width = 50  # pixels
   label_rect_size = 16  # pixels
   label_margin = 40
-  label_padding_width = 500  # pixels
+  label_padding_width = 600  # pixels
 
+  classification_frame = None
   classification_result_list = []
 
-  def save_result(result: vision.ImageClassifierResult,
-                      unused_output_image: mp.Image, timestamp_ms: int):
+  def save_result(result: vision.ImageClassifierResult, unused_output_image: mp.Image, timestamp_ms: int):
+      global FPS, COUNTER, START_TIME
+
+      # Calculate the FPS
+      if COUNTER % fps_avg_frame_count == 0:
+          FPS = fps_avg_frame_count / (time.time() - START_TIME)
+          START_TIME = time.time()
+
       classification_result_list.append(result)
+      COUNTER += 1
 
   # Initialize the image classification model
   base_options = python.BaseOptions(model_asset_path=model)
@@ -87,7 +95,6 @@ def run(model: str, max_results: int, score_threshold: float, camera_id: int,
           'ERROR: Unable to read from webcam. Please verify your webcam settings.'
       )
 
-    counter += 1
     image = cv2.flip(image, 1)
 
     # Convert the image from BGR to RGB as required by the TFLite model.
@@ -96,18 +103,11 @@ def run(model: str, max_results: int, score_threshold: float, camera_id: int,
 
     # Run image classifier using the model.
     classifier.classify_async(mp_image, time.time_ns() // 1_000_000)
-    current_frame = mp_image.numpy_view()
-    current_frame = cv2.cvtColor(current_frame, cv2.COLOR_RGB2BGR)
-
-    # Calculate the FPS
-    if counter % fps_avg_frame_count == 0:
-        end_time = time.time()
-        fps = fps_avg_frame_count / (end_time - start_time)
-        start_time = time.time()
 
     # Show the FPS
-    fps_text = 'FPS = {:.1f}'.format(fps)
+    fps_text = 'FPS = {:.1f}'.format(FPS)
     text_location = (left_margin, row_size)
+    current_frame = image
     cv2.putText(current_frame, fps_text, text_location, cv2.FONT_HERSHEY_DUPLEX,
                 font_size, text_color, font_thickness, cv2.LINE_AA)
 
@@ -133,10 +133,12 @@ def run(model: str, max_results: int, score_threshold: float, camera_id: int,
                     cv2.FONT_HERSHEY_DUPLEX, label_font_size, label_text_color,
                     label_thickness, cv2.LINE_AA)
         legend_y += (label_rect_size + label_margin)
-      
+
+      classification_frame = current_frame
       classification_result_list.clear()
-    
-    cv2.imshow('image_classification', current_frame)
+
+    if classification_frame is not None:
+        cv2.imshow('image_classification', classification_frame)
 
     # Stop the program if the ESC key is pressed.
     if cv2.waitKey(1) == 27:

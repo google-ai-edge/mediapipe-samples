@@ -47,7 +47,7 @@ python3 classify.py
 *   You can optionally specify the `scoreThreshold` parameter to adjust the
     score threshold of classification results:
     *   Supported value: A floating-point number.
-    *   Default value: `0.5`.
+    *   Default value: `0.0`.
 *   Example usage:
     ```
     python3 classify.py \
