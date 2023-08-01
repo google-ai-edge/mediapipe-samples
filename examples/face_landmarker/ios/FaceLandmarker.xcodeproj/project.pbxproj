@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		BFD91ED62A74F2F300FD4649 /* face_landmarker.task in Resources */ = {isa = PBXBuildFile; fileRef = BFD91ED52A74F2F300FD4649 /* face_landmarker.task */; };
+		BFD91ED92A7889DF00FD4649 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BFD91ED82A7889DF00FD4649 /* Assets.xcassets */; };
 		BFEE41EB2A45351E00BA1A35 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFEE41EA2A45351E00BA1A35 /* AppDelegate.swift */; };
 		BFEE41ED2A45351E00BA1A35 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFEE41EC2A45351E00BA1A35 /* SceneDelegate.swift */; };
 		BFEE41F72A45351F00BA1A35 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BFEE41F52A45351F00BA1A35 /* LaunchScreen.storyboard */; };
@@ -20,7 +21,6 @@
 		BFEE42232A45394C00BA1A35 /* CameraFeedManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFEE421E2A45394C00BA1A35 /* CameraFeedManager.swift */; };
 		BFEE42282A45395400BA1A35 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFEE42262A45395400BA1A35 /* ViewController.swift */; };
 		BFEE42292A45395400BA1A35 /* InferenceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFEE42272A45395400BA1A35 /* InferenceViewController.swift */; };
-		BFEE422B2A45428800BA1A35 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BFEE422A2A45428800BA1A35 /* Assets.xcassets */; };
 		BFEE42302A4542B400BA1A35 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BFEE422E2A4542B400BA1A35 /* Main.storyboard */; };
 		CC9DBE1CC48C4DB446229F58 /* Pods_FaceLandmarker.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BEB757D4516FCE33E7F93E0B /* Pods_FaceLandmarker.framework */; };
 		CDB9E639CD84F1DEE7F622D5 /* libPods-FaceLandmarkerTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DC907E142B2A4A5ED6AD68C /* libPods-FaceLandmarkerTests.a */; };
@@ -49,6 +49,7 @@
 		7D098A775C42220DE7F02EC0 /* Pods-FaceLandmarkerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FaceLandmarkerTests.debug.xcconfig"; path = "Target Support Files/Pods-FaceLandmarkerTests/Pods-FaceLandmarkerTests.debug.xcconfig"; sourceTree = "<group>"; };
 		BEB757D4516FCE33E7F93E0B /* Pods_FaceLandmarker.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_FaceLandmarker.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BFD91ED52A74F2F300FD4649 /* face_landmarker.task */ = {isa = PBXFileReference; lastKnownFileType = file; path = face_landmarker.task; sourceTree = "<group>"; };
+		BFD91ED82A7889DF00FD4649 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BFEE41E72A45351E00BA1A35 /* FaceLandmarker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FaceLandmarker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BFEE41EA2A45351E00BA1A35 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BFEE41EC2A45351E00BA1A35 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -65,7 +66,6 @@
 		BFEE421E2A45394C00BA1A35 /* CameraFeedManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedManager.swift; sourceTree = "<group>"; };
 		BFEE42262A45395400BA1A35 /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		BFEE42272A45395400BA1A35 /* InferenceViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceViewController.swift; sourceTree = "<group>"; };
-		BFEE422A2A45428800BA1A35 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../../../../../../Desktop/ObjectDetection/ObjectDetector/Assets.xcassets; sourceTree = "<group>"; };
 		BFEE422F2A4542B400BA1A35 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		E926CBA36E9A76BEFC7FB7DF /* Pods-FaceLandmarker.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FaceLandmarker.release.xcconfig"; path = "Target Support Files/Pods-FaceLandmarker/Pods-FaceLandmarker.release.xcconfig"; sourceTree = "<group>"; };
 		FD9F1289B507CF7CF326D7DB /* Pods-FaceLandmarker.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FaceLandmarker.debug.xcconfig"; path = "Target Support Files/Pods-FaceLandmarker/Pods-FaceLandmarker.debug.xcconfig"; sourceTree = "<group>"; };
@@ -148,8 +148,8 @@
 				BFEE421A2A45394C00BA1A35 /* Helper */,
 				BFEE41EA2A45351E00BA1A35 /* AppDelegate.swift */,
 				BFEE41EC2A45351E00BA1A35 /* SceneDelegate.swift */,
-				BFEE422A2A45428800BA1A35 /* Assets.xcassets */,
 				BFEE41F52A45351F00BA1A35 /* LaunchScreen.storyboard */,
+				BFD91ED82A7889DF00FD4649 /* Assets.xcassets */,
 				BFEE422E2A4542B400BA1A35 /* Main.storyboard */,
 				BFEE41F82A45351F00BA1A35 /* Info.plist */,
 			);
@@ -302,8 +302,8 @@
 			files = (
 				BFD91ED62A74F2F300FD4649 /* face_landmarker.task in Resources */,
 				BFEE42302A4542B400BA1A35 /* Main.storyboard in Resources */,
+				BFD91ED92A7889DF00FD4649 /* Assets.xcassets in Resources */,
 				BFEE41F72A45351F00BA1A35 /* LaunchScreen.storyboard in Resources */,
-				BFEE422B2A45428800BA1A35 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
