@@ -149,6 +149,7 @@ class CameraFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
 
         // Attach listeners to UI control widgets
         initBottomSheetControls()
+        fragmentCameraBinding.overlay.setRunningMode(RunningMode.LIVE_STREAM)
     }
 
     private fun initBottomSheetControls() {
@@ -352,7 +353,8 @@ class CameraFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
                     fragmentCameraBinding.overlay.setResults(
                         detectionResult,
                         resultBundle.inputImageHeight,
-                        resultBundle.inputImageWidth
+                        resultBundle.inputImageWidth,
+                        resultBundle.inputImageRotation
                     )
                 }
 
