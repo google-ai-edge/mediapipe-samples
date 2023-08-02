@@ -60,7 +60,7 @@ visualization.
 *   You can optionally specify the `maxResults` parameter to limit the list of
     detection results:
     *   Supported value: A positive integer.
-    *   Default value: `
+    *   Default value: `5`
 *   You can optionally specify the `scoreThreshold` parameter to adjust the
     score threshold of detection results:
     *   Supported value: A floating-point number.
