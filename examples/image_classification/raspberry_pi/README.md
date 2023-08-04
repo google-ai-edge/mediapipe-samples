@@ -48,10 +48,15 @@ python3 classify.py
 *   You can optionally specify the `maxResults` parameter to limit the list of
     classification results:
     *   Supported value: A positive integer.
-    *   Default value: `3`.
+    *   Default value: `3`
+*   You can optionally specify the `scoreThreshold` parameter to adjust the
+    score threshold of classification results:
+    *   Supported value: A floating-point number.
+    *   Default value: `0.0`.
 *   Example usage:
     ```
     python3 classify.py \
       --model efficientnet_lite0.tflite \
-      --maxResults 5
+      --maxResults 5 \
+      --scoreThreshold 0.5
     ```

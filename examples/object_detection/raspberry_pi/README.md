@@ -57,3 +57,18 @@ visualization.
     *   TensorFlow Lite object detection models **with metadata**  
         * Models from [MediaPipe Models](https://developers.google.com/mediapipe/solutions/vision/object_detector/index#models)
         * Models trained with [TensorFlow Lite Model Maker](https://developers.google.com/mediapipe/solutions/customization/object_detector) are supported.
+*   You can optionally specify the `maxResults` parameter to limit the list of
+    detection results:
+    *   Supported value: A positive integer.
+    *   Default value: `5`
+*   You can optionally specify the `scoreThreshold` parameter to adjust the
+    score threshold of detection results:
+    *   Supported value: A floating-point number.
+    *   Default value: `0.25`.
+*   Example usage:
+    ```
+    python3 detect.py \
+      --model efficientdet_lite0.tflite \
+      --maxResults 5 \
+      --scoreThreshold 0.3
+    ```
