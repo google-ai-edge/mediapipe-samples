@@ -22,10 +22,8 @@
     <color name="mp_color_secondary">#FBBC04</color>
     <color name="mp_color_secondary_variant">#F9AB00</color>
     <color name="mp_color_error">#B00020</color>
-    <color name="toolbar_background">#E0E0E0</color>
+    <color name="toolbar_background">#EEEEEE</color>
     <color name="ic_launcher_background">#FFFFFF</color>
-    <color name="bottom_sheet_background">#EEEEEE</color>
-    <color name="bottom_sheet_text_color">@android:color/black</color>
     <color name="icActive">#FFFFFFFF</color>
     <color name="icFocused">#DDFFFFFF</color>
     <color name="icPressed">#AAFFFFFF</color>
