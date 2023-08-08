@@ -54,6 +54,7 @@ class DigitCanvasFragment : Fragment()
         fragmentDigitCanvasBinding.btnClear.setOnClickListener {
             fragmentDigitCanvasBinding.digitCanvas.clearCanvas()
             fragmentDigitCanvasBinding.tvResults.text = ""
+            fragmentDigitCanvasBinding.tvInferenceTime.text = ""
         }
     }
 

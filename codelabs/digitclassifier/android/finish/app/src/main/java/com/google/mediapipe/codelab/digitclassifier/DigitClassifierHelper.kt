@@ -60,7 +60,7 @@ class DigitClassifierHelper(
                 "Image classifier failed to initialize. See error logs for " +
                         "details"
             )
-            Log.e(TAG, "TFLite failed to load model with error: " + e.message)
+            Log.e(TAG, "MediaPipe failed to load model with error: " + e.message)
         }
     }
 
