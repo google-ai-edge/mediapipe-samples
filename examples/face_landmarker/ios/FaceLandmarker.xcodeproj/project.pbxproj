@@ -12,7 +12,6 @@
 		BFEE41EB2A45351E00BA1A35 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFEE41EA2A45351E00BA1A35 /* AppDelegate.swift */; };
 		BFEE41ED2A45351E00BA1A35 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFEE41EC2A45351E00BA1A35 /* SceneDelegate.swift */; };
 		BFEE41F72A45351F00BA1A35 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BFEE41F52A45351F00BA1A35 /* LaunchScreen.storyboard */; };
-		BFEE42022A45351F00BA1A35 /* FaceLandmarkerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFEE42012A45351F00BA1A35 /* FaceLandmarkerTests.swift */; };
 		BFEE420C2A45351F00BA1A35 /* FaceLandmarkerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFEE420B2A45351F00BA1A35 /* FaceLandmarkerUITests.swift */; };
 		BFEE420E2A45351F00BA1A35 /* FaceLandmarkerUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFEE420D2A45351F00BA1A35 /* FaceLandmarkerUITestsLaunchTests.swift */; };
 		BFEE42202A45394C00BA1A35 /* FaceLandmarkerHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFEE421B2A45394C00BA1A35 /* FaceLandmarkerHelper.swift */; };
@@ -56,7 +55,6 @@
 		BFEE41F62A45351F00BA1A35 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		BFEE41F82A45351F00BA1A35 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BFEE41FD2A45351F00BA1A35 /* FaceLandmarkerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FaceLandmarkerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		BFEE42012A45351F00BA1A35 /* FaceLandmarkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceLandmarkerTests.swift; sourceTree = "<group>"; };
 		BFEE42072A45351F00BA1A35 /* FaceLandmarkerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FaceLandmarkerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BFEE420B2A45351F00BA1A35 /* FaceLandmarkerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceLandmarkerUITests.swift; sourceTree = "<group>"; };
 		BFEE420D2A45351F00BA1A35 /* FaceLandmarkerUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceLandmarkerUITestsLaunchTests.swift; sourceTree = "<group>"; };
@@ -159,7 +157,6 @@
 		BFEE42002A45351F00BA1A35 /* FaceLandmarkerTests */ = {
 			isa = PBXGroup;
 			children = (
-				BFEE42012A45351F00BA1A35 /* FaceLandmarkerTests.swift */,
 			);
 			path = FaceLandmarkerTests;
 			sourceTree = "<group>";
@@ -408,7 +405,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BFEE42022A45351F00BA1A35 /* FaceLandmarkerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -576,6 +572,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -596,6 +593,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.facelandmarker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -608,6 +606,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -628,6 +627,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.facelandmarker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

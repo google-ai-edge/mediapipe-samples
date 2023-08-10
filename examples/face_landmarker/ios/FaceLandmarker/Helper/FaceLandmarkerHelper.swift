@@ -18,8 +18,8 @@ import AVFoundation
 
 protocol FaceLandmarkerHelperDelegate: AnyObject {
   func faceLandmarkerHelper(_ faceLandmarkerHelper: FaceLandmarkerHelper,
-                             didFinishDetection result: ResultBundle?,
-                             error: Error?)
+                            didFinishDetection result: ResultBundle?,
+                            error: Error?)
 }
 
 class FaceLandmarkerHelper: NSObject {
@@ -47,7 +47,7 @@ class FaceLandmarkerHelper: NSObject {
   }
 
   /**
-   This method return FaceLandmarkerResult and infrenceTime when receive an image
+   This method returns a FaceLandmarkerResult object and infrenceTime after receiving an image
    **/
   func detect(image: UIImage) -> ResultBundle? {
     guard let mpImage = try? MPImage(uiImage: image) else { return nil }
@@ -76,43 +76,56 @@ class FaceLandmarkerHelper: NSObject {
   }
 
   /**
-   This method return FaceLandmarkerResults and infrenceTime when receive videoUrl and inferenceIntervalMs
+   This method returns a FaceLandmarkerResults object and infrenceTime when receiving videoUrl and inferenceIntervalMs
    **/
   func detectVideoFile(url: URL, inferenceIntervalMs: Double) async -> ResultBundle? {
     guard let faceLandmarker = faceLandmarker else { return nil }
-    let startDate = Date()
-    var size: CGSize = .zero
     let asset: AVAsset = AVAsset(url: url)
+    guard let videoDurationMs = try? await asset.load(.duration).seconds * 1000 else { return nil }
+
+    // Using AVAssetImageGenerator to produce images from video content
     let generator = AVAssetImageGenerator(asset:asset)
     generator.requestedTimeToleranceBefore = CMTimeMake(value: 1, timescale: 25)
     generator.requestedTimeToleranceAfter = CMTimeMake(value: 1, timescale: 25)
     generator.appliesPreferredTrackTransform = true
-    guard let videoDurationMs = try? await asset.load(.duration).seconds * 1000 else { return nil }
     let frameCount = Int(videoDurationMs / inferenceIntervalMs)
     var faceLandmarkerResults: [FaceLandmarkerResult?] = []
-    for i in 0..<frameCount {
+    var size: CGSize = .zero
+    let startDate = Date()
+    // Go through each frame and detect it
+    for i in 0 ..< frameCount {
       let timestampMs = inferenceIntervalMs * Double(i) // ms
-      let image:CGImage?
-      do {
-        let time = CMTime(seconds: timestampMs / 1000, preferredTimescale: 600)
-        try image = generator.copyCGImage(at: time, actualTime:nil)
-      } catch {
-        print(error)
-         return nil
-      }
-      guard let image = image else { return nil }
-      let uiImage = UIImage(cgImage:image)
-      size = uiImage.size
-      do {
-        let result = try faceLandmarker.detect(videoFrame: MPImage(uiImage: uiImage), timestampInMilliseconds: Int(timestampMs))
-        faceLandmarkerResults.append(result)
-      } catch {
-        print(error)
+      let time = CMTime(seconds: timestampMs / 1000, preferredTimescale: 600)
+      if let image = getImageFromVideo(generator, atTime: time) {
+        size = image.size
+        do {
+          let result = try faceLandmarker.detect(videoFrame: MPImage(uiImage: image), timestampInMilliseconds: Int(timestampMs))
+          faceLandmarkerResults.append(result)
+        } catch {
+          print(error)
+          faceLandmarkerResults.append(nil)
+        }
+      } else {
         faceLandmarkerResults.append(nil)
       }
     }
     let inferenceTime = Date().timeIntervalSince(startDate) / Double(frameCount) * 1000
     return ResultBundle(inferenceTime: inferenceTime, faceLandmarkerResults: faceLandmarkerResults, imageSize: size)
+  }
+
+  /**
+   This method returns an image object and  when receiving assetImageGenerator and time
+   **/
+  private func getImageFromVideo(_ generator: AVAssetImageGenerator, atTime time: CMTime) -> UIImage? {
+    let image:CGImage?
+    do {
+      try image = generator.copyCGImage(at: time, actualTime:nil)
+    } catch {
+      print(error)
+      return nil
+    }
+    guard let image = image else { return nil }
+    return UIImage(cgImage: image)
   }
 }
 

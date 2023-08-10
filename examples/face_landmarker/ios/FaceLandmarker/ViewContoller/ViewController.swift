@@ -40,18 +40,6 @@ class ViewController: UIViewController {
   private let edgeOffset: CGFloat = 2.0
   private let labelOffset: CGFloat = 10.0
   private let displayFont = UIFont.systemFont(ofSize: 14.0, weight: .medium)
-  private let colors = [
-    UIColor.red,
-    UIColor(displayP3Red: 90.0/255.0, green: 200.0/255.0, blue: 250.0/255.0, alpha: 1.0),
-    UIColor.green,
-    UIColor.orange,
-    UIColor.blue,
-    UIColor.purple,
-    UIColor.magenta,
-    UIColor.yellow,
-    UIColor.cyan,
-    UIColor.brown
-  ]
   private let playerViewController = AVPlayerViewController()
 
   // MARK: Instance Variables
@@ -73,9 +61,9 @@ class ViewController: UIViewController {
     }
   }
   let backgroundQueue = DispatchQueue(
-      label: "com.google.mediapipe.examples.facelandmarker",
-      qos: .userInteractive
-    )
+    label: "com.google.mediapipe.examples.facelandmarker",
+    qos: .userInteractive
+  )
   private var isProcess = false
 
   // MARK: Controllers that manage functionality
@@ -186,43 +174,48 @@ class ViewController: UIViewController {
         delegate: nil)
       Task {
         let result = await faceLandmarkerHelper.detectVideoFile(url: url, inferenceIntervalMs: weakSelf.inferenceIntervalMs)
+        guard let result = result else { return }
         DispatchQueue.main.async {
-          weakSelf.inferenceViewController?.result = result
-          weakSelf.inferenceViewController?.updateData()
-          let player = AVPlayer(url: url)
-          weakSelf.playerViewController.player = player
-          weakSelf.playerViewController.videoGravity = .resizeAspectFill
-          weakSelf.playerViewController.showsPlaybackControls = false
-          weakSelf.playerViewController.view.frame = weakSelf.previewView.bounds
-          weakSelf.previewView.addSubview(weakSelf.playerViewController.view)
-          weakSelf.addChild(weakSelf.playerViewController)
-          player.play()
-          NotificationCenter.default.removeObserver(weakSelf)
-          NotificationCenter.default
-            .addObserver(weakSelf,
-                         selector: #selector(weakSelf.playerDidFinishPlaying),
-                         name: .AVPlayerItemDidPlayToEndTime,
-                         object: player.currentItem
-            )
-
-          weakSelf.videoDetectTimer?.invalidate()
-          weakSelf.videoDetectTimer = Timer.scheduledTimer(
-            withTimeInterval: weakSelf.inferenceIntervalMs / 1000,
-            repeats: true, block: { _ in
-              let currentTime: CMTime = player.currentTime()
-              let index = Int(currentTime.seconds * 1000 / weakSelf.inferenceIntervalMs)
-              guard let result = result,
-                    index < result.faceLandmarkerResults.count,
-                    let faceLandmarkerResult = result.faceLandmarkerResults[index] else { return }
-              DispatchQueue.main.async {
-                weakSelf.overlayView.drawLandmarks(faceLandmarkerResult.faceLandmarks,
-                                                   orientation: .up,
-                                                   withImageSize: result.imageSize)
-              }
-          })
+          weakSelf.showResult(result, videoUrl: url)
         }
       }
     }
+  }
+
+  private func showResult(_ result: ResultBundle, videoUrl: URL) {
+    inferenceViewController?.result = result
+    inferenceViewController?.updateData()
+    let player = AVPlayer(url: videoUrl)
+    playerViewController.player = player
+    playerViewController.videoGravity = .resizeAspectFill
+    playerViewController.showsPlaybackControls = false
+    playerViewController.view.frame = previewView.bounds
+    previewView.addSubview(playerViewController.view)
+    addChild(playerViewController)
+    player.play()
+    NotificationCenter.default.removeObserver(self)
+    NotificationCenter.default
+      .addObserver(self,
+                   selector: #selector(playerDidFinishPlaying),
+                   name: .AVPlayerItemDidPlayToEndTime,
+                   object: player.currentItem
+      )
+
+    videoDetectTimer?.invalidate()
+    videoDetectTimer = Timer.scheduledTimer(
+      withTimeInterval: inferenceIntervalMs / 1000,
+      repeats: true, block: { [weak self] _ in
+        guard let this = self else { return }
+        let currentTime: CMTime = player.currentTime()
+        let index = Int(currentTime.seconds * 1000 / this.inferenceIntervalMs)
+        guard index < result.faceLandmarkerResults.count,
+              let faceLandmarkerResult = result.faceLandmarkerResults[index] else { return }
+        DispatchQueue.main.async {
+          this.overlayView.drawLandmarks(faceLandmarkerResult.faceLandmarks,
+                                         orientation: .up,
+                                         withImageSize: result.imageSize)
+        }
+      })
   }
 
   @objc func playerDidFinishPlaying(note: NSNotification) {
@@ -233,8 +226,10 @@ class ViewController: UIViewController {
 
 // MARK: UIImagePickerControllerDelegate, UINavigationControllerDelegate
 extension ViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+
   func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
     picker.dismiss(animated: true)
+    //Detect video and show result when mediaType is movie
     if info[.mediaType] as? String == UTType.movie.identifier {
       guard let mediaURL = info[.mediaURL] as? URL else { return }
       imageEmptyLabel.isHidden = true
@@ -276,10 +271,10 @@ extension ViewController: CameraFeedManagerDelegate {
 
   // Convert CIImage to UIImage
   func convert(cmage: CIImage) -> UIImage {
-       let context = CIContext(options: nil)
-       let cgImage = context.createCGImage(cmage, from: cmage.extent)!
-       let image = UIImage(cgImage: cgImage)
-       return image
+    let context = CIContext(options: nil)
+    let cgImage = context.createCGImage(cmage, from: cmage.extent)!
+    let image = UIImage(cgImage: cgImage)
+    return image
   }
 
   // MARK: Session Handling Alerts
@@ -412,9 +407,9 @@ extension ViewController: UITabBarDelegate {
         runingModel = .liveStream
       }
       removePlayerViewController()
-    #if !targetEnvironment(simulator)
+#if !targetEnvironment(simulator)
       cameraCapture.checkCameraConfigurationAndStartSession()
-    #endif
+#endif
       previewView.shouldUseClipboardImage = false
       addImageButton.isHidden = true
       imageEmptyLabel.isHidden = true

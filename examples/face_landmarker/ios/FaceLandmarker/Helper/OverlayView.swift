@@ -21,12 +21,18 @@ struct Line {
   let to: CGPoint
 }
 
+/// Line connection
+struct LineConnection {
+  let color: UIColor
+  let lines: [Line]
+}
+
 /**
  This structure holds the display parameters for the overlay to be drawon on a detected object.
  */
 struct ObjectOverlay {
   let dots: [CGPoint]
-  let lines: [Line]
+  let lineConnectios: [LineConnection]
 }
 
 /// Custom view to visualize the face landmarks result on top of the input image.
@@ -35,13 +41,14 @@ class OverlayView: UIView {
   var objectOverlays: [ObjectOverlay] = []
   private let lineWidth: CGFloat = 3
   private let pointRadius: CGFloat = 3
-  private let lineColor = UIColor(red: 0, green: 127/255.0, blue: 139/255.0, alpha: 1)
   private let pointColor = UIColor.yellow
 
   override func draw(_ rect: CGRect) {
     for objectOverlay in objectOverlays {
       drawDots(objectOverlay.dots)
-      drawLines(objectOverlay.lines)
+      for lineConnection in objectOverlay.lineConnectios {
+        drawLines(lineConnection.lines, lineColor: lineConnection.color)
+      }
     }
   }
 
@@ -83,35 +90,62 @@ class OverlayView: UIView {
       }
 
       let dots: [CGPoint] = transformedLandmark.map({CGPoint(x: CGFloat($0.x) * viewWidth + originX, y: CGFloat($0.y) * viewHeight + originY)})
-      var lines: [Line] = FaceLandmarker.faceOvalConnections()
+      var lineConnections: [LineConnection] = []
+      lineConnections.append(LineConnection(
+        color: UIColor(red: 0, green: 127/255.0, blue: 139/255.0, alpha: 1),
+        lines: FaceLandmarker.faceOvalConnections()
+          .map({ connection in
+          let start = transformedLandmark[Int(connection.start)]
+          let end = transformedLandmark[Int(connection.end)]
+            return Line(from: CGPoint(x: CGFloat(start.x) * viewWidth + originX, y: CGFloat(start.y) * viewHeight + originY),
+                        to: CGPoint(x: CGFloat(end.x) * viewWidth + originX, y: CGFloat(end.y) * viewHeight + originY))
+          })))
+      lineConnections.append(LineConnection(
+        color: UIColor(red: 18/255.0, green: 181/255.0, blue: 203/255.0, alpha: 1),
+        lines: FaceLandmarker.rightEyebrowConnections()
+          .map({ connection in
+          let start = transformedLandmark[Int(connection.start)]
+          let end = transformedLandmark[Int(connection.end)]
+            return Line(from: CGPoint(x: CGFloat(start.x) * viewWidth + originX, y: CGFloat(start.y) * viewHeight + originY),
+                        to: CGPoint(x: CGFloat(end.x) * viewWidth + originX, y: CGFloat(end.y) * viewHeight + originY))
+        })))
+      lineConnections.append(LineConnection(
+        color: UIColor(red: 18/255.0, green: 181/255.0, blue: 203/255.0, alpha: 1),
+        lines: FaceLandmarker.leftEyebrowConnections()
         .map({ connection in
         let start = transformedLandmark[Int(connection.start)]
         let end = transformedLandmark[Int(connection.end)]
           return Line(from: CGPoint(x: CGFloat(start.x) * viewWidth + originX, y: CGFloat(start.y) * viewHeight + originY),
                       to: CGPoint(x: CGFloat(end.x) * viewWidth + originX, y: CGFloat(end.y) * viewHeight + originY))
-        })
-      lines.append(contentsOf: FaceLandmarker.rightEyeConnections()
+      })))
+      lineConnections.append(LineConnection(
+        color: UIColor(red: 279/255.0, green: 171/255.0, blue: 0, alpha: 1),
+        lines: FaceLandmarker.rightEyeConnections()
         .map({ connection in
         let start = transformedLandmark[Int(connection.start)]
         let end = transformedLandmark[Int(connection.end)]
           return Line(from: CGPoint(x: CGFloat(start.x) * viewWidth + originX, y: CGFloat(start.y) * viewHeight + originY),
                       to: CGPoint(x: CGFloat(end.x) * viewWidth + originX, y: CGFloat(end.y) * viewHeight + originY))
-      }))
-      lines.append(contentsOf: FaceLandmarker.leftEyeConnections()
+      })))
+      lineConnections.append(LineConnection(
+        color: UIColor(red: 279/255.0, green: 171/255.0, blue: 0, alpha: 1),
+        lines: FaceLandmarker.leftEyeConnections()
         .map({ connection in
         let start = transformedLandmark[Int(connection.start)]
         let end = transformedLandmark[Int(connection.end)]
           return Line(from: CGPoint(x: CGFloat(start.x) * viewWidth + originX, y: CGFloat(start.y) * viewHeight + originY),
                       to: CGPoint(x: CGFloat(end.x) * viewWidth + originX, y: CGFloat(end.y) * viewHeight + originY))
-      }))
-      lines.append(contentsOf: FaceLandmarker.lipsConnections()
+      })))
+      lineConnections.append(LineConnection(
+        color: UIColor(red: 176/255.0, green: 0, blue: 32/255.0, alpha: 1),
+        lines: FaceLandmarker.lipsConnections()
         .map({ connection in
         let start = transformedLandmark[Int(connection.start)]
         let end = transformedLandmark[Int(connection.end)]
           return Line(from: CGPoint(x: CGFloat(start.x) * viewWidth + originX, y: CGFloat(start.y) * viewHeight + originY),
                       to: CGPoint(x: CGFloat(end.x) * viewWidth + originX, y: CGFloat(end.y) * viewHeight + originY))
-      }))
-      objectOverlays.append(ObjectOverlay(dots: dots, lines: lines))
+      })))
+      objectOverlays.append(ObjectOverlay(dots: dots, lineConnectios: lineConnections))
     }
 
     self.objectOverlays = objectOverlays
@@ -129,7 +163,7 @@ class OverlayView: UIView {
     }
   }
 
-  private func drawLines(_ lines: [Line]) {
+  private func drawLines(_ lines: [Line], lineColor: UIColor) {
     let path = UIBezierPath()
     for line in lines {
       path.move(to: line.from)
