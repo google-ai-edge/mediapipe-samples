@@ -64,7 +64,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
             val confidence = byteBuffer.get()
 
             val color =
-                Color.argb(255 * confidence, 0.0f, 0.0f, 128.0f)
+                Color.argb((255 * confidence).toInt(), 0, 0, 128)
             pixels[i] = color
         }
         val image = Bitmap.createBitmap(
