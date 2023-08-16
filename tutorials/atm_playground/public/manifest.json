@@ -1,0 +1,26 @@
+{
+    "short_name": "ATM_Playground",
+    "name": "ATM_Playground",
+    "icons": [
+      {
+        "src": "favicon.png",
+        "sizes": "64x64 32x32 24x24 16x16",
+        "type": "image/png"
+      },
+      {
+        "src": "favicon.png",
+        "type": "image/png",
+        "sizes": "192x192"
+      },
+      {
+        "src": "favicon.png",
+        "type": "image/png",
+        "sizes": "512x512"
+      }
+    ],
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#0c445b",
+    "background_color": "#ffffff"
+  }
+  
