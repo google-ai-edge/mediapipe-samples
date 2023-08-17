@@ -48,7 +48,7 @@ class CameraViewController: UIViewController {
   private lazy var cameraCapture = CameraFeedManager(previewView: previewView)
   
   private let objectDetectorServiceQueue = DispatchQueue(
-    label: "objectDetectorServiceQueue",
+    label: "com.google.mediapipe.cameraController.objectDetectorServiceQueue",
     attributes: .concurrent)
   
   // Queuing reads and writes to objectDetectorService using the Apple recommended way
