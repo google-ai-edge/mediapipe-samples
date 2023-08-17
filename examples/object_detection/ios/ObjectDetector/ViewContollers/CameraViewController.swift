@@ -61,7 +61,6 @@ class CameraViewController: DetectorViewController {
   
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
-    print("CameraController Appear")
 #if !targetEnvironment(simulator)
     initializeObjectDetectorServiceOnSessionResumption()
     cameraCapture.checkCameraConfigurationAndStartSession()
@@ -70,7 +69,6 @@ class CameraViewController: DetectorViewController {
   
   override func viewWillDisappear(_ animated: Bool) {
     super.viewWillDisappear(animated)
-    print("CameraController Disappear")
 #if !targetEnvironment(simulator)
     cameraCapture.stopSession()
     clearObjectDetectorServiceOnSessionInterruption()
