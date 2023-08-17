@@ -127,8 +127,8 @@ class MediaLibraryViewController: UIViewController {
       return
     }
     
-    if let timeObserverTokern = playerTimeObserverToken {
-      player.removeTimeObserver(timeObserverTokern)
+    if let timeObserverToken = playerTimeObserverToken {
+      player.removeTimeObserver(timeObserverToken)
       playerTimeObserverToken = nil
     }
     
