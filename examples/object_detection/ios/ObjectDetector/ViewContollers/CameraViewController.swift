@@ -109,6 +109,13 @@ class CameraViewController: UIViewController {
     }
   }
   
+  override func observeValue(
+    forKeyPath keyPath: String?,
+    of object: Any?, change: [NSKeyValueChangeKey : Any]?,
+    context: UnsafeMutableRawPointer?) {
+      clearAndInitializeObjectDetectorService()
+    }
+  
   private func initializeObjectDetectorServiceOnSessionResumption() {
     clearAndInitializeObjectDetectorService()
     addDetectorMetadataKeyValueObservers()
@@ -159,12 +166,6 @@ class CameraViewController: UIViewController {
 }
 
 extension CameraViewController: CameraFeedManagerDelegate {
-  override func observeValue(
-    forKeyPath keyPath: String?,
-    of object: Any?, change: [NSKeyValueChangeKey : Any]?,
-    context: UnsafeMutableRawPointer?) {
-      clearAndInitializeObjectDetectorService()
-    }
   
   func didOutput(sampleBuffer: CMSampleBuffer, orientation: UIImage.Orientation) {
     let currentTimeMs = Date().timeIntervalSince1970 * 1000
