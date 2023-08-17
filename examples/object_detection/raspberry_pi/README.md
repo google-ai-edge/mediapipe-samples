@@ -56,7 +56,7 @@ visualization.
     *   The default value is `efficientdet_lite0.tflite`
     *   TensorFlow Lite object detection models **with metadata**  
         * Models from [MediaPipe Models](https://developers.google.com/mediapipe/solutions/vision/object_detector/index#models)
-        * Models trained with [TensorFlow Lite Model Maker](https://developers.google.com/mediapipe/solutions/customization/object_detector) are supported.
+        * Models trained with [MediaPipe Model Maker](https://developers.google.com/mediapipe/solutions/customization/object_detector) are supported.
 *   You can optionally specify the `maxResults` parameter to limit the list of
     detection results:
     *   Supported value: A positive integer.
