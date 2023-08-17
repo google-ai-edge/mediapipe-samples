@@ -18,21 +18,13 @@ import CoreMedia
 
 import MediaPipeTasksVision
 
-
-protocol InferenceResultDeliveryDelegate: AnyObject {
-  func didPerformInference(result: ResultBundle?)
-}
-
-protocol InterfaceUpdatesDelegate: AnyObject {
-  func shouldClicksBeEnabled(_ isEnabled: Bool)
-}
-
 class CameraViewController: UIViewController {
   private struct Constants {
     static let edgeOffset: CGFloat = 2.0
   }
   
   weak var inferenceResultDeliveryDelegate: InferenceResultDeliveryDelegate?
+  weak var interfaceUpdatesDelegate: InterfaceUpdatesDelegate?
   
   @IBOutlet weak var previewView: PreviewView!
   @IBOutlet weak var cameraUnavailableLabel: UILabel!

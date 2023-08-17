@@ -17,6 +17,15 @@ import MediaPipeTasksVision
 import UniformTypeIdentifiers
 import AVKit
 
+
+protocol InferenceResultDeliveryDelegate: AnyObject {
+  func didPerformInference(result: ResultBundle?)
+}
+
+protocol InterfaceUpdatesDelegate: AnyObject {
+  func shouldClicksBeEnabled(_ isEnabled: Bool)
+}
+
 class ViewController: UIViewController {
 
   // MARK: Storyboards Connections
