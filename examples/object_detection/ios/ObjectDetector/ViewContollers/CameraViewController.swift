@@ -27,12 +27,20 @@ protocol InterfaceUpdatesDelegate: AnyObject {
   func shouldClicksBeEnabled(_ isEnabled: Bool)
 }
 
-class CameraViewController: DetectorViewController {
+class CameraViewController: UIViewController {
+  private struct Constants {
+    static let edgeOffset: CGFloat = 2.0
+  }
+  
+  weak var inferenceResultDeliveryDelegate: InferenceResultDeliveryDelegate?
+  
   @IBOutlet weak var previewView: PreviewView!
   @IBOutlet weak var cameraUnavailableLabel: UILabel!
   @IBOutlet weak var resumeButton: UIButton!
+  @IBOutlet weak var overlayView: OverlayView!
   
   private var isSessionRunning = false
+  private var isObserver = false
   private let backgroundQueue = DispatchQueue(label: "com.cameraController.backgroundQueue")
   
   // MARK: Controllers that manage functionality
@@ -119,6 +127,34 @@ class CameraViewController: DetectorViewController {
   private func clearObjectDetectorServiceOnSessionInterruption() {
     removeDetectorMetadataKeyValueObservers()
     objectDetectorService = nil
+  }
+  
+  private func addDetectorMetadataKeyValueObservers() {
+    DetectorMetadata.sharedInstance.addObserver(
+      self,
+      forKeyPath: (#keyPath(DetectorMetadata.maxResults)),
+      options: [.new],
+      context: nil)
+    DetectorMetadata.sharedInstance.addObserver(
+      self,
+      forKeyPath: (#keyPath(DetectorMetadata.scoreThreshold)),
+      options: [.new],
+      context: nil)
+    DetectorMetadata.sharedInstance.addObserver(
+      self,
+      forKeyPath: (#keyPath(DetectorMetadata.model)),
+      options: [.new],
+      context: nil)
+    isObserver = true
+  }
+  
+  private func removeDetectorMetadataKeyValueObservers() {
+    if isObserver {
+      DetectorMetadata.sharedInstance.removeObserver(self, forKeyPath: #keyPath(DetectorMetadata.maxResults))
+      DetectorMetadata.sharedInstance.removeObserver(self, forKeyPath: #keyPath(DetectorMetadata.scoreThreshold))
+      DetectorMetadata.sharedInstance.removeObserver(self, forKeyPath: #keyPath(DetectorMetadata.model))
+    }
+    isObserver = false
   }
 }
 
@@ -211,10 +247,14 @@ extension CameraViewController: ObjectDetectorServiceLiveStreamDelegate {
         return
       }
       let imageSize = weakSelf.cameraCapture.videoResolution
-      weakSelf.draw(
-        detections: objectDetectorResult.detections,
-        originalImageSize: imageSize,
-        andOrientation: UIImage.Orientation.from(deviceOrientation: UIDevice.current.orientation),
+      weakSelf.overlayView.draw(
+        objectOverlays:ObjectOverlayHelper.objectOverlays(
+          fromDetections: objectDetectorResult.detections,
+          inferredOnImageOfSize: imageSize,
+          andOrientation:  UIImage.Orientation.from(
+            deviceOrientation: UIDevice.current.orientation)),
+        inBoundsOfContentImageOfSize: imageSize,
+        edgeOffset: Constants.edgeOffset,
         imageContentMode: weakSelf.previewView.previewLayer.videoGravity.contentMode)
     }
   }

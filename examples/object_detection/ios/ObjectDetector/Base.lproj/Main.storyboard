@@ -394,7 +394,7 @@
                     </view>
                     <connections>
                         <outlet property="imageEmptyLabel" destination="J9U-K7-HBd" id="sfh-Ui-U1d"/>
-                        <outlet property="overlayView" destination="Grd-bu-LZS" id="uaN-uJ-yfN"/>
+                        <outlet property="overlayView" destination="Grd-bu-LZS" id="VdF-75-63K"/>
                         <outlet property="pickFromGalleryButton" destination="iXg-bM-gvZ" id="Ad8-rd-i8D"/>
                         <outlet property="pickFromGalleryButtonBottomSpace" destination="o3W-3H-yjJ" id="Jlc-sA-pcM"/>
                         <outlet property="pickedImageView" destination="O0p-BT-LIZ" id="ygI-MX-FwK"/>
@@ -449,7 +449,7 @@
                     </view>
                     <connections>
                         <outlet property="cameraUnavailableLabel" destination="c0u-4p-ImP" id="L6y-1B-OIX"/>
-                        <outlet property="overlayView" destination="hFf-1S-AnH" id="usO-Wo-Tpn"/>
+                        <outlet property="overlayView" destination="hFf-1S-AnH" id="BUy-V3-SMc"/>
                         <outlet property="previewView" destination="0oz-8e-wiV" id="JaS-0q-kOB"/>
                         <outlet property="resumeButton" destination="xy8-UI-ocb" id="sZ4-tU-loX"/>
                     </connections>

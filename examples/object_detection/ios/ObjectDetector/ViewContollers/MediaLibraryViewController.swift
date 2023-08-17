@@ -17,9 +17,10 @@ import UniformTypeIdentifiers
 import AVKit
 import MediaPipeTasksVision
 
-class MediaLibraryViewController: DetectorViewController {
+class MediaLibraryViewController: UIViewController {
   
   private struct Constants {
+    static let edgeOffset: CGFloat = 2.0
     static let inferenceTimeIntervalMs: Int64 = 300
     static let kMilliSeconds: Int64 = 1000
     static let savedPhotosNotAvailableText = "Saved photos album is not available."
@@ -32,8 +33,11 @@ class MediaLibraryViewController: DetectorViewController {
   private var playerViewController: AVPlayerViewController?
   private var objectDetectorService: ObjectDetectorService?
   
+  weak var interfaceUpdatesDelegate: InterfaceUpdatesDelegate?
+  
   private var playerTimeObserverToken : Any?
   
+  @IBOutlet weak var overlayView: OverlayView!
   @IBOutlet weak var pickFromGalleryButton: UIButton!
   @IBOutlet weak var progressView: UIProgressView!
   @IBOutlet weak var imageEmptyLabel: UILabel!
@@ -251,10 +255,14 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
           
         DispatchQueue.main.async {
           weakSelf.hideProgressView()
-          weakSelf.draw(
-            detections: objectDetectorResult.detections,
-            originalImageSize: image.size,
-            andOrientation: image.imageOrientation)
+          weakSelf.overlayView.draw(
+            objectOverlays:ObjectOverlayHelper.objectOverlays(
+              fromDetections: objectDetectorResult.detections,
+              inferredOnImageOfSize: image.size,
+              andOrientation:  image.imageOrientation),
+            inBoundsOfContentImageOfSize: image.size,
+            edgeOffset: Constants.edgeOffset,
+            imageContentMode: .scaleAspectFit)
         }
       }
     default:
@@ -300,10 +308,15 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
                 let objectDetectorResult = resultBundle.objectDetectorResults[index] else {
             return
           }
-          weakSelf.draw(
-            detections: objectDetectorResult.detections,
-            originalImageSize: resultBundle.size,
-            andOrientation: .up)
+          
+          weakSelf.overlayView.draw(
+            objectOverlays:ObjectOverlayHelper.objectOverlays(
+              fromDetections: objectDetectorResult.detections,
+              inferredOnImageOfSize: resultBundle.size,
+              andOrientation:  .up),
+            inBoundsOfContentImageOfSize: resultBundle.size,
+            edgeOffset: Constants.edgeOffset,
+            imageContentMode: .scaleAspectFit)
         }
     })
   }

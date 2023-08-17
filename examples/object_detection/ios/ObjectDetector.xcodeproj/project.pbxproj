@@ -10,7 +10,6 @@
 		39A04804C8101D2C0D58D927 /* libPods-ObjectDetectorTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BF80BB442A677B6C005E93B1 /* libPods-ObjectDetectorTests.a */; };
 		7F7641A62A74803D00DDCE4E /* download_models.sh in Resources */ = {isa = PBXBuildFile; fileRef = 7F7641A52A74803D00DDCE4E /* download_models.sh */; };
 		9E41A7603AB8BE3B86C06DB9 /* Pods_ObjectDetector.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3FBCABF9DABD56A270978F4 /* Pods_ObjectDetector.framework */; };
-		AA9BCA602A86105900D6B4C9 /* DetectorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9BCA5F2A86105900D6B4C9 /* DetectorViewController.swift */; };
 		AAF981DB2A80D27500C7121A /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF981DA2A80D27500C7121A /* CameraViewController.swift */; };
 		AAF981DD2A80D28B00C7121A /* MediaLibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF981DC2A80D28B00C7121A /* MediaLibraryViewController.swift */; };
 		AAF981DF2A81330700C7121A /* DetectorMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF981DE2A81330700C7121A /* DetectorMetadata.swift */; };
@@ -48,7 +47,6 @@
 		3867444B45D308637F45B36F /* Pods-ObjectDetectorTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ObjectDetectorTests.debug.xcconfig"; path = "Target Support Files/Pods-ObjectDetectorTests/Pods-ObjectDetectorTests.debug.xcconfig"; sourceTree = "<group>"; };
 		5C7001CA299F3F76944A9162 /* Pods-ObjectDetector.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ObjectDetector.debug.xcconfig"; path = "Target Support Files/Pods-ObjectDetector/Pods-ObjectDetector.debug.xcconfig"; sourceTree = "<group>"; };
 		7F7641A52A74803D00DDCE4E /* download_models.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = download_models.sh; sourceTree = "<group>"; };
-		AA9BCA5F2A86105900D6B4C9 /* DetectorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectorViewController.swift; sourceTree = "<group>"; };
 		AAF981DA2A80D27500C7121A /* CameraViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
 		AAF981DC2A80D28B00C7121A /* MediaLibraryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaLibraryViewController.swift; sourceTree = "<group>"; };
 		AAF981DE2A81330700C7121A /* DetectorMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectorMetadata.swift; sourceTree = "<group>"; };
@@ -240,7 +238,6 @@
 				BF2B2D322A3C09E200589A11 /* ViewController.swift */,
 				BF2B2D692A3C0C3F00589A11 /* InferenceViewController.swift */,
 				AAF981DA2A80D27500C7121A /* CameraViewController.swift */,
-				AA9BCA5F2A86105900D6B4C9 /* DetectorViewController.swift */,
 				AAF981DC2A80D28B00C7121A /* MediaLibraryViewController.swift */,
 			);
 			path = ViewContollers;
@@ -429,7 +426,6 @@
 				BF2B2D642A3C0C2900589A11 /* CameraFeedManager.swift in Sources */,
 				BF2B2D2F2A3C09E200589A11 /* AppDelegate.swift in Sources */,
 				BF2B2D6D2A3C0EF900589A11 /* ObjectDetectorService.swift in Sources */,
-				AA9BCA602A86105900D6B4C9 /* DetectorViewController.swift in Sources */,
 				AAF981DD2A80D28B00C7121A /* MediaLibraryViewController.swift in Sources */,
 				BF2B2D312A3C09E200589A11 /* SceneDelegate.swift in Sources */,
 				AAF981DB2A80D27500C7121A /* CameraViewController.swift in Sources */,
