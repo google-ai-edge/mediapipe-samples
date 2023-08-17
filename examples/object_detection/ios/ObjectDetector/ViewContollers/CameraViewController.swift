@@ -71,7 +71,18 @@ class CameraViewController: UIViewController {
     super.viewWillAppear(animated)
 #if !targetEnvironment(simulator)
     initializeObjectDetectorServiceOnSessionResumption()
-    cameraCapture.checkCameraConfigurationAndStartSession()
+    cameraCapture.startLiveCameraSession {[weak self] cameraConfiguration in
+      DispatchQueue.main.async {
+        switch cameraConfiguration {
+          case .failed:
+            self?.presentVideoConfigurationErrorAlert()
+          case .permissionDenied:
+            self?.presentCameraPermissionsDeniedAlert()
+          default:
+            break
+        }
+      }        
+    }
 #endif
   }
   
@@ -115,6 +126,34 @@ class CameraViewController: UIViewController {
     context: UnsafeMutableRawPointer?) {
       clearAndInitializeObjectDetectorService()
     }
+  
+  private func presentCameraPermissionsDeniedAlert() {
+    let alertController = UIAlertController(
+      title: "Camera Permissions Denied",
+      message:
+        "Camera permissions have been denied for this app. You can change this by going to Settings",
+      preferredStyle: .alert)
+    
+    let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+    let settingsAction = UIAlertAction(title: "Settings", style: .default) { (action) in
+      UIApplication.shared.open(
+        URL(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
+    }
+    alertController.addAction(cancelAction)
+    alertController.addAction(settingsAction)
+    
+    present(alertController, animated: true, completion: nil)
+  }
+  
+  private func presentVideoConfigurationErrorAlert() {
+    let alert = UIAlertController(
+      title: "Camera Configuration Failed",
+      message: "There was an error while configuring camera.",
+      preferredStyle: .alert)
+    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+    
+    self.present(alert, animated: true)
+  }
   
   private func initializeObjectDetectorServiceOnSessionResumption() {
     clearAndInitializeObjectDetectorService()
@@ -196,39 +235,11 @@ extension CameraViewController: CameraFeedManagerDelegate {
     initializeObjectDetectorServiceOnSessionResumption()
   }
   
-  func sessionRunTimeErrorOccured() {
+  func didEncounterSessionRuntimeError() {
     // Handles session run time error by updating the UI and providing a button if session can be
     // manually resumed.
     resumeButton.isHidden = false
     clearObjectDetectorServiceOnSessionInterruption()
-  }
-  
-  func presentCameraPermissionsDeniedAlert() {
-    let alertController = UIAlertController(
-      title: "Camera Permissions Denied",
-      message:
-        "Camera permissions have been denied for this app. You can change this by going to Settings",
-      preferredStyle: .alert)
-    
-    let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-    let settingsAction = UIAlertAction(title: "Settings", style: .default) { (action) in
-      UIApplication.shared.open(
-        URL(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
-    }
-    alertController.addAction(cancelAction)
-    alertController.addAction(settingsAction)
-    
-    present(alertController, animated: true, completion: nil)
-  }
-  
-  func presentVideoConfigurationErrorAlert() {
-    let alert = UIAlertController(
-      title: "Camera Configuration Failed",
-      message: "There was an error while configuring camera.",
-      preferredStyle: .alert)
-    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-    
-    self.present(alert, animated: true)
   }
 }
 

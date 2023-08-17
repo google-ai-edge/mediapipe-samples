@@ -24,19 +24,9 @@ protocol CameraFeedManagerDelegate: AnyObject {
   func didOutput(sampleBuffer: CMSampleBuffer, orientation: UIImage.Orientation)
 
   /**
-   This method initimates that the camera permissions have been denied.
-   */
-  func presentCameraPermissionsDeniedAlert()
-
-  /**
-   This method initimates that there was an error in video configurtion.
-   */
-  func presentVideoConfigurationErrorAlert()
-
-  /**
    This method initimates that a session runtime error occured.
    */
-  func sessionRunTimeErrorOccured()
+  func didEncounterSessionRuntimeError()
 
   /**
    This method initimates that the session was interrupted.
@@ -51,19 +41,17 @@ protocol CameraFeedManagerDelegate: AnyObject {
 }
 
 /**
- This enum holds the state of the camera initialization.
- */
-enum CameraConfiguration {
-
-  case success
-  case failed
-  case permissionDenied
-}
-
-/**
  This class manages all camera related functionality
  */
 class CameraFeedManager: NSObject {
+  /**
+   This enum holds the state of the camera initialization.
+   */
+  enum CameraConfigurationStatus {
+    case success
+    case failed
+    case permissionDenied
+  }
   
   // MARK: Public Instance Variables
   var videoResolution: CGSize {
@@ -92,7 +80,7 @@ class CameraFeedManager: NSObject {
   private let sessionQueue = DispatchQueue(label: "com.google.mediapipe.CameraFeedManager.sessionQueue")
   private let cameraPosition: AVCaptureDevice.Position = .back
   
-  private var cameraConfiguration: CameraConfiguration = .failed
+  private var cameraConfigurationStatus: CameraConfigurationStatus = .failed
   private lazy var videoDataOutput = AVCaptureVideoDataOutput()
   private var isSessionRunning = false
   private var imageBufferSize: CGSize?
@@ -142,21 +130,16 @@ class CameraFeedManager: NSObject {
    This method starts an AVCaptureSession based on whether the camera configuration was successful.
    */
 
-  func checkCameraConfigurationAndStartSession() {
+  func startLiveCameraSession(_ completion: @escaping(_ cameraConfiguration: CameraConfigurationStatus) -> Void) {
     sessionQueue.async {
-      switch self.cameraConfiguration {
+      switch self.cameraConfigurationStatus {
       case .success:
         self.addObservers()
         self.startSession()
-      case .failed:
-        DispatchQueue.main.async {
-          self.delegate?.presentVideoConfigurationErrorAlert()
-        }
-      case .permissionDenied:
-        DispatchQueue.main.async {
-          self.delegate?.presentCameraPermissionsDeniedAlert()
-        }
+        default:
+          break
       }
+      completion(self.cameraConfigurationStatus)
     }
   }
 
@@ -202,14 +185,14 @@ class CameraFeedManager: NSObject {
   private func attemptToConfigureSession() {
     switch AVCaptureDevice.authorizationStatus(for: .video) {
     case .authorized:
-      self.cameraConfiguration = .success
+      self.cameraConfigurationStatus = .success
     case .notDetermined:
       self.sessionQueue.suspend()
       self.requestCameraAccess(completion: { (granted) in
         self.sessionQueue.resume()
       })
     case .denied:
-      self.cameraConfiguration = .permissionDenied
+      self.cameraConfigurationStatus = .permissionDenied
     default:
       break
     }
@@ -225,10 +208,10 @@ class CameraFeedManager: NSObject {
   private func requestCameraAccess(completion: @escaping (Bool) -> ()) {
     AVCaptureDevice.requestAccess(for: .video) { (granted) in
       if !granted {
-        self.cameraConfiguration = .permissionDenied
+        self.cameraConfigurationStatus = .permissionDenied
       }
       else {
-        self.cameraConfiguration = .success
+        self.cameraConfigurationStatus = .success
       }
       completion(granted)
     }
@@ -240,7 +223,7 @@ class CameraFeedManager: NSObject {
    */
   private func configureSession() {
 
-    guard cameraConfiguration == .success else {
+    guard cameraConfigurationStatus == .success else {
       return
     }
     session.beginConfiguration()
@@ -248,19 +231,19 @@ class CameraFeedManager: NSObject {
     // Tries to add an AVCaptureDeviceInput.
     guard addVideoDeviceInput() == true else {
       self.session.commitConfiguration()
-      self.cameraConfiguration = .failed
+      self.cameraConfigurationStatus = .failed
       return
     }
 
     // Tries to add an AVCaptureVideoDataOutput.
     guard addVideoDataOutput() else {
       self.session.commitConfiguration()
-      self.cameraConfiguration = .failed
+      self.cameraConfigurationStatus = .failed
       return
     }
 
     session.commitConfiguration()
-    self.cameraConfiguration = .success
+    self.cameraConfigurationStatus = .success
   }
 
   /**
@@ -345,7 +328,6 @@ class CameraFeedManager: NSObject {
   }
 
   @objc func sessionInterruptionEnded(notification: Notification) {
-
     self.delegate?.sessionInterruptionEnded()
   }
 
@@ -353,22 +335,22 @@ class CameraFeedManager: NSObject {
     guard let error = notification.userInfo?[AVCaptureSessionErrorKey] as? AVError else {
       return
     }
-
+    
     print("Capture session runtime error: \(error)")
+    
+    guard error.code == .mediaServicesWereReset else {
+      self.delegate?.didEncounterSessionRuntimeError()
+      return
+    }
 
-    if error.code == .mediaServicesWereReset {
-      sessionQueue.async {
-        if self.isSessionRunning {
-          self.startSession()
-        } else {
-          DispatchQueue.main.async {
-            self.delegate?.sessionRunTimeErrorOccured()
-          }
+    sessionQueue.async {
+      if self.isSessionRunning {
+        self.startSession()
+      } else {
+        DispatchQueue.main.async {
+          self.delegate?.didEncounterSessionRuntimeError()
         }
       }
-    } else {
-      self.delegate?.sessionRunTimeErrorOccured()
-
     }
   }
 }
