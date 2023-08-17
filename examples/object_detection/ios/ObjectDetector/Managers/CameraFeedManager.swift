@@ -89,7 +89,7 @@ class CameraFeedManager: NSObject {
   // MARK: Instance Variables
   private let session: AVCaptureSession = AVCaptureSession()
   private let previewView: PreviewView
-  private let sessionQueue = DispatchQueue(label: "sessionQueue")
+  private let sessionQueue = DispatchQueue(label: "com.google.mediapipe.CameraFeedManager.sessionQueue")
   private let cameraPosition: AVCaptureDevice.Position = .back
   
   private var cameraConfiguration: CameraConfiguration = .failed
