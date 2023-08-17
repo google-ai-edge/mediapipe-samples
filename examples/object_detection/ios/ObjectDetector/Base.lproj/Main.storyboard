@@ -419,9 +419,8 @@
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xy8-UI-ocb" userLabel="Resume">
-                                <rect key="frame" x="240" y="248" width="77" height="35"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xy8-UI-ocb" userLabel="Resume">
+                                <rect key="frame" x="158" y="408.66666666666669" width="77" height="35"/>
                                 <color key="backgroundColor" red="0.0" green="0.49803921569999998" blue="0.5450980392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <color key="tintColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                 <state key="normal" title="Button"/>
@@ -440,11 +439,13 @@
                         <constraints>
                             <constraint firstItem="sqx-9t-qnN" firstAttribute="trailing" secondItem="c0u-4p-ImP" secondAttribute="trailing" constant="10" id="6cx-kt-LCe"/>
                             <constraint firstItem="c0u-4p-ImP" firstAttribute="top" secondItem="sqx-9t-qnN" secondAttribute="top" constant="20" id="6rZ-6P-5hh"/>
+                            <constraint firstItem="xy8-UI-ocb" firstAttribute="centerY" secondItem="0oz-8e-wiV" secondAttribute="centerY" id="DO8-6b-Dwr"/>
                             <constraint firstItem="hFf-1S-AnH" firstAttribute="top" secondItem="0oz-8e-wiV" secondAttribute="top" id="Ghy-9o-ckj"/>
                             <constraint firstItem="c0u-4p-ImP" firstAttribute="leading" secondItem="sqx-9t-qnN" secondAttribute="leading" constant="10" id="f90-Hl-kJG"/>
                             <constraint firstItem="hFf-1S-AnH" firstAttribute="leading" secondItem="0oz-8e-wiV" secondAttribute="leading" id="fnA-iM-iat"/>
                             <constraint firstAttribute="trailing" secondItem="hFf-1S-AnH" secondAttribute="trailing" id="jhW-Td-an7"/>
                             <constraint firstAttribute="bottom" secondItem="hFf-1S-AnH" secondAttribute="bottom" id="rF5-7T-gg9"/>
+                            <constraint firstItem="xy8-UI-ocb" firstAttribute="centerX" secondItem="0oz-8e-wiV" secondAttribute="centerX" id="weD-Pm-NuA"/>
                         </constraints>
                     </view>
                     <connections>
