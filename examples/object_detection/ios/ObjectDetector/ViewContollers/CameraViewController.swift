@@ -41,7 +41,7 @@ class CameraViewController: UIViewController {
   
   private var isSessionRunning = false
   private var isObserver = false
-  private let backgroundQueue = DispatchQueue(label: "com.cameraController.backgroundQueue")
+  private let backgroundQueue = DispatchQueue(label: "com.google.mediapipe.cameraController.backgroundQueue")
   
   // MARK: Controllers that manage functionality
   // Handles all the camera related functionality

@@ -296,7 +296,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     playerTimeObserverToken = playerViewController?.player?.addPeriodicTimeObserver(
       forInterval: CMTime(value: Constants.inferenceTimeIntervalMs,
                           timescale: Int32(Constants.kMilliSeconds)),
-      queue: DispatchQueue(label: "timeObserverQueue", qos: .userInteractive),
+      queue: DispatchQueue(label: "com.google.mediapipe.MediaLibraryViewController.timeObserverQueue", qos: .userInteractive),
       using: { [weak self] (time: CMTime) in
         DispatchQueue.main.async {
           let index =
