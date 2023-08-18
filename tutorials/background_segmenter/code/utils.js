@@ -51,3 +51,25 @@ export async function fetchImage(imageUrl){
         }
     });
 }
+export async function fetchImageAsElement(imageUrl){
+    /**
+     * fetch an image and return its ImageData
+     * @param imageUrl
+     * @param targetWidth
+     * @param targetHeight
+     * @returns {Promise<ImageData>}
+     */
+    const image = await fetch(imageUrl)
+    const imageBlog = await image.blob()
+    imageUrl = URL.createObjectURL(imageBlog)
+    const imageElement = document.createElement('img')
+    imageElement.src = imageUrl
+    return new Promise((resolve, reject) => {
+        imageElement.onload = () => {
+            resolve(imageElement)
+        }
+        imageElement.onerror = () => {
+            reject(new Error('Error downloading the image, trying with another one'))
+        }
+    });
+}
