@@ -197,6 +197,7 @@
 			children = (
 				AA92E42B2A86A89A005A7145 /* Metadata */,
 				AA92E42A2A86A852005A7145 /* Constants */,
+				AA92E4292A86A822005A7145 /* Services */,
 				AA92E4282A86A80C005A7145 /* Helpers */,
 				AA92E4272A86A7F2005A7145 /* Views */,
 				BF2B2D672A3C0C3F00589A11 /* ViewContollers */,
@@ -422,6 +423,7 @@
 				AAF981E52A85156500C7121A /* DefaultConstants.swift in Sources */,
 				BF2B2D6B2A3C0C3F00589A11 /* InferenceViewController.swift in Sources */,
 				AAF981DF2A81330700C7121A /* DetectorMetadata.swift in Sources */,
+				BF2B2D642A3C0C2900589A11 /* CameraFeedService.swift in Sources */,
 				BF2B2D2F2A3C09E200589A11 /* AppDelegate.swift in Sources */,
 				BF2B2D6D2A3C0EF900589A11 /* ObjectDetectorService.swift in Sources */,
 				AAF981DD2A80D28B00C7121A /* MediaLibraryViewController.swift in Sources */,
