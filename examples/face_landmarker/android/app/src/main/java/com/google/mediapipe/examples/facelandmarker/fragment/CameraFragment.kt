@@ -35,15 +35,23 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.Navigation
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.viewpager2.widget.ViewPager2.SCROLL_STATE_DRAGGING
+import androidx.viewpager2.widget.ViewPager2.SCROLL_STATE_IDLE
+import androidx.viewpager2.widget.ViewPager2.SCROLL_STATE_SETTLING
+import androidx.viewpager2.widget.ViewPager2.ScrollState
 import com.google.mediapipe.examples.facelandmarker.FaceLandmarkerHelper
 import com.google.mediapipe.examples.facelandmarker.MainViewModel
 import com.google.mediapipe.examples.facelandmarker.R
 import com.google.mediapipe.examples.facelandmarker.databinding.FragmentCameraBinding
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import java.util.Locale
+import java.util.Optional
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import kotlin.jvm.optionals.toList
+import kotlin.math.roundToInt
 
 class CameraFragment : Fragment(), FaceLandmarkerHelper.LandmarkerListener {
 
@@ -58,6 +66,10 @@ class CameraFragment : Fragment(), FaceLandmarkerHelper.LandmarkerListener {
 
     private lateinit var faceLandmarkerHelper: FaceLandmarkerHelper
     private val viewModel: MainViewModel by activityViewModels()
+    private val faceBlendshapesResultAdapter by lazy {
+        FaceBlendshapesResultAdapter()
+    }
+
     private var preview: Preview? = null
     private var imageAnalyzer: ImageAnalysis? = null
     private var camera: Camera? = null
@@ -125,6 +137,11 @@ class CameraFragment : Fragment(), FaceLandmarkerHelper.LandmarkerListener {
     @SuppressLint("MissingPermission")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        with(fragmentCameraBinding.recyclerviewResults) {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = faceBlendshapesResultAdapter
+        }
 
         // Initialize our background executor
         backgroundExecutor = Executors.newSingleThreadExecutor()
@@ -376,6 +393,12 @@ class CameraFragment : Fragment(), FaceLandmarkerHelper.LandmarkerListener {
     ) {
         activity?.runOnUiThread {
             if (_fragmentCameraBinding != null) {
+                if (fragmentCameraBinding.recyclerviewResults.scrollState != SCROLL_STATE_DRAGGING) {
+                    faceBlendshapesResultAdapter.updateResults(resultBundle.result)
+                    faceBlendshapesResultAdapter.notifyDataSetChanged()
+                }
+
+
                 fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
                     String.format("%d ms", resultBundle.inferenceTime)
 
@@ -386,7 +409,6 @@ class CameraFragment : Fragment(), FaceLandmarkerHelper.LandmarkerListener {
                     resultBundle.inputImageWidth,
                     RunningMode.LIVE_STREAM
                 )
-
                 // Force a redraw
                 fragmentCameraBinding.overlay.invalidate()
             }
@@ -395,11 +417,18 @@ class CameraFragment : Fragment(), FaceLandmarkerHelper.LandmarkerListener {
 
     override fun onEmpty() {
         fragmentCameraBinding.overlay.clear()
+        activity?.runOnUiThread {
+            faceBlendshapesResultAdapter.updateResults(null)
+            faceBlendshapesResultAdapter.notifyDataSetChanged()
+        }
     }
 
     override fun onError(error: String, errorCode: Int) {
         activity?.runOnUiThread {
             Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
+            faceBlendshapesResultAdapter.updateResults(null)
+            faceBlendshapesResultAdapter.notifyDataSetChanged()
+
             if (errorCode == FaceLandmarkerHelper.GPU_ERROR) {
                 fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(
                     FaceLandmarkerHelper.DELEGATE_CPU, false
