@@ -197,7 +197,7 @@ def main():
       default='gesture_recognizer.task')
   parser.add_argument(
       '--numHands',
-      help='Max number of hands can be detected by the recognizer.',
+      help='Max number of hands that can be detected by the recognizer.',
       required=False,
       default=1)
   parser.add_argument(

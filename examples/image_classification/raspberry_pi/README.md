@@ -44,7 +44,7 @@ python3 classify.py
     *   TensorFlow Lite image classification models **with metadata**  
         * Models from [TensorFlow Hub](https://tfhub.dev/tensorflow/collections/lite/task-library/image-classifier/1)
         * Models from [MediaPipe Models](https://developers.google.com/mediapipe/solutions/vision/image_classifier/index#models)
-        * Models trained with [TensorFlow Lite Model Maker](https://developers.google.com/mediapipe/solutions/customization/image_classifier) are supported.
+        * Models trained with [MediaPipe Model Maker](https://developers.google.com/mediapipe/solutions/customization/image_classifier) are supported.
 *   You can optionally specify the `maxResults` parameter to limit the list of
     classification results:
     *   Supported value: A positive integer.

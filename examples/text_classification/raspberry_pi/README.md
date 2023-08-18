@@ -39,6 +39,9 @@ python3 classify.py --inputText "Your text goes here"
 *   You can optionally specify the `model` parameter to set the TensorFlow Lite
     model to be used:
     *   The default value is `classifier.tflite`
+    *   TensorFlow Lite text classification models **with metadata**  
+        * Models from [MediaPipe Models](https://developers.google.com/mediapipe/solutions/text/text_classifier/index#models)
+        * Models trained with [MediaPipe Model Maker](https://developers.google.com/mediapipe/solutions/customization/text_classifier) are supported.
 *   Example usage:
     ```
     python3 classify.py \

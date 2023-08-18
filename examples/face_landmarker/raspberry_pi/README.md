@@ -1,7 +1,7 @@
-# MediaPipe Gesture Recognizer example with Raspberry Pi
+# MediaPipe Face Landmarker example with Raspberry Pi
 
 This example uses [MediaPipe](https://github.com/google/mediapipe) with Python on
-a Raspberry Pi to perform real-time gesture recognition using images
+a Raspberry Pi to perform real-time face landmarks detection using images
 streamed from the camera.
 
 ## Set up your hardware
@@ -30,39 +30,38 @@ First, clone this Git repo onto your Raspberry Pi.
 Run this script to install the required dependencies and download the task file:
 
 ```
-cd mediapipe/examples/gesture_recognizer/raspberry_pi
+cd mediapipe/examples/face_landmarker/raspberry_pi
 sh setup.sh
 ```
 
 ## Run the example
 ```
-python3 recognize.py
+python3 detect.py
 ```
 *   You can optionally specify the `model` parameter to set the task file to be used:
-    *   The default value is `gesture_recognizer.task`
-    *   TensorFlow Lite gesture recognizer models **with metadata**  
-        * Models from [MediaPipe Models](https://developers.google.com/mediapipe/solutions/vision/gesture_recognizer#models)
-        * Custom models trained with [MediaPipe Model Maker](https://developers.google.com/mediapipe/solutions/vision/gesture_recognizer#custom_models) are supported.
-*   You can optionally specify the `numHands` parameter to the maximum 
-    number of hands that can be detected by the recognizer:
-    *   Supported value: A positive integer (1-2)
+    *   The default value is `face_landmarker.task`
+    *   TensorFlow Lite face landmarker models **with metadata**  
+        * Models from [MediaPipe Models](https://developers.google.com/mediapipe/solutions/vision/face_landmarker/index#models)
+*   You can optionally specify the `numFaces` parameter to the maximum 
+    number of faces that can be detected by the landmarker:
+    *   Supported value: A positive integer.
     *   Default value: `1`
-*   You can optionally specify the `minHandDetectionConfidence` parameter to adjust the
-    minimum confidence score for hand detection to be considered successful:
+*   You can optionally specify the `minFaceDetectionConfidence` parameter to adjust the
+    minimum confidence score for face detection to be considered successful:
     *   Supported value: A floating-point number.
     *   Default value: `0.5`
-*   You can optionally specify the `minHandPresenceConfidence` parameter to adjust the 
-    minimum confidence score of hand presence score in the hand landmark detection:
+*   You can optionally specify the `minFacePresenceConfidence` parameter to adjust the 
+    minimum confidence score of hand presence score in the face landmark detection:
     *   Supported value: A floating-point number.
     *   Default value: `0.5`
 *   You can optionally specify the `minTrackingConfidence` parameter to adjust the 
-    minimum confidence score for the hand tracking to be considered successful:
+    minimum confidence score for the face tracking to be considered successful:
     *   Supported value: A floating-point number.
     *   Default value: `0.5`
 *   Example usage:
     ```
-    python3 recognize.py \
-      --model gesture_recognizer.task \
-      --numHands 2 \
-      --minHandDetectionConfidence 0.5
+    python3 detect.py \
+      --model face_landmarker.task \
+      --numFaces 2 \
+      --minFaceDetectionConfidence 0.5
     ```
