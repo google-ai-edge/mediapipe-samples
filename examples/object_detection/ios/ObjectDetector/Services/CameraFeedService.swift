@@ -15,8 +15,8 @@
 import UIKit
 import AVFoundation
 
-// MARK: CameraFeedManagerDelegate Declaration
-protocol CameraFeedManagerDelegate: AnyObject {
+// MARK: CameraFeedServiceDelegate Declaration
+protocol CameraFeedServiceDelegate: AnyObject {
 
   /**
    This method delivers the pixel buffer of the current frame seen by the device's camera.
@@ -43,7 +43,7 @@ protocol CameraFeedManagerDelegate: AnyObject {
 /**
  This class manages all camera related functionality
  */
-class CameraFeedManager: NSObject {
+class CameraFeedService: NSObject {
   /**
    This enum holds the state of the camera initialization.
    */
@@ -77,7 +77,7 @@ class CameraFeedManager: NSObject {
   // MARK: Instance Variables
   private let session: AVCaptureSession = AVCaptureSession()
   private let previewView: PreviewView
-  private let sessionQueue = DispatchQueue(label: "com.google.mediapipe.CameraFeedManager.sessionQueue")
+  private let sessionQueue = DispatchQueue(label: "com.google.mediapipe.CameraFeedService.sessionQueue")
   private let cameraPosition: AVCaptureDevice.Position = .back
   
   private var cameraConfigurationStatus: CameraConfigurationStatus = .failed
@@ -86,8 +86,8 @@ class CameraFeedManager: NSObject {
   private var imageBufferSize: CGSize?
   
 
-  // MARK: CameraFeedManagerDelegate
-  weak var delegate: CameraFeedManagerDelegate?
+  // MARK: CameraFeedServiceDelegate
+  weak var delegate: CameraFeedServiceDelegate?
 
   // MARK: Initializer
   init(previewView: PreviewView) {
@@ -296,9 +296,9 @@ class CameraFeedManager: NSObject {
 
   // MARK: Notification Observer Handling
   private func addObservers() {
-    NotificationCenter.default.addObserver(self, selector: #selector(CameraFeedManager.sessionRuntimeErrorOccured(notification:)), name: NSNotification.Name.AVCaptureSessionRuntimeError, object: session)
-    NotificationCenter.default.addObserver(self, selector: #selector(CameraFeedManager.sessionWasInterrupted(notification:)), name: NSNotification.Name.AVCaptureSessionWasInterrupted, object: session)
-    NotificationCenter.default.addObserver(self, selector: #selector(CameraFeedManager.sessionInterruptionEnded), name: NSNotification.Name.AVCaptureSessionInterruptionEnded, object: session)
+    NotificationCenter.default.addObserver(self, selector: #selector(CameraFeedService.sessionRuntimeErrorOccured(notification:)), name: NSNotification.Name.AVCaptureSessionRuntimeError, object: session)
+    NotificationCenter.default.addObserver(self, selector: #selector(CameraFeedService.sessionWasInterrupted(notification:)), name: NSNotification.Name.AVCaptureSessionWasInterrupted, object: session)
+    NotificationCenter.default.addObserver(self, selector: #selector(CameraFeedService.sessionInterruptionEnded), name: NSNotification.Name.AVCaptureSessionInterruptionEnded, object: session)
   }
 
   private func removeObservers() {
@@ -358,7 +358,7 @@ class CameraFeedManager: NSObject {
 /**
  AVCaptureVideoDataOutputSampleBufferDelegate
  */
-extension CameraFeedManager: AVCaptureVideoDataOutputSampleBufferDelegate {
+extension CameraFeedService: AVCaptureVideoDataOutputSampleBufferDelegate {
 
   /** This method delegates the CVPixelBuffer of the frame seen by the camera currently.
    */

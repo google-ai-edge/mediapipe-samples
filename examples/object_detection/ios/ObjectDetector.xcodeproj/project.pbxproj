@@ -23,7 +23,7 @@
 		BF2B2D3B2A3C09E300589A11 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2D392A3C09E300589A11 /* LaunchScreen.storyboard */; };
 		BF2B2D462A3C09E300589A11 /* ObjectDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D452A3C09E300589A11 /* ObjectDetectorTests.swift */; };
 		BF2B2D632A3C0C2900589A11 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D5F2A3C0C2900589A11 /* PreviewView.swift */; };
-		BF2B2D642A3C0C2900589A11 /* CameraFeedManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D602A3C0C2900589A11 /* CameraFeedManager.swift */; };
+		BF2B2D642A3C0C2900589A11 /* CameraFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D602A3C0C2900589A11 /* CameraFeedService.swift */; };
 		BF2B2D6B2A3C0C3F00589A11 /* InferenceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D692A3C0C3F00589A11 /* InferenceViewController.swift */; };
 		BF2B2D6D2A3C0EF900589A11 /* ObjectDetectorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D6C2A3C0EF900589A11 /* ObjectDetectorService.swift */; };
 		BFCF181A2A405D3600D64FA6 /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCF18192A405D3600D64FA6 /* OverlayView.swift */; };
@@ -65,7 +65,7 @@
 		BF2B2D4F2A3C09E300589A11 /* ObjectDetectorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectDetectorUITests.swift; sourceTree = "<group>"; };
 		BF2B2D512A3C09E300589A11 /* ObjectDetectorUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectDetectorUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		BF2B2D5F2A3C0C2900589A11 /* PreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
-		BF2B2D602A3C0C2900589A11 /* CameraFeedManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedManager.swift; sourceTree = "<group>"; };
+		BF2B2D602A3C0C2900589A11 /* CameraFeedService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedService.swift; sourceTree = "<group>"; };
 		BF2B2D692A3C0C3F00589A11 /* InferenceViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceViewController.swift; sourceTree = "<group>"; };
 		BF2B2D6C2A3C0EF900589A11 /* ObjectDetectorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectDetectorService.swift; sourceTree = "<group>"; };
 		BF80BB442A677B6C005E93B1 /* libPods-ObjectDetectorTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libPods-ObjectDetectorTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -146,13 +146,13 @@
 			path = Helpers;
 			sourceTree = "<group>";
 		};
-		AA92E4292A86A822005A7145 /* Managers */ = {
+		AA92E4292A86A822005A7145 /* Services */ = {
 			isa = PBXGroup;
 			children = (
 				BF2B2D6C2A3C0EF900589A11 /* ObjectDetectorService.swift */,
-				BF2B2D602A3C0C2900589A11 /* CameraFeedManager.swift */,
+				BF2B2D602A3C0C2900589A11 /* CameraFeedService.swift */,
 			);
-			path = Managers;
+			path = Services;
 			sourceTree = "<group>";
 		};
 		AA92E42A2A86A852005A7145 /* Constants */ = {
@@ -197,7 +197,6 @@
 			children = (
 				AA92E42B2A86A89A005A7145 /* Metadata */,
 				AA92E42A2A86A852005A7145 /* Constants */,
-				AA92E4292A86A822005A7145 /* Managers */,
 				AA92E4282A86A80C005A7145 /* Helpers */,
 				AA92E4272A86A7F2005A7145 /* Views */,
 				BF2B2D672A3C0C3F00589A11 /* ViewContollers */,
@@ -423,7 +422,6 @@
 				AAF981E52A85156500C7121A /* DefaultConstants.swift in Sources */,
 				BF2B2D6B2A3C0C3F00589A11 /* InferenceViewController.swift in Sources */,
 				AAF981DF2A81330700C7121A /* DetectorMetadata.swift in Sources */,
-				BF2B2D642A3C0C2900589A11 /* CameraFeedManager.swift in Sources */,
 				BF2B2D2F2A3C09E200589A11 /* AppDelegate.swift in Sources */,
 				BF2B2D6D2A3C0EF900589A11 /* ObjectDetectorService.swift in Sources */,
 				AAF981DD2A80D28B00C7121A /* MediaLibraryViewController.swift in Sources */,

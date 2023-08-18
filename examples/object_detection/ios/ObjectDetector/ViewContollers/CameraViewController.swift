@@ -37,7 +37,7 @@ class CameraViewController: UIViewController {
   
   // MARK: Controllers that manage functionality
   // Handles all the camera related functionality
-  private lazy var cameraCapture = CameraFeedManager(previewView: previewView)
+  private lazy var cameraFeedService = CameraFeedService(previewView: previewView)
   
   private let objectDetectorServiceQueue = DispatchQueue(
     label: "com.google.mediapipe.cameraController.objectDetectorServiceQueue",
@@ -63,7 +63,7 @@ class CameraViewController: UIViewController {
     super.viewWillAppear(animated)
 #if !targetEnvironment(simulator)
     initializeObjectDetectorServiceOnSessionResumption()
-    cameraCapture.startLiveCameraSession {[weak self] cameraConfiguration in
+    cameraFeedService.startLiveCameraSession {[weak self] cameraConfiguration in
       DispatchQueue.main.async {
         switch cameraConfiguration {
           case .failed:
@@ -81,7 +81,7 @@ class CameraViewController: UIViewController {
   override func viewWillDisappear(_ animated: Bool) {
     super.viewWillDisappear(animated)
 #if !targetEnvironment(simulator)
-    cameraCapture.stopSession()
+    cameraFeedService.stopSession()
     clearObjectDetectorServiceOnSessionInterruption()
 #endif
   }
@@ -89,7 +89,7 @@ class CameraViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
 #if !targetEnvironment(simulator)
-    cameraCapture.delegate = self
+    cameraFeedService.delegate = self
 #endif
     // Do any additional setup after loading the view.
   }
@@ -103,7 +103,7 @@ class CameraViewController: UIViewController {
   
   // Resume camera session when click button resume
   @IBAction func resumeButtonTouchUpInside(_ sender: Any) {
-    cameraCapture.resumeInterruptedSession {[weak self] isSessionRunning in
+    cameraFeedService.resumeInterruptedSession {[weak self] isSessionRunning in
       if isSessionRunning {
         self?.resumeButton.isHidden = true
         self?.cameraUnavailableLabel.isHidden = true
@@ -196,7 +196,7 @@ class CameraViewController: UIViewController {
   }
 }
 
-extension CameraViewController: CameraFeedManagerDelegate {
+extension CameraViewController: CameraFeedServiceDelegate {
   
   func didOutput(sampleBuffer: CMSampleBuffer, orientation: UIImage.Orientation) {
     let currentTimeMs = Date().timeIntervalSince1970 * 1000
@@ -250,7 +250,7 @@ extension CameraViewController: ObjectDetectorServiceLiveStreamDelegate {
               result?.objectDetectorResults.first as? ObjectDetectorResult else {
         return
       }
-      let imageSize = weakSelf.cameraCapture.videoResolution
+      let imageSize = weakSelf.cameraFeedService.videoResolution
       weakSelf.overlayView.draw(
         objectOverlays:ObjectOverlayHelper.objectOverlays(
           fromDetections: objectDetectorResult.detections,
