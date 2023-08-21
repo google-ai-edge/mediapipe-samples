@@ -159,10 +159,6 @@ class ObjectDetectorService: NSObject {
     durationInMilliseconds: Double,
     inferenceIntervalInMilliseconds: Double) async -> ResultBundle? {
     let startDate = Date()
-    
-//    guard let videoDurationMs = try? await videoAsset.load(.duration).seconds * 1000 else {
-//      return nil
-//    }
     let assetGenerator = imageGenerator(with: videoAsset)
     
     let frameCount = Int(durationInMilliseconds / inferenceIntervalInMilliseconds)

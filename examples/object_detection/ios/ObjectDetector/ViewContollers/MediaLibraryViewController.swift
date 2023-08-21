@@ -215,21 +215,21 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
         interfaceUpdatesDelegate?.shouldClicksBeEnabled(false)
         showProgressView()
         
-        guard let videoDurationInMilliseconds = try? await asset.load(.duration).seconds * 1000 else {
+        guard let videoDuration = try? await asset.load(.duration).seconds else {
           hideProgressView()
           return
         }
         
         let resultBundle = await self.objectDetectorService?.detect(
           videoAsset: asset,
-          durationInMilliseconds: videoDurationInMilliseconds,
+          durationInMilliseconds: videoDuration * Constants.milliSeconds,
           inferenceIntervalInMilliseconds: Constants.inferenceTimeIntervalInMilliseconds)
         
         hideProgressView()
         
         playVideo(
           mediaURL: mediaURL,
-          videoDurationInMilliseconds: videoDurationInMilliseconds,
+          videoDuration: videoDuration,
           resultBundle: resultBundle)
       }
         
@@ -296,11 +296,8 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     }
   }
   
-  private func playVideo(mediaURL: URL, videoDurationInMilliseconds: Double, resultBundle: ResultBundle?) {
+  private func playVideo(mediaURL: URL, videoDuration: Double, resultBundle: ResultBundle?) {
     playVideo(asset: AVAsset(url: mediaURL))
-    
-    var currentPlayTime = 0.0
-    
     playerTimeObserverToken = playerViewController?.player?.addPeriodicTimeObserver(
       forInterval: CMTime(value: Int64(Constants.inferenceTimeIntervalInMilliseconds),
                           timescale: Int32(Constants.milliSeconds)),
@@ -325,12 +322,11 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
             inBoundsOfContentImageOfSize: resultBundle.size,
             edgeOffset: Constants.edgeOffset,
             imageContentMode: .scaleAspectFit)
-          print(CMTimeGetSeconds(time) * Constants.milliSeconds)
-          print("Dur \(videoDurationInMilliseconds)")
-          print("Cur \(CMTimeGetSeconds(time) * Constants.milliSeconds)")
-          print("Next \(CMTimeGetSeconds(time) * Constants.milliSeconds + Constants.inferenceTimeIntervalInMilliseconds)")
-          if (CMTimeGetSeconds(time) * Constants.milliSeconds +
-            Constants.inferenceTimeIntervalInMilliseconds >= videoDurationInMilliseconds) {
+          
+          // Enable clicks on inferenceVC if playback has ended.
+          if (floor(CMTimeGetSeconds(time) +
+                    Constants.inferenceTimeIntervalInMilliseconds / Constants.milliSeconds)
+              >= floor(videoDuration)) {
             weakSelf.interfaceUpdatesDelegate?.shouldClicksBeEnabled(true)
           }
         }
