@@ -154,15 +154,18 @@ class ObjectDetectorService: NSObject {
     }
   }
 
-  func detect(videoAsset: AVAsset, inferenceIntervalMs: Double) async -> ResultBundle? {
+  func detect(
+    videoAsset: AVAsset,
+    durationInMilliseconds: Double,
+    inferenceIntervalInMilliseconds: Double) async -> ResultBundle? {
     let startDate = Date()
     
-    guard let videoDurationMs = try? await videoAsset.load(.duration).seconds * 1000 else {
-      return nil
-    }
+//    guard let videoDurationMs = try? await videoAsset.load(.duration).seconds * 1000 else {
+//      return nil
+//    }
     let assetGenerator = imageGenerator(with: videoAsset)
     
-    let frameCount = Int(videoDurationMs / inferenceIntervalMs)
+    let frameCount = Int(durationInMilliseconds / inferenceIntervalInMilliseconds)
     Task { @MainActor in
       videoDelegate?.objectDetectorService(self, willBeginDetection: frameCount)
     }
@@ -170,7 +173,7 @@ class ObjectDetectorService: NSObject {
     let objectDetectorResultTuple = detectObjectsInFramesGenerated(
       by: assetGenerator,
       totalFrameCount: frameCount,
-      atIntervalsOf: inferenceIntervalMs)
+      atIntervalsOf: inferenceIntervalInMilliseconds)
 
     return ResultBundle(
       inferenceTime: Date().timeIntervalSince(startDate) / Double(frameCount) * 1000,

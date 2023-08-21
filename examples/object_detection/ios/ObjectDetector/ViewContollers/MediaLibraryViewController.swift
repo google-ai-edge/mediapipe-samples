@@ -21,8 +21,8 @@ class MediaLibraryViewController: UIViewController {
   
   private struct Constants {
     static let edgeOffset: CGFloat = 2.0
-    static let inferenceTimeIntervalMs: Int64 = 300
-    static let kMilliSeconds: Int64 = 1000
+    static let inferenceTimeIntervalInMilliseconds = 300.0
+    static let milliSeconds = 1000.0
     static let savedPhotosNotAvailableText = "Saved photos album is not available."
     static let mediaEmptyText =
     "Click + to add an image or a video to begin running the object detection."
@@ -132,13 +132,6 @@ class MediaLibraryViewController: UIViewController {
       playerTimeObserverToken = nil
     }
     
-    guard let playerItem = player.currentItem else {
-      return
-    }
-    NotificationCenter.default.removeObserver(
-      self,
-      name: .AVPlayerItemDidPlayToEndTime,
-      object: playerItem)
   }
 
   private func openMediaLibrary() {
@@ -221,13 +214,25 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
       Task {
         interfaceUpdatesDelegate?.shouldClicksBeEnabled(false)
         showProgressView()
+        
+        guard let videoDurationInMilliseconds = try? await asset.load(.duration).seconds * 1000 else {
+          hideProgressView()
+          return
+        }
+        
         let resultBundle = await self.objectDetectorService?.detect(
-          videoAsset:asset,
-          inferenceIntervalMs: Double(Constants.inferenceTimeIntervalMs))
+          videoAsset: asset,
+          durationInMilliseconds: videoDurationInMilliseconds,
+          inferenceIntervalInMilliseconds: Constants.inferenceTimeIntervalInMilliseconds)
+        
         hideProgressView()
         
-        playVideo(mediaURL: mediaURL, resultBundle: resultBundle)
+        playVideo(
+          mediaURL: mediaURL,
+          videoDurationInMilliseconds: videoDurationInMilliseconds,
+          resultBundle: resultBundle)
       }
+        
       imageEmptyLabel.isHidden = true
     case UTType.image.identifier:
       guard let image = info[.originalImage] as? UIImage else {
@@ -291,16 +296,19 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     }
   }
   
-  private func playVideo(mediaURL: URL, resultBundle: ResultBundle?) {
+  private func playVideo(mediaURL: URL, videoDurationInMilliseconds: Double, resultBundle: ResultBundle?) {
     playVideo(asset: AVAsset(url: mediaURL))
+    
+    var currentPlayTime = 0.0
+    
     playerTimeObserverToken = playerViewController?.player?.addPeriodicTimeObserver(
-      forInterval: CMTime(value: Constants.inferenceTimeIntervalMs,
-                          timescale: Int32(Constants.kMilliSeconds)),
+      forInterval: CMTime(value: Int64(Constants.inferenceTimeIntervalInMilliseconds),
+                          timescale: Int32(Constants.milliSeconds)),
       queue: DispatchQueue(label: "com.google.mediapipe.MediaLibraryViewController.timeObserverQueue", qos: .userInteractive),
       using: { [weak self] (time: CMTime) in
         DispatchQueue.main.async {
           let index =
-            Int(CMTimeGetSeconds(time) * Double(Constants.kMilliSeconds) / Double(Constants.inferenceTimeIntervalMs))
+            Int(CMTimeGetSeconds(time) * Constants.milliSeconds / Constants.inferenceTimeIntervalInMilliseconds)
           guard
                 let weakSelf = self,
                 let resultBundle = resultBundle,
@@ -317,6 +325,14 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
             inBoundsOfContentImageOfSize: resultBundle.size,
             edgeOffset: Constants.edgeOffset,
             imageContentMode: .scaleAspectFit)
+          print(CMTimeGetSeconds(time) * Constants.milliSeconds)
+          print("Dur \(videoDurationInMilliseconds)")
+          print("Cur \(CMTimeGetSeconds(time) * Constants.milliSeconds)")
+          print("Next \(CMTimeGetSeconds(time) * Constants.milliSeconds + Constants.inferenceTimeIntervalInMilliseconds)")
+          if (CMTimeGetSeconds(time) * Constants.milliSeconds +
+            Constants.inferenceTimeIntervalInMilliseconds >= videoDurationInMilliseconds) {
+            weakSelf.interfaceUpdatesDelegate?.shouldClicksBeEnabled(true)
+          }
         }
     })
   }
@@ -337,18 +353,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     
     playerViewController?.showsPlaybackControls = false
     addPlayerViewControllerAsChild()
-    
-    NotificationCenter.default
-      .addObserver(self,
-                   selector: #selector(self.playerDidFinishPlaying),
-                   name: .AVPlayerItemDidPlayToEndTime,
-                   object: playerItem
-      )
     playerViewController?.player?.play()
-  }
-  
-  @objc func playerDidFinishPlaying(notification: NSNotification) {
-    interfaceUpdatesDelegate?.shouldClicksBeEnabled(true)
   }
 }
 
