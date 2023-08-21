@@ -176,14 +176,14 @@ class MediaLibraryViewController: UIViewController {
   }
   
   func redrawBoundingBoxesForCurrentDeviceOrientation() {
-    guard let objectDetectorService = objectDetectorService else {
+    guard let objectDetectorService = objectDetectorService,
+          objectDetectorService.runningMode == .image ||
+          self.playerViewController?.player?.timeControlStatus == .paused else {
       return
     }
-    if objectDetectorService.runningMode == .image {
-      overlayView
-        .redrawObjectOverlays(
-          forNewDeviceOrientation: UIDevice.current.orientation)
-    }
+    overlayView
+      .redrawObjectOverlays(
+        forNewDeviceOrientation: UIDevice.current.orientation)
   }
   
   deinit {
@@ -348,7 +348,6 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
   }
   
   @objc func playerDidFinishPlaying(notification: NSNotification) {
-    overlayView.clear()
     interfaceUpdatesDelegate?.shouldClicksBeEnabled(true)
   }
 }
