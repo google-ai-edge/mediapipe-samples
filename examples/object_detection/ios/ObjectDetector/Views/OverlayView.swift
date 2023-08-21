@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import UIKit
+import MediaPipeTasksVision
 
 /**
  This structure holds the display parameters for the overlay to be drawon on a detected object.
@@ -30,14 +31,8 @@ struct ObjectOverlay {
  */
 class OverlayView: UIView {
   
+  // MARK: Private properties
   private var objectOverlays: [ObjectOverlay] = []
-  
-  private let cornerRadius: CGFloat = 10.0
-  private let stringBgAlpha: CGFloat = 0.7
-  private let lineWidth: CGFloat = 3
-  private let stringFontColor = UIColor.white
-  private let stringHorizontalSpacing: CGFloat = 13.0
-  private let stringVerticalSpacing: CGFloat = 7.0
   
   private var contentImageSize: CGSize = CGSizeZero
   private var imageContentMode: UIView.ContentMode = .scaleAspectFit
@@ -45,6 +40,18 @@ class OverlayView: UIView {
   
   private var edgeOffset: CGFloat = 0.0
   
+  // MARK: Constants
+  private struct Constants {
+    static let stringVerticalSpacing: CGFloat = 7.0
+    static let stringHorizontalSpacing: CGFloat = 13.0
+    static let stringFontColor = UIColor.white
+    static let lineWidth: CGFloat = 3
+    static let stringBgAlpha: CGFloat = 0.7
+    static let cornerRadius: CGFloat = 10.0
+    static let unknownString = "Unknown"
+  }
+  
+  // MARK: Public Functions
   func draw(
     objectOverlays: [ObjectOverlay],
     inBoundsOfContentImageOfSize imageSize: CGSize,
@@ -103,6 +110,7 @@ class OverlayView: UIView {
     }
   }
   
+  // MARK: Private Functions
   private func rectAfterApplyingBoundsAdjustment(
     onOverlayBorderRect borderRect: CGRect) -> CGRect {
       
@@ -121,7 +129,7 @@ class OverlayView: UIView {
           break
       }
       
-      let offsetsAndScaleFactor = ObjectOverlayHelper.offsetsAndScaleFactor(
+      let offsetsAndScaleFactor = OverlayView.offsetsAndScaleFactor(
         forImageOfSize: self.contentImageSize,
         tobeDrawnInViewOfSize: currentSize,
         withContentMode: imageContentMode)
@@ -165,7 +173,7 @@ class OverlayView: UIView {
     
     
     let path = UIBezierPath(rect: rect)
-    path.lineWidth = lineWidth
+    path.lineWidth = Constants.lineWidth
     color.setStroke()
     
     path.stroke()
@@ -185,29 +193,122 @@ class OverlayView: UIView {
       let stringBgRect = CGRect(
         x: borderRect.origin.x,
         y: borderRect.origin.y ,
-        width: 2 * stringHorizontalSpacing + nameStringSize.width,
-        height: 2 * stringVerticalSpacing + nameStringSize.height
+        width: 2 * Constants.stringHorizontalSpacing + nameStringSize.width,
+        height: 2 * Constants.stringVerticalSpacing + nameStringSize.height
       )
       
       let stringBgPath = UIBezierPath(rect: stringBgRect)
-      color.withAlphaComponent(stringBgAlpha)
+      color.withAlphaComponent(Constants.stringBgAlpha)
         .setFill()
       stringBgPath.fill()
       
       // Draws the name.
       let stringRect = CGRect(
-        x: borderRect.origin.x + stringHorizontalSpacing,
-        y: borderRect.origin.y + stringVerticalSpacing,
+        x: borderRect.origin.x + Constants.stringHorizontalSpacing,
+        y: borderRect.origin.y + Constants.stringVerticalSpacing,
         width: nameStringSize.width,
         height: nameStringSize.height)
       
       let attributedString = NSAttributedString(
         string: name,
         attributes: [
-          NSAttributedString.Key.foregroundColor : stringFontColor,
+          NSAttributedString.Key.foregroundColor : Constants.stringFontColor,
           NSAttributedString.Key.font : font
         ])
       
       attributedString.draw(in: stringRect)
+    }
+  
+  // MARK: Helper Functions
+  static func offsetsAndScaleFactor(
+    forImageOfSize imageSize: CGSize,
+    tobeDrawnInViewOfSize viewSize: CGSize,
+    withContentMode contentMode: UIView.ContentMode)
+  -> (xOffset: CGFloat, yOffset: CGFloat, scaleFactor: Double) {
+    
+    let widthScale = viewSize.width / imageSize.width;
+    let heightScale = viewSize.height / imageSize.height;
+    
+    var scaleFactor = 0.0
+    
+    switch contentMode {
+      case .scaleAspectFill:
+        scaleFactor = max(widthScale, heightScale)
+      case .scaleAspectFit:
+        scaleFactor = min(widthScale, heightScale)
+      default:
+        scaleFactor = 1.0
+    }
+    
+    let scaledSize = CGSize(
+      width: imageSize.width * scaleFactor,
+      height: imageSize.height * scaleFactor)
+    let xOffset = (viewSize.width - scaledSize.width) / 2
+    let yOffset = (viewSize.height - scaledSize.height) / 2
+    
+    return (xOffset, yOffset, scaleFactor)
+  }
+  
+  // Helper to get object overlays from detections.
+  static func objectOverlays(
+    fromDetections detections: [Detection],
+    inferredOnImageOfSize originalImageSize: CGSize,
+    andOrientation orientation: UIImage.Orientation) -> [ObjectOverlay] {
+      
+      var objectOverlays: [ObjectOverlay] = []
+      
+      for (index, detection) in detections.enumerated() {
+        guard let category = detection.categories.first else {
+          continue
+          
+        }
+        var newRect = detection.boundingBox
+        
+        // Based on orientation of the image, rotate the output bounding boxes.
+        //
+        // We pass in images with an orientation to MediaPipeVision inference methods. MediaPipe
+        // performs inference on the the pixel buffers rotated according to the passed in
+        // orientation.
+        // The bounding boxes returned are not pre rotated according to the orientation of the
+        // passed in image. It matches the bounds of the actual pixel buffer passed in.
+        // Hence these boxes need to be rotated for display, like how iOS handles UIImage display.
+        switch orientation {
+          case .left:
+            newRect = CGRect(
+              x: detection.boundingBox.origin.y,
+              y: originalImageSize.height - detection.boundingBox.origin.x - detection.boundingBox.width,
+              width: detection.boundingBox.height,
+              height: detection.boundingBox.width)
+          case .right:
+            newRect = CGRect(
+              x: originalImageSize.width - detection.boundingBox.origin.y - detection.boundingBox.height,
+              y: detection.boundingBox.origin.x, width: detection.boundingBox.height,
+              height: detection.boundingBox.width)
+          case .down:
+            newRect.origin.x = originalImageSize.width - detection.boundingBox.maxX
+            newRect.origin.y = originalImageSize.height - detection.boundingBox.maxY
+          default:
+            break
+        }
+        
+        let confidenceValue = Int(category.score * 100.0)
+        let string =
+        "\(category.categoryName ?? OverlayView.Constants.unknownString)  (\(confidenceValue)%)"
+        
+        let displayColor = DefaultConstants.labelColors[index %  DefaultConstants.labelColors.count]
+        
+        let size = string.size(withAttributes: [.font: DefaultConstants.displayFont])
+        
+        let objectOverlay = ObjectOverlay(
+          name: string,
+          borderRect: newRect,
+          nameStringSize: size,
+          color: displayColor,
+          font: DefaultConstants.displayFont)
+        
+        objectOverlays.append(objectOverlay)
+      }
+      
+      return objectOverlays
     }
 }

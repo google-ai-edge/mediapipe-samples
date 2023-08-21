@@ -15,8 +15,8 @@
 import Foundation
 
 /**
- Singleton storing the meta data needed to initialise an object detector.
- Properties are key value observable. Controllers simply need to observe these properties for any changes made by the user.
+ * Singleton storing the meta data needed to initialise an object detector.
+ * Properties are key value observable. Controllers simply need to observe these properties for any changes made by the user.
  */
 @objc class DetectorMetadata: NSObject {
   @objc dynamic var model: Model = DefaultConstants.model

@@ -23,6 +23,7 @@ import MediaPipeTasksVision
  */
 class MediaLibraryViewController: UIViewController {
   
+  // MARK: Constants
   private struct Constants {
     static let edgeOffset: CGFloat = 2.0
     static let inferenceTimeIntervalInMilliseconds = 300.0
@@ -32,15 +33,20 @@ class MediaLibraryViewController: UIViewController {
     "Click + to add an image or a video to begin running the object detection."
     static let pickFromGalleryButtonInset: CGFloat = 10.0
   }
-  
-  private lazy var pickerController = UIImagePickerController()
-  private var playerViewController: AVPlayerViewController?
-  private var objectDetectorService: ObjectDetectorService?
-  
+  // MARK: Object Detector Service
   weak var interfaceUpdatesDelegate: InterfaceUpdatesDelegate?
   
+  // MARK: Controllers that manage functionality
+  private lazy var pickerController = UIImagePickerController()
+  private var playerViewController: AVPlayerViewController?
+  
+  // MARK: Object Detector Service
+  private var objectDetectorService: ObjectDetectorService?
+  
+  // MARK: Private properties
   private var playerTimeObserverToken : Any?
   
+  // MARK: Storyboards Connections
   @IBOutlet weak var overlayView: OverlayView!
   @IBOutlet weak var pickFromGalleryButton: UIButton!
   @IBOutlet weak var progressView: UIProgressView!
@@ -265,7 +271,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
         DispatchQueue.main.async {
           weakSelf.hideProgressView()
           weakSelf.overlayView.draw(
-            objectOverlays:ObjectOverlayHelper.objectOverlays(
+            objectOverlays:OverlayView.objectOverlays(
               fromDetections: objectDetectorResult.detections,
               inferredOnImageOfSize: image.size,
               andOrientation:  image.imageOrientation),
@@ -319,7 +325,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
           }
           
           weakSelf.overlayView.draw(
-            objectOverlays:ObjectOverlayHelper.objectOverlays(
+            objectOverlays:OverlayView.objectOverlays(
               fromDetections: objectDetectorResult.detections,
               inferredOnImageOfSize: resultBundle.size,
               andOrientation:  .up),
