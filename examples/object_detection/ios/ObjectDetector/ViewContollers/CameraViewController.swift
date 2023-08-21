@@ -18,6 +18,10 @@ import CoreMedia
 
 import MediaPipeTasksVision
 
+/**
+ * The view controller is responsible for performing detection on incoming frames from the live camera and presenting the frames with the
+ * bounding boxes of the detected objects to the user.
+ */
 class CameraViewController: UIViewController {
   private struct Constants {
     static let edgeOffset: CGFloat = 2.0

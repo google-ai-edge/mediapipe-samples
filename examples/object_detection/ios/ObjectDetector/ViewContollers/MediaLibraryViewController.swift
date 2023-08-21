@@ -17,6 +17,10 @@ import UniformTypeIdentifiers
 import AVKit
 import MediaPipeTasksVision
 
+/**
+ * The view controller is responsible for performing detection on videos or images selected by the user from the device media library and
+ * presenting them with the bounding boxes of the detected objects to the user.
+ */
 class MediaLibraryViewController: UIViewController {
   
   private struct Constants {

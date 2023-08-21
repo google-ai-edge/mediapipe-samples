@@ -26,6 +26,9 @@ protocol InterfaceUpdatesDelegate: AnyObject {
   func shouldClicksBeEnabled(_ isEnabled: Bool)
 }
 
+/** The view controller is responsible for presenting and handling the tabbed controls for switching between the live camera feed and
+  * media library view controllers. It also handles the presentation of the inferenceVC
+  */
 class ViewController: UIViewController {
 
   // MARK: Storyboards Connections
