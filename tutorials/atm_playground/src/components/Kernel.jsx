@@ -74,21 +74,51 @@ function Kernel({ putGesture, putFingLock, putInitialze }) {
     };
 
     const loadModelAndStartDetection = async () => {
-      // load from CDN
+      // load from CDN (Mandatory → else CORS blocks all internal requests)
       const vision = await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2/wasm');
+      
       // create an instance of the HandLandmarker class with the specified options
-      const handLandmarker = await HandLandmarker.createFromOptions(vision, { 
-        // baseOptions → an object containing configuration options for the hand landmarker
-        baseOptions: {
-          modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
-          delegate: 'GPU', // specify the execution backend
-        },
-        runningMode: 'IMAGE' || 'VIDEO',   // Image first then video (always!)
-        numHands: 1,
-        minHandDetectionConfidence: 0.6,
-        minHandPresenceConfidence: 0.6,
-        // minHandTrackingConfidence: 0.5,      // this is set by default
-      });
+      let handLandmarker;
+      try {
+        // Load hand_landmarker task from local path (speeds up loading)
+        // create an instance of the HandLandmarker class with the specified options
+        handLandmarker = await HandLandmarker.createFromOptions(vision, {
+          // baseOptions → an object containing configuration options for the hand landmarker
+          baseOptions: {
+            modelAssetPath:
+              '/hand_landmarker.task',      // Local Fetch
+            delegate: 'GPU',                // use GPU for inference
+          },
+          runningMode: 'IMAGE' || 'VIDEO',  // Image first then video (always!)
+          numHands: 1,
+          minHandDetectionConfidence: 0.6,
+          minHandPresenceConfidence: 0.6,
+          // minHandTrackingConfidence: 0.5,      // this is set by default
+        });
+        console.log('Loaded hand_landmarker task from local path successfully.');
+      } catch (localError) {
+        console.error('Error loading hand_landmarker task from local path:', localError);
+
+        try {
+          // Load hand_landmarker task from CDN as fallback
+          handLandmarker = await HandLandmarker.createFromOptions(vision, {
+            baseOptions: {
+              modelAssetPath: 'hand_landmarker.task', // Tasks-Vision itself has hand-landmarker → https://shorturl.at/kwQX1
+              delegate: 'GPU',  // use GPU for inference
+            },
+            runningMode: 'IMAGE' || 'VIDEO',  // Image first then video (always!)
+            numHands: 1,
+            minHandDetectionConfidence: 0.6,
+            minHandPresenceConfidence: 0.6,
+            // minHandTrackingConfidence: 0.5,      // this is set by default
+          });
+          console.log('Loaded hand_landmarker task from CDN successfully as fallback.');
+        } catch (cdnError) {
+          console.error('Error loading hand_landmarker task from CDN:', cdnError);
+          console.log('Both CDN and local loading of hand_landmarker task failed.');
+          return;
+        }
+      }
 
       const cnvs = canvasRef.current;  // cnvs variable is used to reference the canvas element
       const ctx = cnvs.getContext('2d');  // ctx → 2D rendering context for the canvas
