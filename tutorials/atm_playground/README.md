@@ -82,5 +82,8 @@ This project was created using:
 <br/>
 
 
+### Update (v0.1.1)
+Precaching is enabled! Hence, the app will work offline after the first load. 🎉
+
 ## License
 Distributed under the Apache License 2.0. See [`LICENSE`](./LICENSE) for more information.

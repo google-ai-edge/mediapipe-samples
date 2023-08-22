@@ -1,7 +1,7 @@
 {
   "name": "atm-playground",
   "description": "Interactive Web Demo using MediaPipe Solutions",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.2",
@@ -16,7 +16,19 @@
     "react-confetti": "^6.1.0",
     "redux": "^4.2.1",
     "@reduxjs/toolkit": "^1.9.5",
-    "web-vitals": "^3.4.0"
+    "web-vitals": "^3.4.0",
+    "workbox-background-sync": "^7.0.0",
+    "workbox-broadcast-update": "^7.0.0",
+    "workbox-cacheable-response": "^7.0.0",
+    "workbox-core": "^7.0.0",
+    "workbox-expiration": "^7.0.0",
+    "workbox-google-analytics": "^7.0.0",
+    "workbox-navigation-preload": "^7.0.0",
+    "workbox-precaching": "^7.0.0",
+    "workbox-range-requests": "^7.0.0",
+    "workbox-routing": "^7.0.0",
+    "workbox-strategies": "^7.0.0",
+    "workbox-streams": "^7.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
