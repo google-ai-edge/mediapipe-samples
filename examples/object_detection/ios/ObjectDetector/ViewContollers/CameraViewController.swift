@@ -256,7 +256,7 @@ extension CameraViewController: ObjectDetectorServiceLiveStreamDelegate {
       }
       let imageSize = weakSelf.cameraFeedService.videoResolution
       weakSelf.overlayView.draw(
-        objectOverlays:ObjectOverlayHelper.objectOverlays(
+        objectOverlays: OverlayView.objectOverlays(
           fromDetections: objectDetectorResult.detections,
           inferredOnImageOfSize: imageSize,
           andOrientation:  UIImage.Orientation.from(
