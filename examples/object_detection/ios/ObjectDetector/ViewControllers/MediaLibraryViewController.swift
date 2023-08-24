@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import UIKit
-import UniformTypeIdentifiers
 import AVKit
 import MediaPipeTasksVision
+import UIKit
 
 /**
  * The view controller is responsible for performing detection on videos or images selected by the user from the device media library and
@@ -291,15 +290,15 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
       case .image:
         objectDetectorService = ObjectDetectorService
           .stillImageDetectorService(
-            model: DetectorMetadata.sharedInstance.model,
-            maxResults: DetectorMetadata.sharedInstance.maxResults,
-            scoreThreshold: DetectorMetadata.sharedInstance.scoreThreshold)
+            model: InferenceConfigManager.sharedInstance.model,
+            maxResults: InferenceConfigManager.sharedInstance.maxResults,
+            scoreThreshold: InferenceConfigManager.sharedInstance.scoreThreshold)
       case .video:
         objectDetectorService = ObjectDetectorService
           .videoObjectDetectorService(
-            model: DetectorMetadata.sharedInstance.model,
-            maxResults: DetectorMetadata.sharedInstance.maxResults,
-            scoreThreshold: DetectorMetadata.sharedInstance.scoreThreshold,
+            model: InferenceConfigManager.sharedInstance.model,
+            maxResults: InferenceConfigManager.sharedInstance.maxResults,
+            scoreThreshold: InferenceConfigManager.sharedInstance.scoreThreshold,
             videoDelegate: self)
       default:
         break;

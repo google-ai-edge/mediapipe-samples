@@ -20,20 +20,22 @@ final class ObjectDetectorTests: XCTestCase {
   static let efficientdetLite0 = Model.efficientdetLite0
   static let efficientdetLite2 = Model.efficientdetLite2
 
-  static let testImage = UIImage(named: "coupleanddog.jpeg")!
+  static let testImage = UIImage(named: "coupleanddog.jpeg",
+                                 in: Bundle(for: ObjectDetectorTests.self),
+                                 compatibleWith: nil)!
 
   static let efficientnetLite0Results: [Detection] = [
     Detection(
-      categories: [ResultCategory(index: -1, score: 0.939660906, categoryName: "person", displayName: nil)],
-      boundingBox: CGRect(x: 214.0, y: 11.0, width: 120.0, height: 262.0),
+      categories: [ResultCategory(index: -1, score: 0.94170237, categoryName: "person", displayName: nil)],
+      boundingBox: CGRect(x: 214.0, y: 12.0, width: 120.0, height: 261.0),
       keypoints: nil),
     Detection(
-      categories: [ResultCategory(index: -1, score: 0.774321734, categoryName: "dog", displayName: nil)],
-      boundingBox: CGRect(x: 66.0, y: 254.0, width: 57.0, height: 77.0),
+      categories: [ResultCategory(index: -1, score: 0.7796736, categoryName: "dog", displayName: nil)],
+      boundingBox: CGRect(x: 66.0, y: 254.0, width: 56.0, height: 76.0),
       keypoints: nil),
     Detection(
-      categories: [ResultCategory(index: -1, score: 0.664517879, categoryName: "person", displayName: nil)],
-      boundingBox: CGRect(x: 144.0, y: 18.0, width: 82.0, height: 243.0),
+      categories: [ResultCategory(index: -1, score: 0.6708669, categoryName: "person", displayName: nil)],
+      boundingBox: CGRect(x: 144.0, y: 18.0, width: 82.0, height: 242.0),
       keypoints: nil)
   ]
 
@@ -43,8 +45,8 @@ final class ObjectDetectorTests: XCTestCase {
       boundingBox: CGRect(x: 71.0, y: 254.0, width: 53.0, height: 74.0),
       keypoints: nil),
     Detection(
-      categories: [ResultCategory(index: -1, score: 0.904949843, categoryName: "person", displayName: nil)],
-      boundingBox: CGRect(x: 207.0, y: 8.0, width: 126.0, height: 263.0),
+      categories: [ResultCategory(index: -1, score: 0.90384406, categoryName: "person", displayName: nil)],
+      boundingBox: CGRect(x: 207.0, y: 8.0, width: 126.0, height: 264.0),
       keypoints: nil),
     Detection(
       categories: [ResultCategory(index: -1, score: 0.810646474, categoryName: "person", displayName: nil)],
@@ -54,9 +56,13 @@ final class ObjectDetectorTests: XCTestCase {
 
   func objectDetectorWithModel(
     _ model: Model
-  ) throws -> ObjectDetectorHelper {
-    let objectDetectorHelper = ObjectDetectorHelper(model: model, maxResults: 3, scoreThreshold: 0, runningModel: .image)
-    return objectDetectorHelper
+  ) throws -> ObjectDetectorService {
+    let objectDetectorHelper = ObjectDetectorService.stillImageDetectorService(
+      model: model,
+      maxResults: 3,
+      scoreThreshold: 0
+    )
+    return try XCTUnwrap(objectDetectorHelper)
   }
 
   func assertObjecDetectionResultHasOneHead(
@@ -139,12 +145,12 @@ final class ObjectDetectorTests: XCTestCase {
 
   func assertResultsForDetection(
     image: UIImage,
-    using objectDetector: ObjectDetectorHelper,
+    using objectDetector: ObjectDetectorService,
     equals expectedDetections: [Detection]
   ) throws {
     let objectDetectorResult =
     try XCTUnwrap(
-      objectDetector.detect(image: image)!.objectDetectorResult)
+      objectDetector.detect(image: image)!.objectDetectorResults[0])
     assertObjecDetectionResultHasOneHead(objectDetectorResult)
     assertEqualDetectionArrays(
       detectionArray: objectDetectorResult.detections,
@@ -152,7 +158,7 @@ final class ObjectDetectorTests: XCTestCase {
   }
   func testDetectionWithEfficientnetLite0Succeeds() throws {
 
-    let objectDetector = try objectDetectorWithModel(ObjectDetectorTests.efficientnetLite0)
+    let objectDetector = try objectDetectorWithModel(ObjectDetectorTests.efficientdetLite0)
     try assertResultsForDetection(
       image: ObjectDetectorTests.testImage,
       using: objectDetector,
@@ -161,7 +167,7 @@ final class ObjectDetectorTests: XCTestCase {
 
   func testDetectionWithEfficientnetLite2Succeeds() throws {
 
-    let objectDetector = try objectDetectorWithModel(ObjectDetectorTests.efficientnetLite2)
+    let objectDetector = try objectDetectorWithModel(ObjectDetectorTests.efficientdetLite2)
     try assertResultsForDetection(
       image: ObjectDetectorTests.testImage,
       using: objectDetector,

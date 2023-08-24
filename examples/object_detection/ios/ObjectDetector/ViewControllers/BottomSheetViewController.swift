@@ -13,21 +13,20 @@
 // limitations under the License.
 
 import UIKit
-import MediaPipeTasksVision
 
 protocol InferenceViewControllerDelegate: AnyObject {
   /**
    This method is called when the user opens or closes the bottom sheet.
   **/
   func viewController(
-    _ viewController: InferenceViewController,
+    _ viewController: BottomSheetViewController,
     didSwitchBottomSheetViewState isOpen: Bool)
 }
 
 /** The view controller is responsible for presenting the controls to change the meta data for the object detector (model, max results,
  * score threshold) and updating the singleton`` DetectorMetadata`` on user input.
  */
-class InferenceViewController: UIViewController {
+class BottomSheetViewController: UIViewController {
 
   enum Action {
     case changeScoreThreshold(Float)
@@ -72,11 +71,11 @@ class InferenceViewController: UIViewController {
   // MARK: - Private function
   private func setupUI() {
 
-    maxResultStepper.value = Double(DetectorMetadata.sharedInstance.maxResults)
-    maxResultLabel.text = "\(DetectorMetadata.sharedInstance.maxResults)"
+    maxResultStepper.value = Double(InferenceConfigManager.sharedInstance.maxResults)
+    maxResultLabel.text = "\(InferenceConfigManager.sharedInstance.maxResults)"
 
-    thresholdStepper.value = Double(DetectorMetadata.sharedInstance.scoreThreshold)
-    thresholdValueLabel.text = "\(DetectorMetadata.sharedInstance.scoreThreshold)"
+    thresholdStepper.value = Double(InferenceConfigManager.sharedInstance.scoreThreshold)
+    thresholdValueLabel.text = "\(InferenceConfigManager.sharedInstance.scoreThreshold)"
 
     // Choose model option
     let selectedModelAction = {(action: UIAction) in
@@ -86,7 +85,7 @@ class InferenceViewController: UIViewController {
     let actions: [UIAction] = Model.allCases.compactMap { model in
       return UIAction(
         title: model.name,
-        state: (DetectorMetadata.sharedInstance.model == model) ? .on : .off,
+        state: (InferenceConfigManager.sharedInstance.model == model) ? .on : .off,
         handler: selectedModelAction
       )
     }
@@ -100,7 +99,7 @@ class InferenceViewController: UIViewController {
     guard let model = Model(name: modelTitle) else {
       return
     }
-    DetectorMetadata.sharedInstance.model = model
+    InferenceConfigManager.sharedInstance.model = model
   }
   
   private func enableOrDisableClicks() {
@@ -119,13 +118,13 @@ class InferenceViewController: UIViewController {
 
   @IBAction func thresholdStepperValueChanged(_ sender: UIStepper) {
     let scoreThreshold = Float(sender.value)
-    DetectorMetadata.sharedInstance.scoreThreshold = scoreThreshold
+    InferenceConfigManager.sharedInstance.scoreThreshold = scoreThreshold
     thresholdValueLabel.text = "\(scoreThreshold)"
   }
 
   @IBAction func maxResultStepperValueChanged(_ sender: UIStepper) {
     let maxResults = Int(sender.value)
-    DetectorMetadata.sharedInstance.maxResults = maxResults
+    InferenceConfigManager.sharedInstance.maxResults = maxResults
     maxResultLabel.text = "\(maxResults)"
   }
 }

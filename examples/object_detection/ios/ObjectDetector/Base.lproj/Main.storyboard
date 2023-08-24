@@ -2,7 +2,6 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="l9g-3L-U89">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -10,10 +9,10 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Inference View Controller-->
+        <!--Bottom Sheet View Controller-->
         <scene sceneID="nVP-CX-rj2">
             <objects>
-                <viewController id="zgE-Xo-ZSc" customClass="InferenceViewController" customModule="ObjectDetector" sceneMemberID="viewController">
+                <viewController id="zgE-Xo-ZSc" customClass="BottomSheetViewController" customModule="ObjectDetector" sceneMemberID="viewController">
                     <view key="view" clipsSubviews="YES" contentMode="scaleToFill" id="Knd-PN-meG">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="400"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -188,10 +187,10 @@
             </objects>
             <point key="canvasLocation" x="638.93129770992368" y="160.56338028169014"/>
         </scene>
-        <!--View Controller-->
+        <!--Root View Controller-->
         <scene sceneID="BN0-Ju-w5Z">
             <objects>
-                <viewController id="l9g-3L-U89" customClass="ViewController" customModule="ObjectDetector" sceneMemberID="viewController">
+                <viewController id="l9g-3L-U89" customClass="RootViewController" customModule="ObjectDetector" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="914-Wq-nbc">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
