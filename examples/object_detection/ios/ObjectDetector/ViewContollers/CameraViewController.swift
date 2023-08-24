@@ -30,7 +30,7 @@ class CameraViewController: UIViewController {
   weak var inferenceResultDeliveryDelegate: InferenceResultDeliveryDelegate?
   weak var interfaceUpdatesDelegate: InterfaceUpdatesDelegate?
   
-  @IBOutlet weak var previewView: PreviewView!
+  @IBOutlet weak var previewView: UIView!
   @IBOutlet weak var cameraUnavailableLabel: UILabel!
   @IBOutlet weak var resumeButton: UIButton!
   @IBOutlet weak var overlayView: OverlayView!
@@ -62,10 +62,10 @@ class CameraViewController: UIViewController {
       }
     }
   }
-  
+
+#if !targetEnvironment(simulator)
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
-#if !targetEnvironment(simulator)
     initializeObjectDetectorServiceOnSessionResumption()
     cameraFeedService.startLiveCameraSession {[weak self] cameraConfiguration in
       DispatchQueue.main.async {
@@ -79,34 +79,33 @@ class CameraViewController: UIViewController {
         }
       }        
     }
-#endif
   }
   
   override func viewWillDisappear(_ animated: Bool) {
     super.viewWillDisappear(animated)
-#if !targetEnvironment(simulator)
     cameraFeedService.stopSession()
     clearObjectDetectorServiceOnSessionInterruption()
-#endif
   }
   
   override func viewDidLoad() {
     super.viewDidLoad()
-#if !targetEnvironment(simulator)
     cameraFeedService.delegate = self
-#endif
     // Do any additional setup after loading the view.
   }
   
-  @IBAction func onClickResume(_ sender: Any) {
-    if isSessionRunning {
-      self.resumeButton.isHidden = true
-      self.cameraUnavailableLabel.isHidden = true
-    }
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    cameraFeedService.updateVideoPreviewLayer(toFrame: previewView.bounds)
   }
   
+  override func viewWillLayoutSubviews() {
+    super.viewWillLayoutSubviews()
+    cameraFeedService.updateVideoPreviewLayer(toFrame: previewView.bounds)
+  }
+#endif
+  
   // Resume camera session when click button resume
-  @IBAction func resumeButtonTouchUpInside(_ sender: Any) {
+  @IBAction func onClickResume(_ sender: Any) {
     cameraFeedService.resumeInterruptedSession {[weak self] isSessionRunning in
       if isSessionRunning {
         self?.resumeButton.isHidden = true
@@ -263,7 +262,7 @@ extension CameraViewController: ObjectDetectorServiceLiveStreamDelegate {
             deviceOrientation: UIDevice.current.orientation)),
         inBoundsOfContentImageOfSize: imageSize,
         edgeOffset: Constants.edgeOffset,
-        imageContentMode: weakSelf.previewView.previewLayer.videoGravity.contentMode)
+        imageContentMode: weakSelf.cameraFeedService.videoGravity.contentMode)
     }
   }
 }

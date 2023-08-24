@@ -409,7 +409,7 @@
         <scene sceneID="QuK-Wr-zAJ">
             <objects>
                 <viewController storyboardIdentifier="CAMERA_VIEW_CONTROLLER" id="b8O-QI-DeZ" customClass="CameraViewController" customModule="ObjectDetector" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="0oz-8e-wiV" customClass="PreviewView" customModule="ObjectDetector" customModuleProvider="target">
+                    <view key="view" contentMode="scaleToFill" id="0oz-8e-wiV">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -429,6 +429,10 @@
                                     <action selector="onClickResume:" destination="b8O-QI-DeZ" eventType="touchUpInside" id="kAv-LI-cCa"/>
                                 </connections>
                             </button>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="o4b-21-Tvp" userLabel="PreviewView">
+                                <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hFf-1S-AnH" customClass="OverlayView" customModule="ObjectDetector" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -441,17 +445,21 @@
                             <constraint firstItem="c0u-4p-ImP" firstAttribute="top" secondItem="sqx-9t-qnN" secondAttribute="top" constant="20" id="6rZ-6P-5hh"/>
                             <constraint firstItem="xy8-UI-ocb" firstAttribute="centerY" secondItem="0oz-8e-wiV" secondAttribute="centerY" id="DO8-6b-Dwr"/>
                             <constraint firstItem="hFf-1S-AnH" firstAttribute="top" secondItem="0oz-8e-wiV" secondAttribute="top" id="Ghy-9o-ckj"/>
+                            <constraint firstItem="o4b-21-Tvp" firstAttribute="top" secondItem="0oz-8e-wiV" secondAttribute="top" id="aEU-kO-poq"/>
+                            <constraint firstItem="o4b-21-Tvp" firstAttribute="leading" secondItem="0oz-8e-wiV" secondAttribute="leading" id="aky-hw-gT5"/>
                             <constraint firstItem="c0u-4p-ImP" firstAttribute="leading" secondItem="sqx-9t-qnN" secondAttribute="leading" constant="10" id="f90-Hl-kJG"/>
                             <constraint firstItem="hFf-1S-AnH" firstAttribute="leading" secondItem="0oz-8e-wiV" secondAttribute="leading" id="fnA-iM-iat"/>
                             <constraint firstAttribute="trailing" secondItem="hFf-1S-AnH" secondAttribute="trailing" id="jhW-Td-an7"/>
+                            <constraint firstAttribute="bottom" secondItem="o4b-21-Tvp" secondAttribute="bottom" id="khx-gc-wBH"/>
                             <constraint firstAttribute="bottom" secondItem="hFf-1S-AnH" secondAttribute="bottom" id="rF5-7T-gg9"/>
+                            <constraint firstItem="o4b-21-Tvp" firstAttribute="trailing" secondItem="0oz-8e-wiV" secondAttribute="trailing" id="tl5-Af-lJn"/>
                             <constraint firstItem="xy8-UI-ocb" firstAttribute="centerX" secondItem="0oz-8e-wiV" secondAttribute="centerX" id="weD-Pm-NuA"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="cameraUnavailableLabel" destination="c0u-4p-ImP" id="L6y-1B-OIX"/>
                         <outlet property="overlayView" destination="hFf-1S-AnH" id="BUy-V3-SMc"/>
-                        <outlet property="previewView" destination="0oz-8e-wiV" id="JaS-0q-kOB"/>
+                        <outlet property="previewView" destination="o4b-21-Tvp" id="ssH-DL-rzl"/>
                         <outlet property="resumeButton" destination="xy8-UI-ocb" id="sZ4-tU-loX"/>
                     </connections>
                 </viewController>

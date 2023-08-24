@@ -73,10 +73,12 @@ class CameraFeedService: NSObject {
       }
     }
   }
+  
+  let videoGravity = AVLayerVideoGravity.resizeAspectFill
 
   // MARK: Instance Variables
   private let session: AVCaptureSession = AVCaptureSession()
-  private let previewView: PreviewView
+  private lazy var videoPreviewLayer = AVCaptureVideoPreviewLayer(session: session)
   private let sessionQueue = DispatchQueue(label: "com.google.mediapipe.CameraFeedService.sessionQueue")
   private let cameraPosition: AVCaptureDevice.Position = .back
   
@@ -90,16 +92,14 @@ class CameraFeedService: NSObject {
   weak var delegate: CameraFeedServiceDelegate?
 
   // MARK: Initializer
-  init(previewView: PreviewView) {
-    self.previewView = previewView
+  init(previewView: UIView) {
     super.init()
-
+    
     // Initializes the session
     session.sessionPreset = .high
-    self.previewView.session = session
-    self.previewView.previewLayer.connection?.videoOrientation = .portrait
-    self.previewView.previewLayer.videoGravity = .resizeAspectFill
-    self.attemptToConfigureSession()
+    setUpPreviewView(previewView)
+  
+    attemptToConfigureSession()
     NotificationCenter.default.addObserver(
       self, selector: #selector(orientationChanged),
       name: UIDevice.orientationDidChangeNotification,
@@ -109,16 +109,22 @@ class CameraFeedService: NSObject {
   deinit {
     NotificationCenter.default.removeObserver(self)
   }
-
+  
+  private func setUpPreviewView(_ view: UIView) {
+    videoPreviewLayer.videoGravity = videoGravity
+    videoPreviewLayer.connection?.videoOrientation = .portrait
+    view.layer.addSublayer(videoPreviewLayer)
+  }
+  
   // MARK: notification methods
   @objc func orientationChanged(notification: Notification) {
     switch UIImage.Orientation.from(deviceOrientation: UIDevice.current.orientation) {
     case .up:
-      previewView.previewLayer.connection?.videoOrientation = .portrait
+      videoPreviewLayer.connection?.videoOrientation = .portrait
     case .left:
-      previewView.previewLayer.connection?.videoOrientation = .landscapeRight
+      videoPreviewLayer.connection?.videoOrientation = .landscapeRight
     case .right:
-      previewView.previewLayer.connection?.videoOrientation = .landscapeLeft
+      videoPreviewLayer.connection?.videoOrientation = .landscapeLeft
     default:
       break
     }
@@ -168,6 +174,10 @@ class CameraFeedService: NSObject {
         completion(self.isSessionRunning)
       }
     }
+  }
+  
+  func updateVideoPreviewLayer(toFrame frame: CGRect) {
+    videoPreviewLayer.frame = frame
   }
 
   /**
