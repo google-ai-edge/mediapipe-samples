@@ -10,6 +10,10 @@
 		39A04804C8101D2C0D58D927 /* libPods-ObjectDetectorTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BF80BB442A677B6C005E93B1 /* libPods-ObjectDetectorTests.a */; };
 		7F7641A62A74803D00DDCE4E /* download_models.sh in Resources */ = {isa = PBXBuildFile; fileRef = 7F7641A52A74803D00DDCE4E /* download_models.sh */; };
 		9E41A7603AB8BE3B86C06DB9 /* Pods_ObjectDetector.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3FBCABF9DABD56A270978F4 /* Pods_ObjectDetector.framework */; };
+		AAF981DB2A80D27500C7121A /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF981DA2A80D27500C7121A /* CameraViewController.swift */; };
+		AAF981DD2A80D28B00C7121A /* MediaLibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF981DC2A80D28B00C7121A /* MediaLibraryViewController.swift */; };
+		AAF981DF2A81330700C7121A /* DetectorMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF981DE2A81330700C7121A /* DetectorMetadata.swift */; };
+		AAF981E52A85156500C7121A /* DefaultConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF981E42A85156500C7121A /* DefaultConstants.swift */; };
 		BF2B2D2F2A3C09E200589A11 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D2E2A3C09E200589A11 /* AppDelegate.swift */; };
 		BF2B2D312A3C09E200589A11 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D302A3C09E200589A11 /* SceneDelegate.swift */; };
 		BF2B2D332A3C09E200589A11 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D322A3C09E200589A11 /* ViewController.swift */; };
@@ -17,10 +21,9 @@
 		BF2B2D382A3C09E300589A11 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2D372A3C09E300589A11 /* Assets.xcassets */; };
 		BF2B2D3B2A3C09E300589A11 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2D392A3C09E300589A11 /* LaunchScreen.storyboard */; };
 		BF2B2D462A3C09E300589A11 /* ObjectDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D452A3C09E300589A11 /* ObjectDetectorTests.swift */; };
-		BF2B2D632A3C0C2900589A11 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D5F2A3C0C2900589A11 /* PreviewView.swift */; };
-		BF2B2D642A3C0C2900589A11 /* CameraFeedManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D602A3C0C2900589A11 /* CameraFeedManager.swift */; };
+		BF2B2D642A3C0C2900589A11 /* CameraFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D602A3C0C2900589A11 /* CameraFeedService.swift */; };
 		BF2B2D6B2A3C0C3F00589A11 /* InferenceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D692A3C0C3F00589A11 /* InferenceViewController.swift */; };
-		BF2B2D6D2A3C0EF900589A11 /* ObjectDetectorHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D6C2A3C0EF900589A11 /* ObjectDetectorHelper.swift */; };
+		BF2B2D6D2A3C0EF900589A11 /* ObjectDetectorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D6C2A3C0EF900589A11 /* ObjectDetectorService.swift */; };
 		BFCF181A2A405D3600D64FA6 /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCF18192A405D3600D64FA6 /* OverlayView.swift */; };
 		BFCF18202A405F4300D64FA6 /* efficientdet_lite0.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BFCF181E2A405F4300D64FA6 /* efficientdet_lite0.tflite */; };
 		BFCF18222A4066C900D64FA6 /* efficientdet_lite2.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BFCF18212A40663700D64FA6 /* efficientdet_lite2.tflite */; };
@@ -42,6 +45,10 @@
 		3867444B45D308637F45B36F /* Pods-ObjectDetectorTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ObjectDetectorTests.debug.xcconfig"; path = "Target Support Files/Pods-ObjectDetectorTests/Pods-ObjectDetectorTests.debug.xcconfig"; sourceTree = "<group>"; };
 		5C7001CA299F3F76944A9162 /* Pods-ObjectDetector.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ObjectDetector.debug.xcconfig"; path = "Target Support Files/Pods-ObjectDetector/Pods-ObjectDetector.debug.xcconfig"; sourceTree = "<group>"; };
 		7F7641A52A74803D00DDCE4E /* download_models.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = download_models.sh; sourceTree = "<group>"; };
+		AAF981DA2A80D27500C7121A /* CameraViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
+		AAF981DC2A80D28B00C7121A /* MediaLibraryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaLibraryViewController.swift; sourceTree = "<group>"; };
+		AAF981DE2A81330700C7121A /* DetectorMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectorMetadata.swift; sourceTree = "<group>"; };
+		AAF981E42A85156500C7121A /* DefaultConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultConstants.swift; sourceTree = "<group>"; };
 		BF2B2D2B2A3C09E200589A11 /* ObjectDetector.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjectDetector.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF2B2D2E2A3C09E200589A11 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BF2B2D302A3C09E200589A11 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -54,10 +61,9 @@
 		BF2B2D452A3C09E300589A11 /* ObjectDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectDetectorTests.swift; sourceTree = "<group>"; };
 		BF2B2D4F2A3C09E300589A11 /* ObjectDetectorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectDetectorUITests.swift; sourceTree = "<group>"; };
 		BF2B2D512A3C09E300589A11 /* ObjectDetectorUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectDetectorUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		BF2B2D5F2A3C0C2900589A11 /* PreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
-		BF2B2D602A3C0C2900589A11 /* CameraFeedManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedManager.swift; sourceTree = "<group>"; };
+		BF2B2D602A3C0C2900589A11 /* CameraFeedService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedService.swift; sourceTree = "<group>"; };
 		BF2B2D692A3C0C3F00589A11 /* InferenceViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceViewController.swift; sourceTree = "<group>"; };
-		BF2B2D6C2A3C0EF900589A11 /* ObjectDetectorHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectDetectorHelper.swift; sourceTree = "<group>"; };
+		BF2B2D6C2A3C0EF900589A11 /* ObjectDetectorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectDetectorService.swift; sourceTree = "<group>"; };
 		BF80BB442A677B6C005E93B1 /* libPods-ObjectDetectorTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libPods-ObjectDetectorTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF80BB462A677B7B005E93B1 /* MediaPipeTasksCommon.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = MediaPipeTasksCommon.xcframework; path = Pods/MediaPipeTasksCommon/frameworks/MediaPipeTasksCommon.xcframework; sourceTree = "<group>"; };
 		BF80BB482A677B7B005E93B1 /* MediaPipeTasksVision.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = MediaPipeTasksVision.xcframework; path = Pods/MediaPipeTasksVision/frameworks/MediaPipeTasksVision.xcframework; sourceTree = "<group>"; };
@@ -119,6 +125,39 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
+		AA92E4272A86A7F2005A7145 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				BFCF18192A405D3600D64FA6 /* OverlayView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		AA92E4292A86A822005A7145 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				BF2B2D6C2A3C0EF900589A11 /* ObjectDetectorService.swift */,
+				BF2B2D602A3C0C2900589A11 /* CameraFeedService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		AA92E42A2A86A852005A7145 /* Constants */ = {
+			isa = PBXGroup;
+			children = (
+				AAF981E42A85156500C7121A /* DefaultConstants.swift */,
+			);
+			path = Constants;
+			sourceTree = "<group>";
+		};
+		AA92E42B2A86A89A005A7145 /* Metadata */ = {
+			isa = PBXGroup;
+			children = (
+				AAF981DE2A81330700C7121A /* DetectorMetadata.swift */,
+			);
+			path = Metadata;
+			sourceTree = "<group>";
+		};
 		BF2B2D222A3C09E200589A11 = {
 			isa = PBXGroup;
 			children = (
@@ -143,8 +182,11 @@
 		BF2B2D2D2A3C09E200589A11 /* ObjectDetector */ = {
 			isa = PBXGroup;
 			children = (
-				BF2B2D5E2A3C0C2900589A11 /* Helper */,
-				BF2B2D672A3C0C3F00589A11 /* ViewContoller */,
+				AA92E42B2A86A89A005A7145 /* Metadata */,
+				AA92E42A2A86A852005A7145 /* Constants */,
+				AA92E4292A86A822005A7145 /* Services */,
+				AA92E4272A86A7F2005A7145 /* Views */,
+				BF2B2D672A3C0C3F00589A11 /* ViewContollers */,
 				7F7641A42A74803D00DDCE4E /* RunScripts */,
 				BF2B2D2E2A3C09E200589A11 /* AppDelegate.swift */,
 				BF2B2D302A3C09E200589A11 /* SceneDelegate.swift */,
@@ -176,24 +218,15 @@
 			path = ObjectDetectorUITests;
 			sourceTree = "<group>";
 		};
-		BF2B2D5E2A3C0C2900589A11 /* Helper */ = {
-			isa = PBXGroup;
-			children = (
-				BFCF18192A405D3600D64FA6 /* OverlayView.swift */,
-				BF2B2D5F2A3C0C2900589A11 /* PreviewView.swift */,
-				BF2B2D602A3C0C2900589A11 /* CameraFeedManager.swift */,
-				BF2B2D6C2A3C0EF900589A11 /* ObjectDetectorHelper.swift */,
-			);
-			path = Helper;
-			sourceTree = "<group>";
-		};
-		BF2B2D672A3C0C3F00589A11 /* ViewContoller */ = {
+		BF2B2D672A3C0C3F00589A11 /* ViewContollers */ = {
 			isa = PBXGroup;
 			children = (
 				BF2B2D322A3C09E200589A11 /* ViewController.swift */,
 				BF2B2D692A3C0C3F00589A11 /* InferenceViewController.swift */,
+				AAF981DA2A80D27500C7121A /* CameraViewController.swift */,
+				AAF981DC2A80D28B00C7121A /* MediaLibraryViewController.swift */,
 			);
-			path = ViewContoller;
+			path = ViewContollers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -371,12 +404,15 @@
 			files = (
 				BFCF181A2A405D3600D64FA6 /* OverlayView.swift in Sources */,
 				BF2B2D332A3C09E200589A11 /* ViewController.swift in Sources */,
-				BF2B2D632A3C0C2900589A11 /* PreviewView.swift in Sources */,
+				AAF981E52A85156500C7121A /* DefaultConstants.swift in Sources */,
 				BF2B2D6B2A3C0C3F00589A11 /* InferenceViewController.swift in Sources */,
-				BF2B2D642A3C0C2900589A11 /* CameraFeedManager.swift in Sources */,
+				AAF981DF2A81330700C7121A /* DetectorMetadata.swift in Sources */,
+				BF2B2D642A3C0C2900589A11 /* CameraFeedService.swift in Sources */,
 				BF2B2D2F2A3C09E200589A11 /* AppDelegate.swift in Sources */,
-				BF2B2D6D2A3C0EF900589A11 /* ObjectDetectorHelper.swift in Sources */,
+				BF2B2D6D2A3C0EF900589A11 /* ObjectDetectorService.swift in Sources */,
+				AAF981DD2A80D28B00C7121A /* MediaLibraryViewController.swift in Sources */,
 				BF2B2D312A3C09E200589A11 /* SceneDelegate.swift in Sources */,
+				AAF981DB2A80D27500C7121A /* CameraViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -556,7 +592,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.objectdetection;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.objectdetector;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -589,7 +625,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.objectdetection;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.objectdetector;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
