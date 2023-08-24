@@ -13,10 +13,6 @@
 // limitations under the License.
 
 import UIKit
-import MediaPipeTasksVision
-import UniformTypeIdentifiers
-import AVKit
-
 
 protocol InferenceResultDeliveryDelegate: AnyObject {
   func didPerformInference(result: ResultBundle?)

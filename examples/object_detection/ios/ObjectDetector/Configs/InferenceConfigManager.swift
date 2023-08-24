@@ -16,19 +16,28 @@ import Foundation
 
 /**
  * Singleton storing the configs needed to initialize an MediaPipe Tasks object and run inference.
- * Properties are key value observable. Controllers simply need to observe these properties for any changes made by the user.
+ * Controllers can observe the `InferenceConfigManager.notificationName` for any changes made by the user.
  */
-@objc class InferenceConfigManager: NSObject {
-  @objc dynamic var model: Model = DefaultConstants.model
+class InferenceConfigManager: NSObject {
+  var model: Model = DefaultConstants.model {
+    didSet { postConfigChangedNotification() }
+  }
   
-  @objc dynamic var maxResults: Int = DefaultConstants.maxResults
+  var maxResults: Int = DefaultConstants.maxResults {
+    didSet { postConfigChangedNotification() }
+  }
   
-  @objc dynamic var scoreThreshold: Float = DefaultConstants.scoreThreshold
+  var scoreThreshold: Float = DefaultConstants.scoreThreshold {
+    didSet { postConfigChangedNotification() }
+  }
   
   static let sharedInstance = InferenceConfigManager()
   
-  private override init() {
-    
+  static let notificationName = Notification.Name.init(rawValue: "com.google.mediapipe.inferenceConfigChanged")
+  
+  private func postConfigChangedNotification() {
+    NotificationCenter.default
+      .post(name: InferenceConfigManager.notificationName, object: nil)
   }
 
 }

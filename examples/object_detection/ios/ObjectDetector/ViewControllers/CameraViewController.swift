@@ -12,11 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import UIKit
 import AVFoundation
-import CoreMedia
-
 import MediaPipeTasksVision
+import UIKit
 
 /**
  * The view controller is responsible for performing detection on incoming frames from the live camera and presenting the frames with the
@@ -36,7 +34,7 @@ class CameraViewController: UIViewController {
   @IBOutlet weak var overlayView: OverlayView!
   
   private var isSessionRunning = false
-  private var isObserver = false
+  private var isObserving = false
   private let backgroundQueue = DispatchQueue(label: "com.google.mediapipe.cameraController.backgroundQueue")
   
   // MARK: Controllers that manage functionality
@@ -152,10 +150,10 @@ class CameraViewController: UIViewController {
   
   private func initializeObjectDetectorServiceOnSessionResumption() {
     clearAndInitializeObjectDetectorService()
-    addConfigManagerKeyValueObservers()
+    startObserveConfigChanges()
   }
   
-  private func clearAndInitializeObjectDetectorService() {
+  @objc private func clearAndInitializeObjectDetectorService() {
     objectDetectorService = nil
       objectDetectorService = ObjectDetectorService
         .liveStreamDetectorService(
@@ -166,36 +164,27 @@ class CameraViewController: UIViewController {
   }
   
   private func clearObjectDetectorServiceOnSessionInterruption() {
-    removeConfigManagerKeyValueObservers()
+    stopObserveConfigChanges()
     objectDetectorService = nil
   }
   
-  private func addConfigManagerKeyValueObservers() {
-    InferenceConfigManager.sharedInstance.addObserver(
-      self,
-      forKeyPath: (#keyPath(InferenceConfigManager.maxResults)),
-      options: [.new],
-      context: nil)
-    InferenceConfigManager.sharedInstance.addObserver(
-      self,
-      forKeyPath: (#keyPath(InferenceConfigManager.scoreThreshold)),
-      options: [.new],
-      context: nil)
-    InferenceConfigManager.sharedInstance.addObserver(
-      self,
-      forKeyPath: (#keyPath(InferenceConfigManager.model)),
-      options: [.new],
-      context: nil)
-    isObserver = true
+  private func startObserveConfigChanges() {
+    NotificationCenter.default
+      .addObserver(self,
+                   selector: #selector(clearAndInitializeObjectDetectorService),
+                   name: InferenceConfigManager.notificationName,
+                   object: nil)
+    isObserving = true
   }
   
-  private func removeConfigManagerKeyValueObservers() {
-    if isObserver {
-      InferenceConfigManager.sharedInstance.removeObserver(self, forKeyPath: #keyPath(InferenceConfigManager.maxResults))
-      InferenceConfigManager.sharedInstance.removeObserver(self, forKeyPath: #keyPath(InferenceConfigManager.scoreThreshold))
-      InferenceConfigManager.sharedInstance.removeObserver(self, forKeyPath: #keyPath(InferenceConfigManager.model))
+  private func stopObserveConfigChanges() {
+    if isObserving {
+      NotificationCenter.default
+        .removeObserver(self,
+                        name:InferenceConfigManager.notificationName,
+                        object: nil)
     }
-    isObserver = false
+    isObserving = false
   }
 }
 

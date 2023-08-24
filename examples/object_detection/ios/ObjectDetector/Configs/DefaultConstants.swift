@@ -36,7 +36,7 @@ struct DefaultConstants {
 }
 
 // MARK: Model
-@objc enum Model: Int, CaseIterable {
+enum Model: Int, CaseIterable {
   case efficientdetLite0
   case efficientdetLite2
   

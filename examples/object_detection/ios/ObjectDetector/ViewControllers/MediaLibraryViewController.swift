@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import UIKit
-import UniformTypeIdentifiers
 import AVKit
 import MediaPipeTasksVision
+import UIKit
 
 /**
  * The view controller is responsible for performing detection on videos or images selected by the user from the device media library and
