@@ -15,17 +15,17 @@
 import Foundation
 
 /**
- * Singleton storing the meta data needed to initialise an object detector.
+ * Singleton storing the configs needed to initialize an MediaPipe Tasks object and run inference.
  * Properties are key value observable. Controllers simply need to observe these properties for any changes made by the user.
  */
-@objc class DetectorMetadata: NSObject {
+@objc class InferenceConfigManager: NSObject {
   @objc dynamic var model: Model = DefaultConstants.model
   
   @objc dynamic var maxResults: Int = DefaultConstants.maxResults
   
   @objc dynamic var scoreThreshold: Float = DefaultConstants.scoreThreshold
   
-  static let sharedInstance = DetectorMetadata()
+  static let sharedInstance = InferenceConfigManager()
   
   private override init() {
     

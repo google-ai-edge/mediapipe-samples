@@ -152,48 +152,48 @@ class CameraViewController: UIViewController {
   
   private func initializeObjectDetectorServiceOnSessionResumption() {
     clearAndInitializeObjectDetectorService()
-    addDetectorMetadataKeyValueObservers()
+    addConfigManagerKeyValueObservers()
   }
   
   private func clearAndInitializeObjectDetectorService() {
     objectDetectorService = nil
       objectDetectorService = ObjectDetectorService
         .liveStreamDetectorService(
-          model: DetectorMetadata.sharedInstance.model,
-          maxResults: DetectorMetadata.sharedInstance.maxResults,
-          scoreThreshold: DetectorMetadata.sharedInstance.scoreThreshold,
+          model: InferenceConfigManager.sharedInstance.model,
+          maxResults: InferenceConfigManager.sharedInstance.maxResults,
+          scoreThreshold: InferenceConfigManager.sharedInstance.scoreThreshold,
           liveStreamDelegate: self)
   }
   
   private func clearObjectDetectorServiceOnSessionInterruption() {
-    removeDetectorMetadataKeyValueObservers()
+    removeConfigManagerKeyValueObservers()
     objectDetectorService = nil
   }
   
-  private func addDetectorMetadataKeyValueObservers() {
-    DetectorMetadata.sharedInstance.addObserver(
+  private func addConfigManagerKeyValueObservers() {
+    InferenceConfigManager.sharedInstance.addObserver(
       self,
-      forKeyPath: (#keyPath(DetectorMetadata.maxResults)),
+      forKeyPath: (#keyPath(InferenceConfigManager.maxResults)),
       options: [.new],
       context: nil)
-    DetectorMetadata.sharedInstance.addObserver(
+    InferenceConfigManager.sharedInstance.addObserver(
       self,
-      forKeyPath: (#keyPath(DetectorMetadata.scoreThreshold)),
+      forKeyPath: (#keyPath(InferenceConfigManager.scoreThreshold)),
       options: [.new],
       context: nil)
-    DetectorMetadata.sharedInstance.addObserver(
+    InferenceConfigManager.sharedInstance.addObserver(
       self,
-      forKeyPath: (#keyPath(DetectorMetadata.model)),
+      forKeyPath: (#keyPath(InferenceConfigManager.model)),
       options: [.new],
       context: nil)
     isObserver = true
   }
   
-  private func removeDetectorMetadataKeyValueObservers() {
+  private func removeConfigManagerKeyValueObservers() {
     if isObserver {
-      DetectorMetadata.sharedInstance.removeObserver(self, forKeyPath: #keyPath(DetectorMetadata.maxResults))
-      DetectorMetadata.sharedInstance.removeObserver(self, forKeyPath: #keyPath(DetectorMetadata.scoreThreshold))
-      DetectorMetadata.sharedInstance.removeObserver(self, forKeyPath: #keyPath(DetectorMetadata.model))
+      InferenceConfigManager.sharedInstance.removeObserver(self, forKeyPath: #keyPath(InferenceConfigManager.maxResults))
+      InferenceConfigManager.sharedInstance.removeObserver(self, forKeyPath: #keyPath(InferenceConfigManager.scoreThreshold))
+      InferenceConfigManager.sharedInstance.removeObserver(self, forKeyPath: #keyPath(InferenceConfigManager.model))
     }
     isObserver = false
   }

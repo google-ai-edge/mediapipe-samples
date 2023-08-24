@@ -29,7 +29,7 @@ protocol InterfaceUpdatesDelegate: AnyObject {
 /** The view controller is responsible for presenting and handling the tabbed controls for switching between the live camera feed and
   * media library view controllers. It also handles the presentation of the inferenceVC
   */
-class ViewController: UIViewController {
+class RootViewController: UIViewController {
 
   // MARK: Storyboards Connections
   @IBOutlet weak var tabBarContainerView: UIView!
@@ -50,7 +50,7 @@ class ViewController: UIViewController {
   }
   
   // MARK: Controllers that manage functionality
-  private var inferenceViewController: InferenceViewController?
+  private var inferenceViewController: BottomSheetViewController?
   private var cameraViewController: CameraViewController?
   private var mediaLibraryViewController: MediaLibraryViewController?
   
@@ -98,7 +98,7 @@ class ViewController: UIViewController {
   override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
     super.prepare(for: segue, sender: sender)
     if segue.identifier == Constants.inferenceVCEmbedSegueName {
-      inferenceViewController = segue.destination as? InferenceViewController
+      inferenceViewController = segue.destination as? BottomSheetViewController
       inferenceViewController?.delegate = self
       bottomViewHeightConstraint.constant = Constants.inferenceBottomHeight
       view.layoutSubviews()
@@ -150,7 +150,7 @@ class ViewController: UIViewController {
 }
 
 // MARK: UITabBarDelegate
-extension ViewController: UITabBarDelegate {
+extension RootViewController: UITabBarDelegate {
   func switchTo(
     childViewController: UIViewController?,
     fromViewController: UIViewController?) {
@@ -213,7 +213,7 @@ extension ViewController: UITabBarDelegate {
 }
 
 // MARK: InferenceResultDeliveryDelegate Methods
-extension ViewController: InferenceResultDeliveryDelegate {
+extension RootViewController: InferenceResultDeliveryDelegate {
   func didPerformInference(result: ResultBundle?) {
     var inferenceTimeString = ""
     
@@ -225,16 +225,16 @@ extension ViewController: InferenceResultDeliveryDelegate {
 }
 
 // MARK: InterfaceUpdatesDelegate Methods
-extension ViewController: InterfaceUpdatesDelegate {
+extension RootViewController: InterfaceUpdatesDelegate {
   func shouldClicksBeEnabled(_ isEnabled: Bool) {
     inferenceViewController?.isUIEnabled = isEnabled
   }
 }
 
 // MARK: InferenceViewControllerDelegate Methods
-extension ViewController: InferenceViewControllerDelegate {
+extension RootViewController: InferenceViewControllerDelegate {
   func viewController(
-    _ viewController: InferenceViewController,
+    _ viewController: BottomSheetViewController,
     didSwitchBottomSheetViewState isOpen: Bool) {
       if isOpen == true {
         bottomSheetViewBottomSpace.constant = 0.0

@@ -291,15 +291,15 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
       case .image:
         objectDetectorService = ObjectDetectorService
           .stillImageDetectorService(
-            model: DetectorMetadata.sharedInstance.model,
-            maxResults: DetectorMetadata.sharedInstance.maxResults,
-            scoreThreshold: DetectorMetadata.sharedInstance.scoreThreshold)
+            model: InferenceConfigManager.sharedInstance.model,
+            maxResults: InferenceConfigManager.sharedInstance.maxResults,
+            scoreThreshold: InferenceConfigManager.sharedInstance.scoreThreshold)
       case .video:
         objectDetectorService = ObjectDetectorService
           .videoObjectDetectorService(
-            model: DetectorMetadata.sharedInstance.model,
-            maxResults: DetectorMetadata.sharedInstance.maxResults,
-            scoreThreshold: DetectorMetadata.sharedInstance.scoreThreshold,
+            model: InferenceConfigManager.sharedInstance.model,
+            maxResults: InferenceConfigManager.sharedInstance.maxResults,
+            scoreThreshold: InferenceConfigManager.sharedInstance.scoreThreshold,
             videoDelegate: self)
       default:
         break;
