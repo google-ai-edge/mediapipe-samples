@@ -21,7 +21,6 @@
 		BF2B2D382A3C09E300589A11 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2D372A3C09E300589A11 /* Assets.xcassets */; };
 		BF2B2D3B2A3C09E300589A11 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2D392A3C09E300589A11 /* LaunchScreen.storyboard */; };
 		BF2B2D462A3C09E300589A11 /* ObjectDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D452A3C09E300589A11 /* ObjectDetectorTests.swift */; };
-		BF2B2D632A3C0C2900589A11 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D5F2A3C0C2900589A11 /* PreviewView.swift */; };
 		BF2B2D642A3C0C2900589A11 /* CameraFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D602A3C0C2900589A11 /* CameraFeedService.swift */; };
 		BF2B2D6B2A3C0C3F00589A11 /* InferenceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D692A3C0C3F00589A11 /* InferenceViewController.swift */; };
 		BF2B2D6D2A3C0EF900589A11 /* ObjectDetectorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D6C2A3C0EF900589A11 /* ObjectDetectorService.swift */; };
@@ -62,7 +61,6 @@
 		BF2B2D452A3C09E300589A11 /* ObjectDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectDetectorTests.swift; sourceTree = "<group>"; };
 		BF2B2D4F2A3C09E300589A11 /* ObjectDetectorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectDetectorUITests.swift; sourceTree = "<group>"; };
 		BF2B2D512A3C09E300589A11 /* ObjectDetectorUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectDetectorUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		BF2B2D5F2A3C0C2900589A11 /* PreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
 		BF2B2D602A3C0C2900589A11 /* CameraFeedService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedService.swift; sourceTree = "<group>"; };
 		BF2B2D692A3C0C3F00589A11 /* InferenceViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceViewController.swift; sourceTree = "<group>"; };
 		BF2B2D6C2A3C0EF900589A11 /* ObjectDetectorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectDetectorService.swift; sourceTree = "<group>"; };
@@ -131,7 +129,6 @@
 			isa = PBXGroup;
 			children = (
 				BFCF18192A405D3600D64FA6 /* OverlayView.swift */,
-				BF2B2D5F2A3C0C2900589A11 /* PreviewView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -407,7 +404,6 @@
 			files = (
 				BFCF181A2A405D3600D64FA6 /* OverlayView.swift in Sources */,
 				BF2B2D332A3C09E200589A11 /* ViewController.swift in Sources */,
-				BF2B2D632A3C0C2900589A11 /* PreviewView.swift in Sources */,
 				AAF981E52A85156500C7121A /* DefaultConstants.swift in Sources */,
 				BF2B2D6B2A3C0C3F00589A11 /* InferenceViewController.swift in Sources */,
 				AAF981DF2A81330700C7121A /* DetectorMetadata.swift in Sources */,
