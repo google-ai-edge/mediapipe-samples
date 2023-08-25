@@ -102,9 +102,7 @@ async function startSegmentationTask(){
         // draw the segmentation mask on the canvas
         await drawSegmentationResult(segmentationMask.confidenceMasks, input);
 
-        segmentationMask.confidenceMasks.forEach((mask) => {
-            mask.close();
-        })
+        segmentationMask.close();
 
         // start the segmentation task loop using requestAnimationFrame
         requestAnimationFrameId = window.requestAnimationFrame(startSegmentationTask);
