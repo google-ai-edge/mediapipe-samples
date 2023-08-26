@@ -111,7 +111,6 @@ class FaceLandmarkerHelper(
                     .setOutputFaceBlendshapes(true)
                     .setRunningMode(runningMode)
 
-
             // The ResultListener and ErrorListener only use for LIVE_STREAM mode.
             if (runningMode == RunningMode.LIVE_STREAM) {
                 optionsBuilder
