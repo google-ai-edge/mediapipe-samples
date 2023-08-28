@@ -31,6 +31,8 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.viewpager2.widget.ViewPager2
 import com.google.mediapipe.examples.facelandmarker.FaceLandmarkerHelper
 import com.google.mediapipe.examples.facelandmarker.MainViewModel
 import com.google.mediapipe.examples.facelandmarker.databinding.FragmentGalleryBinding
@@ -53,6 +55,9 @@ class GalleryFragment : Fragment(), FaceLandmarkerHelper.LandmarkerListener {
         get() = _fragmentGalleryBinding!!
     private lateinit var faceLandmarkerHelper: FaceLandmarkerHelper
     private val viewModel: MainViewModel by activityViewModels()
+    private val faceBlendshapesResultAdapter by lazy {
+        FaceBlendshapesResultAdapter()
+    }
 
     /** Blocking ML operations are performed using this executor */
     private lateinit var backgroundExecutor: ScheduledExecutorService
@@ -92,6 +97,10 @@ class GalleryFragment : Fragment(), FaceLandmarkerHelper.LandmarkerListener {
         fragmentGalleryBinding.fabGetContent.setOnClickListener {
             getContent.launch(arrayOf("image/*", "video/*"))
         }
+        with(fragmentGalleryBinding.recyclerviewResults) {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = faceBlendshapesResultAdapter
+        }
 
         initBottomSheetControls()
     }
@@ -102,6 +111,13 @@ class GalleryFragment : Fragment(), FaceLandmarkerHelper.LandmarkerListener {
             fragmentGalleryBinding.videoView.stopPlayback()
         }
         fragmentGalleryBinding.videoView.visibility = View.GONE
+        fragmentGalleryBinding.imageResult.visibility = View.GONE
+        fragmentGalleryBinding.tvPlaceholder.visibility = View.VISIBLE
+
+        activity?.runOnUiThread {
+            faceBlendshapesResultAdapter.updateResults(null)
+            faceBlendshapesResultAdapter.notifyDataSetChanged()
+        }
         super.onPause()
     }
 
@@ -283,6 +299,10 @@ class GalleryFragment : Fragment(), FaceLandmarkerHelper.LandmarkerListener {
 
                     faceLandmarkerHelper.detectImage(bitmap)?.let { result ->
                         activity?.runOnUiThread {
+                            if (fragmentGalleryBinding.recyclerviewResults.scrollState != ViewPager2.SCROLL_STATE_DRAGGING) {
+                                faceBlendshapesResultAdapter.updateResults(result.result)
+                                faceBlendshapesResultAdapter.notifyDataSetChanged()
+                            }
                             fragmentGalleryBinding.overlay.setResults(
                                 result.result,
                                 bitmap.height,
@@ -368,6 +388,11 @@ class GalleryFragment : Fragment(), FaceLandmarkerHelper.LandmarkerListener {
                             result.inputImageWidth,
                             RunningMode.VIDEO
                         )
+
+                        if (fragmentGalleryBinding.recyclerviewResults.scrollState != ViewPager2.SCROLL_STATE_DRAGGING) {
+                            faceBlendshapesResultAdapter.updateResults(result.results[resultIndex])
+                            faceBlendshapesResultAdapter.notifyDataSetChanged()
+                        }
 
                         setUiEnabled(true)
 
