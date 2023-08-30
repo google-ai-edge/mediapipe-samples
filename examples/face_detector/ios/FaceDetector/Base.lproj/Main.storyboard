@@ -72,7 +72,7 @@
                                         <rect key="frame" x="0.0" y="0.0" width="393" height="400"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <connections>
-                                            <segue destination="zgE-Xo-ZSc" kind="embed" id="Ne4-GD-QBm"/>
+                                            <segue destination="zgE-Xo-ZSc" kind="embed" identifier="EMBED" id="Ne4-GD-QBm"/>
                                         </connections>
                                     </containerView>
                                 </subviews>
@@ -125,7 +125,7 @@
         <!--Bottom Sheet View Controller-->
         <scene sceneID="nVP-CX-rj2">
             <objects>
-                <viewController id="zgE-Xo-ZSc" customClass="BottomSheetViewController" customModule="FaceDetector" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="zgE-Xo-ZSc" customClass="BottomSheetViewController" customModule="FaceDetector" sceneMemberID="viewController">
                     <view key="view" clipsSubviews="YES" contentMode="scaleToFill" id="Knd-PN-meG">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="400"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -333,7 +333,7 @@
         <!--Media Library View Controller-->
         <scene sceneID="Y0X-cv-ykk">
             <objects>
-                <viewController storyboardIdentifier="MEDIA_LIBRARY_VIEW_CONTROLLER" id="NhF-T7-efv" customClass="MediaLibraryViewController" customModule="ObjectDetector" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="MEDIA_LIBRARY_VIEW_CONTROLLER" id="NhF-T7-efv" customClass="MediaLibraryViewController" customModule="FaceDetector" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="zQB-07-hhL">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

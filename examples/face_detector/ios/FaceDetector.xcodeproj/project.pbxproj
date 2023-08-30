@@ -560,7 +560,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 9PLS9MU793;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FaceDetector/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to detection the faces that appear in the camera feed.";
@@ -593,7 +593,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 9PLS9MU793;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FaceDetector/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to detection the faces that appear in the camera feed.";

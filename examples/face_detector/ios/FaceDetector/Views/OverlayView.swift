@@ -257,7 +257,7 @@ class OverlayView: UIView {
       
       var objectOverlays: [ObjectOverlay] = []
       
-      for (index, detection) in detections.enumerated() {
+      for detection in detections {
         guard let category = detection.categories.first else {
           continue
           
