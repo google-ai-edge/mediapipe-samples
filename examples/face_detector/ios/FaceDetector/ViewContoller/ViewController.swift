@@ -52,7 +52,7 @@ class ViewController: UIViewController {
   private var modelPath = DefaultConstants.modelPath
   private var runningMode: RunningMode = .liveStream {
     didSet {
-      faceDetectorHelper = FaceDetectorHelper(
+      faceDetectorHelper = FaceDetectorService(
         modelPath: modelPath,
         minDetectionConfidence: minDetectionConfidence,
         minSuppressionThreshold: minSuppressionThreshold,
@@ -72,7 +72,7 @@ class ViewController: UIViewController {
 
   // Handles all data preprocessing and makes calls to run inference through the
   // `FaceDetectorHelper`.
-  private var faceDetectorHelper: FaceDetectorHelper?
+  private var faceDetectorHelper: FaceDetectorService?
 
   // Handles the presenting of results on the screen
   private var inferenceViewController: InferenceViewController?
@@ -81,7 +81,7 @@ class ViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     // Create face detector helper
-    faceDetectorHelper = FaceDetectorHelper(
+    faceDetectorHelper = FaceDetectorService(
       modelPath: modelPath,
       minDetectionConfidence: minDetectionConfidence,
       minSuppressionThreshold: minSuppressionThreshold,
@@ -165,7 +165,7 @@ class ViewController: UIViewController {
     backgroundQueue.async { [weak self] in
       guard let weakSelf = self else { return }
       Task {
-        let faceDetectorHelper = FaceDetectorHelper(modelPath: weakSelf.modelPath,
+        let faceDetectorHelper = FaceDetectorService(modelPath: weakSelf.modelPath,
                                                     minDetectionConfidence: weakSelf.minDetectionConfidence,
                                                     minSuppressionThreshold: weakSelf.minSuppressionThreshold,
                                                     runningMode: .video,
@@ -410,8 +410,8 @@ extension ViewController: CameraFeedManagerDelegate {
 }
 
 // MARK: FaceDetectorHelperDelegate
-extension ViewController: FaceDetectorHelperDelegate {
-  func faceDetectorHelper(_ faceDetectorHelper: FaceDetectorHelper, didFinishDetection result: ResultBundle?, error: Error?) {
+extension ViewController: FaceDetectorSeviceDelegate {
+  func faceDetectorHelper(_ faceDetectorHelper: FaceDetectorService, didFinishDetection result: ResultBundle?, error: Error?) {
     DispatchQueue.main.async { [self] in
       self.inferenceViewController?.result = result
       self.inferenceViewController?.updateData()
@@ -448,7 +448,7 @@ extension ViewController: InferenceViewControllerDelegate {
       }
     }
     if isModelNeedsRefresh {
-      faceDetectorHelper = FaceDetectorHelper(
+      faceDetectorHelper = FaceDetectorService(
         modelPath: modelPath,
         minDetectionConfidence: minDetectionConfidence,
         minSuppressionThreshold: minSuppressionThreshold,

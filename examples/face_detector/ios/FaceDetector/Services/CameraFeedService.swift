@@ -15,8 +15,8 @@
 import UIKit
 import AVFoundation
 
-// MARK: CameraFeedManagerDelegate Declaration
-protocol CameraFeedManagerDelegate: AnyObject {
+// MARK: CameraFeedServiceDelegate Declaration
+protocol CameraFeedServiceDelegate: AnyObject {
 
   /**
    This method delivers the pixel buffer of the current frame seen by the device's camera.
@@ -24,19 +24,9 @@ protocol CameraFeedManagerDelegate: AnyObject {
   func didOutput(sampleBuffer: CMSampleBuffer, orientation: UIImage.Orientation)
 
   /**
-   This method initimates that the camera permissions have been denied.
-   */
-  func presentCameraPermissionsDeniedAlert()
-
-  /**
-   This method initimates that there was an error in video configurtion.
-   */
-  func presentVideoConfigurationErrorAlert()
-
-  /**
    This method initimates that a session runtime error occured.
    */
-  func sessionRunTimeErrorOccured()
+  func didEncounterSessionRuntimeError()
 
   /**
    This method initimates that the session was interrupted.
@@ -51,81 +41,90 @@ protocol CameraFeedManagerDelegate: AnyObject {
 }
 
 /**
- This enum holds the state of the camera initialization.
- */
-enum CameraConfiguration {
-
-  case success
-  case failed
-  case permissionDenied
-}
-
-/**
  This class manages all camera related functionality
  */
-class CameraFeedManager: NSObject {
+class CameraFeedService: NSObject {
+  /**
+   This enum holds the state of the camera initialization.
+   */
+  enum CameraConfigurationStatus {
+    case success
+    case failed
+    case permissionDenied
+  }
 
-  // MARK: Camera Related Instance Variables
-  private let session: AVCaptureSession = AVCaptureSession()
-  private let previewView: PreviewView
-  private let sessionQueue = DispatchQueue(label: "sessionQueue")
-  private var cameraConfiguration: CameraConfiguration = .failed
-  private lazy var videoDataOutput = AVCaptureVideoDataOutput()
-  private var isSessionRunning = false
-  private var coreImageContext: CIContext
-  private var needCalculationSize = true
-
-  var cameraPosition: AVCaptureDevice.Position = .front
-  var orientation: UIImage.Orientation {
+  // MARK: Public Instance Variables
+  var videoResolution: CGSize {
     get {
+      guard let size = imageBufferSize else {
+        return CGSize.zero
+      }
+      let minDimension = min(size.width, size.height)
+      let maxDimension = max(size.width, size.height)
       switch UIDevice.current.orientation {
-      case .landscapeLeft:
-          return .left
-      case .landscapeRight:
-          return .right
-      default:
-          return .up
+        case .portrait:
+          return CGSize(width: minDimension, height: maxDimension)
+        case .landscapeLeft:
+          fallthrough
+        case .landscapeRight:
+          return CGSize(width: maxDimension, height: minDimension)
+        default:
+          return CGSize(width: minDimension, height: maxDimension)
       }
     }
   }
-  var videoFrameSize: CGSize = .zero
 
-  // MARK: CameraFeedManagerDelegate
-  weak var delegate: CameraFeedManagerDelegate?
+  let videoGravity = AVLayerVideoGravity.resizeAspectFill
+
+  // MARK: Instance Variables
+  private let session: AVCaptureSession = AVCaptureSession()
+  private lazy var videoPreviewLayer = AVCaptureVideoPreviewLayer(session: session)
+  private let sessionQueue = DispatchQueue(label: "com.google.mediapipe.CameraFeedService.sessionQueue")
+  private let cameraPosition: AVCaptureDevice.Position = .front
+
+  private var cameraConfigurationStatus: CameraConfigurationStatus = .failed
+  private lazy var videoDataOutput = AVCaptureVideoDataOutput()
+  private var isSessionRunning = false
+  private var imageBufferSize: CGSize?
+
+
+  // MARK: CameraFeedServiceDelegate
+  weak var delegate: CameraFeedServiceDelegate?
 
   // MARK: Initializer
-  init(previewView: PreviewView) {
-    self.previewView = previewView
-    if let metalDevice = MTLCreateSystemDefaultDevice() {
-      coreImageContext = CIContext(mtlDevice: metalDevice)
-    } else {
-      coreImageContext = CIContext(options: nil)
-    }
+  init(previewView: UIView) {
     super.init()
 
     // Initializes the session
     session.sessionPreset = .high
-    self.previewView.session = session
-    self.previewView.previewLayer.connection?.videoOrientation = .portrait
-    self.previewView.previewLayer.videoGravity = .resizeAspectFill
-    self.attemptToConfigureSession()
-    NotificationCenter.default.addObserver(self, selector: #selector(orientationChanged), name: UIDevice.orientationDidChangeNotification, object: nil)
+    setUpPreviewView(previewView)
+
+    attemptToConfigureSession()
+    NotificationCenter.default.addObserver(
+      self, selector: #selector(orientationChanged),
+      name: UIDevice.orientationDidChangeNotification,
+      object: nil)
   }
 
   deinit {
     NotificationCenter.default.removeObserver(self)
   }
 
+  private func setUpPreviewView(_ view: UIView) {
+    videoPreviewLayer.videoGravity = videoGravity
+    videoPreviewLayer.connection?.videoOrientation = .portrait
+    view.layer.addSublayer(videoPreviewLayer)
+  }
+
   // MARK: notification methods
   @objc func orientationChanged(notification: Notification) {
-    needCalculationSize = true
-    switch orientation {
+    switch UIImage.Orientation.from(deviceOrientation: UIDevice.current.orientation) {
     case .up:
-      previewView.previewLayer.connection?.videoOrientation = .portrait
+      videoPreviewLayer.connection?.videoOrientation = .portrait
     case .left:
-      previewView.previewLayer.connection?.videoOrientation = .landscapeRight
+      videoPreviewLayer.connection?.videoOrientation = .landscapeRight
     case .right:
-      previewView.previewLayer.connection?.videoOrientation = .landscapeLeft
+      videoPreviewLayer.connection?.videoOrientation = .landscapeLeft
     default:
       break
     }
@@ -137,21 +136,16 @@ class CameraFeedManager: NSObject {
    This method starts an AVCaptureSession based on whether the camera configuration was successful.
    */
 
-  func checkCameraConfigurationAndStartSession() {
+  func startLiveCameraSession(_ completion: @escaping(_ cameraConfiguration: CameraConfigurationStatus) -> Void) {
     sessionQueue.async {
-      switch self.cameraConfiguration {
+      switch self.cameraConfigurationStatus {
       case .success:
         self.addObservers()
         self.startSession()
-      case .failed:
-        DispatchQueue.main.async {
-          self.delegate?.presentVideoConfigurationErrorAlert()
-        }
-      case .permissionDenied:
-        DispatchQueue.main.async {
-          self.delegate?.presentCameraPermissionsDeniedAlert()
-        }
+        default:
+          break
       }
+      completion(self.cameraConfigurationStatus)
     }
   }
 
@@ -173,7 +167,6 @@ class CameraFeedManager: NSObject {
    This method resumes an interrupted AVCaptureSession.
    */
   func resumeInterruptedSession(withCompletion completion: @escaping (Bool) -> ()) {
-
     sessionQueue.async {
       self.startSession()
 
@@ -181,6 +174,10 @@ class CameraFeedManager: NSObject {
         completion(self.isSessionRunning)
       }
     }
+  }
+
+  func updateVideoPreviewLayer(toFrame frame: CGRect) {
+    videoPreviewLayer.frame = frame
   }
 
   /**
@@ -198,14 +195,14 @@ class CameraFeedManager: NSObject {
   private func attemptToConfigureSession() {
     switch AVCaptureDevice.authorizationStatus(for: .video) {
     case .authorized:
-      self.cameraConfiguration = .success
+      self.cameraConfigurationStatus = .success
     case .notDetermined:
       self.sessionQueue.suspend()
       self.requestCameraAccess(completion: { (granted) in
         self.sessionQueue.resume()
       })
     case .denied:
-      self.cameraConfiguration = .permissionDenied
+      self.cameraConfigurationStatus = .permissionDenied
     default:
       break
     }
@@ -221,10 +218,10 @@ class CameraFeedManager: NSObject {
   private func requestCameraAccess(completion: @escaping (Bool) -> ()) {
     AVCaptureDevice.requestAccess(for: .video) { (granted) in
       if !granted {
-        self.cameraConfiguration = .permissionDenied
+        self.cameraConfigurationStatus = .permissionDenied
       }
       else {
-        self.cameraConfiguration = .success
+        self.cameraConfigurationStatus = .success
       }
       completion(granted)
     }
@@ -236,7 +233,7 @@ class CameraFeedManager: NSObject {
    */
   private func configureSession() {
 
-    guard cameraConfiguration == .success else {
+    guard cameraConfigurationStatus == .success else {
       return
     }
     session.beginConfiguration()
@@ -244,19 +241,19 @@ class CameraFeedManager: NSObject {
     // Tries to add an AVCaptureDeviceInput.
     guard addVideoDeviceInput() == true else {
       self.session.commitConfiguration()
-      self.cameraConfiguration = .failed
+      self.cameraConfigurationStatus = .failed
       return
     }
 
     // Tries to add an AVCaptureVideoDataOutput.
     guard addVideoDataOutput() else {
       self.session.commitConfiguration()
-      self.cameraConfiguration = .failed
+      self.cameraConfigurationStatus = .failed
       return
     }
 
     session.commitConfiguration()
-    self.cameraConfiguration = .success
+    self.cameraConfigurationStatus = .success
   }
 
   /**
@@ -294,6 +291,7 @@ class CameraFeedManager: NSObject {
     videoDataOutput.setSampleBufferDelegate(self, queue: sampleBufferQueue)
     videoDataOutput.alwaysDiscardsLateVideoFrames = true
     videoDataOutput.videoSettings = [ String(kCVPixelBufferPixelFormatTypeKey) : kCMPixelFormat_32BGRA]
+
     if session.canAddOutput(videoDataOutput) {
       session.addOutput(videoDataOutput)
       videoDataOutput.connection(with: .video)?.videoOrientation = .portrait
@@ -308,9 +306,9 @@ class CameraFeedManager: NSObject {
 
   // MARK: Notification Observer Handling
   private func addObservers() {
-    NotificationCenter.default.addObserver(self, selector: #selector(CameraFeedManager.sessionRuntimeErrorOccured(notification:)), name: NSNotification.Name.AVCaptureSessionRuntimeError, object: session)
-    NotificationCenter.default.addObserver(self, selector: #selector(CameraFeedManager.sessionWasInterrupted(notification:)), name: NSNotification.Name.AVCaptureSessionWasInterrupted, object: session)
-    NotificationCenter.default.addObserver(self, selector: #selector(CameraFeedManager.sessionInterruptionEnded), name: NSNotification.Name.AVCaptureSessionInterruptionEnded, object: session)
+    NotificationCenter.default.addObserver(self, selector: #selector(CameraFeedService.sessionRuntimeErrorOccured(notification:)), name: NSNotification.Name.AVCaptureSessionRuntimeError, object: session)
+    NotificationCenter.default.addObserver(self, selector: #selector(CameraFeedService.sessionWasInterrupted(notification:)), name: NSNotification.Name.AVCaptureSessionWasInterrupted, object: session)
+    NotificationCenter.default.addObserver(self, selector: #selector(CameraFeedService.sessionInterruptionEnded), name: NSNotification.Name.AVCaptureSessionInterruptionEnded, object: session)
   }
 
   private func removeObservers() {
@@ -340,7 +338,6 @@ class CameraFeedManager: NSObject {
   }
 
   @objc func sessionInterruptionEnded(notification: Notification) {
-
     self.delegate?.sessionInterruptionEnded()
   }
 
@@ -351,19 +348,19 @@ class CameraFeedManager: NSObject {
 
     print("Capture session runtime error: \(error)")
 
-    if error.code == .mediaServicesWereReset {
-      sessionQueue.async {
-        if self.isSessionRunning {
-          self.startSession()
-        } else {
-          DispatchQueue.main.async {
-            self.delegate?.sessionRunTimeErrorOccured()
-          }
+    guard error.code == .mediaServicesWereReset else {
+      self.delegate?.didEncounterSessionRuntimeError()
+      return
+    }
+
+    sessionQueue.async {
+      if self.isSessionRunning {
+        self.startSession()
+      } else {
+        DispatchQueue.main.async {
+          self.delegate?.didEncounterSessionRuntimeError()
         }
       }
-    } else {
-      self.delegate?.sessionRunTimeErrorOccured()
-
     }
   }
 }
@@ -371,23 +368,15 @@ class CameraFeedManager: NSObject {
 /**
  AVCaptureVideoDataOutputSampleBufferDelegate
  */
-extension CameraFeedManager: AVCaptureVideoDataOutputSampleBufferDelegate {
+extension CameraFeedService: AVCaptureVideoDataOutputSampleBufferDelegate {
 
   /** This method delegates the CVPixelBuffer of the frame seen by the camera currently.
    */
   func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-    if needCalculationSize {
       let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)!
-      switch orientation {
-      case .left, .right:
-        videoFrameSize = CGSize(width: CVPixelBufferGetHeight(imageBuffer), height: CVPixelBufferGetWidth(imageBuffer))
-      default:
-        videoFrameSize = CGSize(width: CVPixelBufferGetWidth(imageBuffer), height: CVPixelBufferGetHeight(imageBuffer))
+      if (imageBufferSize == nil) {
+        imageBufferSize = CGSize(width: CVPixelBufferGetHeight(imageBuffer), height: CVPixelBufferGetWidth(imageBuffer))
       }
-      needCalculationSize = false
-      print(videoFrameSize)
-    }
-
-    delegate?.didOutput(sampleBuffer: sampleBuffer, orientation: orientation)
+    delegate?.didOutput(sampleBuffer: sampleBuffer, orientation: UIImage.Orientation.from(deviceOrientation: UIDevice.current.orientation))
   }
 }

@@ -10,16 +10,20 @@
 		7978F075EC7307167927DA96 /* Pods_FaceDetector.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CAEB266A0C128CFE39B4E963 /* Pods_FaceDetector.framework */; };
 		7F7641A72A74865000DDCE4E /* testImg.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BFCF187A2A43E0F200D64FA6 /* testImg.jpeg */; };
 		A62955674D0B99A7D0E9C379 /* libPods-FaceDetectorTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CD418693247CFB204F2604A /* libPods-FaceDetectorTests.a */; };
+		BFCDADCF2A9D916A00EC4371 /* UIImageOrientationExt.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADCE2A9D916A00EC4371 /* UIImageOrientationExt.swift */; };
+		BFCDADF02A9DD64200EC4371 /* DefaultConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADE22A9DD64200EC4371 /* DefaultConstants.swift */; };
+		BFCDADF12A9DD64200EC4371 /* InferenceConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADE32A9DD64200EC4371 /* InferenceConfigManager.swift */; };
+		BFCDADF22A9DD64200EC4371 /* CameraFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADE52A9DD64200EC4371 /* CameraFeedService.swift */; };
+		BFCDADF32A9DD64200EC4371 /* FaceDetectorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADE62A9DD64200EC4371 /* FaceDetectorService.swift */; };
+		BFCDADF52A9DD64200EC4371 /* MediaLibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADE92A9DD64200EC4371 /* MediaLibraryViewController.swift */; };
+		BFCDADF62A9DD64200EC4371 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADEA2A9DD64200EC4371 /* RootViewController.swift */; };
+		BFCDADF72A9DD64200EC4371 /* BottomSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADEB2A9DD64200EC4371 /* BottomSheetViewController.swift */; };
+		BFCDADF82A9DD64200EC4371 /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADEC2A9DD64200EC4371 /* CameraViewController.swift */; };
+		BFCDADFA2A9DD64200EC4371 /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADEF2A9DD64200EC4371 /* OverlayView.swift */; };
 		BFCF18322A415B9300D64FA6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCF18312A415B9300D64FA6 /* AppDelegate.swift */; };
 		BFCF18342A415B9300D64FA6 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCF18332A415B9300D64FA6 /* SceneDelegate.swift */; };
 		BFCF183E2A415B9400D64FA6 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BFCF183C2A415B9400D64FA6 /* LaunchScreen.storyboard */; };
 		BFCF18492A415B9400D64FA6 /* FaceDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCF18482A415B9400D64FA6 /* FaceDetectorTests.swift */; };
-		BFCF18642A415C1900D64FA6 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCF18622A415C1900D64FA6 /* ViewController.swift */; };
-		BFCF18652A415C1900D64FA6 /* InferenceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCF18632A415C1900D64FA6 /* InferenceViewController.swift */; };
-		BFCF186C2A415C2100D64FA6 /* FaceDetectorHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCF18672A415C2100D64FA6 /* FaceDetectorHelper.swift */; };
-		BFCF186D2A415C2100D64FA6 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCF18682A415C2100D64FA6 /* PreviewView.swift */; };
-		BFCF186E2A415C2100D64FA6 /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCF18692A415C2100D64FA6 /* OverlayView.swift */; };
-		BFCF186F2A415C2100D64FA6 /* CameraFeedManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCF186A2A415C2100D64FA6 /* CameraFeedManager.swift */; };
 		BFCF18722A415C3400D64FA6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BFCF18712A415C3400D64FA6 /* Assets.xcassets */; };
 		BFCF18772A415C6700D64FA6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BFCF18752A415C6700D64FA6 /* Main.storyboard */; };
 		BFCF18792A4160CA00D64FA6 /* blaze_face_short_range.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BFCF18782A4160CA00D64FA6 /* blaze_face_short_range.tflite */; };
@@ -40,6 +44,16 @@
 		5F8235CC8350146B717267AD /* Pods-FaceDetector.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FaceDetector.release.xcconfig"; path = "Target Support Files/Pods-FaceDetector/Pods-FaceDetector.release.xcconfig"; sourceTree = "<group>"; };
 		7F7641A92A74869900DDCE4E /* download_models.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = download_models.sh; sourceTree = "<group>"; };
 		BB9395FBA7FB71903009034C /* Pods-FaceDetectorTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FaceDetectorTests.debug.xcconfig"; path = "Target Support Files/Pods-FaceDetectorTests/Pods-FaceDetectorTests.debug.xcconfig"; sourceTree = "<group>"; };
+		BFCDADCE2A9D916A00EC4371 /* UIImageOrientationExt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageOrientationExt.swift; sourceTree = "<group>"; };
+		BFCDADE22A9DD64200EC4371 /* DefaultConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultConstants.swift; sourceTree = "<group>"; };
+		BFCDADE32A9DD64200EC4371 /* InferenceConfigManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceConfigManager.swift; sourceTree = "<group>"; };
+		BFCDADE52A9DD64200EC4371 /* CameraFeedService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedService.swift; sourceTree = "<group>"; };
+		BFCDADE62A9DD64200EC4371 /* FaceDetectorService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FaceDetectorService.swift; sourceTree = "<group>"; };
+		BFCDADE92A9DD64200EC4371 /* MediaLibraryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MediaLibraryViewController.swift; sourceTree = "<group>"; };
+		BFCDADEA2A9DD64200EC4371 /* RootViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
+		BFCDADEB2A9DD64200EC4371 /* BottomSheetViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BottomSheetViewController.swift; sourceTree = "<group>"; };
+		BFCDADEC2A9DD64200EC4371 /* CameraViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
+		BFCDADEF2A9DD64200EC4371 /* OverlayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OverlayView.swift; sourceTree = "<group>"; };
 		BFCF182E2A415B9300D64FA6 /* FaceDetector.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FaceDetector.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BFCF18312A415B9300D64FA6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BFCF18332A415B9300D64FA6 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -47,12 +61,6 @@
 		BFCF183F2A415B9400D64FA6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BFCF18442A415B9400D64FA6 /* FaceDetectorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FaceDetectorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BFCF18482A415B9400D64FA6 /* FaceDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceDetectorTests.swift; sourceTree = "<group>"; };
-		BFCF18622A415C1900D64FA6 /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		BFCF18632A415C1900D64FA6 /* InferenceViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceViewController.swift; sourceTree = "<group>"; };
-		BFCF18672A415C2100D64FA6 /* FaceDetectorHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FaceDetectorHelper.swift; sourceTree = "<group>"; };
-		BFCF18682A415C2100D64FA6 /* PreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
-		BFCF18692A415C2100D64FA6 /* OverlayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OverlayView.swift; sourceTree = "<group>"; };
-		BFCF186A2A415C2100D64FA6 /* CameraFeedManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedManager.swift; sourceTree = "<group>"; };
 		BFCF18712A415C3400D64FA6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BFCF18762A415C6700D64FA6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		BFCF18782A4160CA00D64FA6 /* blaze_face_short_range.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = blaze_face_short_range.tflite; sourceTree = "<group>"; };
@@ -110,6 +118,51 @@
 			path = RunScripts;
 			sourceTree = "<group>";
 		};
+		BFCDADCD2A9D914100EC4371 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				BFCDADCE2A9D916A00EC4371 /* UIImageOrientationExt.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		BFCDADE12A9DD64200EC4371 /* Configs */ = {
+			isa = PBXGroup;
+			children = (
+				BFCDADE22A9DD64200EC4371 /* DefaultConstants.swift */,
+				BFCDADE32A9DD64200EC4371 /* InferenceConfigManager.swift */,
+			);
+			path = Configs;
+			sourceTree = "<group>";
+		};
+		BFCDADE42A9DD64200EC4371 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				BFCDADE52A9DD64200EC4371 /* CameraFeedService.swift */,
+				BFCDADE62A9DD64200EC4371 /* FaceDetectorService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		BFCDADE72A9DD64200EC4371 /* ViewContoller */ = {
+			isa = PBXGroup;
+			children = (
+				BFCDADE92A9DD64200EC4371 /* MediaLibraryViewController.swift */,
+				BFCDADEA2A9DD64200EC4371 /* RootViewController.swift */,
+				BFCDADEB2A9DD64200EC4371 /* BottomSheetViewController.swift */,
+				BFCDADEC2A9DD64200EC4371 /* CameraViewController.swift */,
+			);
+			path = ViewContoller;
+			sourceTree = "<group>";
+		};
+		BFCDADEE2A9DD64200EC4371 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				BFCDADEF2A9DD64200EC4371 /* OverlayView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		BFCF18252A415B9300D64FA6 = {
 			isa = PBXGroup;
 			children = (
@@ -134,8 +187,11 @@
 		BFCF18302A415B9300D64FA6 /* FaceDetector */ = {
 			isa = PBXGroup;
 			children = (
-				BFCF18662A415C2100D64FA6 /* Helper */,
-				BFCF18612A415C1900D64FA6 /* ViewContoller */,
+				BFCDADE12A9DD64200EC4371 /* Configs */,
+				BFCDADE42A9DD64200EC4371 /* Services */,
+				BFCDADE72A9DD64200EC4371 /* ViewContoller */,
+				BFCDADEE2A9DD64200EC4371 /* Views */,
+				BFCDADCD2A9D914100EC4371 /* Extensions */,
 				BFCF18312A415B9300D64FA6 /* AppDelegate.swift */,
 				BFCF18332A415B9300D64FA6 /* SceneDelegate.swift */,
 				BFCF18712A415C3400D64FA6 /* Assets.xcassets */,
@@ -154,26 +210,6 @@
 				BFCF18482A415B9400D64FA6 /* FaceDetectorTests.swift */,
 			);
 			path = FaceDetectorTests;
-			sourceTree = "<group>";
-		};
-		BFCF18612A415C1900D64FA6 /* ViewContoller */ = {
-			isa = PBXGroup;
-			children = (
-				BFCF18622A415C1900D64FA6 /* ViewController.swift */,
-				BFCF18632A415C1900D64FA6 /* InferenceViewController.swift */,
-			);
-			path = ViewContoller;
-			sourceTree = "<group>";
-		};
-		BFCF18662A415C2100D64FA6 /* Helper */ = {
-			isa = PBXGroup;
-			children = (
-				BFCF18672A415C2100D64FA6 /* FaceDetectorHelper.swift */,
-				BFCF18682A415C2100D64FA6 /* PreviewView.swift */,
-				BFCF18692A415C2100D64FA6 /* OverlayView.swift */,
-				BFCF186A2A415C2100D64FA6 /* CameraFeedManager.swift */,
-			);
-			path = Helper;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -348,14 +384,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BFCF186E2A415C2100D64FA6 /* OverlayView.swift in Sources */,
-				BFCF18652A415C1900D64FA6 /* InferenceViewController.swift in Sources */,
-				BFCF186D2A415C2100D64FA6 /* PreviewView.swift in Sources */,
+				BFCDADF62A9DD64200EC4371 /* RootViewController.swift in Sources */,
+				BFCDADF72A9DD64200EC4371 /* BottomSheetViewController.swift in Sources */,
 				BFCF18322A415B9300D64FA6 /* AppDelegate.swift in Sources */,
-				BFCF18642A415C1900D64FA6 /* ViewController.swift in Sources */,
-				BFCF186C2A415C2100D64FA6 /* FaceDetectorHelper.swift in Sources */,
-				BFCF186F2A415C2100D64FA6 /* CameraFeedManager.swift in Sources */,
+				BFCDADCF2A9D916A00EC4371 /* UIImageOrientationExt.swift in Sources */,
+				BFCDADF32A9DD64200EC4371 /* FaceDetectorService.swift in Sources */,
+				BFCDADF82A9DD64200EC4371 /* CameraViewController.swift in Sources */,
 				BFCF18342A415B9300D64FA6 /* SceneDelegate.swift in Sources */,
+				BFCDADF12A9DD64200EC4371 /* InferenceConfigManager.swift in Sources */,
+				BFCDADFA2A9DD64200EC4371 /* OverlayView.swift in Sources */,
+				BFCDADF22A9DD64200EC4371 /* CameraFeedService.swift in Sources */,
+				BFCDADF52A9DD64200EC4371 /* MediaLibraryViewController.swift in Sources */,
+				BFCDADF02A9DD64200EC4371 /* DefaultConstants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -520,7 +560,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 9PLS9MU793;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FaceDetector/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to detection the faces that appear in the camera feed.";
@@ -553,7 +593,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 9PLS9MU793;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FaceDetector/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to detection the faces that appear in the camera feed.";

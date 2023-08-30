@@ -41,8 +41,8 @@ final class FaceDetectorTests: XCTestCase {
   func faceDetectorWithModelPath(
     _ modelPath: String,
     minDetectionConfidence: Float,
-    minSuppressionThreshold: Float) throws -> FaceDetectorHelper {
-    let faceDetectorHelper = FaceDetectorHelper(modelPath: modelPath,
+    minSuppressionThreshold: Float) throws -> FaceDetectorService {
+    let faceDetectorHelper = FaceDetectorService(modelPath: modelPath,
                                                 minDetectionConfidence: minDetectionConfidence,
                                                 minSuppressionThreshold: minSuppressionThreshold,
                                                 runningMode: .image,
@@ -123,7 +123,7 @@ final class FaceDetectorTests: XCTestCase {
 
   func assertResultsForDetection(
     image: UIImage,
-    using faceDetector: FaceDetectorHelper,
+    using faceDetector: FaceDetectorService,
     equals expectedDetections: [Detection]
   ) throws {
     let faceDetectorResult =
