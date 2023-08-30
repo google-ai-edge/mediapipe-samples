@@ -63,7 +63,7 @@ class RootViewController: UIViewController {
   // MARK: View Handling Methods
   override func viewDidLoad() {
     super.viewDidLoad()
-    // Create object detector helper
+    // Create face detector helper
     
     inferenceViewController?.isUIEnabled = true
     runningModeTabbar.selectedItem = runningModeTabbar.items?.first

@@ -29,17 +29,17 @@ class MediaLibraryViewController: UIViewController {
     static let milliSeconds = 1000.0
     static let savedPhotosNotAvailableText = "Saved photos album is not available."
     static let mediaEmptyText =
-    "Click + to add an image or a video to begin running the object detection."
+    "Click + to add an image or a video to begin running the face detection."
     static let pickFromGalleryButtonInset: CGFloat = 10.0
   }
-  // MARK: Object Detector Service
+  // MARK: Face Detector Service
   weak var interfaceUpdatesDelegate: InterfaceUpdatesDelegate?
   
   // MARK: Controllers that manage functionality
   private lazy var pickerController = UIImagePickerController()
   private var playerViewController: AVPlayerViewController?
   
-  // MARK: Object Detector Service
+  // MARK: Face Detector Service
   private var faceDetectorService: FaceDetectorService?
   
   // MARK: Private properties

@@ -17,7 +17,7 @@ import MediaPipeTasksVision
 import AVFoundation
 
 /**
- This protocol must be adopted by any class that wants to get the detection results of the object detector in live stream mode.
+ This protocol must be adopted by any class that wants to get the detection results of the face detector in live stream mode.
  */
 protocol FaceDetectorServiceLiveStreamDelegate: AnyObject {
   func faceDetectorService(_ faceDetectorService: FaceDetectorService,
@@ -26,7 +26,7 @@ protocol FaceDetectorServiceLiveStreamDelegate: AnyObject {
 }
 
 /**
- This protocol must be adopted by any class that wants to take appropriate actions during  different stages of object detection on videos.
+ This protocol must be adopted by any class that wants to take appropriate actions during  different stages of face detection on videos.
  */
 protocol FaceDetectorServiceVideoDelegate: AnyObject {
  func faceDetectorService(_ faceDetectorService: FaceDetectorService,

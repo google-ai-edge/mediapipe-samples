@@ -23,7 +23,7 @@ protocol InferenceViewControllerDelegate: AnyObject {
     didSwitchBottomSheetViewState isOpen: Bool)
 }
 
-/** The view controller is responsible for presenting the controls to change the meta data for the object detector (model, max results,
+/** The view controller is responsible for presenting the controls to change the meta data for the face detector (model, max results,
  * score threshold) and updating the singleton`` DetectorMetadata`` on user input.
  */
 class BottomSheetViewController: UIViewController {
