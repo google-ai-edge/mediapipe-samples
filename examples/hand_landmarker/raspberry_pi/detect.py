@@ -79,7 +79,7 @@ def run(model: str, num_hands: int,
         DETECTION_RESULT = result
         COUNTER += 1
 
-    # Initialize the gesture recognizer model
+    # Initialize the hand landmarker model
     base_options = python.BaseOptions(model_asset_path=model)
     options = vision.HandLandmarkerOptions(
         base_options=base_options,

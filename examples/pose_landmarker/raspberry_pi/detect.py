@@ -85,7 +85,7 @@ def run(model: str, num_poses: int,
         DETECTION_RESULT = result
         COUNTER += 1
 
-    # Initialize the gesture recognizer model
+    # Initialize the pose landmarker model
     base_options = python.BaseOptions(model_asset_path=model)
     options = vision.PoseLandmarkerOptions(
         base_options=base_options,
