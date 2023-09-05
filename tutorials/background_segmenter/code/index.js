@@ -3,8 +3,9 @@ import vision from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision";
 
 // we then import the camera class and the utils functions
 import Camera from "./camera.js";
-import {fetchImage, resizeImageData} from "./utils.js";
+import {fetchImageAsElement} from "./utils.js";
 import {createPortrait} from "./portrait.js";
+import { createCopyTextureToCanvas } from "./convertMPMaskToImageBitmap.js"
 const { ImageSegmenter, SegmentationMask, FilesetResolver } = vision;
 
 // Here, we get a reference to the DOM elements
@@ -35,6 +36,8 @@ const videoCanvasCtx = videoCanvas.getContext('2d');
 
 // create a new Camera class instance to interact with the camera
 const camera = new Camera(video, video.videoWidth, video.videoHeight);
+const tasksCanvas = document.createElement("canvas");
+const toImageBitmap = createCopyTextureToCanvas(tasksCanvas);
 
 // initialize variables that will be used later
 let backgroundImage = null;
@@ -75,19 +78,35 @@ async function createImageSegmenter() {
     return await  ImageSegmenter.createFromOptions(wasmFileset, {
         baseOptions: {
             modelAssetPath:
-                "https://storage.googleapis.com/mediapipe-tasks/image_segmenter/selfie_segmentation.tflite"
+                "https://storage.googleapis.com/mediapipe-tasks/image_segmenter/selfie_segmentation.tflite",
+            delegate: "GPU"
 
         },
+        canvas: tasksCanvas,
         runningMode: "VIDEO",
     })
 }
 
-function startSegmentationTask(){
+async function startSegmentationTask(){
+    // In Safari, the timing of drawingImage for a VideoElement is severe and often results in an empty image.
+    // Therefore, we use createImageBitmap to get the image from the video element at first.
+    const input = await createImageBitmap(video);
     /**
      * Dispatches the segmentation task
      */
     let frameId = requestAnimationFrameId || 0;
-    imageSegmenter.segmentForVideo(video, frameId, segmentationCallback);
+    const segmentationMask = await imageSegmenter.segmentForVideo(input, frameId);
+
+
+    if(camera.isRunning) {
+        // draw the segmentation mask on the canvas
+        await drawSegmentationResult(segmentationMask.confidenceMasks, input);
+
+        segmentationMask.close();
+
+        // start the segmentation task loop using requestAnimationFrame
+        requestAnimationFrameId = window.requestAnimationFrame(startSegmentationTask);
+    }
 }
 
 function stopSegmentationTask(){
@@ -99,18 +118,6 @@ function stopSegmentationTask(){
     }
 }
 
-async function segmentationCallback(segmentationMask){
-    /**
-     * Callback function called when the segmentation task is completed for every frame
-     * @param segmentationMask {SegmentationMask} the segmentation mask
-     */
-    if(camera.isRunning) {
-        // draw the segmentation mask on the canvas
-        await drawSegmentationResult(segmentationMask.confidenceMasks);
-        // start the segmentation task loop using requestAnimationFrame
-        requestAnimationFrameId = window.requestAnimationFrame(startSegmentationTask);
-    }
-}
 
 
 async function populateVideoSourceSelect() {
@@ -203,7 +210,7 @@ selBackgroundImg.addEventListener('change', async () => {
             backgroundImage = null;
             return;
         }
-        backgroundImage = await fetchImage(image_uri);
+        backgroundImage = await fetchImageAsElement(image_uri);
     }
     catch (e) {
         backgroundImage = null;
@@ -236,20 +243,13 @@ fileBackgroundImg.addEventListener('change', async (evt) => {
                     }
                 });
 
-                // we create a tem canvas to hold the user uploaded image
-                const tempCanvas = document.createElement('canvas');
-                const tempCanvasCtx = tempCanvas.getContext('2d');
                 const img = new Image();
                 img.src = base64Img;
 
                 // we set the background image to the image selected by the user
                 backgroundImage = await new Promise((resolve, reject) => {
                     img.onload = () => {
-                        tempCanvas.width = img.width;
-                        tempCanvas.height = img.height;
-                        tempCanvasCtx.drawImage(img, 0, 0);
-                        const imageData = tempCanvasCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-                        resolve(imageData);
+                        resolve(img);
                     }
                     img.onerror = () => {
                         reject();
@@ -306,8 +306,7 @@ uploadBackgroundImgOptIn.addEventListener('change', () => {
 });
 
 
-async function drawSegmentationResult(segmentationResult){
-
+async function drawSegmentationResult(segmentationResult, input){
     // get the canvas dimensions
     const canvasWidth = videoCanvas.width;
     const canvasHeight = videoCanvas.height;
@@ -329,162 +328,108 @@ async function drawSegmentationResult(segmentationResult){
 
     // create segmentation mask
     const segmentationMask = segmentationResult[0];
-    const segmentationMaskData = new ImageData(video.videoWidth, video.videoHeight);
-    const dataArray = segmentationMask?.getAsFloat32Array();
-    const pixelCount = dataArray?.length ?? 0;
-    for (let i = 0; i < pixelCount; i++) {
-        const maskValue = dataArray[i];
-        const maskValueRGB = maskValue * 255;
-        segmentationMaskData.data[i * 4] = maskValueRGB;
-        segmentationMaskData.data[i * 4 + 1] = maskValueRGB;
-        segmentationMaskData.data[i * 4 + 2] = maskValueRGB;
-        segmentationMaskData.data[i * 4 + 3] = 255;
-    }
+    const segmentationMaskBitmap = await toImageBitmap(segmentationMask);
 
-    // scale and flip the segmentation mask to fit the canvas
-    const segmentationMaskCanvas = document.createElement('canvas');
-    const canvasMaskCtx = segmentationMaskCanvas.getContext('2d');
-    segmentationMaskCanvas.width = canvasWidth;
-    segmentationMaskCanvas.height = canvasHeight;
-    canvasMaskCtx.save();
-    canvasMaskCtx.translate(canvasWidth, 0);
-    canvasMaskCtx.scale(-1, 1);
-    const segmentationMaskBitmap = await createImageBitmap(segmentationMaskData);
-    canvasMaskCtx.drawImage(segmentationMaskBitmap, offsetX, offsetY, scaledWidth, scaledHeight);
-    canvasMaskCtx.restore();
-
-
-    // scale, flip and draw the video to fit the canvas
     videoCanvasCtx.save();
+    videoCanvasCtx.fillStyle = 'white'
+    videoCanvasCtx.clearRect(0, 0, scaledWidth, scaledHeight)
+
+    // draw the mask image on the canvas
     videoCanvasCtx.translate(canvasWidth, 0);
     videoCanvasCtx.scale(-1, 1);
-    videoCanvasCtx.clearRect(0, 0, canvasWidth, canvasHeight);
-    videoCanvasCtx.drawImage(video, offsetX, offsetY, scaledWidth, scaledHeight);
+    videoCanvasCtx.drawImage(segmentationMaskBitmap, offsetX, offsetY, scaledWidth, scaledHeight);
     videoCanvasCtx.restore();
 
-    // we get the canvas data and the segmentation mask data to apply the segmentation
-    const canvasVideoData = videoCanvasCtx.getImageData(offsetX, offsetY, scaledWidth, scaledHeight); // canvas data
-    const canvasMaskData = canvasMaskCtx.getImageData(offsetX, offsetY, scaledWidth, scaledHeight); // segmentation mask data
-
-    // apply background segmentation
+    videoCanvasCtx.save();
     if(blurBackgroundOptIn.checked) {
-        blurBackground(canvasVideoData, canvasMaskData);
+        // create blur background
+        const blurBackgroundCanvas = document.createElement('canvas');
+        blurBackgroundCanvas.width = scaledWidth;
+        blurBackgroundCanvas.height = scaledHeight;
+        const blurBackgroundCtx = blurBackgroundCanvas.getContext('2d');
+        blurBackgroundCtx.translate(canvasWidth, 0);
+        blurBackgroundCtx.scale(-1, 1);
+        if (blurBackgroundCtx.filter) {
+            blurBackgroundCtx.filter = 'blur(8px)'
+            blurBackgroundCtx.drawImage(input, 0, 0, scaledWidth, scaledHeight)
+        } else {
+            // Safari does not supported for filter property.
+            blurBackgroundCtx.drawImage(input, 0, 0, scaledWidth, scaledHeight)
+            blurBackground(blurBackgroundCtx)
+        }
+
+        // draw the blur background on the canvas
+        videoCanvasCtx.globalCompositeOperation = 'source-out'
+        videoCanvasCtx.drawImage(blurBackgroundCanvas, offsetX, offsetY, scaledWidth, scaledHeight);
     }
     else {
-        changeBackground(canvasVideoData, canvasMaskData);
+        videoCanvasCtx.globalCompositeOperation = 'source-out'
+        if(backgroundImage != null) {
+            // draw the background image on the canvas
+            videoCanvasCtx.drawImage(backgroundImage, offsetX, offsetY, scaledWidth, scaledHeight);
+        } else {
+            videoCanvasCtx.fillRect(0, 0,scaledWidth, scaledHeight)
+        }
     }
+    videoCanvasCtx.restore();
 
-    videoCanvasCtx.putImageData(canvasVideoData, offsetX, offsetY);
-
+    videoCanvasCtx.save();
+    // scale, flip and draw the video to fit the canvas
+    videoCanvasCtx.globalCompositeOperation = 'destination-atop'
+    videoCanvasCtx.translate(canvasWidth, 0);
+    videoCanvasCtx.scale(-1, 1);
+    videoCanvasCtx.drawImage(input, offsetX, offsetY, scaledWidth, scaledHeight);
+    videoCanvasCtx.restore();
 }
 
-const blurBackground = (canvasVideoData, canvasMaskData, blurRadius = 8) => {
+const blurBackground = (context, blurRadius = 8) => {
     /**
-     * Applies the segmentation mask to the canvas data
-     * @param canvasVideoData: canvas data
-     * @param canvasMaskData: segmentation mask data
+     * Applies blur to the canvas image
+     * An implementation for fallback for safari that does not support the filter property,
+     * which is not practical because it is very slow.
+     * @param context: 2d canvas context
      */
-    let width = canvasVideoData.width;
-    let height = canvasVideoData.height;
-    let videoPixels = canvasVideoData.data;
-    let maskPixels = canvasMaskData.data;
-
-
+    const { height, width } = context.canvas
+    const imageData = context.getImageData(0, 0, width, height)
+    const videoPixels = imageData.data
+    
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
             // get the pixel index
             const i = (y * width + x) * 4;
-
-            // check if the pixel is a background pixel
-            const isBackgroundPixel = (
-                maskPixels[i] === 0 &&
-                maskPixels[i + 1] === 0 &&
-                maskPixels[i + 2] === 0
-            );
-
-            // if the pixel is a background pixel, we blur it
-            if (isBackgroundPixel) {
-                // we get the average color of the neighboring pixels and set it to the current pixel
-                let r = 0, g = 0, b = 0, a = 0;
-                let pixelCount = 0;
-                // we loop through the neighboring pixels
-                for (let dy = -blurRadius; dy <= blurRadius; dy++) {
-                    for (let dx = -blurRadius; dx <= blurRadius; dx++) {
-                        let nx = x + dx;
-                        let ny = y + dy;
-                        // Check if the neighboring pixel is within the bounds of the image
-                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                            let offset = (ny * width + nx) * 4;
-                            r += videoPixels[offset];
-                            g += videoPixels[offset + 1];
-                            b += videoPixels[offset + 2];
-                            a += videoPixels[offset + 3];
-                            pixelCount++;
-                        }
+            // we get the average color of the neighboring pixels and set it to the current pixel
+            let r = 0, g = 0, b = 0, a = 0;
+            let pixelCount = 0;
+            // we loop through the neighboring pixels
+            for (let dy = -blurRadius; dy <= blurRadius; dy++) {
+                for (let dx = -blurRadius; dx <= blurRadius; dx++) {
+                    let nx = x + dx;
+                    let ny = y + dy;
+                    // Check if the neighboring pixel is within the bounds of the image
+                    if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                        let offset = (ny * width + nx) * 4;
+                        r += videoPixels[offset];
+                        g += videoPixels[offset + 1];
+                        b += videoPixels[offset + 2];
+                        a += videoPixels[offset + 3];
+                        pixelCount++;
                     }
                 }
-
-                // Compute the average color of the neighboring pixels
-                let avgR = r / pixelCount;
-                let avgG = g / pixelCount;
-                let avgB = b / pixelCount;
-                let avgA = a / pixelCount;
-
-                // Write the blurred pixel to the video canvas
-                videoPixels[i] = avgR;
-                videoPixels[i + 1] = avgG;
-                videoPixels[i + 2] = avgB;
-                videoPixels[i + 3] = avgA;
-
             }
+
+            // Compute the average color of the neighboring pixels
+            let avgR = r / pixelCount;
+            let avgG = g / pixelCount;
+            let avgB = b / pixelCount;
+            let avgA = a / pixelCount;
+
+            // Write the blurred pixel to the video canvas
+            videoPixels[i] = avgR;
+            videoPixels[i + 1] = avgG;
+            videoPixels[i + 2] = avgB;
+            videoPixels[i + 3] = avgA;
         }
     }
 
+    context.putImageData(imageData, 0, 0)
 }
-
-
-const changeBackground = (canvasVideoData, canvasMaskData) => {
-    /**
-     * Applies the segmentation mask to the canvas data
-     * @param canvasVideoData: canvas data
-     * @param canvasMaskData: segmentation mask data
-     */
-
-    // we get the canvas data and the segmentation mask data to apply the segmentation
-    let width = canvasVideoData.width;
-    let height = canvasVideoData.height;
-    const videoPixels = canvasVideoData.data; // canvas data
-    const maskPixels = canvasMaskData.data; // segmentation mask data
-
-    if(backgroundImage === null) {
-        for (let i = 0; i < videoPixels.length; i += 4) {
-            // we check if the pixel is a background pixel
-            const isBackgroundPixel = maskPixels[i] === 0 && maskPixels[i + 1] === 0 && maskPixels[i + 2] === 0;
-            if (isBackgroundPixel) {
-                // we set the pixel to black
-                videoPixels[i + 0] = 0;
-                videoPixels[i + 1] = 0;
-                videoPixels[i + 2] = 0;
-                videoPixels[i + 3] = 255;
-            }
-        }
-    }
-    else {
-        // we get the background image data
-        const backgroundImagePixels = resizeImageData(backgroundImage, width, height).data; // background image data
-        for (let i = 0; i < videoPixels.length; i += 4) {
-            // we check if the pixel is a background pixel
-            const isBackgroundPixel = maskPixels[i] === 0 && maskPixels[i + 1] === 0 && maskPixels[i + 2] === 0;
-            if (isBackgroundPixel) {
-                // we set the pixel to the background image pixel
-                videoPixels[i + 0] = backgroundImagePixels[i + 0];
-                videoPixels[i + 1] = backgroundImagePixels[i + 1];
-                videoPixels[i + 2] = backgroundImagePixels[i + 2];
-                videoPixels[i + 3] = backgroundImagePixels[i + 3];
-            }
-        }
-    }
-}
-
-
-
