@@ -24,6 +24,7 @@ struct ObjectOverlay {
   let nameStringSize: CGSize
   let color: UIColor
   let font: UIFont
+  let keypoints: [CGPoint]
 }
 
 /**
@@ -46,6 +47,7 @@ class OverlayView: UIView {
     static let stringHorizontalSpacing: CGFloat = 13.0
     static let stringFontColor = UIColor.white
     static let lineWidth: CGFloat = 3
+    static let pointLineWidth: CGFloat = 2
     static let stringBgAlpha: CGFloat = 0.7
     static let cornerRadius: CGFloat = 10.0
     static let unknownString = "Unknown"
@@ -107,6 +109,9 @@ class OverlayView: UIView {
         color: objectOverlay.color,
         nameStringSize: objectOverlay.nameStringSize,
         font: objectOverlay.font)
+      draw(keypointaWithRect: readjustedBorderRect,
+           keypoints: objectOverlay.keypoints,
+           color: objectOverlay.color)
     }
   }
   
@@ -165,6 +170,32 @@ class OverlayView: UIView {
       return newRect
       
     }
+
+  private func pointAfterApplyingBoundsAdjustment(keypoint: CGPoint) -> CGPoint {
+
+      var currentSize = self.bounds.size
+      let minDimension = min(self.bounds.width, self.bounds.height)
+      let maxDimension = max(self.bounds.width, self.bounds.height)
+
+      switch orientation {
+        case .portrait:
+          currentSize = CGSizeMake(minDimension, maxDimension)
+        case .landscapeLeft:
+          fallthrough
+        case .landscapeRight:
+          currentSize = CGSizeMake(maxDimension, minDimension)
+        default:
+          break
+      }
+
+      let offsetsAndScaleFactor = OverlayView.offsetsAndScaleFactor(
+        forImageOfSize: self.contentImageSize,
+        tobeDrawnInViewOfSize: currentSize,
+        withContentMode: imageContentMode)
+
+    var newPoint = CGPoint(x: keypoint.x * offsetsAndScaleFactor.scaleFactor, y: keypoint.y * offsetsAndScaleFactor.scaleFactor)
+    return newPoint
+    }
   
   /**
    This method draws the borders of the detected objects.
@@ -218,6 +249,19 @@ class OverlayView: UIView {
       
       attributedString.draw(in: stringRect)
     }
+
+  /**
+   This method draws the face keypoints
+   */
+  private func draw(keypointaWithRect rect: CGRect, keypoints: [CGPoint], color: UIColor) {
+    for keypoint in keypoints {
+      let newPoint = pointAfterApplyingBoundsAdjustment(keypoint: keypoint)
+      let path = UIBezierPath(ovalIn: CGRectMake(newPoint.x, newPoint.y, 2, 2))
+      path.lineWidth = Constants.pointLineWidth
+      color.setStroke()
+      path.stroke()
+    }
+  }
   
   // MARK: Helper Functions
   static func offsetsAndScaleFactor(
@@ -263,6 +307,7 @@ class OverlayView: UIView {
           
         }
         var newRect = detection.boundingBox
+        var keypoints = detection.keypoints?.map({CGPoint(x: $0.location.x * originalImageSize.width, y: $0.location.y * originalImageSize.height)}) ?? []
         
         // Based on orientation of the image, rotate the output bounding boxes.
         //
@@ -279,14 +324,17 @@ class OverlayView: UIView {
               y: originalImageSize.height - detection.boundingBox.origin.x - detection.boundingBox.width,
               width: detection.boundingBox.height,
               height: detection.boundingBox.width)
+          keypoints = keypoints.map({ CGPoint(x: $0.y, y: $0.x) })
           case .right:
             newRect = CGRect(
               x: originalImageSize.width - detection.boundingBox.origin.y - detection.boundingBox.height,
               y: detection.boundingBox.origin.x, width: detection.boundingBox.height,
               height: detection.boundingBox.width)
+            keypoints = keypoints.map({ CGPoint(x: originalImageSize.width - $0.y, y: $0.x) })
           case .down:
             newRect.origin.x = originalImageSize.width - detection.boundingBox.maxX
             newRect.origin.y = originalImageSize.height - detection.boundingBox.maxY
+            keypoints = keypoints.map({ CGPoint(x: originalImageSize.width - $0.x, y: originalImageSize.height - $0.y) })
           default:
             break
         }
@@ -296,7 +344,7 @@ class OverlayView: UIView {
 
         let size = string.size(withAttributes: [.font: DefaultConstants.displayFont])
 
-        let objectOverlay = ObjectOverlay(name: string, borderRect: newRect, nameStringSize: size, color: DefaultConstants.ovelayColor, font: DefaultConstants.displayFont)
+        let objectOverlay = ObjectOverlay(name: string, borderRect: newRect, nameStringSize: size, color: DefaultConstants.ovelayColor, font: DefaultConstants.displayFont, keypoints: keypoints)
 
         objectOverlays.append(objectOverlay)
       }
