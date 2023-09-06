@@ -228,7 +228,7 @@ extension RootViewController: InterfaceUpdatesDelegate {
 }
 
 // MARK: InferenceViewControllerDelegate Methods
-extension RootViewController: InferenceViewControllerDelegate {
+extension RootViewController: BottomSheetViewControllerDelegate {
   func viewController(
     _ viewController: BottomSheetViewController,
     didSwitchBottomSheetViewState isOpen: Bool) {

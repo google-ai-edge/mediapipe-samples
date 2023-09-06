@@ -14,7 +14,7 @@
 
 import UIKit
 
-protocol InferenceViewControllerDelegate: AnyObject {
+protocol BottomSheetViewControllerDelegate: AnyObject {
   /**
    This method is called when the user opens or closes the bottom sheet.
   **/
@@ -35,7 +35,7 @@ class BottomSheetViewController: UIViewController {
   }
 
   // MARK: Delegates
-  weak var delegate: InferenceViewControllerDelegate?
+  weak var delegate: BottomSheetViewControllerDelegate?
 
   // MARK: Storyboards Connections
   @IBOutlet weak var inferenceTimeNameLabel: UILabel!

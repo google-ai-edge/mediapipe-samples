@@ -10,7 +10,6 @@
 		7978F075EC7307167927DA96 /* Pods_FaceDetector.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CAEB266A0C128CFE39B4E963 /* Pods_FaceDetector.framework */; };
 		7F7641A72A74865000DDCE4E /* testImg.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BFCF187A2A43E0F200D64FA6 /* testImg.jpeg */; };
 		A62955674D0B99A7D0E9C379 /* libPods-FaceDetectorTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CD418693247CFB204F2604A /* libPods-FaceDetectorTests.a */; };
-		BFCDADCF2A9D916A00EC4371 /* UIImageOrientationExt.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADCE2A9D916A00EC4371 /* UIImageOrientationExt.swift */; };
 		BFCDADF02A9DD64200EC4371 /* DefaultConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADE22A9DD64200EC4371 /* DefaultConstants.swift */; };
 		BFCDADF12A9DD64200EC4371 /* InferenceConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADE32A9DD64200EC4371 /* InferenceConfigManager.swift */; };
 		BFCDADF22A9DD64200EC4371 /* CameraFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADE52A9DD64200EC4371 /* CameraFeedService.swift */; };
@@ -44,7 +43,6 @@
 		5F8235CC8350146B717267AD /* Pods-FaceDetector.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FaceDetector.release.xcconfig"; path = "Target Support Files/Pods-FaceDetector/Pods-FaceDetector.release.xcconfig"; sourceTree = "<group>"; };
 		7F7641A92A74869900DDCE4E /* download_models.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = download_models.sh; sourceTree = "<group>"; };
 		BB9395FBA7FB71903009034C /* Pods-FaceDetectorTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FaceDetectorTests.debug.xcconfig"; path = "Target Support Files/Pods-FaceDetectorTests/Pods-FaceDetectorTests.debug.xcconfig"; sourceTree = "<group>"; };
-		BFCDADCE2A9D916A00EC4371 /* UIImageOrientationExt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageOrientationExt.swift; sourceTree = "<group>"; };
 		BFCDADE22A9DD64200EC4371 /* DefaultConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultConstants.swift; sourceTree = "<group>"; };
 		BFCDADE32A9DD64200EC4371 /* InferenceConfigManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceConfigManager.swift; sourceTree = "<group>"; };
 		BFCDADE52A9DD64200EC4371 /* CameraFeedService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedService.swift; sourceTree = "<group>"; };
@@ -118,14 +116,6 @@
 			path = RunScripts;
 			sourceTree = "<group>";
 		};
-		BFCDADCD2A9D914100EC4371 /* Extensions */ = {
-			isa = PBXGroup;
-			children = (
-				BFCDADCE2A9D916A00EC4371 /* UIImageOrientationExt.swift */,
-			);
-			path = Extensions;
-			sourceTree = "<group>";
-		};
 		BFCDADE12A9DD64200EC4371 /* Configs */ = {
 			isa = PBXGroup;
 			children = (
@@ -191,7 +181,6 @@
 				BFCDADE42A9DD64200EC4371 /* Services */,
 				BFCDADE72A9DD64200EC4371 /* ViewContoller */,
 				BFCDADEE2A9DD64200EC4371 /* Views */,
-				BFCDADCD2A9D914100EC4371 /* Extensions */,
 				BFCF18312A415B9300D64FA6 /* AppDelegate.swift */,
 				BFCF18332A415B9300D64FA6 /* SceneDelegate.swift */,
 				BFCF18712A415C3400D64FA6 /* Assets.xcassets */,
@@ -387,7 +376,6 @@
 				BFCDADF62A9DD64200EC4371 /* RootViewController.swift in Sources */,
 				BFCDADF72A9DD64200EC4371 /* BottomSheetViewController.swift in Sources */,
 				BFCF18322A415B9300D64FA6 /* AppDelegate.swift in Sources */,
-				BFCDADCF2A9D916A00EC4371 /* UIImageOrientationExt.swift in Sources */,
 				BFCDADF32A9DD64200EC4371 /* FaceDetectorService.swift in Sources */,
 				BFCDADF82A9DD64200EC4371 /* CameraViewController.swift in Sources */,
 				BFCF18342A415B9300D64FA6 /* SceneDelegate.swift in Sources */,
