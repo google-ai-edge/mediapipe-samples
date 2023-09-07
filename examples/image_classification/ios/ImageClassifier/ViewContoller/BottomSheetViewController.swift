@@ -15,68 +15,74 @@
 import UIKit
 import MediaPipeTasksVision
 
-protocol InferenceViewControllerDelegate {
-
+protocol BottomSheetViewControllerDelegate: AnyObject {
   /**
-   This method is called when the user changes the value to update model used for inference.
-   **/
+   This method is called when the user opens or closes the bottom sheet.
+  **/
   func viewController(
-    _ viewController: InferenceViewController,
-    needPerformActions action: InferenceViewController.Action)
+    _ viewController: BottomSheetViewController,
+    didSwitchBottomSheetViewState isOpen: Bool)
 }
 
-class InferenceViewController: UIViewController {
+/** The view controller is responsible for presenting the controls to change the meta data for the image classifier (model, max results,
+ * score threshold) and updating the singleton`` ClassifierMetadata`` on user input.
+ */
+class BottomSheetViewController: UIViewController {
 
-  enum Action {
-    case changeScoreThreshold(Float)
-    case changeMaxResults(Int)
-    case changeModel(Model)
-    case changeBottomSheetViewBottomSpace(Bool)
-  }
-
-  // MARK: Constants
-  private let normalCellHeight: CGFloat = 27.0
-
-  // MARK: Delegate
-  var delegate: InferenceViewControllerDelegate?
-
-  // MARK: Computed properties
-  var collapsedHeight: CGFloat {
-    return normalCellHeight * CGFloat(maxResults)
-  }
+  // MARK: Delegates
+  weak var delegate: BottomSheetViewControllerDelegate?
 
   // MARK: Storyboards Connections
-  @IBOutlet weak var choseModelButton: UIButton!
-  @IBOutlet weak var tableView: UITableView!
+  @IBOutlet weak var inferenceTimeLabel: UILabel!
+  @IBOutlet weak var inferenceTimeNameLabel: UILabel!
 
-  @IBOutlet weak var infrenceTimeTitleLabel: UILabel!
-  @IBOutlet weak var infrenceTimeLabel: UILabel!
   @IBOutlet weak var thresholdStepper: UIStepper!
   @IBOutlet weak var thresholdValueLabel: UILabel!
 
   @IBOutlet weak var maxResultStepper: UIStepper!
   @IBOutlet weak var maxResultLabel: UILabel!
 
-  // MARK: Instance Variables
-  var result: ResultBundle? = nil
-  var maxResults = DefaultConstants.maxResults
-  var scoreThreshold = DefaultConstants.scoreThreshold
-  var modelChose = DefaultConstants.model
-  private var resultIndex = 0
+  @IBOutlet weak var toggleBottomSheetButton: UIButton!
 
+  @IBOutlet weak var choseModelButton: UIButton!
+
+  @IBOutlet weak var tableView: UITableView!
+
+  // MARK: Constants
+  private let normalCellHeight: CGFloat = 27.0
+  private var imageClassifierResult: ImageClassifierResult?
+
+  // MARK: Computed properties
+  var collapsedHeight: CGFloat {
+    return normalCellHeight * CGFloat(InferenceConfigManager.sharedInstance.maxResults)
+  }
+  var isUIEnabled: Bool = false {
+    didSet {
+      enableOrDisableClicks()
+    }
+  }
+  
   override func viewDidLoad() {
     super.viewDidLoad()
     setupUI()
+    enableOrDisableClicks()
+  }
+  
+  // MARK: - Public Functions
+  func update(inferenceTimeString: String, result: ImageClassifierResult?) {
+    inferenceTimeLabel.text = inferenceTimeString
+    imageClassifierResult = result
+    tableView.reloadData()
   }
 
-  // Private function
+  // MARK: - Private function
   private func setupUI() {
 
-    maxResultStepper.value = Double(maxResults)
-    maxResultLabel.text = "\(maxResults)"
+    maxResultStepper.value = Double(InferenceConfigManager.sharedInstance.maxResults)
+    maxResultLabel.text = "\(InferenceConfigManager.sharedInstance.maxResults)"
 
-    thresholdStepper.value = Double(scoreThreshold)
-    thresholdValueLabel.text = "\(scoreThreshold)"
+    thresholdStepper.value = Double(InferenceConfigManager.sharedInstance.scoreThreshold)
+    thresholdValueLabel.text = "\(InferenceConfigManager.sharedInstance.scoreThreshold)"
 
     // Chose model option
     let choseModel = {(action: UIAction) in
@@ -84,7 +90,7 @@ class InferenceViewController: UIViewController {
     }
     let actions: [UIAction] = Model.allCases.compactMap { model in
       let action = UIAction(title: model.rawValue, handler: choseModel)
-      if model == modelChose {
+      if model == InferenceConfigManager.sharedInstance.model {
         action.state = .on
       }
       return action
@@ -96,66 +102,45 @@ class InferenceViewController: UIViewController {
     // Setup table view cell height
     tableView.rowHeight = normalCellHeight
   }
-  
+
   private func updateModel(modelTitle: String) {
     guard let model = Model(rawValue: modelTitle) else { return }
-    delegate?.viewController(self, needPerformActions: .changeModel(model))
+    InferenceConfigManager.sharedInstance.model = model
   }
-
-  // Public function
-  func updateData() {
-    resultIndex = 0
-    tableView.reloadData()
-    if let inferenceTime = result?.inferenceTime {
-      infrenceTimeLabel.text = String(format: "%.2fms", inferenceTime)
-    }
+  
+  private func enableOrDisableClicks() {
+    thresholdStepper.isEnabled = isUIEnabled
   }
-
-  func updateData(at resultIndex: Int) {
-    self.resultIndex = resultIndex
-    tableView.reloadData()
-    if let inferenceTime = result?.inferenceTime {
-      infrenceTimeLabel.text = String(format: "%.2fms", inferenceTime)
-    }
-  }
-
+  
   // MARK: IBAction
-
   @IBAction func expandButtonTouchUpInside(_ sender: UIButton) {
     sender.isSelected.toggle()
-    infrenceTimeLabel.isHidden = !sender.isSelected
-    infrenceTimeTitleLabel.isHidden = !sender.isSelected
-    delegate?.viewController(self, needPerformActions: .changeBottomSheetViewBottomSpace(sender.isSelected))
+    inferenceTimeLabel.isHidden = !sender.isSelected
+    inferenceTimeNameLabel.isHidden = !sender.isSelected
+    delegate?.viewController(self, didSwitchBottomSheetViewState: sender.isSelected)
   }
 
   @IBAction func thresholdStepperValueChanged(_ sender: UIStepper) {
-    scoreThreshold = Float(sender.value)
-    delegate?.viewController(self, needPerformActions: .changeScoreThreshold(scoreThreshold))
+    let scoreThreshold = Float(sender.value)
+    InferenceConfigManager.sharedInstance.scoreThreshold = scoreThreshold
     thresholdValueLabel.text = "\(scoreThreshold)"
   }
 
   @IBAction func maxResultStepperValueChanged(_ sender: UIStepper) {
-    maxResults = Int(sender.value)
-    delegate?.viewController(self, needPerformActions: .changeMaxResults(maxResults))
+    let maxResults = Int(sender.value)
+    InferenceConfigManager.sharedInstance.maxResults = maxResults
     maxResultLabel.text = "\(maxResults)"
   }
 }
 
-// MARK: UITableViewDataSource
-extension InferenceViewController: UITableViewDataSource {
-  func numberOfSections(in tableView: UITableView) -> Int {
-    return 1
-  }
-
+extension BottomSheetViewController: UITableViewDataSource {
   func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    return maxResults
+    return InferenceConfigManager.sharedInstance.maxResults
   }
 
   func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
     let cell = tableView.dequeueReusableCell(withIdentifier: "INFO_CELL") as! InfoCell
-    guard let imageClassifierResults = result?.imageClassifierResults,
-          resultIndex < imageClassifierResults.count,
-          let imageClassifierResult = imageClassifierResults[resultIndex],
+    guard let imageClassifierResult = imageClassifierResult,
           let classification = imageClassifierResult.classificationResult.classifications.first else {
       cell.fieldNameLabel.text = "--"
       cell.infoLabel.text = "--"
