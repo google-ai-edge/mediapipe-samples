@@ -192,8 +192,7 @@ class OverlayView: UIView {
         forImageOfSize: self.contentImageSize,
         tobeDrawnInViewOfSize: currentSize,
         withContentMode: imageContentMode)
-
-    var newPoint = CGPoint(x: keypoint.x * offsetsAndScaleFactor.scaleFactor, y: keypoint.y * offsetsAndScaleFactor.scaleFactor)
+    let newPoint = CGPoint(x: keypoint.x * offsetsAndScaleFactor.scaleFactor + offsetsAndScaleFactor.xOffset, y: keypoint.y * offsetsAndScaleFactor.scaleFactor + offsetsAndScaleFactor.yOffset)
     return newPoint
     }
   
@@ -307,7 +306,7 @@ class OverlayView: UIView {
           
         }
         var newRect = detection.boundingBox
-        var keypoints = detection.keypoints?.map({CGPoint(x: $0.location.x * originalImageSize.width, y: $0.location.y * originalImageSize.height)}) ?? []
+        var keypoints = detection.keypoints?.map({$0.location}) ?? []
         
         // Based on orientation of the image, rotate the output bounding boxes.
         //
@@ -324,20 +323,21 @@ class OverlayView: UIView {
               y: originalImageSize.height - detection.boundingBox.origin.x - detection.boundingBox.width,
               width: detection.boundingBox.height,
               height: detection.boundingBox.width)
-          keypoints = keypoints.map({ CGPoint(x: $0.y, y: $0.x) })
+          keypoints = keypoints.map({CGPoint(x: CGFloat($0.y), y: 1 - CGFloat($0.x))})
           case .right:
             newRect = CGRect(
               x: originalImageSize.width - detection.boundingBox.origin.y - detection.boundingBox.height,
               y: detection.boundingBox.origin.x, width: detection.boundingBox.height,
               height: detection.boundingBox.width)
-            keypoints = keypoints.map({ CGPoint(x: originalImageSize.width - $0.y, y: $0.x) })
+            keypoints = keypoints.map({CGPoint(x: 1 - CGFloat($0.y), y: CGFloat($0.x))})
           case .down:
             newRect.origin.x = originalImageSize.width - detection.boundingBox.maxX
             newRect.origin.y = originalImageSize.height - detection.boundingBox.maxY
-            keypoints = keypoints.map({ CGPoint(x: originalImageSize.width - $0.x, y: originalImageSize.height - $0.y) })
           default:
             break
         }
+
+        keypoints = keypoints.map({CGPoint(x: $0.x * originalImageSize.width, y: $0.y * originalImageSize.height)})
         
         let confidenceValue = Int(category.score * 100.0)
         let string = "\(category.categoryName ?? "") (\(confidenceValue)%) "
