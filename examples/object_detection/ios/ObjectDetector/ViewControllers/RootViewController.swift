@@ -132,6 +132,7 @@ class RootViewController: UIViewController {
     }
     
     viewController.interfaceUpdatesDelegate = self
+    viewController.inferenceResultDeliveryDelegate = self
     mediaLibraryViewController = viewController
   }
   
@@ -227,8 +228,8 @@ extension RootViewController: InterfaceUpdatesDelegate {
   }
 }
 
-// MARK: InferenceViewControllerDelegate Methods
-extension RootViewController: InferenceViewControllerDelegate {
+// MARK: BottomSheetViewControllerDelegate Methods
+extension RootViewController: BottomSheetViewControllerDelegate {
   func viewController(
     _ viewController: BottomSheetViewController,
     didSwitchBottomSheetViewState isOpen: Bool) {

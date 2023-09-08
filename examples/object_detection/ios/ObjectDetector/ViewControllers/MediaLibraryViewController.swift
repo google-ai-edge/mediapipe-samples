@@ -34,6 +34,7 @@ class MediaLibraryViewController: UIViewController {
   }
   // MARK: Object Detector Service
   weak var interfaceUpdatesDelegate: InterfaceUpdatesDelegate?
+  weak var inferenceResultDeliveryDelegate: InferenceResultDeliveryDelegate?
   
   // MARK: Controllers that manage functionality
   private lazy var pickerController = UIImagePickerController()
@@ -235,7 +236,9 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
           inferenceIntervalInMilliseconds: Constants.inferenceTimeIntervalInMilliseconds)
         
         hideProgressView()
-        
+        DispatchQueue.main.async {
+          self.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
+        }
         playVideo(
           mediaURL: mediaURL,
           videoDuration: videoDuration,
@@ -257,10 +260,11 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
       
       DispatchQueue.global(qos: .userInteractive).async { [weak self] in
         guard let weakSelf = self,
-              let objectDetectorResult = weakSelf
+              let resultBundle = weakSelf
                 .objectDetectorService?
-                .detect(image: image)?
-                .objectDetectorResults.first as? ObjectDetectorResult else {
+                .detect(image: image),
+              let objectDetectorResult =
+                resultBundle.objectDetectorResults.first as? ObjectDetectorResult else {
           DispatchQueue.main.async {
             self?.hideProgressView()
           }
@@ -269,6 +273,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
           
         DispatchQueue.main.async {
           weakSelf.hideProgressView()
+          weakSelf.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
           weakSelf.overlayView.draw(
             objectOverlays:OverlayView.objectOverlays(
               fromDetections: objectDetectorResult.detections,
@@ -362,6 +367,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
   }
 }
 
+// MARK: ObjectDetectorServiceVideoDelegate
 extension MediaLibraryViewController: ObjectDetectorServiceVideoDelegate {
   
   func objectDetectorService(
