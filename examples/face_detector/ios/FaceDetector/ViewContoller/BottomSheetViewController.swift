@@ -63,7 +63,6 @@ class BottomSheetViewController: UIViewController {
   // MARK: - Public Functions
   func update(inferenceTimeString: String) {
     inferenceTimeLabel.text = inferenceTimeString
-    inferenceTimeNameLabel.isHidden = false
   }
 
   // MARK: - Private function

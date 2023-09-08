@@ -132,6 +132,7 @@ class RootViewController: UIViewController {
     }
     
     viewController.interfaceUpdatesDelegate = self
+    viewController.inferenceResultDeliveryDelegate = self
     mediaLibraryViewController = viewController
   }
   

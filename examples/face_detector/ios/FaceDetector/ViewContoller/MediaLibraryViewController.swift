@@ -34,6 +34,7 @@ class MediaLibraryViewController: UIViewController {
   }
   // MARK: Face Detector Service
   weak var interfaceUpdatesDelegate: InterfaceUpdatesDelegate?
+  weak var inferenceResultDeliveryDelegate: InferenceResultDeliveryDelegate?
   
   // MARK: Controllers that manage functionality
   private lazy var pickerController = UIImagePickerController()
@@ -235,6 +236,10 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
           inferenceIntervalInMilliseconds: Constants.inferenceTimeIntervalInMilliseconds)
         
         hideProgressView()
+
+        DispatchQueue.main.async {
+          self.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
+        }
         
         playVideo(
           mediaURL: mediaURL,
@@ -257,10 +262,9 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
       
       DispatchQueue.global(qos: .userInteractive).async { [weak self] in
         guard let weakSelf = self,
-              let faceDetectorResult = weakSelf
-                .faceDetectorService?
-                .detect(image: image)?
-                .faceDetectorResults.first as? FaceDetectorResult else {
+              let resultBundle = weakSelf.faceDetectorService?.detect(image: image),
+              let faceDetectorResult = resultBundle.faceDetectorResults.first,
+              let faceDetectorResult = faceDetectorResult else {
           DispatchQueue.main.async {
             self?.hideProgressView()
           }
@@ -269,6 +273,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
           
         DispatchQueue.main.async {
           weakSelf.hideProgressView()
+          weakSelf.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
           weakSelf.overlayView.draw(
             objectOverlays:OverlayView.objectOverlays(
               fromDetections: faceDetectorResult.detections,
