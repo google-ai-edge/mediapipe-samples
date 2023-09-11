@@ -36,7 +36,7 @@ def run(model: str, max_results: int, score_threshold: float,
 
   Args:
     model: Name of the TFLite object detection model.
-    max_results: Max of classification results.
+    max_results: Max number of detection results.
     score_threshold: The score threshold of detection results.
     camera_id: The camera id to be passed to OpenCV.
     width: The width of the frame captured from the camera.
