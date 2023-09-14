@@ -119,10 +119,10 @@ class MainActivity : AppCompatActivity(),
         }
         val image = result.stylizedFace
         val byteBuffer =
-            ByteBufferExtractor.extract(image.stylizedImage())
+            ByteBufferExtractor.extract(image.stylizedImage().get())
 
-        val width = image.stylizedImage().width
-        val height = image.stylizedImage().height
+        val width = image.stylizedImage().get().width
+        val height = image.stylizedImage().get().height
 
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         bitmap.copyPixelsFromBuffer(byteBuffer)

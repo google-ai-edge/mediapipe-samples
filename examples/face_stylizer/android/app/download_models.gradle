@@ -15,20 +15,20 @@
  */
 
 task downloadColorInkTask(type: Download) {
-    src ''
-    dest project.ext.TEST_ASSETS_DIR + '/face_stylizer_color_ink.task'
+    src 'https://storage.googleapis.com/mediapipe-models/face_stylizer/blaze_face_stylizer/float32/latest/face_stylizer_color_ink.task'
+    dest project.ext.ASSET_DIR + '/face_stylizer_color_ink.task'
     overwrite false
 }
 
 task downloadColorSketchTask(type: Download) {
-    src ''
-    dest project.ext.TEST_ASSETS_DIR + '/face_stylizer_color_sketch.task'
+    src 'https://storage.googleapis.com/mediapipe-models/face_stylizer/blaze_face_stylizer/float32/latest/face_stylizer_color_sketch.task'
+    dest project.ext.ASSET_DIR + '/face_stylizer_color_sketch.task'
     overwrite false
 }
 
 task downloadOilPainting(type: Download) {
-    src ''
-    dest project.ext.TEST_ASSETS_DIR + '/face_stylizer_oil_painting.task'
+    src 'https://storage.googleapis.com/mediapipe-models/face_stylizer/blaze_face_stylizer/float32/latest/face_stylizer_oil_painting.task'
+    dest project.ext.ASSET_DIR + '/face_stylizer_oil_painting.task'
     overwrite false
 }
 

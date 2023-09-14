@@ -43,7 +43,7 @@ project.ext.TEST_ASSETS_DIR = projectDir.toString() + '/src/androidTest/assets'
 
 // Download default models; if you wish to use your own models then
 // place them in the "assets" directory and comment out this line.
-//apply from: 'download_models.gradle'
+apply from: 'download_models.gradle'
 
 dependencies {
 
@@ -55,5 +55,5 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.4'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
 
-    implementation 'com.google.mediapipe:tasks-vision:0.1.0-alpha-7'
+    implementation 'com.google.mediapipe:tasks-vision:0.10.5'
 }

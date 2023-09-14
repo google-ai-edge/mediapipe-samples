@@ -53,7 +53,6 @@ class FaceStylizationHelper(
             val baseOptions = baseOptionsBuilder.build()
             val optionsBuilder = FaceStylizerOptions.builder()
                 .setBaseOptions(baseOptions)
-                .setRunningMode(RunningMode.IMAGE)
 
             val options = optionsBuilder.build()
             faceStylizer = FaceStylizer.createFromOptions(context, options)
