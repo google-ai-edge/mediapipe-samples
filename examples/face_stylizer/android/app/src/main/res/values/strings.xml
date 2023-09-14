@@ -26,4 +26,11 @@
     <string name="tv_second_image_description">This is where the stylized image will appear</string>
     <string name="tv_stylize">Select an image to stylize</string>
     <string name="btn_stylize">Stylize</string>
+    <string name="tv_model">Model</string>
+
+    <string-array name="model_name_array">
+        <item>Color sketch</item>
+        <item>Color ink</item>
+        <item>Oil painting</item>
+    </string-array>
 </resources>
