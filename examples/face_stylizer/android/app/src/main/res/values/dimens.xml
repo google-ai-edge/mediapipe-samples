@@ -30,4 +30,6 @@
 
     <integer name="bottom_sheet_control_text_min_ems">3</integer>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="spinner_model_padding">10dp</dimen>
+    <dimen name="spinner_model_height">48dp</dimen>
 </resources>

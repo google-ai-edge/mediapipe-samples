@@ -46,6 +46,33 @@
                 android:src="@drawable/icn_chevron_up" />
         </RelativeLayout>
 
+        <!-- Select model type row -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/bottom_sheet_default_row_margin"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/model_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:text="@string/tv_model"
+                android:textColor="@color/bottom_sheet_text_color"
+                android:textSize="@dimen/bottom_sheet_text_size" />
+
+            <Spinner
+                android:id="@+id/model_spinner"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/spinner_model_height"
+                android:layout_alignParentEnd="true"
+                android:gravity="end"
+                android:padding="@dimen/spinner_model_padding"
+                android:spinnerMode="dialog"
+                android:textSize="@dimen/bottom_sheet_text_size" />
+        </RelativeLayout>
+
         <!-- Inference time row -->
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"

@@ -26,6 +26,7 @@ import com.google.mediapipe.tasks.vision.facestylizer.FaceStylizer.FaceStylizerO
 import com.google.mediapipe.tasks.vision.facestylizer.FaceStylizerResult
 
 class FaceStylizationHelper(
+    private val modelPosition: Int,
     private val context: Context,
     var faceStylizerListener: FaceStylizerListener? = null
 ) {
@@ -36,10 +37,17 @@ class FaceStylizationHelper(
         setupFaceStylizer()
     }
 
-    fun setupFaceStylizer() {
+    private fun setupFaceStylizer() {
         val baseOptionsBuilder = BaseOptions.builder()
-
-        baseOptionsBuilder.setModelAssetPath(MODEL_PATH)
+        // Sets the model selection.
+        baseOptionsBuilder.setModelAssetPath(
+            when (modelPosition) {
+                0 -> MODEL_PATH_COLOR_SKETCH
+                1 -> MODEL_PATH_COLOR_INK
+                2 -> MODEL_PATH_OIL_PAINTING
+                else -> throw Throwable("Invalid model type position")
+            }
+        )
 
         try {
             val baseOptions = baseOptionsBuilder.build()
@@ -80,6 +88,10 @@ class FaceStylizationHelper(
         return ResultBundle(result, timestampMs)
     }
 
+    fun close() {
+        faceStylizer?.close()
+    }
+
     // Wraps results from inference, the time it takes for inference to be
     // performed.
     data class ResultBundle(
@@ -88,7 +100,9 @@ class FaceStylizationHelper(
     )
 
     companion object {
-        const val MODEL_PATH = "face_stylizer.tflite"
+        const val MODEL_PATH_OIL_PAINTING = "face_stylizer_oil_painting.task"
+        const val MODEL_PATH_COLOR_INK = "face_stylizer_color_ink.task"
+        const val MODEL_PATH_COLOR_SKETCH = "face_stylizer_color_sketch.task"
         const val OTHER_ERROR = 0
         const val GPU_ERROR = 1
         private const val TAG = "FaceStylizationHelper"
@@ -97,5 +111,4 @@ class FaceStylizationHelper(
     interface FaceStylizerListener {
         fun onError(error: String, errorCode: Int = OTHER_ERROR)
     }
-
 }

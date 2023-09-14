@@ -19,19 +19,25 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import android.widget.AdapterView
+import android.widget.AdapterView.OnItemSelectedListener
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import com.google.mediapipe.examples.facestylizer.databinding.ActivityMainBinding
 import com.google.mediapipe.framework.image.ByteBufferExtractor
 
-class MainActivity : AppCompatActivity(), FaceStylizationHelper.FaceStylizerListener {
+
+class MainActivity : AppCompatActivity(),
+    FaceStylizationHelper.FaceStylizerListener {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var faceStylizationHelper: FaceStylizationHelper
+    private var faceStylizationHelper: FaceStylizationHelper? = null
     private var inputImage: Bitmap? = null
+
 
     private val getContent =
         registerForActivityResult(ActivityResultContracts.GetContent()) {
@@ -47,17 +53,53 @@ class MainActivity : AppCompatActivity(), FaceStylizationHelper.FaceStylizerList
         val view = binding.root
         setContentView(view)
 
-        faceStylizationHelper = FaceStylizationHelper(this, faceStylizerListener = this)
+        // Init spinner model name
+        val modelNameArray = resources.getStringArray(R.array.model_name_array)
+        val adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_dropdown_item,
+            modelNameArray
+        )
+        binding.bottomSheetLayout.modelSpinner.adapter = adapter
+
+        binding.bottomSheetLayout.modelSpinner.onItemSelectedListener =
+            object : OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    // Reset the helper if the model type is changed.
+                    faceStylizationHelper?.close()
+                    initHelper(position)
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    // do nothing
+                }
+
+            }
 
         binding.btnStylize.setOnClickListener {
             inputImage?.let { input ->
-                onResult(faceStylizationHelper.stylize(input))
+                faceStylizationHelper?.stylize(input)?.let {
+                    onResult(it)
+                }
             }
         }
 
         binding.inputImage.setOnClickListener {
             getContent.launch("image/*")
         }
+    }
+
+    private fun initHelper(modelPosition: Int) {
+        faceStylizationHelper = FaceStylizationHelper(
+            modelPosition,
+            this,
+            faceStylizerListener = this
+        )
     }
 
     private fun Uri.getImage(context: Context): Bitmap {
@@ -70,8 +112,8 @@ class MainActivity : AppCompatActivity(), FaceStylizationHelper.FaceStylizerList
         Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
     }
 
-    fun onResult(result: FaceStylizationHelper.ResultBundle) {
-        if( result.stylizedFace == null ) {
+    private fun onResult(result: FaceStylizationHelper.ResultBundle) {
+        if (result.stylizedFace == null) {
             onError("Failed to stylize image")
             return
         }
@@ -87,6 +129,7 @@ class MainActivity : AppCompatActivity(), FaceStylizationHelper.FaceStylizerList
 
         binding.tvImageTwoDescription.visibility = View.GONE
         binding.outputImage.setImageBitmap(bitmap)
-        binding.bottomSheetLayout.inferenceTimeVal.text = result.inferenceTime.toString()
+        binding.bottomSheetLayout.inferenceTimeVal.text =
+            result.inferenceTime.toString()
     }
 }
