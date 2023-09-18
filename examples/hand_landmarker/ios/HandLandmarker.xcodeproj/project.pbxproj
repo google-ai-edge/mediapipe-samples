@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		390980DAF1C0BF696F2F9034 /* libPods-HandLandmarkerTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6A5255B9766F2DC5A4177BEC /* libPods-HandLandmarkerTests.a */; };
 		BE623C897110F7E0442419C4 /* Pods_HandLandmarker.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C35377F7CB8DB927779D1AD /* Pods_HandLandmarker.framework */; };
+		BF5EEC682AB7EBB500189276 /* thumbs-up.png in Resources */ = {isa = PBXBuildFile; fileRef = BF5EEC672AB7EBB500189276 /* thumbs-up.png */; };
 		BFCDAE252AAEB2A700EC4371 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE242AAEB2A700EC4371 /* AppDelegate.swift */; };
 		BFCDAE272AAEB2A700EC4371 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE262AAEB2A700EC4371 /* SceneDelegate.swift */; };
 		BFCDAE2C2AAEB2A700EC4371 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BFCDAE2A2AAEB2A700EC4371 /* Main.storyboard */; };
@@ -43,6 +44,7 @@
 		5C35377F7CB8DB927779D1AD /* Pods_HandLandmarker.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HandLandmarker.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6A5255B9766F2DC5A4177BEC /* libPods-HandLandmarkerTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HandLandmarkerTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B19658A239090768FF9A5F9F /* Pods-HandLandmarker.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HandLandmarker.debug.xcconfig"; path = "Target Support Files/Pods-HandLandmarker/Pods-HandLandmarker.debug.xcconfig"; sourceTree = "<group>"; };
+		BF5EEC672AB7EBB500189276 /* thumbs-up.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "thumbs-up.png"; sourceTree = "<group>"; };
 		BFCDAE212AAEB2A700EC4371 /* HandLandmarker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HandLandmarker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BFCDAE242AAEB2A700EC4371 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BFCDAE262AAEB2A700EC4371 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -146,6 +148,7 @@
 		BFCDAE3A2AAEB2A800EC4371 /* HandLandmarkerTests */ = {
 			isa = PBXGroup;
 			children = (
+				BF5EEC672AB7EBB500189276 /* thumbs-up.png */,
 				BFCDAE3B2AAEB2A800EC4371 /* HandLandmarkerTests.swift */,
 			);
 			path = HandLandmarkerTests;
@@ -282,6 +285,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF5EEC682AB7EBB500189276 /* thumbs-up.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -575,6 +579,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9PLS9MU793;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				MARKETING_VERSION = 1.0;
@@ -595,6 +600,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9PLS9MU793;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				MARKETING_VERSION = 1.0;

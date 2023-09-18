@@ -138,7 +138,7 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <stepper opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.20000000000000001" minimumValue="0.10000000000000001" maximumValue="0.80000000000000004" stepValue="0.10000000000000001" translatesAutoresizingMaskIntoConstraints="NO" id="0nH-Zx-p69">
+                                    <stepper opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.10000000000000001" minimumValue="0.10000000000000001" maximumValue="0.80000000000000004" stepValue="0.10000000000000001" translatesAutoresizingMaskIntoConstraints="NO" id="0nH-Zx-p69">
                                         <rect key="frame" x="283" y="88.666666666666671" width="94" height="32"/>
                                         <color key="backgroundColor" red="0.0" green="0.49803921569999998" blue="0.5450980392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <userDefinedRuntimeAttributes>
@@ -193,7 +193,7 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <stepper opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.20000000000000001" minimumValue="0.10000000000000001" maximumValue="0.80000000000000004" stepValue="0.10000000000000001" translatesAutoresizingMaskIntoConstraints="NO" id="1fr-hY-4II">
+                                    <stepper opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.10000000000000001" minimumValue="0.10000000000000001" maximumValue="0.80000000000000004" stepValue="0.10000000000000001" translatesAutoresizingMaskIntoConstraints="NO" id="1fr-hY-4II">
                                         <rect key="frame" x="283" y="132.66666666666666" width="94" height="32"/>
                                         <color key="backgroundColor" red="0.0" green="0.49803921569999998" blue="0.5450980392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
@@ -218,7 +218,7 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <stepper opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.20000000000000001" minimumValue="0.10000000000000001" maximumValue="0.80000000000000004" stepValue="0.10000000000000001" translatesAutoresizingMaskIntoConstraints="NO" id="DDi-33-JAf">
+                                    <stepper opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.10000000000000001" minimumValue="0.10000000000000001" maximumValue="0.80000000000000004" stepValue="0.10000000000000001" translatesAutoresizingMaskIntoConstraints="NO" id="DDi-33-JAf">
                                         <rect key="frame" x="283" y="176.66666666666666" width="94" height="32"/>
                                         <color key="backgroundColor" red="0.0" green="0.49803921569999998" blue="0.5450980392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
@@ -243,6 +243,9 @@
                                         <userDefinedRuntimeAttributes>
                                             <userDefinedRuntimeAttribute type="string" keyPath="layer.cornerRadius" value="8"/>
                                         </userDefinedRuntimeAttributes>
+                                        <connections>
+                                            <action selector="numHandsStepperValueChanged:" destination="zgE-Xo-ZSc" eventType="valueChanged" id="ti0-YY-lAk"/>
+                                        </connections>
                                     </stepper>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Num Hands" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jCg-YX-6ga">
                                         <rect key="frame" x="16" y="228" width="76" height="17"/>
@@ -357,7 +360,7 @@
                                 <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="m4r-LP-sGS" customClass="OverlayView" customModule="FaceDetector">
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="m4r-LP-sGS" customClass="OverlayView" customModule="HandLandmarker">
                                 <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
@@ -409,7 +412,7 @@
                                 <rect key="frame" x="0.0" y="59" width="393" height="759"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </imageView>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Sfh-5s-l7y" customClass="OverlayView" customModule="FaceDetector">
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Sfh-5s-l7y" customClass="OverlayView" customModule="HandLandmarker">
                                 <rect key="frame" x="0.0" y="59" width="393" height="759"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>

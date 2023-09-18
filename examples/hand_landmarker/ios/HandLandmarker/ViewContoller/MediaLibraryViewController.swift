@@ -274,6 +274,16 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
         DispatchQueue.main.async {
           weakSelf.hideProgressView()
           weakSelf.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
+          let imageSize = image.size
+          let objectOverlays = OverlayView.objectOverlays(
+            fromLandmarks: handLandmarkerResult.landmarks,
+            inferredOnImageOfSize: imageSize,
+            ovelayViewSize: weakSelf.overlayView.bounds.size,
+            imageContentMode: weakSelf.overlayView.imageContentMode,
+            andOrientation: image.imageOrientation)
+          weakSelf.overlayView.draw(objectOverlays: objectOverlays,
+                           inBoundsOfContentImageOfSize: imageSize,
+                                    imageContentMode: .scaleAspectFit)
         }
       }
     default:
@@ -321,6 +331,17 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
                 let handLandmarkerResult = resultBundle.handLandmarkerResults[index] else {
             return
           }
+          weakSelf.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
+          let imageSize = resultBundle.size
+          let objectOverlays = OverlayView.objectOverlays(
+            fromLandmarks: handLandmarkerResult.landmarks,
+            inferredOnImageOfSize: imageSize,
+            ovelayViewSize: weakSelf.overlayView.bounds.size,
+            imageContentMode: weakSelf.overlayView.imageContentMode,
+            andOrientation: .up)
+          weakSelf.overlayView.draw(objectOverlays: objectOverlays,
+                           inBoundsOfContentImageOfSize: imageSize,
+                                    imageContentMode: .scaleAspectFit)
           
           // Enable clicks on inferenceVC if playback has ended.
           if (floor(CMTimeGetSeconds(time) +

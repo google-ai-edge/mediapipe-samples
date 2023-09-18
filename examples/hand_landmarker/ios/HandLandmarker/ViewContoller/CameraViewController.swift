@@ -230,18 +230,15 @@ extension CameraViewController: HandLandmarkerServiceLiveStreamDelegate {
     didFinishDetection result: ResultBundle?,
     error: Error?) {
       DispatchQueue.main.async { [weak self] in
-        guard let weakSelf = self else {
-          return
-        }
+        guard let weakSelf = self else { return }
         weakSelf.inferenceResultDeliveryDelegate?.didPerformInference(result: result)
-        guard let handLandmarkerResult =
-                result?.handLandmarkerResults.first as? HandLandmarkerResult else {
-          return
-        }
+        guard let handLandmarkerResult = result?.handLandmarkerResults.first as? HandLandmarkerResult else { return }
         let imageSize = weakSelf.cameraFeedService.videoResolution
         let objectOverlays = OverlayView.objectOverlays(
           fromLandmarks: handLandmarkerResult.landmarks,
           inferredOnImageOfSize: imageSize,
+          ovelayViewSize: weakSelf.overlayView.bounds.size,
+          imageContentMode: weakSelf.overlayView.imageContentMode,
           andOrientation: UIImage.Orientation.from(
             deviceOrientation: UIDevice.current.orientation))
         weakSelf.overlayView.draw(objectOverlays: objectOverlays,

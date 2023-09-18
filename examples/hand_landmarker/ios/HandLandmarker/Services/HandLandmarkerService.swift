@@ -72,10 +72,10 @@ class HandLandmarkerService: NSObject {
   private func createHandLandmarker() {
     let handLandmarkerOptions = HandLandmarkerOptions()
     handLandmarkerOptions.runningMode = runningMode
-//    handLandmarkerOptions.numHands = numHands
-//    handLandmarkerOptions.minHandDetectionConfidence = minHandDetectionConfidence
-//    handLandmarkerOptions.minHandPresenceConfidence = minHandPresenceConfidence
-//    handLandmarkerOptions.minTrackingConfidence = minTrackingConfidence
+    handLandmarkerOptions.numHands = numHands
+    handLandmarkerOptions.minHandDetectionConfidence = minHandDetectionConfidence
+    handLandmarkerOptions.minHandPresenceConfidence = minHandPresenceConfidence
+    handLandmarkerOptions.minTrackingConfidence = minTrackingConfidence
     handLandmarkerOptions.baseOptions.modelAssetPath = modelPath
     if runningMode == .liveStream {
       handLandmarkerOptions.handLandmarkerLiveStreamDelegate = self
@@ -256,7 +256,13 @@ extension HandLandmarkerService: HandLandmarkerLiveStreamDelegate {
     didFinishDetection result: HandLandmarkerResult?,
     timestampInMilliseconds: Int,
     error: Error?) {
-
+      let resultBundle = ResultBundle(
+        inferenceTime: Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds),
+        handLandmarkerResults: [result])
+      liveStreamDelegate?.handLandmarkerService(
+        self,
+        didFinishDetection: resultBundle,
+        error: error)
   }
 }
 

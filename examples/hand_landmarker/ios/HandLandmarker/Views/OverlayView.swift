@@ -23,7 +23,6 @@ struct Line {
 
 /// Line connection
 struct LineConnection {
-  let color: UIColor
   let lines: [Line]
 }
 
@@ -39,12 +38,9 @@ struct ObjectOverlay {
 class OverlayView: UIView {
 
   var objectOverlays: [ObjectOverlay] = []
-  private let lineWidth: CGFloat = 3
-  private let pointRadius: CGFloat = 3
-  private let pointColor = UIColor.yellow
 
   private var contentImageSize: CGSize = CGSizeZero
-  private var imageContentMode: UIView.ContentMode = .scaleAspectFit
+  var imageContentMode: UIView.ContentMode = .scaleAspectFit
   private var orientation = UIDeviceOrientation.portrait
 
   private var edgeOffset: CGFloat = 0.0
@@ -92,10 +88,10 @@ class OverlayView: UIView {
 
   override func draw(_ rect: CGRect) {
     for objectOverlay in objectOverlays {
-      drawDots(objectOverlay.dots)
       for lineConnection in objectOverlay.lineConnectios {
-        drawLines(lineConnection.lines, lineColor: lineConnection.color)
+        drawLines(lineConnection.lines)
       }
+      drawDots(objectOverlay.dots)
     }
   }
 
@@ -157,22 +153,26 @@ class OverlayView: UIView {
   private func drawDots(_ dots: [CGPoint]) {
     for dot in dots {
       let dotRect = CGRect(
-        x: CGFloat(dot.x) - pointRadius / 2, y: CGFloat(dot.y) - pointRadius / 2,
-        width: pointRadius, height: pointRadius)
+        x: CGFloat(dot.x) - DefaultConstants.pointRadius / 2,
+        y: CGFloat(dot.y) - DefaultConstants.pointRadius / 2,
+        width: DefaultConstants.pointRadius,
+        height: DefaultConstants.pointRadius)
       let path = UIBezierPath(ovalIn: dotRect)
-      pointColor.setFill()
+      DefaultConstants.pointFillColor.setFill()
+      DefaultConstants.pointColor.setStroke()
+      path.stroke()
       path.fill()
     }
   }
 
-  private func drawLines(_ lines: [Line], lineColor: UIColor) {
+  private func drawLines(_ lines: [Line]) {
     let path = UIBezierPath()
     for line in lines {
       path.move(to: line.from)
       path.addLine(to: line.to)
     }
-    path.lineWidth = lineWidth
-    lineColor.setStroke()
+    path.lineWidth = DefaultConstants.lineWidth
+    DefaultConstants.lineColor.setStroke()
     path.stroke()
   }
 
@@ -210,6 +210,8 @@ class OverlayView: UIView {
   static func objectOverlays(
     fromLandmarks landmarks: [[NormalizedLandmark]],
     inferredOnImageOfSize originalImageSize: CGSize,
+    ovelayViewSize: CGSize,
+    imageContentMode: UIView.ContentMode,
     andOrientation orientation: UIImage.Orientation) -> [ObjectOverlay] {
 
       var objectOverlays: [ObjectOverlay] = []
@@ -217,6 +219,11 @@ class OverlayView: UIView {
       guard !landmarks.isEmpty else {
         return []
       }
+
+      let offsetsAndScaleFactor = OverlayView.offsetsAndScaleFactor(
+        forImageOfSize: originalImageSize,
+        tobeDrawnInViewOfSize: ovelayViewSize,
+        withContentMode: imageContentMode)
 
       for landmark in landmarks {
         var transformedLandmark: [CGPoint]!
@@ -230,15 +237,14 @@ class OverlayView: UIView {
           transformedLandmark = landmark.map({CGPoint(x: CGFloat($0.x), y: CGFloat($0.y))})
         }
 
-        let dots: [CGPoint] = transformedLandmark.map({CGPoint(x: CGFloat($0.x) * originalImageSize.width, y: CGFloat($0.y) * originalImageSize.height)})
-        var lineConnections: [LineConnection] = [LineConnection(
-          color: UIColor(red: 0, green: 127/255.0, blue: 139/255.0, alpha: 1),
+        let dots: [CGPoint] = transformedLandmark.map({CGPoint(x: CGFloat($0.x) * originalImageSize.width * offsetsAndScaleFactor.scaleFactor + offsetsAndScaleFactor.xOffset, y: CGFloat($0.y) * originalImageSize.height * offsetsAndScaleFactor.scaleFactor + offsetsAndScaleFactor.yOffset)})
+        let lineConnections: [LineConnection] = [LineConnection(
           lines: HandLandmarker.handConnections
             .map({ connection in
-              let start = transformedLandmark[Int(connection.start)]
-              let end = transformedLandmark[Int(connection.end)]
-              return Line(from: CGPoint(x: CGFloat(start.x) * originalImageSize.width, y: CGFloat(start.y) * originalImageSize.height),
-                          to: CGPoint(x: CGFloat(end.x) * originalImageSize.width, y: CGFloat(end.y) * originalImageSize.height))
+              let start = dots[Int(connection.start)]
+              let end = dots[Int(connection.end)]
+              return Line(from: start,
+                          to: end)
             }))]
 
         objectOverlays.append(ObjectOverlay(dots: dots, lineConnectios: lineConnections))
