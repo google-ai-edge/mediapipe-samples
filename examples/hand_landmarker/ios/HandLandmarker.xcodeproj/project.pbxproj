@@ -10,6 +10,7 @@
 		390980DAF1C0BF696F2F9034 /* libPods-HandLandmarkerTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6A5255B9766F2DC5A4177BEC /* libPods-HandLandmarkerTests.a */; };
 		BE623C897110F7E0442419C4 /* Pods_HandLandmarker.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C35377F7CB8DB927779D1AD /* Pods_HandLandmarker.framework */; };
 		BF5EEC682AB7EBB500189276 /* thumbs-up.png in Resources */ = {isa = PBXBuildFile; fileRef = BF5EEC672AB7EBB500189276 /* thumbs-up.png */; };
+		BF5EECA72AB7FFB600189276 /* hand_landmarker.task in Resources */ = {isa = PBXBuildFile; fileRef = BF5EECA62AB7FFB600189276 /* hand_landmarker.task */; };
 		BFCDAE252AAEB2A700EC4371 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE242AAEB2A700EC4371 /* AppDelegate.swift */; };
 		BFCDAE272AAEB2A700EC4371 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE262AAEB2A700EC4371 /* SceneDelegate.swift */; };
 		BFCDAE2C2AAEB2A700EC4371 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BFCDAE2A2AAEB2A700EC4371 /* Main.storyboard */; };
@@ -25,7 +26,6 @@
 		BFCDAE672AAEB82C00EC4371 /* HandLandmarkerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE5D2AAEB82C00EC4371 /* HandLandmarkerService.swift */; };
 		BFCDAE682AAEB82C00EC4371 /* DefaultConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE5F2AAEB82C00EC4371 /* DefaultConstants.swift */; };
 		BFCDAE692AAEB82C00EC4371 /* InferenceConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE602AAEB82C00EC4371 /* InferenceConfigManager.swift */; };
-		BFCDAE6B2AAEBEB900EC4371 /* hand_landmarker.task in Resources */ = {isa = PBXBuildFile; fileRef = BFCDAE6A2AAEBEB900EC4371 /* hand_landmarker.task */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +45,7 @@
 		6A5255B9766F2DC5A4177BEC /* libPods-HandLandmarkerTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HandLandmarkerTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B19658A239090768FF9A5F9F /* Pods-HandLandmarker.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HandLandmarker.debug.xcconfig"; path = "Target Support Files/Pods-HandLandmarker/Pods-HandLandmarker.debug.xcconfig"; sourceTree = "<group>"; };
 		BF5EEC672AB7EBB500189276 /* thumbs-up.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "thumbs-up.png"; sourceTree = "<group>"; };
+		BF5EECA62AB7FFB600189276 /* hand_landmarker.task */ = {isa = PBXFileReference; lastKnownFileType = file; path = hand_landmarker.task; sourceTree = "<group>"; };
 		BFCDAE212AAEB2A700EC4371 /* HandLandmarker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HandLandmarker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BFCDAE242AAEB2A700EC4371 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BFCDAE262AAEB2A700EC4371 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -63,7 +64,6 @@
 		BFCDAE5D2AAEB82C00EC4371 /* HandLandmarkerService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HandLandmarkerService.swift; sourceTree = "<group>"; };
 		BFCDAE5F2AAEB82C00EC4371 /* DefaultConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultConstants.swift; sourceTree = "<group>"; };
 		BFCDAE602AAEB82C00EC4371 /* InferenceConfigManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceConfigManager.swift; sourceTree = "<group>"; };
-		BFCDAE6A2AAEBEB900EC4371 /* hand_landmarker.task */ = {isa = PBXFileReference; lastKnownFileType = file; path = hand_landmarker.task; sourceTree = "<group>"; };
 		D6309757C0B73AC4C4CE0B6E /* Pods-HandLandmarkerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HandLandmarkerTests.debug.xcconfig"; path = "Target Support Files/Pods-HandLandmarkerTests/Pods-HandLandmarkerTests.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -138,9 +138,9 @@
 				BFCDAE262AAEB2A700EC4371 /* SceneDelegate.swift */,
 				BFCDAE2A2AAEB2A700EC4371 /* Main.storyboard */,
 				BFCDAE2D2AAEB2A800EC4371 /* Assets.xcassets */,
+				BF5EECA62AB7FFB600189276 /* hand_landmarker.task */,
 				BFCDAE2F2AAEB2A800EC4371 /* LaunchScreen.storyboard */,
 				BFCDAE322AAEB2A800EC4371 /* Info.plist */,
-				BFCDAE6A2AAEBEB900EC4371 /* hand_landmarker.task */,
 			);
 			path = HandLandmarker;
 			sourceTree = "<group>";
@@ -199,6 +199,7 @@
 			buildConfigurationList = BFCDAE4B2AAEB2A800EC4371 /* Build configuration list for PBXNativeTarget "HandLandmarker" */;
 			buildPhases = (
 				7A7FE6070D4D8E43FA2501E9 /* [CP] Check Pods Manifest.lock */,
+				BF5EECA52AB7FEDB00189276 /* Download model */,
 				BFCDAE1D2AAEB2A700EC4371 /* Sources */,
 				BFCDAE1E2AAEB2A700EC4371 /* Frameworks */,
 				BFCDAE1F2AAEB2A700EC4371 /* Resources */,
@@ -274,7 +275,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BFCDAE6B2AAEBEB900EC4371 /* hand_landmarker.task in Resources */,
+				BF5EECA72AB7FFB600189276 /* hand_landmarker.task in Resources */,
 				BFCDAE312AAEB2A800EC4371 /* LaunchScreen.storyboard in Resources */,
 				BFCDAE2E2AAEB2A800EC4371 /* Assets.xcassets in Resources */,
 				BFCDAE2C2AAEB2A700EC4371 /* Main.storyboard in Resources */,
@@ -335,6 +336,24 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
+		};
+		BF5EECA52AB7FEDB00189276 /* Download model */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download model";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/RunScripts/download_models.sh\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
