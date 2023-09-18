@@ -331,7 +331,6 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
                 let handLandmarkerResult = resultBundle.handLandmarkerResults[index] else {
             return
           }
-          weakSelf.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
           let imageSize = resultBundle.size
           let objectOverlays = OverlayView.objectOverlays(
             fromLandmarks: handLandmarkerResult.landmarks,
