@@ -118,7 +118,7 @@ class GestureRecognizerService: NSObject {
     return gestureRecognizerService
   }
 
-  static func stillImageLandmarkerService(
+  static func stillImageGestureRecognizerService(
     modelPath: String?,
     minHandDetectionConfidence: Float,
     minHandPresenceConfidence: Float,

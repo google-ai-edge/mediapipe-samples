@@ -291,7 +291,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     gestureRecognizerService = nil
     switch runningMode {
       case .image:
-      gestureRecognizerService = GestureRecognizerService.stillImageLandmarkerService(
+      gestureRecognizerService = GestureRecognizerService.stillImageGestureRecognizerService(
         modelPath: InferenceConfigManager.sharedInstance.modelPath,
         minHandDetectionConfidence: InferenceConfigManager.sharedInstance.minHandDetectionConfidence,
         minHandPresenceConfidence: InferenceConfigManager.sharedInstance.minHandPresenceConfidence,
