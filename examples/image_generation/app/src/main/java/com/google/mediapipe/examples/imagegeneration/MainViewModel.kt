@@ -2,11 +2,11 @@ package com.google.mediapipe.examples.imagegeneration
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.os.Handler
+import android.os.Looper
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.google.mediapipe.examples.imagegeneration.helper.ImageGenerationHelper
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -41,8 +41,7 @@ class MainViewModel : ViewModel() {
         _uiState.update { it.copy(error = null) }
     }
 
-    // Create image generation helper
-    fun createImageGenerationHelper(context: Context) {
+    fun initializeImageGenerator() {
         val outputSize = _uiState.value.outputSize
         val displayIteration = _uiState.value.displayIteration
 
@@ -56,17 +55,20 @@ class MainViewModel : ViewModel() {
                 return
             }
 
-            helper = ImageGenerationHelper(
-                context, outputSize, displayIteration
-            )
-
-            _uiState.update {
-                it.copy(
-                    initialized = true,
-                    initializedOutputSize = outputSize,
-                    initializedDisplayIteration = displayIteration
-                )
+            _uiState.update { it.copy(isInitializing = true) }
+            val mainLooper = Looper.getMainLooper()
+            GlobalScope.launch {
+                helper?.initializeImageGenerator()
+                Handler(mainLooper).post {
+                    _uiState.update {
+                        it.copy(
+                            initialized = true,
+                            isInitializing = false
+                        )
+                    }
+                }
             }
+
         } catch (e: Exception) {
             _uiState.update {
                 it.copy(
@@ -75,6 +77,10 @@ class MainViewModel : ViewModel() {
                 )
             }
         }
+    }
+    // Create image generation helper
+    fun createImageGenerationHelper(context: Context) {
+        helper = ImageGenerationHelper(context)
     }
 
     fun generateImage() {
@@ -95,28 +101,40 @@ class MainViewModel : ViewModel() {
         }
         _uiState.update { it.copy(isGenerating = true) }
 
-        helper?.setInput(prompt, iteration, seed)
+        // Generate without iterations
+//        val mainLooper = Looper.getMainLooper()
+//        GlobalScope.launch {
+//            val image = helper?.generate()
+//            Handler(mainLooper).post {
+//                _uiState.update {
+//                    it.copy(
+//                        isGenerating = false,
+//                        outputBitmap = image
+//                    )
+//                }
+//            }
 
-        viewModelScope.launch(Dispatchers.IO) {
+
+        // Generate with iterations
+        val mainLooper = Looper.getMainLooper()
+        val tmpIteration = 10
+        _uiState.update { it.copy(displayIteration = 1) }
+        GlobalScope.launch {
+            helper?.setInput(prompt, tmpIteration, seed)
+
             val displayIteration = _uiState.value.displayIteration ?: 0
-            for (step in 0 until iteration) {
+            for (step in 0 until tmpIteration) {
 
                 val result =
-                    helper?.execute(displayIteration > 0 && ((step + 1) % displayIteration == 0))
-
-                // test this task with execution time 1s, should remove this line in real app
-                delay(1000)
+                    helper?.execute((displayIteration > 0 && ((step + 1) % displayIteration == 0)))
 
                 _uiState.update {
                     it.copy(
                         generatingMessage = "Generating ... %.2f%%".format(
                             (step.toFloat() / iteration.toFloat() * 100f)
-                        )
+                        ),
+                        outputBitmap = result
                     )
-                }
-                if (result != null) {
-                    // extract bitmap and update here
-                    _uiState.update { it.copy(outputBitmap = result) }
                 }
             }
             _uiState.update {
@@ -125,6 +143,8 @@ class MainViewModel : ViewModel() {
                     generatingMessage = "Generate"
                 )
             }
+
+//
         }
     }
 }
@@ -141,5 +161,6 @@ data class UiState(
     val initializedOutputSize: Int? = null,
     val initializedDisplayIteration: Int? = null,
     val isGenerating: Boolean = false,
+    val isInitializing: Boolean = false,
     val generatingMessage: String = "",
 )
