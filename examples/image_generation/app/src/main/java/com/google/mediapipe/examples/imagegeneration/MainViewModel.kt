@@ -21,8 +21,8 @@ class MainViewModel : ViewModel() {
         _uiState.update { it.copy(displayIteration = displayIteration) }
     }
 
-    fun updateOutputSize(outputSize: Int?) {
-        _uiState.update { it.copy(outputSize = outputSize) }
+    fun updateDisplayOptions(displayOptions: DisplayOptions) {
+        _uiState.update { it.copy(displayOptions = displayOptions) }
     }
 
     fun updatePrompt(prompt: String) {
@@ -37,20 +37,36 @@ class MainViewModel : ViewModel() {
         _uiState.update { it.copy(seed = seed) }
     }
 
+    fun updatePlugin(plugin: Int) {
+        _uiState.update {
+            it.copy(
+                plugins = when (plugin) {
+                    0 -> Plugins.FACE
+                    1 -> Plugins.DEPTH
+                    2 -> Plugins.EDGE
+                    else -> throw IllegalArgumentException("Invalid plugin")
+                }
+            )
+        }
+    }
+
+    fun updateInputBitmap(bitmap: Bitmap) {
+        _uiState.update { it.copy(inputBitmap = bitmap) }
+    }
+
+    fun updateUseLora(useLora: Boolean) {
+        _uiState.update { it.copy(useLora = useLora) }
+    }
+
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
 
     fun initializeImageGenerator() {
-        val outputSize = _uiState.value.outputSize
         val displayIteration = _uiState.value.displayIteration
-
+        val displayOptions = _uiState.value.displayOptions
         try {
-            if (outputSize == null) {
-                _uiState.update { it.copy(error = "Output size cannot be empty") }
-                return
-            }
-            if (displayIteration == null) {
+            if (displayIteration == null && displayOptions == DisplayOptions.ITERATION) {
                 _uiState.update { it.copy(error = "Display iteration cannot be empty") }
                 return
             }
@@ -62,8 +78,7 @@ class MainViewModel : ViewModel() {
                 Handler(mainLooper).post {
                     _uiState.update {
                         it.copy(
-                            initialized = true,
-                            isInitializing = false
+                            initialized = true, isInitializing = false
                         )
                     }
                 }
@@ -78,6 +93,7 @@ class MainViewModel : ViewModel() {
             }
         }
     }
+
     // Create image generation helper
     fun createImageGenerationHelper(context: Context) {
         helper = ImageGenerationHelper(context)
@@ -120,39 +136,55 @@ class MainViewModel : ViewModel() {
         val tmpIteration = 10
         _uiState.update { it.copy(displayIteration = 1) }
         GlobalScope.launch {
-            helper?.setInput(prompt, tmpIteration, seed)
 
-            val displayIteration = _uiState.value.displayIteration ?: 0
-            for (step in 0 until tmpIteration) {
-
-                val result =
-                    helper?.execute((displayIteration > 0 && ((step + 1) % displayIteration == 0)))
-
+            // if display option is final, use generate method, else use execute method
+            if (uiState.value.displayOptions == DisplayOptions.FINAL) {
+                val result = helper?.generate()
                 _uiState.update {
-                    it.copy(
-                        generatingMessage = "Generating ... %.2f%%".format(
-                            (step.toFloat() / iteration.toFloat() * 100f)
-                        ),
-                        outputBitmap = result
-                    )
+                    it.copy(outputBitmap = result)
+                }
+            } else {
+                helper?.setInput(prompt, tmpIteration, seed)
+
+                val displayIteration = _uiState.value.displayIteration ?: 0
+                for (step in 0 until tmpIteration) {
+
+                    val result =
+                        helper?.execute((displayIteration > 0 && ((step + 1) % displayIteration == 0)))
+
+                    _uiState.update {
+                        it.copy(
+                            generatingMessage = "Generating ... %.2f%%".format(
+                                (step.toFloat() / iteration.toFloat() * 100f)
+                            ), outputBitmap = result
+                        )
+                    }
                 }
             }
             _uiState.update {
                 it.copy(
-                    isGenerating = false,
-                    generatingMessage = "Generate"
+                    isGenerating = false, generatingMessage = "Generate"
                 )
             }
-
 //
         }
+    }
+
+    fun resetUiState() {
+        _uiState.update {
+            UiState()
+        }
+        helper = null
     }
 }
 
 data class UiState(
     val error: String? = null,
+    val inputBitmap: Bitmap? = null,
     val outputBitmap: Bitmap? = null,
-    val outputSize: Int? = null,
+    val displayOptions: DisplayOptions = DisplayOptions.FINAL,
+    val plugins: Plugins = Plugins.FACE,
+    val useLora: Boolean = true,
     val displayIteration: Int? = null,
     val prompt: String = "",
     val iteration: Int? = null,
@@ -164,3 +196,11 @@ data class UiState(
     val isInitializing: Boolean = false,
     val generatingMessage: String = "",
 )
+
+enum class DisplayOptions {
+    ITERATION, FINAL
+}
+
+enum class Plugins {
+    FACE, DEPTH, EDGE
+}

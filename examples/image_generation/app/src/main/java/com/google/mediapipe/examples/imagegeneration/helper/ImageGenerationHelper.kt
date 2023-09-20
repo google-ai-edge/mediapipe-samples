@@ -31,7 +31,7 @@ class ImageGenerationHelper(
 
     // Set input prompt, iteration, seed
     fun setInput(prompt: String, iteration: Int, seed: Int) {
-        imageGenerator.setInputs("purple teapot sitting on a green table", iteration, 0)
+        imageGenerator.setInputs(prompt, iteration, 0)
     }
 
     fun generate(): Bitmap {

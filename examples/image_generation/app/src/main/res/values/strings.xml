@@ -13,4 +13,17 @@
     <string name="tv_prompt_hint">Input your prompt here</string>
     <string name="edt_iterations_hint">20</string>
     <string name="edt_seed_hint">0</string>
+    <string name="default_prompt">portrait photo of an asia old warrior chief, tribal panther make up, blue on red, side profile, looking away, serious eyes, 50mm portrait photography, hard rim lighting photography</string>
+    <string name="tv_display_each_iteration">Display each iteration</string>
+    <string name="tv_only_display_final_image">Only display final image</string>
+    <string name="tv_use_lora">Use Lora</string>
+    <string name="tv_display_options">Display Options:</string>
+    <string name="tv_load_picture">Load Picture</string>
+    <string name="tv_open_camera">Open Camera</string>
+    <string name="tv_reset">Reset</string>
+    <string-array name="plugins">
+        <item>Face</item>
+        <item>Depth</item>
+        <item>Edge</item>
+    </string-array>
 </resources>
