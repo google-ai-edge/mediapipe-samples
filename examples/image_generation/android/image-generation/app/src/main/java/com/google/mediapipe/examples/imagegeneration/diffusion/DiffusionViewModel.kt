@@ -83,6 +83,9 @@ class DiffusionViewModel : ViewModel() {
         val prompt = _uiState.value.prompt
         val iteration = _uiState.value.iteration
         val seed = _uiState.value.seed
+        val displayIteration = _uiState.value.displayIteration ?: 0
+        var isDisplayStep = false
+
         if (prompt.isEmpty()) {
             _uiState.update { it.copy(error = "Prompt cannot be empty") }
             return
@@ -95,48 +98,37 @@ class DiffusionViewModel : ViewModel() {
             _uiState.update { it.copy(error = "Seed cannot be empty") }
             return
         }
-        _uiState.update { it.copy(isGenerating = true) }
 
-
-        // Generate without iterations
-//        val mainLooper = Looper.getMainLooper()
-//        GlobalScope.launch {
-//            val image = helper?.generate()
-//            Handler(mainLooper).post {
-//                _uiState.update {
-//                    it.copy(
-//                        isGenerating = false,
-//                        outputBitmap = image
-//                    )
-//                }
-//            }
-
+        _uiState.update {
+            it.copy(
+                generatingMessage = "Generating...",
+                isGenerating = true
+            )
+        }
 
         // Generate with iterations
-        val mainLooper = Looper.getMainLooper()
-        val tmpIteration = 10
         _uiState.update { it.copy(displayIteration = 1) }
         GlobalScope.launch {
 
             // if display option is final, use generate method, else use execute method
             if (uiState.value.displayOptions == DisplayOptions.FINAL) {
-                val result = helper?.generate()
+                val result = helper?.generate(prompt, iteration, seed)
                 _uiState.update {
                     it.copy(outputBitmap = result)
                 }
             } else {
-                helper?.setInput(prompt, tmpIteration, seed)
-
-                val displayIteration = _uiState.value.displayIteration ?: 0
-                for (step in 0 until tmpIteration) {
-
+                helper?.setInput(prompt, iteration, seed)
+                for (step in 0 until iteration) {
+                    isDisplayStep = (displayIteration > 0 && ((step + 1) % displayIteration == 0))
                     val result =
-                        helper?.execute((displayIteration > 0 && ((step + 1) % displayIteration == 0)))
+                        helper?.execute(isDisplayStep)
 
-                    _uiState.update {
-                        it.copy(
-                            generatingMessage = "Generating...", outputBitmap = result
-                        )
+                    if(isDisplayStep) {
+                        _uiState.update {
+                            it.copy(
+                                outputBitmap = result
+                            )
+                        }
                     }
                 }
             }
@@ -145,8 +137,11 @@ class DiffusionViewModel : ViewModel() {
                     isGenerating = false, generatingMessage = "Generate"
                 )
             }
-//
         }
+    }
+
+    fun closeGenerator() {
+        helper?.close()
     }
 }
 

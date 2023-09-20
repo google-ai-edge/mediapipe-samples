@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class MainViewModel : ViewModel() {
+class PluginViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(UiState())
     private var helper: ImageGenerationHelper? = null
     val uiState: StateFlow<UiState> = _uiState
@@ -108,8 +108,10 @@ class MainViewModel : ViewModel() {
         val prompt = _uiState.value.prompt
         val iteration = _uiState.value.iteration
         val seed = _uiState.value.seed
+        val displayIteration = _uiState.value.displayIteration ?: 0
         val inputImage = _uiState.value.inputBitmap
         val conditionType = _uiState.value.plugins
+        var isDisplayStep = false
         if (prompt.isEmpty()) {
             _uiState.update { it.copy(error = "Prompt cannot be empty") }
             return
@@ -122,47 +124,33 @@ class MainViewModel : ViewModel() {
             _uiState.update { it.copy(error = "Seed cannot be empty") }
             return
         }
-        _uiState.update { it.copy(isGenerating = true) }
 
+        _uiState.update {
+            it.copy(generatingMessage = "Generating...", isGenerating = true)
+        }
 
-        // Generate without iterations
-//        val mainLooper = Looper.getMainLooper()
-//        GlobalScope.launch {
-//            val image = helper?.generate()
-//            Handler(mainLooper).post {
-//                _uiState.update {
-//                    it.copy(
-//                        isGenerating = false,
-//                        outputBitmap = image
-//                    )
-//                }
-//            }
-
-
-        // Generate with iterations
-        val tmpIteration = 10
-        _uiState.update { it.copy(displayIteration = 1) }
         GlobalScope.launch {
 
             // if display option is final, use generate method, else use execute method
             if (uiState.value.displayOptions == DisplayOptions.FINAL) {
-                val result = helper?.generate()
+                val result = helper?.generate(prompt, BitmapImageBuilder(inputImage).build(), conditionType, iteration, seed)
                 _uiState.update {
-                    it.copy(outputBitmap = result)
+                    it.copy(generatingMessage = "Generate", outputBitmap = result)
                 }
             } else {
-                helper?.setInput(prompt, BitmapImageBuilder(inputImage).build(), conditionType, tmpIteration, seed)
+                helper?.setInput(prompt, BitmapImageBuilder(inputImage).build(), conditionType, displayIteration, seed)
 
-                val displayIteration = _uiState.value.displayIteration ?: 0
-                for (step in 0 until tmpIteration) {
-
+                for (step in 0 until displayIteration) {
+                    isDisplayStep = (displayIteration > 0 && ((step + 1) % displayIteration == 0))
                     val result =
                         helper?.execute((displayIteration > 0 && ((step + 1) % displayIteration == 0)))
 
-                    _uiState.update {
-                        it.copy(
-                            generatingMessage = "Generating...", outputBitmap = result
-                        )
+                    if(isDisplayStep) {
+                        _uiState.update {
+                            it.copy(
+                                outputBitmap = result
+                            )
+                        }
                     }
                 }
             }
@@ -171,8 +159,11 @@ class MainViewModel : ViewModel() {
                     isGenerating = false, generatingMessage = "Generate"
                 )
             }
-//
         }
+    }
+
+    fun closeGenerator() {
+        helper?.close()
     }
 }
 

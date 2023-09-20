@@ -18,7 +18,7 @@ class LoRAWeightViewModel : ViewModel() {
     private var helper: ImageGenerationHelper? = null
     val uiState: StateFlow<UiState> = _uiState
     private val MODEL_PATH = "/data/local/tmp/image_generator/bins/"
-    private val WEIGHT_PATH = "/data/local/tmp/image_generator/weights/pokemon_lora.task"
+    private val WEIGHT_PATH = "/data/local/tmp/image_generator/weights/teapot_lora.task"
 
     fun updateDisplayIteration(displayIteration: Int?) {
         _uiState.update { it.copy(displayIteration = displayIteration) }
@@ -85,6 +85,9 @@ class LoRAWeightViewModel : ViewModel() {
         val prompt = _uiState.value.prompt
         val iteration = _uiState.value.iteration
         val seed = _uiState.value.seed
+        val displayIteration = _uiState.value.displayIteration ?: 0
+        var isDisplayStep = false
+
         if (prompt.isEmpty()) {
             _uiState.update { it.copy(error = "Prompt cannot be empty") }
             return
@@ -97,47 +100,37 @@ class LoRAWeightViewModel : ViewModel() {
             _uiState.update { it.copy(error = "Seed cannot be empty") }
             return
         }
-        _uiState.update { it.copy(isGenerating = true) }
 
-
-        // Generate without iterations
-//        val mainLooper = Looper.getMainLooper()
-//        GlobalScope.launch {
-//            val image = helper?.generate()
-//            Handler(mainLooper).post {
-//                _uiState.update {
-//                    it.copy(
-//                        isGenerating = false,
-//                        outputBitmap = image
-//                    )
-//                }
-//            }
-
+        _uiState.update {
+            it.copy(
+                generatingMessage = "Generating...",
+                isGenerating = true
+            )
+        }
 
         // Generate with iterations
-        val tmpIteration = 10
         _uiState.update { it.copy(displayIteration = 1) }
         GlobalScope.launch {
 
             // if display option is final, use generate method, else use execute method
             if (uiState.value.displayOptions == DisplayOptions.FINAL) {
-                val result = helper?.generate()
+                val result = helper?.generate(prompt, iteration, seed)
                 _uiState.update {
                     it.copy(outputBitmap = result)
                 }
             } else {
-                helper?.setInput(prompt, tmpIteration, seed)
-
-                val displayIteration = _uiState.value.displayIteration ?: 0
-                for (step in 0 until tmpIteration) {
-
+                helper?.setInput(prompt, iteration, seed)
+                for (step in 0 until iteration) {
+                    isDisplayStep = (displayIteration > 0 && ((step + 1) % displayIteration == 0))
                     val result =
-                        helper?.execute((displayIteration > 0 && ((step + 1) % displayIteration == 0)))
+                        helper?.execute(isDisplayStep)
 
-                    _uiState.update {
-                        it.copy(
-                            generatingMessage = "Generating...", outputBitmap = result
-                        )
+                    if(isDisplayStep) {
+                        _uiState.update {
+                            it.copy(
+                                outputBitmap = result
+                            )
+                        }
                     }
                 }
             }
@@ -146,8 +139,11 @@ class LoRAWeightViewModel : ViewModel() {
                     isGenerating = false, generatingMessage = "Generate"
                 )
             }
-//
         }
+    }
+
+    fun closeGenerator() {
+        helper?.close()
     }
 }
 

@@ -13,7 +13,7 @@
     <string name="tv_prompt_hint">Input your prompt here</string>
     <string name="edt_iterations_hint">20</string>
     <string name="edt_seed_hint">0</string>
-    <string name="default_prompt_diffusion">portrait photo of an asia old warrior chief, tribal panther make up, blue on red, side profile, looking away, serious eyes, 50mm portrait photography, hard rim lighting photography</string>
+    <string name="default_prompt_diffusion">Larry Page of Google making a pizza</string>
     <string name="default_prompt_plugin">an ancient marble statue wearing a brightly colored rainbow wig</string>
     <string name="default_lora_plugin">a bright purple teapot sitting on top of a green table with orange teacups</string>
     <string name="tv_display_each_iteration">Display each iteration</string>

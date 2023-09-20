@@ -114,9 +114,14 @@ class ImageGenerationHelper(
     }
 
 
-    fun generate(): Bitmap {
-        // TODO Needs update for fix
-        val result = imageGenerator.generate("purple teapot sitting on a green table", 10, 0)
+    fun generate(prompt: String, iteration: Int, seed: Int): Bitmap {
+        val result = imageGenerator.generate(prompt, iteration, seed)
+        val bitmap = BitmapExtractor.extract(result?.generatedImage())
+        return bitmap
+    }
+
+    fun generate(prompt: String, inputImage: MPImage, conditionType: ConditionType, iteration: Int, seed: Int): Bitmap {
+        val result = imageGenerator.generate(prompt, inputImage, conditionType, iteration, seed)
         val bitmap = BitmapExtractor.extract(result?.generatedImage())
         return bitmap
     }
@@ -139,5 +144,9 @@ class ImageGenerationHelper(
             BitmapExtractor.extract(result?.generatedImage())
 
         return bitmap
+    }
+
+    fun close() {
+        imageGenerator.close()
     }
 }

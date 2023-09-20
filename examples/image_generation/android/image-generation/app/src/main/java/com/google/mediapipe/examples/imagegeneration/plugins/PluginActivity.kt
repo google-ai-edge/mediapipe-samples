@@ -30,7 +30,7 @@ class PluginActivity : AppCompatActivity() {
     }
 
     private lateinit var binding: ActivityPluginBinding
-    private val viewModel: MainViewModel by viewModels()
+    private val viewModel: PluginViewModel by viewModels()
     private val openGalleryResultLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
@@ -199,5 +199,10 @@ class PluginActivity : AppCompatActivity() {
             radioDisplayOptions.check(DEFAULT_DISPLAY_OPTIONS)
             edtDisplayIteration.setText(DEFAULT_DISPLAY_ITERATION.toString())
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.closeGenerator()
     }
 }

@@ -131,4 +131,9 @@ class LoRAWeightActivity  : AppCompatActivity() {
             edtDisplayIteration.setText(DEFAULT_DISPLAY_ITERATION.toString())
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.closeGenerator()
+    }
 }
