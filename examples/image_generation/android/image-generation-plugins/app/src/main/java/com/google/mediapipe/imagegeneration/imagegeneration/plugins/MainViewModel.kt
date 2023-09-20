@@ -183,6 +183,7 @@ class MainViewModel : ViewModel() {
         _uiState.update {
             UiState()
         }
+        helper?.close()
         helper = null
     }
 }

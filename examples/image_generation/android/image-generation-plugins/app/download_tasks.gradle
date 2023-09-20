@@ -25,4 +25,22 @@ task downloadFacePluginFile(type: Download) {
     overwrite false
 }
 
-preBuild.dependsOn downloadFaceTaskFile, downloadFacePluginFile
+task downloadEdgePluginFile(type: Download) {
+    src 'https://storage.googleapis.com/mediapipe-models/image_generator/plugin_models/float32/latest/canny_edge_plugin.tflite'
+    dest project.ext.ASSET_DIR + '/canny_edge_plugin.tflite'
+    overwrite false
+}
+
+task downloadDepthModelFile(type: Download) {
+    src 'https://storage.googleapis.com/mediapipe-models/image_generator/condition_image_models/float16/latest/depth_512_512_fp16_opt_w_metadata.tflite'
+    dest project.ext.ASSET_DIR + '/depth_model.tflite'
+    overwrite false
+}
+
+task downloadDepthPluginFile(type: Download) {
+    src 'https://storage.googleapis.com/mediapipe-models/image_generator/plugin_models/float32/latest/depth_plugin.tflite'
+    dest project.ext.ASSET_DIR + '/depth_plugin.tflite'
+    overwrite false
+}
+
+preBuild.dependsOn downloadFaceTaskFile, downloadFacePluginFile, downloadEdgePluginFile, downloadDepthModelFile, downloadDepthPluginFile

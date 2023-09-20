@@ -20,7 +20,6 @@ import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     companion object {
-        private const val TAG = "MediaPipe Image Generation"
         private const val DEFAULT_DISPLAY_ITERATION = 5
         private const val DEFAULT_ITERATION = 20
         private const val DEFAULT_SEED = 0
@@ -79,6 +78,9 @@ class MainActivity : AppCompatActivity() {
                     binding.llDisplayIteration.visibility =
                         if (uiState.displayOptions == DisplayOptions.ITERATION) android.view.View.VISIBLE else android.view.View.GONE
 
+                    binding.btnReset.visibility =
+                        if( uiState.initialized && !uiState.isGenerating) android.view.View.VISIBLE else android.view.View.GONE
+
                     binding.btnInitialize.isEnabled =
                         (uiState.displayOptions == DisplayOptions.FINAL || (uiState.displayOptions == DisplayOptions.ITERATION && uiState.displayIteration != null)) && uiState.inputBitmap != null && !uiState.isInitializing
 
@@ -95,6 +97,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                     binding.imgOutput.setImageBitmap(uiState.outputBitmap)
+                    binding.imgDisplayInput.setImageBitmap(uiState.inputBitmap)
 
                     showError(uiState.error)
                 }

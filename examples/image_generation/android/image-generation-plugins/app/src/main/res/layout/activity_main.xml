@@ -203,11 +203,20 @@
             android:text="@string/btn_generate" />
 
         <ImageView
+            android:id="@+id/imgDisplayInput"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:contentDescription="@null"
+            android:layout_gravity="center_horizontal"
+            android:scaleType="fitXY" />
+
+        <ImageView
             android:id="@+id/imgOutput"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:contentDescription="@null"
             android:scaleType="center" />
+
     </androidx.appcompat.widget.LinearLayoutCompat>
 
     <Button

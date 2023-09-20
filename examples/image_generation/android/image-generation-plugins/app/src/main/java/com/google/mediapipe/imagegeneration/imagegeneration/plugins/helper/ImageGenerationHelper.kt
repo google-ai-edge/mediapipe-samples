@@ -22,6 +22,9 @@ class ImageGenerationHelper(
 
     lateinit var imageGenerator: ImageGenerator
 
+    fun close() {
+        imageGenerator.close()
+    }
     fun initializeFaceImageGenerator(modelPath: String) {
         val options = ImageGeneratorOptions.builder().setImageGeneratorModelDirectory(modelPath)
             .build()
@@ -46,16 +49,11 @@ class ImageGenerationHelper(
     }
 
     fun initializeEdgeImageGenerator(modelPath: String) {
-        /*
         val options = ImageGeneratorOptions.builder().setImageGeneratorModelDirectory(modelPath)
             .build()
 
-        val edgeModelBaseOptions = BaseOptions.builder()
-            .setModelAssetPath(...)
-            .build()
-
         val pluginModelBaseOptions = BaseOptions.builder()
-//            .setModelAssetPath(modelPath)
+            .setModelAssetPath("canny_edge_plugin.tflite")
             .build()
 
         val edgeConditionOptions = EdgeConditionOptions.builder()
@@ -68,21 +66,19 @@ class ImageGenerationHelper(
 
         val conditionOptions = ConditionOptions.builder().setEdgeConditionOptions(edgeConditionOptions).build()
         imageGenerator = ImageGenerator.createFromOptions(context, options, conditionOptions)
-
-         */
     }
 
     fun initializeDepthImageGenerator(modelPath: String) {
-        /*
+
         val options = ImageGeneratorOptions.builder().setImageGeneratorModelDirectory(modelPath)
             .build()
 
         val depthModelBaseOptions = BaseOptions.builder()
-            .setModelAssetPath(...)
+            .setModelAssetPath("depth_model.tflite")
             .build()
 
         val pluginModelBaseOptions = BaseOptions.builder()
-//            .setModelAssetPath(modelPath)
+            .setModelAssetPath("depth_plugin.tflite")
             .build()
 
         val depthConditionOptions = ConditionOptions.DepthConditionOptions.builder()
@@ -92,8 +88,6 @@ class ImageGenerationHelper(
 
         val conditionOptions = ConditionOptions.builder().setDepthConditionOptions(depthConditionOptions).build()
         imageGenerator = ImageGenerator.createFromOptions(context, options, conditionOptions)
-
-         */
     }
 
     fun setInput(prompt: String, conditionalImage: MPImage, conditionType: ConditionType, iteration: Int, seed: Int) {
