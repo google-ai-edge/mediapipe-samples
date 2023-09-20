@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">Image Generation</string>
+    <string name="tv_output_size">Output size (width and height)</string>
+    <string name="tv_display">Display after every</string>
+    <string name="tv_iterations">iterations</string>
+    <string name="tv_iterations_upper">Iterations</string>
+    <string name="btn_initialize">Initialize</string>
+    <string name="tv_prompt">Prompt</string>
+    <string name="tv_seed">Seed(int)</string>
+    <string name="btn_generate">Generate</string>
+    <string name="edt_output_size">512</string>
+    <string name="edt_display">5</string>
+    <string name="tv_prompt_hint">Input your prompt here</string>
+    <string name="edt_iterations_hint">20</string>
+    <string name="edt_seed_hint">0</string>
+    <string name="default_prompt_diffusion">portrait photo of an asia old warrior chief, tribal panther make up, blue on red, side profile, looking away, serious eyes, 50mm portrait photography, hard rim lighting photography</string>
+    <string name="default_prompt_plugin">an ancient marble statue wearing a brightly colored rainbow wig</string>
+    <string name="default_lora_plugin">a bright purple teapot sitting on top of a green table with orange teacups</string>
+    <string name="tv_display_each_iteration">Display each iteration</string>
+    <string name="tv_only_display_final_image">Only display final image</string>
+    <string name="tv_use_lora">Use Lora</string>
+    <string name="tv_display_options">Display Options:</string>
+    <string name="tv_load_picture">Load Picture</string>
+    <string name="tv_open_camera">Open Camera</string>
+    <string name="tv_reset">Reset</string>
+    <string-array name="plugins">
+        <item>Face</item>
+        <item>Depth</item>
+        <item>Edge</item>
+    </string-array>
+</resources>
