@@ -292,16 +292,16 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     switch runningMode {
       case .image:
       gestureRecognizerService = GestureRecognizerService.stillImageGestureRecognizerService(
-        modelPath: InferenceConfigManager.sharedInstance.modelPath,
-        minHandDetectionConfidence: InferenceConfigManager.sharedInstance.minHandDetectionConfidence,
-        minHandPresenceConfidence: InferenceConfigManager.sharedInstance.minHandPresenceConfidence,
-        minTrackingConfidence: InferenceConfigManager.sharedInstance.minTrackingConfidence)
+        modelPath: InferenceConfigurationManager.sharedInstance.modelPath,
+        minHandDetectionConfidence: InferenceConfigurationManager.sharedInstance.minHandDetectionConfidence,
+        minHandPresenceConfidence: InferenceConfigurationManager.sharedInstance.minHandPresenceConfidence,
+        minTrackingConfidence: InferenceConfigurationManager.sharedInstance.minTrackingConfidence)
       case .video:
       gestureRecognizerService = GestureRecognizerService.videoGestureRecognizerService(
-        modelPath: InferenceConfigManager.sharedInstance.modelPath,
-        minHandDetectionConfidence: InferenceConfigManager.sharedInstance.minHandDetectionConfidence,
-        minHandPresenceConfidence: InferenceConfigManager.sharedInstance.minHandPresenceConfidence,
-        minTrackingConfidence: InferenceConfigManager.sharedInstance.minTrackingConfidence,
+        modelPath: InferenceConfigurationManager.sharedInstance.modelPath,
+        minHandDetectionConfidence: InferenceConfigurationManager.sharedInstance.minHandDetectionConfidence,
+        minHandPresenceConfidence: InferenceConfigurationManager.sharedInstance.minHandPresenceConfidence,
+        minTrackingConfidence: InferenceConfigurationManager.sharedInstance.minTrackingConfidence,
         videoDelegate: self)
       default:
         break;

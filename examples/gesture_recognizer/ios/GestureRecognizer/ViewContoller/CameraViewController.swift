@@ -150,10 +150,10 @@ class CameraViewController: UIViewController {
     gestureRecognizerService = nil
     gestureRecognizerService = GestureRecognizerService
       .liveStreamGestureRecognizerService(
-        modelPath: InferenceConfigManager.sharedInstance.modelPath,
-        minHandDetectionConfidence: InferenceConfigManager.sharedInstance.minHandDetectionConfidence,
-        minHandPresenceConfidence: InferenceConfigManager.sharedInstance.minHandPresenceConfidence,
-        minTrackingConfidence: InferenceConfigManager.sharedInstance.minTrackingConfidence,
+        modelPath: InferenceConfigurationManager.sharedInstance.modelPath,
+        minHandDetectionConfidence: InferenceConfigurationManager.sharedInstance.minHandDetectionConfidence,
+        minHandPresenceConfidence: InferenceConfigurationManager.sharedInstance.minHandPresenceConfidence,
+        minTrackingConfidence: InferenceConfigurationManager.sharedInstance.minTrackingConfidence,
         liveStreamDelegate: self)
   }
   
@@ -166,7 +166,7 @@ class CameraViewController: UIViewController {
     NotificationCenter.default
       .addObserver(self,
                    selector: #selector(clearAndInitializeGestureRecognizerService),
-                   name: InferenceConfigManager.notificationName,
+                   name: InferenceConfigurationManager.notificationName,
                    object: nil)
     isObserving = true
   }
@@ -175,7 +175,7 @@ class CameraViewController: UIViewController {
     if isObserving {
       NotificationCenter.default
         .removeObserver(self,
-                        name:InferenceConfigManager.notificationName,
+                        name:InferenceConfigurationManager.notificationName,
                         object: nil)
     }
     isObserving = false

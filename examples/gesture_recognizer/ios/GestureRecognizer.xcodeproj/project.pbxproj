@@ -24,7 +24,7 @@
 		BF5EECBD2AB801F200189276 /* GestureRecognizerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5EECB32AB801F200189276 /* GestureRecognizerService.swift */; };
 		BF5EECBE2AB801F200189276 /* CameraFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5EECB42AB801F200189276 /* CameraFeedService.swift */; };
 		BF5EECBF2AB801F200189276 /* DefaultConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5EECB62AB801F200189276 /* DefaultConstants.swift */; };
-		BF5EECC02AB801F200189276 /* InferenceConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5EECB72AB801F200189276 /* InferenceConfigManager.swift */; };
+		BF5EECC02AB801F200189276 /* InferenceConfigurationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5EECB72AB801F200189276 /* InferenceConfigurationManager.swift */; };
 		BF5EECC22AB98E2100189276 /* thumbs-up.png in Resources */ = {isa = PBXBuildFile; fileRef = BF5EECC12AB98E2100189276 /* thumbs-up.png */; };
 /* End PBXBuildFile section */
 
@@ -61,7 +61,7 @@
 		BF5EECB32AB801F200189276 /* GestureRecognizerService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GestureRecognizerService.swift; sourceTree = "<group>"; };
 		BF5EECB42AB801F200189276 /* CameraFeedService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedService.swift; sourceTree = "<group>"; };
 		BF5EECB62AB801F200189276 /* DefaultConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultConstants.swift; sourceTree = "<group>"; };
-		BF5EECB72AB801F200189276 /* InferenceConfigManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceConfigManager.swift; sourceTree = "<group>"; };
+		BF5EECB72AB801F200189276 /* InferenceConfigurationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceConfigurationManager.swift; sourceTree = "<group>"; };
 		BF5EECC12AB98E2100189276 /* thumbs-up.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "thumbs-up.png"; sourceTree = "<group>"; };
 		D2F94D163E413BA59A5DA2F7 /* libPods-GestureRecognizerTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GestureRecognizerTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D561AEF124E39445F8EAAF40 /* Pods-GestureRecognizer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GestureRecognizer.debug.xcconfig"; path = "Target Support Files/Pods-GestureRecognizer/Pods-GestureRecognizer.debug.xcconfig"; sourceTree = "<group>"; };
@@ -186,7 +186,7 @@
 			isa = PBXGroup;
 			children = (
 				BF5EECB62AB801F200189276 /* DefaultConstants.swift */,
-				BF5EECB72AB801F200189276 /* InferenceConfigManager.swift */,
+				BF5EECB72AB801F200189276 /* InferenceConfigurationManager.swift */,
 			);
 			path = Configs;
 			sourceTree = "<group>";
@@ -362,7 +362,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BF5EECC02AB801F200189276 /* InferenceConfigManager.swift in Sources */,
+				BF5EECC02AB801F200189276 /* InferenceConfigurationManager.swift in Sources */,
 				BF5EECBA2AB801F200189276 /* RootViewController.swift in Sources */,
 				BF5EECBB2AB801F200189276 /* BottomSheetViewController.swift in Sources */,
 				BF5EECB82AB801F200189276 /* OverlayView.swift in Sources */,

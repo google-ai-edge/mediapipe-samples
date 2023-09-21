@@ -75,14 +75,14 @@ class BottomSheetViewController: UIViewController {
   // MARK: - Private function
   private func setupUI() {
 
-    minHandDetectionConfidenceStepper.value = Double(InferenceConfigManager.sharedInstance.minHandDetectionConfidence)
-    minHandDetectionConfidenceValueLabel.text = "\(InferenceConfigManager.sharedInstance.minHandDetectionConfidence)"
+    minHandDetectionConfidenceStepper.value = Double(InferenceConfigurationManager.sharedInstance.minHandDetectionConfidence)
+    minHandDetectionConfidenceValueLabel.text = "\(InferenceConfigurationManager.sharedInstance.minHandDetectionConfidence)"
 
-    minHandPresenceConfidenceStepper.value = Double(InferenceConfigManager.sharedInstance.minHandPresenceConfidence)
-    minHandPresenceConfidenceValueLabel.text = "\(InferenceConfigManager.sharedInstance.minHandPresenceConfidence)"
+    minHandPresenceConfidenceStepper.value = Double(InferenceConfigurationManager.sharedInstance.minHandPresenceConfidence)
+    minHandPresenceConfidenceValueLabel.text = "\(InferenceConfigurationManager.sharedInstance.minHandPresenceConfidence)"
 
-    minTrackingConfidenceStepper.value = Double(InferenceConfigManager.sharedInstance.minTrackingConfidence)
-    minTrackingConfidenceValueLabel.text = "\(InferenceConfigManager.sharedInstance.minTrackingConfidence)"
+    minTrackingConfidenceStepper.value = Double(InferenceConfigurationManager.sharedInstance.minTrackingConfidence)
+    minTrackingConfidenceValueLabel.text = "\(InferenceConfigurationManager.sharedInstance.minTrackingConfidence)"
   }
   
   private func enableOrDisableClicks() {
@@ -101,19 +101,19 @@ class BottomSheetViewController: UIViewController {
 
   @IBAction func minHandDetectionConfidenceStepperValueChanged(_ sender: UIStepper) {
     let minHandDetectionConfidence = Float(sender.value)
-    InferenceConfigManager.sharedInstance.minHandDetectionConfidence = minHandDetectionConfidence
+    InferenceConfigurationManager.sharedInstance.minHandDetectionConfidence = minHandDetectionConfidence
     minHandDetectionConfidenceValueLabel.text = "\(minHandDetectionConfidence)"
   }
 
   @IBAction func minHandPresenceConfidenceStepperValueChanged(_ sender: UIStepper) {
     let minHandPresenceConfidence = Float(sender.value)
-    InferenceConfigManager.sharedInstance.minHandPresenceConfidence = minHandPresenceConfidence
+    InferenceConfigurationManager.sharedInstance.minHandPresenceConfidence = minHandPresenceConfidence
     minHandPresenceConfidenceValueLabel.text = "\(minHandPresenceConfidence)"
   }
 
   @IBAction func minTrackingConfidenceStepperValueChanged(_ sender: UIStepper) {
     let minTrackingConfidence = Float(sender.value)
-    InferenceConfigManager.sharedInstance.minTrackingConfidence = minTrackingConfidence
+    InferenceConfigurationManager.sharedInstance.minTrackingConfidence = minTrackingConfidence
     minTrackingConfidenceValueLabel.text = "\(minTrackingConfidence)"
   }
 }
