@@ -13,17 +13,20 @@
 		8A09A75FB8580778BCA828C6 /* libPods-ImageClassifierTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EFDD9A1F2B896959A7DB21F /* libPods-ImageClassifierTests.a */; };
 		BF2B2CDB2A316CB000589A11 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2CDA2A316CB000589A11 /* AppDelegate.swift */; };
 		BF2B2CDD2A316CB000589A11 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2CDC2A316CB000589A11 /* SceneDelegate.swift */; };
-		BF2B2CDF2A316CB000589A11 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2CDE2A316CB000589A11 /* ViewController.swift */; };
 		BF2B2CE22A316CB000589A11 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2CE02A316CB000589A11 /* Main.storyboard */; };
 		BF2B2CE42A316CB100589A11 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2CE32A316CB100589A11 /* Assets.xcassets */; };
 		BF2B2CE72A316CB100589A11 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2CE52A316CB100589A11 /* LaunchScreen.storyboard */; };
 		BF2B2CF22A316CB200589A11 /* ImageClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2CF12A316CB200589A11 /* ImageClassifierTests.swift */; };
-		BF2B2D0F2A316D7100589A11 /* ImageClassifierHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D0E2A316D7100589A11 /* ImageClassifierHelper.swift */; };
-		BF2B2D122A316D9300589A11 /* CameraFeedManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D102A316D9300589A11 /* CameraFeedManager.swift */; };
-		BF2B2D132A316D9300589A11 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D112A316D9300589A11 /* PreviewView.swift */; };
-		BF2B2D152A316DB200589A11 /* InferenceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2D142A316DB200589A11 /* InferenceViewController.swift */; };
 		BF2B2D192A31719F00589A11 /* efficientnet_lite2.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2D182A31719F00589A11 /* efficientnet_lite2.tflite */; };
 		BF97417C2A5B9F1800701718 /* efficientnet_lite0.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF97417B2A5B9F1800701718 /* efficientnet_lite0.tflite */; };
+		BFCDAE0C2AA03BC300EC4371 /* DefaultConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADFC2AA03BC300EC4371 /* DefaultConstants.swift */; };
+		BFCDAE0D2AA03BC300EC4371 /* InferenceConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADFD2AA03BC300EC4371 /* InferenceConfigManager.swift */; };
+		BFCDAE0F2AA03BC300EC4371 /* CameraFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE012AA03BC300EC4371 /* CameraFeedService.swift */; };
+		BFCDAE102AA03BC300EC4371 /* ImageClassifierService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE022AA03BC300EC4371 /* ImageClassifierService.swift */; };
+		BFCDAE132AA03BC300EC4371 /* MediaLibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE072AA03BC300EC4371 /* MediaLibraryViewController.swift */; };
+		BFCDAE142AA03BC300EC4371 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE082AA03BC300EC4371 /* RootViewController.swift */; };
+		BFCDAE152AA03BC300EC4371 /* BottomSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE092AA03BC300EC4371 /* BottomSheetViewController.swift */; };
+		BFCDAE162AA03BC300EC4371 /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE0A2AA03BC300EC4371 /* CameraViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,20 +48,23 @@
 		BF2B2CD72A316CB000589A11 /* ImageClassifier.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImageClassifier.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF2B2CDA2A316CB000589A11 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BF2B2CDC2A316CB000589A11 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		BF2B2CDE2A316CB000589A11 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		BF2B2CE12A316CB000589A11 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		BF2B2CE32A316CB100589A11 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BF2B2CE62A316CB100589A11 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		BF2B2CE82A316CB100589A11 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BF2B2CED2A316CB200589A11 /* ImageClassifierTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ImageClassifierTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF2B2CF12A316CB200589A11 /* ImageClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageClassifierTests.swift; sourceTree = "<group>"; };
-		BF2B2D0E2A316D7100589A11 /* ImageClassifierHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageClassifierHelper.swift; sourceTree = "<group>"; };
-		BF2B2D102A316D9300589A11 /* CameraFeedManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedManager.swift; sourceTree = "<group>"; };
-		BF2B2D112A316D9300589A11 /* PreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
-		BF2B2D142A316DB200589A11 /* InferenceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InferenceViewController.swift; sourceTree = "<group>"; };
 		BF2B2D182A31719F00589A11 /* efficientnet_lite2.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = efficientnet_lite2.tflite; sourceTree = "<group>"; };
 		BF2B2D1A2A3BFC1100589A11 /* cup.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cup.png; sourceTree = "<group>"; };
 		BF97417B2A5B9F1800701718 /* efficientnet_lite0.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = efficientnet_lite0.tflite; sourceTree = "<group>"; };
+		BFCDADFC2AA03BC300EC4371 /* DefaultConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultConstants.swift; sourceTree = "<group>"; };
+		BFCDADFD2AA03BC300EC4371 /* InferenceConfigManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceConfigManager.swift; sourceTree = "<group>"; };
+		BFCDAE012AA03BC300EC4371 /* CameraFeedService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedService.swift; sourceTree = "<group>"; };
+		BFCDAE022AA03BC300EC4371 /* ImageClassifierService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageClassifierService.swift; sourceTree = "<group>"; };
+		BFCDAE072AA03BC300EC4371 /* MediaLibraryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MediaLibraryViewController.swift; sourceTree = "<group>"; };
+		BFCDAE082AA03BC300EC4371 /* RootViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
+		BFCDAE092AA03BC300EC4371 /* BottomSheetViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BottomSheetViewController.swift; sourceTree = "<group>"; };
+		BFCDAE0A2AA03BC300EC4371 /* CameraViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
 		E52246C5465654BEC99C6748 /* Pods_ImageClassifier.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ImageClassifier.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EF5D0746976BFA97CBE182D0 /* Pods-ImageClassifierTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageClassifierTests.release.xcconfig"; path = "Target Support Files/Pods-ImageClassifierTests/Pods-ImageClassifierTests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -115,8 +121,9 @@
 		BF2B2CD92A316CB000589A11 /* ImageClassifier */ = {
 			isa = PBXGroup;
 			children = (
-				BF2B2D0B2A316D3F00589A11 /* Helper */,
-				BF2B2D0A2A316D3500589A11 /* ViewContoller */,
+				BFCDADFB2AA03BC300EC4371 /* Configs */,
+				BFCDAE002AA03BC300EC4371 /* Services */,
+				BFCDAE052AA03BC300EC4371 /* ViewContoller */,
 				BF2B2CDA2A316CB000589A11 /* AppDelegate.swift */,
 				BF2B2CDC2A316CB000589A11 /* SceneDelegate.swift */,
 				BF2B2CE02A316CB000589A11 /* Main.storyboard */,
@@ -138,23 +145,33 @@
 			path = ImageClassifierTests;
 			sourceTree = "<group>";
 		};
-		BF2B2D0A2A316D3500589A11 /* ViewContoller */ = {
+		BFCDADFB2AA03BC300EC4371 /* Configs */ = {
 			isa = PBXGroup;
 			children = (
-				BF2B2CDE2A316CB000589A11 /* ViewController.swift */,
-				BF2B2D142A316DB200589A11 /* InferenceViewController.swift */,
+				BFCDADFC2AA03BC300EC4371 /* DefaultConstants.swift */,
+				BFCDADFD2AA03BC300EC4371 /* InferenceConfigManager.swift */,
 			);
-			path = ViewContoller;
+			path = Configs;
 			sourceTree = "<group>";
 		};
-		BF2B2D0B2A316D3F00589A11 /* Helper */ = {
+		BFCDAE002AA03BC300EC4371 /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				BF2B2D102A316D9300589A11 /* CameraFeedManager.swift */,
-				BF2B2D112A316D9300589A11 /* PreviewView.swift */,
-				BF2B2D0E2A316D7100589A11 /* ImageClassifierHelper.swift */,
+				BFCDAE012AA03BC300EC4371 /* CameraFeedService.swift */,
+				BFCDAE022AA03BC300EC4371 /* ImageClassifierService.swift */,
 			);
-			path = Helper;
+			path = Services;
+			sourceTree = "<group>";
+		};
+		BFCDAE052AA03BC300EC4371 /* ViewContoller */ = {
+			isa = PBXGroup;
+			children = (
+				BFCDAE072AA03BC300EC4371 /* MediaLibraryViewController.swift */,
+				BFCDAE082AA03BC300EC4371 /* RootViewController.swift */,
+				BFCDAE092AA03BC300EC4371 /* BottomSheetViewController.swift */,
+				BFCDAE0A2AA03BC300EC4371 /* CameraViewController.swift */,
+			);
+			path = ViewContoller;
 			sourceTree = "<group>";
 		};
 		DE7FACF9B1AD0C5A8F58A56D /* Frameworks */ = {
@@ -351,13 +368,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BF2B2CDF2A316CB000589A11 /* ViewController.swift in Sources */,
 				BF2B2CDB2A316CB000589A11 /* AppDelegate.swift in Sources */,
-				BF2B2D132A316D9300589A11 /* PreviewView.swift in Sources */,
-				BF2B2D0F2A316D7100589A11 /* ImageClassifierHelper.swift in Sources */,
-				BF2B2D122A316D9300589A11 /* CameraFeedManager.swift in Sources */,
-				BF2B2D152A316DB200589A11 /* InferenceViewController.swift in Sources */,
+				BFCDAE132AA03BC300EC4371 /* MediaLibraryViewController.swift in Sources */,
+				BFCDAE0C2AA03BC300EC4371 /* DefaultConstants.swift in Sources */,
+				BFCDAE102AA03BC300EC4371 /* ImageClassifierService.swift in Sources */,
+				BFCDAE0F2AA03BC300EC4371 /* CameraFeedService.swift in Sources */,
+				BFCDAE142AA03BC300EC4371 /* RootViewController.swift in Sources */,
 				BF2B2CDD2A316CB000589A11 /* SceneDelegate.swift in Sources */,
+				BFCDAE162AA03BC300EC4371 /* CameraViewController.swift in Sources */,
+				BFCDAE152AA03BC300EC4371 /* BottomSheetViewController.swift in Sources */,
+				BFCDAE0D2AA03BC300EC4371 /* InferenceConfigManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

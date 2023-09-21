@@ -20,6 +20,9 @@ final class ImageClassifierTests: XCTestCase {
 
   static let efficientnetLite0 = Model.efficientnetLite0
   static let efficientnetLite2 = Model.efficientnetLite2
+
+  static let scoreThreshold: Float = 0.01
+  static let maxResult: Int = 3
   
   static let testImage = UIImage(
     named: "cup.png",
@@ -63,10 +66,15 @@ final class ImageClassifierTests: XCTestCase {
   ]
 
   func imageClassifierWithModel(
-    _ model: Model
-  ) throws -> ImageClassifierHelper {
-    let imageClassifierHelper = ImageClassifierHelper(model: model, maxResults: 3, scoreThreshold: 0, runningModel: .image, delegate: nil)
-    return imageClassifierHelper
+    _ model: Model,
+    scoreThreshold: Float,
+    maxResult: Int
+  ) throws -> ImageClassifierService {
+    let imageClassifierService = ImageClassifierService.stillImageClassifierService(
+      model: model,
+      scoreThreshold: scoreThreshold,
+      maxResult: maxResult)
+    return imageClassifierService!
   }
 
   func assertImageClassifierResultHasOneHead(
@@ -134,7 +142,7 @@ final class ImageClassifierTests: XCTestCase {
 
   func assertResultsForClassify(
     image: UIImage,
-    using imageClassifier: ImageClassifierHelper,
+    using imageClassifier: ImageClassifierService,
     equals expectedCategories: [ResultCategory]
   ) throws {
     let imageClassifierResult =
@@ -149,7 +157,10 @@ final class ImageClassifierTests: XCTestCase {
   }
   func testClassifyWithEfficientnetLite0Succeeds() throws {
 
-    let imageClassifier = try imageClassifierWithModel(ImageClassifierTests.efficientnetLite0)
+    let imageClassifier = try imageClassifierWithModel(
+      ImageClassifierTests.efficientnetLite0,
+      scoreThreshold: ImageClassifierTests.scoreThreshold,
+      maxResult: ImageClassifierTests.maxResult)
     try assertResultsForClassify(
       image: ImageClassifierTests.testImage,
       using: imageClassifier,
@@ -158,7 +169,10 @@ final class ImageClassifierTests: XCTestCase {
 
   func testClassifyWithEfficientnetLite2Succeeds() throws {
 
-    let imageClassifier = try imageClassifierWithModel(ImageClassifierTests.efficientnetLite2)
+    let imageClassifier = try imageClassifierWithModel(
+      ImageClassifierTests.efficientnetLite2,
+      scoreThreshold: ImageClassifierTests.scoreThreshold,
+      maxResult: ImageClassifierTests.maxResult)
     try assertResultsForClassify(
       image: ImageClassifierTests.testImage,
       using: imageClassifier,
