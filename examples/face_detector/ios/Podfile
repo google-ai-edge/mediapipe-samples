@@ -3,7 +3,7 @@ platform :ios, '15.0'
 target 'FaceDetector' do
   # Comment the next line if you don't want to use dynamic frameworks
   use_frameworks!
-  pod 'MediaPipeTasksVision', '0.10.3'
+  pod 'MediaPipeTasksVision', '0.10.5'
 
   # Pods for FaceDetector
 end

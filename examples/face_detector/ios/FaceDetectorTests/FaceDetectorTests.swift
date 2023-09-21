@@ -30,24 +30,23 @@ final class FaceDetectorTests: XCTestCase {
   static let results: [Detection] = [
     Detection(
       categories: [ResultCategory(index: 0, score: 0.973259031, categoryName: nil, displayName: nil)],
-      boundingBox: CGRect(x: 126.0, y: 100.0, width: 463.0, height: 463.0),
+      boundingBox: CGRect(x: 126.0, y: 100.0, width: 464.0, height: 464.0),
       keypoints: nil),
     Detection(
-      categories: [ResultCategory(index: 0, score: 0.9251941, categoryName: nil, displayName: nil)],
-      boundingBox: CGRect(x: 616.0, y: 192, width: 430.0, height: 430.0),
+      categories: [ResultCategory(index: 0, score: 0.9263101, categoryName: nil, displayName: nil)],
+      boundingBox: CGRect(x: 616.0, y: 193, width: 430.0, height: 430.0),
       keypoints: nil)
   ]
 
   func faceDetectorWithModelPath(
     _ modelPath: String,
     minDetectionConfidence: Float,
-    minSuppressionThreshold: Float) throws -> FaceDetectorHelper {
-    let faceDetectorHelper = FaceDetectorHelper(modelPath: modelPath,
-                                                minDetectionConfidence: minDetectionConfidence,
-                                                minSuppressionThreshold: minSuppressionThreshold,
-                                                runningMode: .image,
-                                                delegate: nil)
-    return faceDetectorHelper
+    minSuppressionThreshold: Float) throws -> FaceDetectorService {
+      let FaceDetectorService = FaceDetectorService.stillImageDetectorService(
+        modelPath: modelPath,
+        minDetectionConfidence: minDetectionConfidence,
+      minSuppressionThreshold: minSuppressionThreshold)
+    return FaceDetectorService!
   }
 
   func assertFaceDetectionResultHasOneHead(
@@ -123,7 +122,7 @@ final class FaceDetectorTests: XCTestCase {
 
   func assertResultsForDetection(
     image: UIImage,
-    using faceDetector: FaceDetectorHelper,
+    using faceDetector: FaceDetectorService,
     equals expectedDetections: [Detection]
   ) throws {
     let faceDetectorResult =
