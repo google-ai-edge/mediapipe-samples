@@ -45,13 +45,15 @@ class FaceDetectorService: NSObject {
   var faceDetector: FaceDetector?
   private(set) var runningMode = RunningMode.image
   private var minDetectionConfidence: Float = 0.5
+  private var minSuppressionThreshold: Float = 0.5
   var modelPath: String
 
   // MARK: - Custom Initializer
-  private init?(modelPath: String?, minDetectionConfidence: Float, runningMode:RunningMode) {
+  private init?(modelPath: String?, minDetectionConfidence: Float, minSuppressionThreshold: Float, runningMode:RunningMode) {
     guard let modelPath = modelPath else { return nil }
     self.modelPath = modelPath
     self.minDetectionConfidence = minDetectionConfidence
+    self.minSuppressionThreshold = minSuppressionThreshold
     self.runningMode = runningMode
     super.init()
 
@@ -62,6 +64,7 @@ class FaceDetectorService: NSObject {
     let faceDetectorOptions = FaceDetectorOptions()
     faceDetectorOptions.runningMode = runningMode
     faceDetectorOptions.minDetectionConfidence = self.minDetectionConfidence
+    faceDetectorOptions.minSuppressionThreshold = self.minSuppressionThreshold
     faceDetectorOptions.baseOptions.modelAssetPath = modelPath
     if runningMode == .liveStream {
       faceDetectorOptions.faceDetectorLiveStreamDelegate = self
@@ -78,10 +81,12 @@ class FaceDetectorService: NSObject {
   static func videoFaceDetectorService(
     modelPath: String?,
     minDetectionConfidence: Float,
+    minSuppressionThreshold: Float,
     videoDelegate: FaceDetectorServiceVideoDelegate?) -> FaceDetectorService? {
     let faceDetectorService = FaceDetectorService(
       modelPath: modelPath,
       minDetectionConfidence: minDetectionConfidence,
+      minSuppressionThreshold: minSuppressionThreshold,
       runningMode: .video)
     faceDetectorService?.videoDelegate = videoDelegate
 
@@ -91,10 +96,12 @@ class FaceDetectorService: NSObject {
   static func liveStreamDetectorService(
     modelPath: String?,
     minDetectionConfidence: Float,
+    minSuppressionThreshold: Float,
     liveStreamDelegate: FaceDetectorServiceLiveStreamDelegate?) -> FaceDetectorService? {
     let faceDetectorService = FaceDetectorService(
       modelPath: modelPath,
       minDetectionConfidence: minDetectionConfidence,
+      minSuppressionThreshold: minSuppressionThreshold,
       runningMode: .liveStream)
     faceDetectorService?.liveStreamDelegate = liveStreamDelegate
 
@@ -103,10 +110,12 @@ class FaceDetectorService: NSObject {
 
   static func stillImageDetectorService(
     modelPath: String?,
-    minDetectionConfidence: Float) -> FaceDetectorService? {
+    minDetectionConfidence: Float,
+    minSuppressionThreshold: Float) -> FaceDetectorService? {
     let faceDetectorService = FaceDetectorService(
       modelPath: modelPath,
       minDetectionConfidence: minDetectionConfidence,
+      minSuppressionThreshold: minSuppressionThreshold,
       runningMode: .image)
 
     return faceDetectorService

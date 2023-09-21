@@ -30,11 +30,11 @@ final class FaceDetectorTests: XCTestCase {
   static let results: [Detection] = [
     Detection(
       categories: [ResultCategory(index: 0, score: 0.973259031, categoryName: nil, displayName: nil)],
-      boundingBox: CGRect(x: 126.0, y: 100.0, width: 463.0, height: 463.0),
+      boundingBox: CGRect(x: 126.0, y: 100.0, width: 464.0, height: 464.0),
       keypoints: nil),
     Detection(
-      categories: [ResultCategory(index: 0, score: 0.9251941, categoryName: nil, displayName: nil)],
-      boundingBox: CGRect(x: 616.0, y: 192, width: 430.0, height: 430.0),
+      categories: [ResultCategory(index: 0, score: 0.9263101, categoryName: nil, displayName: nil)],
+      boundingBox: CGRect(x: 616.0, y: 193, width: 430.0, height: 430.0),
       keypoints: nil)
   ]
 
@@ -42,12 +42,11 @@ final class FaceDetectorTests: XCTestCase {
     _ modelPath: String,
     minDetectionConfidence: Float,
     minSuppressionThreshold: Float) throws -> FaceDetectorService {
-    let faceDetectorHelper = FaceDetectorService(modelPath: modelPath,
-                                                minDetectionConfidence: minDetectionConfidence,
-                                                minSuppressionThreshold: minSuppressionThreshold,
-                                                runningMode: .image,
-                                                delegate: nil)
-    return faceDetectorHelper
+      let FaceDetectorService = FaceDetectorService.stillImageDetectorService(
+        modelPath: modelPath,
+        minDetectionConfidence: minDetectionConfidence,
+      minSuppressionThreshold: minSuppressionThreshold)
+    return FaceDetectorService!
   }
 
   func assertFaceDetectionResultHasOneHead(

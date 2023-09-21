@@ -152,6 +152,7 @@ class CameraViewController: UIViewController {
         .liveStreamDetectorService(
           modelPath: InferenceConfigManager.sharedInstance.modelPath,
           minDetectionConfidence: InferenceConfigManager.sharedInstance.minDetectionConfidence,
+          minSuppressionThreshold: InferenceConfigManager.sharedInstance.minSuppressionThreshold,
           liveStreamDelegate: self)
   }
   
