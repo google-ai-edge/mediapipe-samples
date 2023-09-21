@@ -30,16 +30,7 @@ class ImageGenerationHelper(
         imageGenerator = ImageGenerator.createFromOptions(context, options)
     }
 
-    fun initializeLoRAWeightGenerator(modelPath: String, weightsPath: String) {
-        val options = ImageGeneratorOptions.builder()
-            .setLoraWeightsFilePath(weightsPath)
-            .setImageGeneratorModelDirectory(modelPath)
-            .build()
-
-        imageGenerator = ImageGenerator.createFromOptions(context, options)
-    }
-
-    fun initializeFaceImageGenerator(modelPath: String) {
+    fun initializeImageGeneratorWithPlugins(modelPath: String) {
         val options = ImageGeneratorOptions.builder().setImageGeneratorModelDirectory(modelPath)
             .build()
 
@@ -47,26 +38,18 @@ class ImageGenerationHelper(
             .setModelAssetPath("face_landmarker.task")
             .build()
 
-        val pluginModelBaseOptions = BaseOptions.builder()
+        val facePluginModelBaseOptions = BaseOptions.builder()
             .setModelAssetPath("face_landmark_plugin.tflite")
             .build()
 
         val faceConditionOptions = FaceConditionOptions.builder()
             .setFaceModelBaseOptions(faceModelBaseOptions)
-            .setPluginModelBaseOptions(pluginModelBaseOptions)
+            .setPluginModelBaseOptions(facePluginModelBaseOptions)
             .setMinFaceDetectionConfidence(0.3f)
             .setMinFacePresenceConfidence(0.3f)
             .build()
 
-        val conditionOptions = ImageGenerator.ConditionOptions.builder().setFaceConditionOptions(faceConditionOptions).build()
-        imageGenerator = ImageGenerator.createFromOptions(context, options, conditionOptions)
-    }
-
-    fun initializeEdgeImageGenerator(modelPath: String) {
-        val options = ImageGeneratorOptions.builder().setImageGeneratorModelDirectory(modelPath)
-            .build()
-
-        val pluginModelBaseOptions = BaseOptions.builder()
+        val edgePluginModelBaseOptions = BaseOptions.builder()
             .setModelAssetPath("canny_edge_plugin.tflite")
             .build()
 
@@ -75,33 +58,38 @@ class ImageGenerationHelper(
             .setThreshold2(100.0f) // default = 100.0f
             .setApertureSize(3) // default = 3
             .setL2Gradient(false) // default = false
-            .setPluginModelBaseOptions(pluginModelBaseOptions)
-            .build()
-
-        val conditionOptions = ConditionOptions.builder().setEdgeConditionOptions(edgeConditionOptions).build()
-        imageGenerator = ImageGenerator.createFromOptions(context, options, conditionOptions)
-    }
-
-    fun initializeDepthImageGenerator(modelPath: String) {
-
-        val options = ImageGeneratorOptions.builder().setImageGeneratorModelDirectory(modelPath)
+            .setPluginModelBaseOptions(edgePluginModelBaseOptions)
             .build()
 
         val depthModelBaseOptions = BaseOptions.builder()
             .setModelAssetPath("depth_model.tflite")
             .build()
 
-        val pluginModelBaseOptions = BaseOptions.builder()
+        val depthPluginModelBaseOptions = BaseOptions.builder()
             .setModelAssetPath("depth_plugin.tflite")
             .build()
 
-        val depthConditionOptions = ImageGenerator.ConditionOptions.DepthConditionOptions.builder()
+        val depthConditionOptions = ConditionOptions.DepthConditionOptions.builder()
             .setDepthModelBaseOptions(depthModelBaseOptions)
-            .setPluginModelBaseOptions(pluginModelBaseOptions)
+            .setPluginModelBaseOptions(depthPluginModelBaseOptions)
             .build()
 
-        val conditionOptions = ImageGenerator.ConditionOptions.builder().setDepthConditionOptions(depthConditionOptions).build()
+        val conditionOptions = ConditionOptions.builder()
+            .setFaceConditionOptions(faceConditionOptions)
+            .setEdgeConditionOptions(edgeConditionOptions)
+            .setDepthConditionOptions(depthConditionOptions)
+            .build()
+
         imageGenerator = ImageGenerator.createFromOptions(context, options, conditionOptions)
+    }
+
+    fun initializeLoRAWeightGenerator(modelPath: String, weightsPath: String) {
+        val options = ImageGeneratorOptions.builder()
+            .setLoraWeightsFilePath(weightsPath)
+            .setImageGeneratorModelDirectory(modelPath)
+            .build()
+
+        imageGenerator = ImageGenerator.createFromOptions(context, options)
     }
 
     fun setInput(prompt: String, conditionalImage: MPImage, conditionType: ConditionType, iteration: Int, seed: Int) {
@@ -130,7 +118,6 @@ class ImageGenerationHelper(
         // execute image generation model
         val result = imageGenerator.execute(showResult)
 
-//        val image = result?.generatedImage()
         if( result == null || result.generatedImage() == null ) {
             return Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888).apply {
                 val canvas = Canvas(this)
@@ -141,7 +128,7 @@ class ImageGenerationHelper(
         }
 
         val bitmap =
-            BitmapExtractor.extract(result?.generatedImage())
+            BitmapExtractor.extract(result.generatedImage())
 
         return bitmap
     }

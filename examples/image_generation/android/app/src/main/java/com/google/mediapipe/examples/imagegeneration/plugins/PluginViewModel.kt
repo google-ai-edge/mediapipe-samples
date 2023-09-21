@@ -1,4 +1,4 @@
-package com.google.mediapipe.examples.imagegeneration.diffusion
+package com.google.mediapipe.examples.imagegeneration.plugins
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -6,13 +6,15 @@ import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.ViewModel
 import com.google.mediapipe.examples.imagegeneration.ImageGenerationHelper
+import com.google.mediapipe.framework.image.BitmapImageBuilder
+import com.google.mediapipe.tasks.vision.imagegenerator.ImageGenerator.ConditionOptions.ConditionType
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class DiffusionViewModel : ViewModel() {
+class PluginViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(UiState())
     private var helper: ImageGenerationHelper? = null
     val uiState: StateFlow<UiState> = _uiState
@@ -38,6 +40,23 @@ class DiffusionViewModel : ViewModel() {
         _uiState.update { it.copy(seed = seed) }
     }
 
+    fun updatePlugin(plugin: Int) {
+        _uiState.update {
+            it.copy(
+                plugins = when (plugin) {
+                    0 -> ConditionType.FACE
+                    1 -> ConditionType.DEPTH
+                    2 -> ConditionType.EDGE
+                    else -> throw IllegalArgumentException("Invalid plugin")
+                }
+            )
+        }
+    }
+
+    fun updateInputBitmap(bitmap: Bitmap) {
+        _uiState.update { it.copy(inputBitmap = bitmap) }
+    }
+
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
@@ -45,6 +64,7 @@ class DiffusionViewModel : ViewModel() {
     fun initializeImageGenerator() {
         val displayIteration = _uiState.value.displayIteration
         val displayOptions = _uiState.value.displayOptions
+        val conditionType = _uiState.value.plugins
         try {
             if (displayIteration == null && displayOptions == DisplayOptions.ITERATION) {
                 _uiState.update { it.copy(error = "Display iteration cannot be empty") }
@@ -54,7 +74,8 @@ class DiffusionViewModel : ViewModel() {
             _uiState.update { it.copy(isInitializing = true) }
             val mainLooper = Looper.getMainLooper()
             GlobalScope.launch {
-                helper?.initializeImageGenerator(MODEL_PATH)
+                helper?.initializeImageGeneratorWithPlugins(MODEL_PATH)
+
                 Handler(mainLooper).post {
                     _uiState.update {
                         it.copy(
@@ -84,8 +105,9 @@ class DiffusionViewModel : ViewModel() {
         val iteration = _uiState.value.iteration
         val seed = _uiState.value.seed
         val displayIteration = _uiState.value.displayIteration ?: 0
+        val inputImage = _uiState.value.inputBitmap
+        val conditionType = _uiState.value.plugins
         var isDisplayStep = false
-
         if (prompt.isEmpty()) {
             _uiState.update { it.copy(error = "Prompt cannot be empty") }
             return
@@ -100,24 +122,20 @@ class DiffusionViewModel : ViewModel() {
         }
 
         _uiState.update {
-            it.copy(
-                generatingMessage = "Generating...",
-                isGenerating = true
-            )
+            it.copy(generatingMessage = "Generating...", isGenerating = true)
         }
 
         // Generate with iterations
-        _uiState.update { it.copy(displayIteration = 1) }
         GlobalScope.launch {
 
             // if display option is final, use generate method, else use execute method
             if (uiState.value.displayOptions == DisplayOptions.FINAL) {
-                val result = helper?.generate(prompt, iteration, seed)
+                val result = helper?.generate(prompt, BitmapImageBuilder(inputImage).build(), conditionType, iteration, seed)
                 _uiState.update {
                     it.copy(outputBitmap = result)
                 }
             } else {
-                helper?.setInput(prompt, iteration, seed)
+                helper?.setInput(prompt, BitmapImageBuilder(inputImage).build(), conditionType, iteration, seed)
                 for (step in 0 until iteration) {
                     isDisplayStep = (displayIteration > 0 && ((step + 1) % displayIteration == 0))
                     val result =
@@ -147,13 +165,16 @@ class DiffusionViewModel : ViewModel() {
 
 data class UiState(
     val error: String? = null,
+    val inputBitmap: Bitmap? = null,
     val outputBitmap: Bitmap? = null,
     val displayOptions: DisplayOptions = DisplayOptions.FINAL,
+    val plugins: ConditionType = ConditionType.FACE,
     val displayIteration: Int? = null,
     val prompt: String = "",
     val iteration: Int? = null,
     val seed: Int? = null,
     val initialized: Boolean = false,
+    val initializedOutputSize: Int? = null,
     val initializedDisplayIteration: Int? = null,
     val isGenerating: Boolean = false,
     val isInitializing: Boolean = false,

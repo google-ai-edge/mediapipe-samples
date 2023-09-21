@@ -36,7 +36,7 @@ android {
     }
 }
 
-// import DownloadMPTasks task
+// Downloads the TFLite and Task files used for plugins
 project.ext.ASSET_DIR = projectDir.toString() + '/src/main/assets'
 apply from: 'download_tasks.gradle'
 

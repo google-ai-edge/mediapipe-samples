@@ -25,9 +25,12 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".diffusion.DiffusionActivity" />
-        <activity android:name=".plugins.PluginActivity" />
-        <activity android:name=".loraweights.LoRAWeightActivity" />
+        <activity android:name=".diffusion.DiffusionActivity"
+            android:keepScreenOn="true" />
+        <activity android:name=".plugins.PluginActivity"
+            android:keepScreenOn="true" />
+        <activity android:name=".loraweights.LoRAWeightActivity"
+            android:keepScreenOn="true" />
     </application>
 
 </manifest>
