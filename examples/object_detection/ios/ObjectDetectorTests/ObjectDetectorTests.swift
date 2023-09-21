@@ -26,16 +26,16 @@ final class ObjectDetectorTests: XCTestCase {
 
   static let efficientnetLite0Results: [Detection] = [
     Detection(
-      categories: [ResultCategory(index: -1, score: 0.94170237, categoryName: "person", displayName: nil)],
-      boundingBox: CGRect(x: 214.0, y: 12.0, width: 120.0, height: 261.0),
+      categories: [ResultCategory(index: -1, score: 0.9396609, categoryName: "person", displayName: nil)],
+      boundingBox: CGRect(x: 214.0, y: 11.0, width: 120.0, height: 262.0),
       keypoints: nil),
     Detection(
-      categories: [ResultCategory(index: -1, score: 0.7796736, categoryName: "dog", displayName: nil)],
-      boundingBox: CGRect(x: 66.0, y: 254.0, width: 56.0, height: 76.0),
+      categories: [ResultCategory(index: -1, score: 0.77432173, categoryName: "dog", displayName: nil)],
+      boundingBox: CGRect(x: 66.0, y: 254.0, width: 57.0, height: 77.0),
       keypoints: nil),
     Detection(
-      categories: [ResultCategory(index: -1, score: 0.6708669, categoryName: "person", displayName: nil)],
-      boundingBox: CGRect(x: 144.0, y: 18.0, width: 82.0, height: 242.0),
+      categories: [ResultCategory(index: -1, score: 0.6645179, categoryName: "person", displayName: nil)],
+      boundingBox: CGRect(x: 144.0, y: 18.0, width: 82.0, height: 243.0),
       keypoints: nil)
   ]
 
@@ -45,8 +45,8 @@ final class ObjectDetectorTests: XCTestCase {
       boundingBox: CGRect(x: 71.0, y: 254.0, width: 53.0, height: 74.0),
       keypoints: nil),
     Detection(
-      categories: [ResultCategory(index: -1, score: 0.90384406, categoryName: "person", displayName: nil)],
-      boundingBox: CGRect(x: 207.0, y: 8.0, width: 126.0, height: 264.0),
+      categories: [ResultCategory(index: -1, score: 0.90494984, categoryName: "person", displayName: nil)],
+      boundingBox: CGRect(x: 207.0, y: 8.0, width: 126.0, height: 263.0),
       keypoints: nil),
     Detection(
       categories: [ResultCategory(index: -1, score: 0.810646474, categoryName: "person", displayName: nil)],

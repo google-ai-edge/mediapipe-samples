@@ -3,7 +3,7 @@ platform :ios, '15.0'
 target 'ObjectDetector' do
 
   use_frameworks!
-  pod 'MediaPipeTasksVision', '0.10.3'
+  pod 'MediaPipeTasksVision', '0.10.5'
 
   # Pods for ObjectDetector
 end
