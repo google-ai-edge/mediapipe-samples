@@ -18,6 +18,7 @@ import com.google.mediapipe.examples.imagegeneration.ImageUtils
 import com.google.mediapipe.examples.imagegeneration.R
 import com.google.mediapipe.examples.imagegeneration.databinding.ActivityPluginBinding
 import kotlinx.coroutines.launch
+import java.lang.Math.abs
 import java.util.*
 
 class PluginActivity : AppCompatActivity() {
@@ -236,8 +237,7 @@ class PluginActivity : AppCompatActivity() {
 
     private fun randomSeed() {
         val random = Random()
-        // random seed from 0 to 99
-        val seed = random.nextInt(100)
+        val seed = abs(random.nextInt())
         binding.edtSeed.setText(seed.toString())
     }
 

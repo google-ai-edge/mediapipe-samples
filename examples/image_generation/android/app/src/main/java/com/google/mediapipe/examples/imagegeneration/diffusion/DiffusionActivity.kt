@@ -166,8 +166,7 @@ class DiffusionActivity : AppCompatActivity() {
 
     private fun randomSeed() {
         val random = Random()
-        // random seed from 0 to 99
-        val seed = random.nextInt(100)
+        val seed = Math.abs(random.nextInt())
         binding.edtSeed.setText(seed.toString())
     }
 
