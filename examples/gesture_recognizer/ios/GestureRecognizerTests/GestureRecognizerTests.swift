@@ -149,7 +149,7 @@ final class GestureRecognizerTests: XCTestCase {
     equals expectedResult: GestureRecognizerResult
   ) throws {
     let gestureRecognizerResult =
-    try XCTUnwrap(gestureRecognizerService.detect(image: image)!.gestureRecognizerResults[0])
+    try XCTUnwrap(gestureRecognizerService.recognize(image: image)!.gestureRecognizerResults[0])
     assertGestureRecognizerResultHasOneHead(gestureRecognizerResult)
     assertEqualLandmarkArrays(landmarkArray: gestureRecognizerResult.landmarks, expectedLandmarkArray: expectedResult.landmarks)
     assertGesturesAreEqual(gestures: gestureRecognizerResult.gestures[0][0], expectedGestures: expectedResult.gestures[0][0])

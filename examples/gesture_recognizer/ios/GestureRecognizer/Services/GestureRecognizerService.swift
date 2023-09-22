@@ -17,26 +17,26 @@ import MediaPipeTasksVision
 import AVFoundation
 
 /**
- This protocol must be adopted by any class that wants to get the detection results of the hand landmarker and gesture in live stream mode.
+ This protocol must be adopted by any class that wants to get the recognition results of the hand landmarker and gesture in live stream mode.
  */
 protocol GestureRecognizerServiceLiveStreamDelegate: AnyObject {
   func gestureRecognizerService(_ gestureRecognizerService: GestureRecognizerService,
-                             didFinishDetection result: ResultBundle?,
-                             error: Error?)
+                                didFinishRecognition result: ResultBundle?,
+                                error: Error?)
 }
 
 /**
  This protocol must be adopted by any class that wants to take appropriate actions during  different stages of hand landmark and gesture on videos.
  */
 protocol GestureRecognizerServiceVideoDelegate: AnyObject {
- func gestureRecognizerService(_ gestureRecognizerService: GestureRecognizerService,
-                                  didFinishDetectionOnVideoFrame index: Int)
- func gestureRecognizerService(_ gestureRecognizerService: GestureRecognizerService,
-                             willBeginDetection totalframeCount: Int)
+  func gestureRecognizerService(_ gestureRecognizerService: GestureRecognizerService,
+                                didFinishRecognitionOnVideoFrame index: Int)
+  func gestureRecognizerService(_ gestureRecognizerService: GestureRecognizerService,
+                                willBeginRecognition totalframeCount: Int)
 }
 
 
-// Initializes and calls the MediaPipe APIs for detection.
+// Initializes and calls the MediaPipe APIs for recognition.
 class GestureRecognizerService: NSObject {
 
   weak var liveStreamDelegate: GestureRecognizerServiceLiveStreamDelegate?
@@ -91,15 +91,15 @@ class GestureRecognizerService: NSObject {
     minHandPresenceConfidence: Float,
     minTrackingConfidence: Float,
     videoDelegate: GestureRecognizerServiceVideoDelegate?) -> GestureRecognizerService? {
-    let gestureRecognizerService = GestureRecognizerService(
-      modelPath: modelPath,
-      runningMode: .video,
-      minHandDetectionConfidence: minHandDetectionConfidence,
-      minHandPresenceConfidence: minHandPresenceConfidence,
-      minTrackingConfidence: minTrackingConfidence)
-    gestureRecognizerService?.videoDelegate = videoDelegate
-    return gestureRecognizerService
-  }
+      let gestureRecognizerService = GestureRecognizerService(
+        modelPath: modelPath,
+        runningMode: .video,
+        minHandDetectionConfidence: minHandDetectionConfidence,
+        minHandPresenceConfidence: minHandPresenceConfidence,
+        minTrackingConfidence: minTrackingConfidence)
+      gestureRecognizerService?.videoDelegate = videoDelegate
+      return gestureRecognizerService
+    }
 
   static func liveStreamGestureRecognizerService(
     modelPath: String?,
@@ -107,37 +107,37 @@ class GestureRecognizerService: NSObject {
     minHandPresenceConfidence: Float,
     minTrackingConfidence: Float,
     liveStreamDelegate: GestureRecognizerServiceLiveStreamDelegate?) -> GestureRecognizerService? {
-    let gestureRecognizerService = GestureRecognizerService(
-      modelPath: modelPath,
-      runningMode: .liveStream,
-      minHandDetectionConfidence: minHandDetectionConfidence,
-      minHandPresenceConfidence: minHandPresenceConfidence,
-      minTrackingConfidence: minTrackingConfidence)
-    gestureRecognizerService?.liveStreamDelegate = liveStreamDelegate
+      let gestureRecognizerService = GestureRecognizerService(
+        modelPath: modelPath,
+        runningMode: .liveStream,
+        minHandDetectionConfidence: minHandDetectionConfidence,
+        minHandPresenceConfidence: minHandPresenceConfidence,
+        minTrackingConfidence: minTrackingConfidence)
+      gestureRecognizerService?.liveStreamDelegate = liveStreamDelegate
 
-    return gestureRecognizerService
-  }
+      return gestureRecognizerService
+    }
 
   static func stillImageGestureRecognizerService(
     modelPath: String?,
     minHandDetectionConfidence: Float,
     minHandPresenceConfidence: Float,
     minTrackingConfidence: Float) -> GestureRecognizerService? {
-    let gestureRecognizerService = GestureRecognizerService(
-      modelPath: modelPath,
-      runningMode: .image,
-      minHandDetectionConfidence: minHandDetectionConfidence,
-      minHandPresenceConfidence: minHandPresenceConfidence,
-      minTrackingConfidence: minTrackingConfidence)
+      let gestureRecognizerService = GestureRecognizerService(
+        modelPath: modelPath,
+        runningMode: .image,
+        minHandDetectionConfidence: minHandDetectionConfidence,
+        minHandPresenceConfidence: minHandPresenceConfidence,
+        minTrackingConfidence: minTrackingConfidence)
 
-    return gestureRecognizerService
-  }
+      return gestureRecognizerService
+    }
 
-  // MARK: - Detection Methods for Different Modes
+  // MARK: - Recognition Methods for Different Modes
   /**
    This method return GestureRecognizerResult and infrenceTime when receive an image
    **/
-  func detect(image: UIImage) -> ResultBundle? {
+  func recognize(image: UIImage) -> ResultBundle? {
     guard let mpImage = try? MPImage(uiImage: image) else {
       return nil
     }
@@ -148,47 +148,47 @@ class GestureRecognizerService: NSObject {
       let inferenceTime = Date().timeIntervalSince(startDate) * 1000
       return ResultBundle(inferenceTime: inferenceTime, gestureRecognizerResults: [result])
     } catch {
-        print(error)
-        return nil
+      print(error)
+      return nil
     }
   }
 
-  func detectAsync(
+  func recognizeAsync(
     sampleBuffer: CMSampleBuffer,
     orientation: UIImage.Orientation,
     timeStamps: Int) {
-    guard let image = try? MPImage(sampleBuffer: sampleBuffer, orientation: orientation) else {
-      return
+      guard let image = try? MPImage(sampleBuffer: sampleBuffer, orientation: orientation) else {
+        return
+      }
+      do {
+        try gestureRecognizer?.recognizeAsync(image: image, timestampInMilliseconds: timeStamps)
+      } catch {
+        print(error)
+      }
     }
-    do {
-      try gestureRecognizer?.recognizeAsync(image: image, timestampInMilliseconds: timeStamps)
-    } catch {
-      print(error)
-    }
-  }
 
-  func detect(
+  func recognize(
     videoAsset: AVAsset,
     durationInMilliseconds: Double,
     inferenceIntervalInMilliseconds: Double) async -> ResultBundle? {
-    let startDate = Date()
-    let assetGenerator = imageGenerator(with: videoAsset)
+      let startDate = Date()
+      let assetGenerator = imageGenerator(with: videoAsset)
 
-    let frameCount = Int(durationInMilliseconds / inferenceIntervalInMilliseconds)
-    Task { @MainActor in
-      videoDelegate?.gestureRecognizerService(self, willBeginDetection: frameCount)
+      let frameCount = Int(durationInMilliseconds / inferenceIntervalInMilliseconds)
+      Task { @MainActor in
+        videoDelegate?.gestureRecognizerService(self, willBeginRecognition: frameCount)
+      }
+
+      let gestureRecognizerResultTuple = recognizeObjectsInFramesGenerated(
+        by: assetGenerator,
+        totalFrameCount: frameCount,
+        atIntervalsOf: inferenceIntervalInMilliseconds)
+
+      return ResultBundle(
+        inferenceTime: Date().timeIntervalSince(startDate) / Double(frameCount) * 1000,
+        gestureRecognizerResults: gestureRecognizerResultTuple.gestureRecognizerResults,
+        size: gestureRecognizerResultTuple.videoSize)
     }
-
-    let gestureRecognizerResultTuple = detectObjectsInFramesGenerated(
-      by: assetGenerator,
-      totalFrameCount: frameCount,
-      atIntervalsOf: inferenceIntervalInMilliseconds)
-
-    return ResultBundle(
-      inferenceTime: Date().timeIntervalSince(startDate) / Double(frameCount) * 1000,
-      gestureRecognizerResults: gestureRecognizerResultTuple.gestureRecognizerResults,
-      size: gestureRecognizerResultTuple.videoSize)
-  }
 
   private func imageGenerator(with videoAsset: AVAsset) -> AVAssetImageGenerator {
     let generator = AVAssetImageGenerator(asset: videoAsset)
@@ -199,7 +199,7 @@ class GestureRecognizerService: NSObject {
     return generator
   }
 
-  private func detectObjectsInFramesGenerated(
+  private func recognizeObjectsInFramesGenerated(
     by assetGenerator: AVAssetImageGenerator,
     totalFrameCount frameCount: Int,
     atIntervalsOf inferenceIntervalMs: Double)
@@ -212,7 +212,7 @@ class GestureRecognizerService: NSObject {
       let image: CGImage
       do {
         let time = CMTime(value: Int64(timestampMs), timescale: 1000)
-          //        CMTime(seconds: Double(timestampMs) / 1000, preferredTimescale: 1000)
+        //        CMTime(seconds: Double(timestampMs) / 1000, preferredTimescale: 1000)
         image = try assetGenerator.copyCGImage(at: time, actualTime: nil)
       } catch {
         print(error)
@@ -226,14 +226,14 @@ class GestureRecognizerService: NSObject {
         let result = try gestureRecognizer?.recognize(
           videoFrame: MPImage(uiImage: uiImage),
           timestampInMilliseconds: timestampMs)
-          gestureRecognizerResults.append(result)
+        gestureRecognizerResults.append(result)
         Task { @MainActor in
-          videoDelegate?.gestureRecognizerService(self, didFinishDetectionOnVideoFrame: i)
+          videoDelegate?.gestureRecognizerService(self, didFinishRecognitionOnVideoFrame: i)
         }
-        } catch {
-          print(error)
-        }
+      } catch {
+        print(error)
       }
+    }
 
     return (gestureRecognizerResults, videoSize)
   }
@@ -248,23 +248,9 @@ extension GestureRecognizerService: GestureRecognizerLiveStreamDelegate {
       gestureRecognizerResults: [result])
     liveStreamDelegate?.gestureRecognizerService(
       self,
-      didFinishDetection: resultBundle,
+      didFinishRecognition: resultBundle,
       error: error)
   }
-
-//  func gestureRecognizer(
-//    _ gestureRecognizer: GestureRecognizer,
-//    didFinishDetection result: GestureRecognizerResult?,
-//    timestampInMilliseconds: Int,
-//    error: Error?) {
-//      let resultBundle = ResultBundle(
-//        inferenceTime: Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds),
-//        gestureRecognizerResults: [result])
-//      liveStreamDelegate?.gestureRecognizerService(
-//        self,
-//        didFinishDetection: resultBundle,
-//        error: error)
-//  }
 }
 
 /// A result from the `GestureRecognizerService`.

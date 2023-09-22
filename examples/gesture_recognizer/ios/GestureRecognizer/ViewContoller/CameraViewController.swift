@@ -17,7 +17,7 @@ import MediaPipeTasksVision
 import UIKit
 
 /**
- * The view controller is responsible for performing detection on incoming frames from the live camera and presenting the frames with the
+ * The view controller is responsible for performing recognition on incoming frames from the live camera and presenting the frames with the
  * gestured of the hands to the user.
  */
 class CameraViewController: UIViewController {
@@ -188,7 +188,7 @@ extension CameraViewController: CameraFeedServiceDelegate {
     let currentTimeMs = Date().timeIntervalSince1970 * 1000
     // Pass the pixel buffer to mediapipe
     backgroundQueue.async { [weak self] in
-      self?.gestureRecognizerService?.detectAsync(
+      self?.gestureRecognizerService?.recognizeAsync(
         sampleBuffer: sampleBuffer,
         orientation: orientation,
         timeStamps: Int(currentTimeMs))
@@ -226,7 +226,7 @@ extension CameraViewController: GestureRecognizerServiceLiveStreamDelegate {
 
   func gestureRecognizerService(
     _ gestureRecognizerService: GestureRecognizerService,
-    didFinishDetection result: ResultBundle?,
+                                    didFinishRecognition result: ResultBundle?,
     error: Error?) {
       DispatchQueue.main.async { [weak self] in
         guard let weakSelf = self else { return }

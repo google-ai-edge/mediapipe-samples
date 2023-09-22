@@ -17,7 +17,7 @@ import MediaPipeTasksVision
 import UIKit
 
 /**
- * The view controller is responsible for performing detection on videos or images selected by the user from the device media library and
+ * The view controller is responsible for performing recognition on videos or images selected by the user from the device media library and
  * presenting them with the landmarks and gestures of the hand to the user.
  */
 class MediaLibraryViewController: UIViewController {
@@ -230,7 +230,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
           return
         }
         
-        let resultBundle = await self.gestureRecognizerService?.detect(
+        let resultBundle = await self.gestureRecognizerService?.recognize(
           videoAsset: asset,
           durationInMilliseconds: videoDuration * Constants.milliSeconds,
           inferenceIntervalInMilliseconds: Constants.inferenceTimeIntervalInMilliseconds)
@@ -258,7 +258,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
       
       DispatchQueue.global(qos: .userInteractive).async { [weak self] in
         guard let weakSelf = self,
-              let resultBundle = weakSelf.gestureRecognizerService?.detect(image: image),
+              let resultBundle = weakSelf.gestureRecognizerService?.recognize(image: image),
               let gestureRecognizerResult = resultBundle.gestureRecognizerResults.first,
               let gestureRecognizerResult = gestureRecognizerResult else {
           DispatchQueue.main.async {
@@ -371,13 +371,13 @@ extension MediaLibraryViewController: GestureRecognizerServiceVideoDelegate {
   
   func gestureRecognizerService(
     _ gestureRecognizerService: GestureRecognizerService,
-    didFinishDetectionOnVideoFrame index: Int) {
+    didFinishRecognitionOnVideoFrame index: Int) {
     progressView.observedProgress?.completedUnitCount = Int64(index + 1)
   }
   
   func gestureRecognizerService(
     _ gestureRecognizerService: GestureRecognizerService,
-    willBeginDetection totalframeCount: Int) {
+    willBeginRecognition totalframeCount: Int) {
     progressView.observedProgress = Progress(totalUnitCount: Int64(totalframeCount))
   }
 }
