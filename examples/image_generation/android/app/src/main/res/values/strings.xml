@@ -22,7 +22,7 @@
     <string name="tv_display_options">Display Options:</string>
     <string name="tv_load_picture">Load Picture</string>
     <string name="tv_open_camera">Open Camera</string>
-    <string name="tv_reset">Reset</string>
+    <string name="btn_seed_randomize">Randomize</string>
     <string-array name="plugins">
         <item>Face</item>
         <item>Depth</item>

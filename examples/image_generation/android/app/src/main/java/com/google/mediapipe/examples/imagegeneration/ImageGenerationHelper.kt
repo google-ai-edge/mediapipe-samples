@@ -24,14 +24,16 @@ class ImageGenerationHelper(
 
     // Setup image generation model with output size, iteration
     fun initializeImageGenerator(modelPath: String) {
-        val options = ImageGeneratorOptions.builder().setImageGeneratorModelDirectory(modelPath)
+        val options = ImageGeneratorOptions.builder()
+            .setImageGeneratorModelDirectory(modelPath)
             .build()
 
         imageGenerator = ImageGenerator.createFromOptions(context, options)
     }
 
     fun initializeImageGeneratorWithPlugins(modelPath: String) {
-        val options = ImageGeneratorOptions.builder().setImageGeneratorModelDirectory(modelPath)
+        val options = ImageGeneratorOptions.builder()
+            .setImageGeneratorModelDirectory(modelPath)
             .build()
 
         val faceModelBaseOptions = BaseOptions.builder()
@@ -69,10 +71,11 @@ class ImageGenerationHelper(
             .setModelAssetPath("depth_plugin.tflite")
             .build()
 
-        val depthConditionOptions = ConditionOptions.DepthConditionOptions.builder()
-            .setDepthModelBaseOptions(depthModelBaseOptions)
-            .setPluginModelBaseOptions(depthPluginModelBaseOptions)
-            .build()
+        val depthConditionOptions =
+            ConditionOptions.DepthConditionOptions.builder()
+                .setDepthModelBaseOptions(depthModelBaseOptions)
+                .setPluginModelBaseOptions(depthPluginModelBaseOptions)
+                .build()
 
         val conditionOptions = ConditionOptions.builder()
             .setFaceConditionOptions(faceConditionOptions)
@@ -80,7 +83,8 @@ class ImageGenerationHelper(
             .setDepthConditionOptions(depthConditionOptions)
             .build()
 
-        imageGenerator = ImageGenerator.createFromOptions(context, options, conditionOptions)
+        imageGenerator =
+            ImageGenerator.createFromOptions(context, options, conditionOptions)
     }
 
     fun initializeLoRAWeightGenerator(modelPath: String, weightsPath: String) {
@@ -92,8 +96,20 @@ class ImageGenerationHelper(
         imageGenerator = ImageGenerator.createFromOptions(context, options)
     }
 
-    fun setInput(prompt: String, conditionalImage: MPImage, conditionType: ConditionType, iteration: Int, seed: Int) {
-        imageGenerator.setInputs(prompt, conditionalImage, conditionType, iteration, seed)
+    fun setInput(
+        prompt: String,
+        conditionalImage: MPImage,
+        conditionType: ConditionType,
+        iteration: Int,
+        seed: Int
+    ) {
+        imageGenerator.setInputs(
+            prompt,
+            conditionalImage,
+            conditionType,
+            iteration,
+            seed
+        )
     }
 
     // Set input prompt, iteration, seed
@@ -108,8 +124,20 @@ class ImageGenerationHelper(
         return bitmap
     }
 
-    fun generate(prompt: String, inputImage: MPImage, conditionType: ConditionType, iteration: Int, seed: Int): Bitmap {
-        val result = imageGenerator.generate(prompt, inputImage, conditionType, iteration, seed)
+    fun generate(
+        prompt: String,
+        inputImage: MPImage,
+        conditionType: ConditionType,
+        iteration: Int,
+        seed: Int
+    ): Bitmap {
+        val result = imageGenerator.generate(
+            prompt,
+            inputImage,
+            conditionType,
+            iteration,
+            seed
+        )
         val bitmap = BitmapExtractor.extract(result?.generatedImage())
         return bitmap
     }
@@ -118,13 +146,14 @@ class ImageGenerationHelper(
         // execute image generation model
         val result = imageGenerator.execute(showResult)
 
-        if( result == null || result.generatedImage() == null ) {
-            return Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888).apply {
-                val canvas = Canvas(this)
-                val paint = Paint()
-                paint.color = Color.WHITE
-                canvas.drawPaint(paint)
-            }
+        if (result == null || result.generatedImage() == null) {
+            return Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888)
+                .apply {
+                    val canvas = Canvas(this)
+                    val paint = Paint()
+                    paint.color = Color.WHITE
+                    canvas.drawPaint(paint)
+                }
         }
 
         val bitmap =
@@ -133,7 +162,20 @@ class ImageGenerationHelper(
         return bitmap
     }
 
+    fun createConditionImage(
+        inputImage: MPImage,
+        conditionType: ConditionType
+    ): Bitmap {
+        val result =
+            imageGenerator.createConditionImage(inputImage, conditionType)
+        return BitmapExtractor.extract(result)
+    }
+
     fun close() {
-        imageGenerator.close()
+        try {
+            imageGenerator.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }

@@ -13,6 +13,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.mediapipe.examples.imagegeneration.R
 import com.google.mediapipe.examples.imagegeneration.databinding.ActivityDiffusionBinding
 import kotlinx.coroutines.launch
+import java.util.*
 
 class DiffusionActivity : AppCompatActivity() {
     companion object {
@@ -62,6 +63,8 @@ class DiffusionActivity : AppCompatActivity() {
                     binding.imgOutput.setImageBitmap(uiState.outputBitmap)
 
                     showError(uiState.error)
+                    showGenerateTime(uiState.generateTime)
+                    showInitializedTime(uiState.initializedTime)
                 }
             }
         }
@@ -79,7 +82,10 @@ class DiffusionActivity : AppCompatActivity() {
             viewModel.generateImage()
             closeSoftKeyboard()
         }
-
+        binding.btnSeedRandom.setOnClickListener {
+            randomSeed()
+            closeSoftKeyboard()
+        }
 
         binding.radioDisplayOptions.setOnCheckedChangeListener { group, checkedId ->
             when (checkedId) {
@@ -117,6 +123,32 @@ class DiffusionActivity : AppCompatActivity() {
         viewModel.clearError()
     }
 
+    private fun showGenerateTime(time: Long?) {
+        if (time == null) return
+        runOnUiThread {
+            Toast.makeText(
+                this,
+                "Generation time: ${time / 1000.0} seconds",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+        // prevent showing generate time twice
+        viewModel.clearGenerateTime()
+    }
+
+    private fun showInitializedTime(time: Long?) {
+        if (time == null) return
+        runOnUiThread {
+            Toast.makeText(
+                this,
+                "Initialized time: ${time / 1000.0} seconds",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+        // prevent showing initialized time twice
+        viewModel.clearInitializedTime()
+    }
+
     private fun closeSoftKeyboard() {
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
@@ -130,6 +162,13 @@ class DiffusionActivity : AppCompatActivity() {
             radioDisplayOptions.check(DEFAULT_DISPLAY_OPTIONS)
             edtDisplayIteration.setText(DEFAULT_DISPLAY_ITERATION.toString())
         }
+    }
+
+    private fun randomSeed() {
+        val random = Random()
+        // random seed from 0 to 99
+        val seed = random.nextInt(100)
+        binding.edtSeed.setText(seed.toString())
     }
 
     override fun onDestroy() {

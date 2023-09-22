@@ -18,7 +18,8 @@ class LoRAWeightViewModel : ViewModel() {
     private var helper: ImageGenerationHelper? = null
     val uiState: StateFlow<UiState> = _uiState
     private val MODEL_PATH = "/data/local/tmp/image_generator/bins/"
-    private val WEIGHT_PATH = "/data/local/tmp/image_generator/weights/teapot_lora.task"
+    private val WEIGHT_PATH =
+        "/data/local/tmp/image_generator/weights/teapot_lora.task"
 
     fun updateDisplayIteration(displayIteration: Int?) {
         _uiState.update { it.copy(displayIteration = displayIteration) }
@@ -44,6 +45,14 @@ class LoRAWeightViewModel : ViewModel() {
         _uiState.update { it.copy(error = null) }
     }
 
+    fun clearGenerateTime() {
+        _uiState.update { it.copy(generateTime = null) }
+    }
+
+    fun clearInitializedTime() {
+        _uiState.update { it.copy(initializedTime = null) }
+    }
+
     fun initializeImageGenerator() {
         val displayIteration = _uiState.value.displayIteration
         val displayOptions = _uiState.value.displayOptions
@@ -56,11 +65,14 @@ class LoRAWeightViewModel : ViewModel() {
             _uiState.update { it.copy(isInitializing = true) }
             val mainLooper = Looper.getMainLooper()
             GlobalScope.launch {
+                val startTime = System.currentTimeMillis()
                 helper?.initializeLoRAWeightGenerator(MODEL_PATH, WEIGHT_PATH)
                 Handler(mainLooper).post {
                     _uiState.update {
                         it.copy(
-                            initialized = true, isInitializing = false
+                            initialized = true,
+                            isInitializing = false,
+                            initializedTime = System.currentTimeMillis() - startTime
                         )
                     }
                 }
@@ -103,14 +115,14 @@ class LoRAWeightViewModel : ViewModel() {
 
         _uiState.update {
             it.copy(
-                generatingMessage = "Generating...",
-                isGenerating = true
+                generatingMessage = "Generating...", isGenerating = true
             )
         }
 
         // Generate with iterations
         _uiState.update { it.copy(displayIteration = 1) }
         GlobalScope.launch {
+            val startTime = System.currentTimeMillis()
 
             // if display option is final, use generate method, else use execute method
             if (uiState.value.displayOptions == DisplayOptions.FINAL) {
@@ -121,14 +133,15 @@ class LoRAWeightViewModel : ViewModel() {
             } else {
                 helper?.setInput(prompt, iteration, seed)
                 for (step in 0 until iteration) {
-                    isDisplayStep = (displayIteration > 0 && ((step + 1) % displayIteration == 0))
-                    val result =
-                        helper?.execute(isDisplayStep)
+                    isDisplayStep =
+                        (displayIteration > 0 && ((step + 1) % displayIteration == 0))
+                    val result = helper?.execute(isDisplayStep)
 
-                    if(isDisplayStep) {
+                    if (isDisplayStep) {
                         _uiState.update {
                             it.copy(
-                                outputBitmap = result
+                                outputBitmap = result,
+                                generatingMessage = "Generating... (${step + 1}/$iteration)"
                             )
                         }
                     }
@@ -136,7 +149,9 @@ class LoRAWeightViewModel : ViewModel() {
             }
             _uiState.update {
                 it.copy(
-                    isGenerating = false, generatingMessage = "Generate"
+                    isGenerating = false,
+                    generatingMessage = "Generate",
+                    generateTime = System.currentTimeMillis() - startTime
                 )
             }
         }
@@ -160,6 +175,8 @@ data class UiState(
     val isGenerating: Boolean = false,
     val isInitializing: Boolean = false,
     val generatingMessage: String = "",
+    val generateTime: Long? = null,
+    val initializedTime: Long? = null
 )
 
 enum class DisplayOptions {

@@ -61,6 +61,15 @@ class PluginViewModel : ViewModel() {
         _uiState.update { it.copy(error = null) }
     }
 
+    fun clearGenerationTime() {
+        _uiState.update { it.copy(generateTime = null) }
+    }
+
+    fun clearInitializedTime() {
+        _uiState.update { it.copy(initializedTime = null) }
+    }
+
+
     fun initializeImageGenerator() {
         val displayIteration = _uiState.value.displayIteration
         val displayOptions = _uiState.value.displayOptions
@@ -74,12 +83,15 @@ class PluginViewModel : ViewModel() {
             _uiState.update { it.copy(isInitializing = true) }
             val mainLooper = Looper.getMainLooper()
             GlobalScope.launch {
+                val startTime = System.currentTimeMillis()
                 helper?.initializeImageGeneratorWithPlugins(MODEL_PATH)
 
                 Handler(mainLooper).post {
                     _uiState.update {
                         it.copy(
-                            initialized = true, isInitializing = false
+                            initialized = true,
+                            isInitializing = false,
+                            initializedTime = System.currentTimeMillis() - startTime
                         )
                     }
                 }
@@ -120,31 +132,59 @@ class PluginViewModel : ViewModel() {
             _uiState.update { it.copy(error = "Seed cannot be empty") }
             return
         }
+        if (inputImage == null) {
+            _uiState.update { it.copy(error = "Input image cannot be empty") }
+            return
+        }
+
+        // Create condition image
+        val mpImage = BitmapImageBuilder(inputImage).build()
+        val conditionBitmap =
+            helper?.createConditionImage(mpImage, conditionType)
 
         _uiState.update {
-            it.copy(generatingMessage = "Generating...", isGenerating = true)
+            it.copy(
+                generatingMessage = "Generating...",
+                isGenerating = true,
+                conditionBitmap = conditionBitmap
+            )
         }
 
         // Generate with iterations
         GlobalScope.launch {
 
+            val startTime = System.currentTimeMillis()
+
             // if display option is final, use generate method, else use execute method
             if (uiState.value.displayOptions == DisplayOptions.FINAL) {
-                val result = helper?.generate(prompt, BitmapImageBuilder(inputImage).build(), conditionType, iteration, seed)
+                val result = helper?.generate(
+                    prompt,
+                    BitmapImageBuilder(inputImage).build(),
+                    conditionType,
+                    iteration,
+                    seed
+                )
                 _uiState.update {
                     it.copy(outputBitmap = result)
                 }
             } else {
-                helper?.setInput(prompt, BitmapImageBuilder(inputImage).build(), conditionType, iteration, seed)
+                helper?.setInput(
+                    prompt,
+                    BitmapImageBuilder(inputImage).build(),
+                    conditionType,
+                    iteration,
+                    seed
+                )
                 for (step in 0 until iteration) {
-                    isDisplayStep = (displayIteration > 0 && ((step + 1) % displayIteration == 0))
-                    val result =
-                        helper?.execute(isDisplayStep)
+                    isDisplayStep =
+                        (displayIteration > 0 && ((step + 1) % displayIteration == 0))
+                    val result = helper?.execute(isDisplayStep)
 
-                    if(isDisplayStep) {
+                    if (isDisplayStep) {
                         _uiState.update {
                             it.copy(
-                                outputBitmap = result
+                                outputBitmap = result,
+                                generatingMessage = "Generating... (${step + 1}/$iteration)"
                             )
                         }
                     }
@@ -152,7 +192,9 @@ class PluginViewModel : ViewModel() {
             }
             _uiState.update {
                 it.copy(
-                    isGenerating = false, generatingMessage = "Generate"
+                    isGenerating = false,
+                    generatingMessage = "Generate",
+                    generateTime = System.currentTimeMillis() - startTime
                 )
             }
         }
@@ -167,6 +209,7 @@ data class UiState(
     val error: String? = null,
     val inputBitmap: Bitmap? = null,
     val outputBitmap: Bitmap? = null,
+    val conditionBitmap: Bitmap? = null,
     val displayOptions: DisplayOptions = DisplayOptions.FINAL,
     val plugins: ConditionType = ConditionType.FACE,
     val displayIteration: Int? = null,
@@ -179,6 +222,8 @@ data class UiState(
     val isGenerating: Boolean = false,
     val isInitializing: Boolean = false,
     val generatingMessage: String = "",
+    val generateTime: Long? = null,
+    val initializedTime: Long? = null,
 )
 
 enum class DisplayOptions {

@@ -18,6 +18,7 @@ import com.google.mediapipe.examples.imagegeneration.ImageUtils
 import com.google.mediapipe.examples.imagegeneration.R
 import com.google.mediapipe.examples.imagegeneration.databinding.ActivityPluginBinding
 import kotlinx.coroutines.launch
+import java.util.*
 
 class PluginActivity : AppCompatActivity() {
     companion object {
@@ -39,7 +40,7 @@ class PluginActivity : AppCompatActivity() {
                     val bitmap = ImageUtils.decodeBitmapFromUri(this, uri)
                     if (bitmap != null) {
                         Log.e("Test", "saving bitmap from gallery")
-                        viewModel.updateInputBitmap(bitmap)
+                        viewModel.updateInputBitmap(cropBitmapToSquare(bitmap))
                     }
                 }
             }
@@ -49,7 +50,7 @@ class PluginActivity : AppCompatActivity() {
             if (result.resultCode == RESULT_OK) {
                 val bitmap = result.data?.extras?.get("data") as? Bitmap
                 if (bitmap != null) {
-                    viewModel.updateInputBitmap(bitmap)
+                    viewModel.updateInputBitmap(cropBitmapToSquare(bitmap))
                 }
             }
         }
@@ -80,7 +81,7 @@ class PluginActivity : AppCompatActivity() {
                         if (uiState.displayOptions == DisplayOptions.ITERATION) android.view.View.VISIBLE else android.view.View.GONE
 
                     binding.btnInitialize.isEnabled =
-                        (uiState.displayOptions == DisplayOptions.FINAL || (uiState.displayOptions == DisplayOptions.ITERATION && uiState.displayIteration != null)) && uiState.inputBitmap != null && !uiState.isInitializing
+                        (uiState.displayOptions == DisplayOptions.FINAL || (uiState.displayOptions == DisplayOptions.ITERATION && uiState.displayIteration != null)) && !uiState.isInitializing
 
                     if (uiState.isGenerating) {
                         binding.btnGenerate.isEnabled = false
@@ -89,15 +90,18 @@ class PluginActivity : AppCompatActivity() {
                         binding.btnGenerate.text = "Generate"
                         if (uiState.initialized) {
                             binding.btnGenerate.isEnabled =
-                                uiState.prompt.isNotEmpty() && uiState.iteration != null && uiState.seed != null
+                                uiState.prompt.isNotEmpty() && uiState.iteration != null && uiState.seed != null && uiState.inputBitmap != null
                         } else {
                             binding.btnGenerate.isEnabled = false
                         }
                     }
                     binding.imgOutput.setImageBitmap(uiState.outputBitmap)
                     binding.imgDisplayInput.setImageBitmap(uiState.inputBitmap)
+                    binding.imgConditionImage.setImageBitmap(uiState.conditionBitmap)
 
                     showError(uiState.error)
+                    showGenerationTime(uiState.generateTime)
+                    showInitializingTime(uiState.initializedTime)
                 }
             }
         }
@@ -121,6 +125,10 @@ class PluginActivity : AppCompatActivity() {
         }
         binding.btnOpenGallery.setOnClickListener {
             openGallery()
+            closeSoftKeyboard()
+        }
+        binding.btnSeedRandom.setOnClickListener {
+            randomSeed()
             closeSoftKeyboard()
         }
         binding.radioDisplayOptions.setOnCheckedChangeListener { group, checkedId ->
@@ -174,6 +182,31 @@ class PluginActivity : AppCompatActivity() {
         viewModel.clearError()
     }
 
+    private fun showGenerationTime(time: Long?) {
+        if (time == null) return
+        runOnUiThread {
+            Toast.makeText(
+                this,
+                "Generation time: ${time / 1000.0} seconds",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+        viewModel.clearGenerationTime()
+    }
+
+    private fun showInitializingTime(time: Long?) {
+        if (time == null) return
+        runOnUiThread {
+            Toast.makeText(
+                this,
+                "Initializing time: ${time / 1000.0} seconds",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+        viewModel.clearInitializedTime()
+    }
+
+
     private fun closeSoftKeyboard() {
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
@@ -199,6 +232,20 @@ class PluginActivity : AppCompatActivity() {
             radioDisplayOptions.check(DEFAULT_DISPLAY_OPTIONS)
             edtDisplayIteration.setText(DEFAULT_DISPLAY_ITERATION.toString())
         }
+    }
+
+    private fun randomSeed() {
+        val random = Random()
+        // random seed from 0 to 99
+        val seed = random.nextInt(100)
+        binding.edtSeed.setText(seed.toString())
+    }
+
+    private fun cropBitmapToSquare(bitmap: Bitmap): Bitmap {
+        val width = bitmap.width
+        val height = bitmap.height
+        val cropSize = if (width > height) height else width
+        return Bitmap.createBitmap(bitmap, 0, 0, cropSize, cropSize)
     }
 
     override fun onDestroy() {
