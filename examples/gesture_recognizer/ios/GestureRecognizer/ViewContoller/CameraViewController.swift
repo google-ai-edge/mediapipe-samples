@@ -233,14 +233,14 @@ extension CameraViewController: GestureRecognizerServiceLiveStreamDelegate {
         weakSelf.inferenceResultDeliveryDelegate?.didPerformInference(result: result, index: 0)
         guard let gestureRecognizerResult = result?.gestureRecognizerResults.first as? GestureRecognizerResult else { return }
         let imageSize = weakSelf.cameraFeedService.videoResolution
-        let objectOverlays = OverlayView.objectOverlays(
+        let handOverlays = OverlayView.handOverlays(
           fromLandmarks: gestureRecognizerResult.landmarks,
           inferredOnImageOfSize: imageSize,
           ovelayViewSize: weakSelf.overlayView.bounds.size,
           imageContentMode: weakSelf.overlayView.imageContentMode,
           andOrientation: UIImage.Orientation.from(
             deviceOrientation: UIDevice.current.orientation))
-        weakSelf.overlayView.draw(objectOverlays: objectOverlays,
+        weakSelf.overlayView.draw(handOverlays: handOverlays,
                          inBoundsOfContentImageOfSize: imageSize,
                          imageContentMode: weakSelf.cameraFeedService.videoGravity.contentMode)
       }

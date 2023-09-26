@@ -185,7 +185,7 @@ class MediaLibraryViewController: UIViewController {
       return
     }
     overlayView
-      .redrawObjectOverlays(
+      .redrawHandOverlays(
         forNewDeviceOrientation: UIDevice.current.orientation)
   }
   
@@ -271,13 +271,13 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
           weakSelf.hideProgressView()
           weakSelf.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle, index: 0)
           let imageSize = image.size
-          let objectOverlays = OverlayView.objectOverlays(
+          let handOverlays = OverlayView.handOverlays(
             fromLandmarks: gestureRecognizerResult.landmarks,
             inferredOnImageOfSize: imageSize,
             ovelayViewSize: weakSelf.overlayView.bounds.size,
             imageContentMode: weakSelf.overlayView.imageContentMode,
             andOrientation: image.imageOrientation)
-          weakSelf.overlayView.draw(objectOverlays: objectOverlays,
+          weakSelf.overlayView.draw(handOverlays: handOverlays,
                            inBoundsOfContentImageOfSize: imageSize,
                                     imageContentMode: .scaleAspectFit)
         }
@@ -327,13 +327,13 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
           }
           weakSelf.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle, index: index)
           let imageSize = resultBundle.size
-          let objectOverlays = OverlayView.objectOverlays(
+          let handOverlays = OverlayView.handOverlays(
             fromLandmarks: gestureRecognizerResult.landmarks,
             inferredOnImageOfSize: imageSize,
             ovelayViewSize: weakSelf.overlayView.bounds.size,
             imageContentMode: weakSelf.overlayView.imageContentMode,
             andOrientation: .up)
-          weakSelf.overlayView.draw(objectOverlays: objectOverlays,
+          weakSelf.overlayView.draw(handOverlays: handOverlays,
                            inBoundsOfContentImageOfSize: imageSize,
                                     imageContentMode: .scaleAspectFit)
           
