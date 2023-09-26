@@ -185,7 +185,7 @@ class MediaLibraryViewController: UIViewController {
       return
     }
     overlayView
-      .redrawObjectOverlays(
+      .redrawHandOverlays(
         forNewDeviceOrientation: UIDevice.current.orientation)
   }
   
@@ -275,13 +275,13 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
           weakSelf.hideProgressView()
           weakSelf.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
           let imageSize = image.size
-          let objectOverlays = OverlayView.objectOverlays(
+          let handOverlays = OverlayView.handOverlays(
             fromLandmarks: handLandmarkerResult.landmarks,
             inferredOnImageOfSize: imageSize,
             ovelayViewSize: weakSelf.overlayView.bounds.size,
             imageContentMode: weakSelf.overlayView.imageContentMode,
             andOrientation: image.imageOrientation)
-          weakSelf.overlayView.draw(objectOverlays: objectOverlays,
+          weakSelf.overlayView.draw(handOverlays: handOverlays,
                            inBoundsOfContentImageOfSize: imageSize,
                                     imageContentMode: .scaleAspectFit)
         }
@@ -296,18 +296,18 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     switch runningMode {
       case .image:
       handLandmarkerService = HandLandmarkerService.stillImageLandmarkerService(
-        modelPath: InferenceConfigManager.sharedInstance.modelPath,
-        numHands: InferenceConfigManager.sharedInstance.numHands,
-        minHandDetectionConfidence: InferenceConfigManager.sharedInstance.minHandDetectionConfidence,
-        minHandPresenceConfidence: InferenceConfigManager.sharedInstance.minHandPresenceConfidence,
-        minTrackingConfidence: InferenceConfigManager.sharedInstance.minTrackingConfidence)
+        modelPath: InferenceConfigurationManager.sharedInstance.modelPath,
+        numHands: InferenceConfigurationManager.sharedInstance.numHands,
+        minHandDetectionConfidence: InferenceConfigurationManager.sharedInstance.minHandDetectionConfidence,
+        minHandPresenceConfidence: InferenceConfigurationManager.sharedInstance.minHandPresenceConfidence,
+        minTrackingConfidence: InferenceConfigurationManager.sharedInstance.minTrackingConfidence)
       case .video:
       handLandmarkerService = HandLandmarkerService.videoHandLandmarkerService(
-        modelPath: InferenceConfigManager.sharedInstance.modelPath,
-        numHands: InferenceConfigManager.sharedInstance.numHands,
-        minHandDetectionConfidence: InferenceConfigManager.sharedInstance.minHandDetectionConfidence,
-        minHandPresenceConfidence: InferenceConfigManager.sharedInstance.minHandPresenceConfidence,
-        minTrackingConfidence: InferenceConfigManager.sharedInstance.minTrackingConfidence,
+        modelPath: InferenceConfigurationManager.sharedInstance.modelPath,
+        numHands: InferenceConfigurationManager.sharedInstance.numHands,
+        minHandDetectionConfidence: InferenceConfigurationManager.sharedInstance.minHandDetectionConfidence,
+        minHandPresenceConfidence: InferenceConfigurationManager.sharedInstance.minHandPresenceConfidence,
+        minTrackingConfidence: InferenceConfigurationManager.sharedInstance.minTrackingConfidence,
         videoDelegate: self)
       default:
         break;
@@ -332,13 +332,13 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
             return
           }
           let imageSize = resultBundle.size
-          let objectOverlays = OverlayView.objectOverlays(
+          let handOverlays = OverlayView.handOverlays(
             fromLandmarks: handLandmarkerResult.landmarks,
             inferredOnImageOfSize: imageSize,
             ovelayViewSize: weakSelf.overlayView.bounds.size,
             imageContentMode: weakSelf.overlayView.imageContentMode,
             andOrientation: .up)
-          weakSelf.overlayView.draw(objectOverlays: objectOverlays,
+          weakSelf.overlayView.draw(handOverlays: handOverlays,
                            inBoundsOfContentImageOfSize: imageSize,
                                     imageContentMode: .scaleAspectFit)
           

@@ -21,23 +21,18 @@ struct Line {
   let to: CGPoint
 }
 
-/// Line connection
-struct LineConnection {
-  let lines: [Line]
-}
-
 /**
  This structure holds the display parameters for the overlay to be drawon on a hand landmarker object.
  */
-struct ObjectOverlay {
+struct HandOverlay {
   let dots: [CGPoint]
-  let lineConnectios: [LineConnection]
+  let lines: [Line]
 }
 
 /// Custom view to visualize the face landmarks result on top of the input image.
 class OverlayView: UIView {
 
-  var objectOverlays: [ObjectOverlay] = []
+  var handOverlays: [HandOverlay] = []
 
   private var contentImageSize: CGSize = CGSizeZero
   var imageContentMode: UIView.ContentMode = .scaleAspectFit
@@ -47,7 +42,7 @@ class OverlayView: UIView {
 
   // MARK: Public Functions
   func draw(
-    objectOverlays: [ObjectOverlay],
+    handOverlays: [HandOverlay],
     inBoundsOfContentImageOfSize imageSize: CGSize,
     edgeOffset: CGFloat = 0.0,
     imageContentMode: UIView.ContentMode) {
@@ -55,13 +50,13 @@ class OverlayView: UIView {
       self.clear()
       contentImageSize = imageSize
       self.edgeOffset = edgeOffset
-      self.objectOverlays = objectOverlays
+      self.handOverlays = handOverlays
       self.imageContentMode = imageContentMode
       orientation = UIDevice.current.orientation
       self.setNeedsDisplay()
     }
 
-  func redrawObjectOverlays(forNewDeviceOrientation deviceOrientation:UIDeviceOrientation) {
+  func redrawHandOverlays(forNewDeviceOrientation deviceOrientation:UIDeviceOrientation) {
 
     orientation = deviceOrientation
 
@@ -78,7 +73,7 @@ class OverlayView: UIView {
   }
 
   func clear() {
-    objectOverlays = []
+    handOverlays = []
     contentImageSize = CGSize.zero
     imageContentMode = .scaleAspectFit
     orientation = UIDevice.current.orientation
@@ -87,11 +82,9 @@ class OverlayView: UIView {
   }
 
   override func draw(_ rect: CGRect) {
-    for objectOverlay in objectOverlays {
-      for lineConnection in objectOverlay.lineConnectios {
-        drawLines(lineConnection.lines)
-      }
-      drawDots(objectOverlay.dots)
+    for handOverlay in handOverlays {
+      drawLines(handOverlay.lines)
+      drawDots(handOverlay.dots)
     }
   }
 
@@ -207,14 +200,14 @@ class OverlayView: UIView {
   }
 
   // Helper to get object overlays from detections.
-  static func objectOverlays(
+  static func handOverlays(
     fromLandmarks landmarks: [[NormalizedLandmark]],
     inferredOnImageOfSize originalImageSize: CGSize,
     ovelayViewSize: CGSize,
     imageContentMode: UIView.ContentMode,
-    andOrientation orientation: UIImage.Orientation) -> [ObjectOverlay] {
+    andOrientation orientation: UIImage.Orientation) -> [HandOverlay] {
 
-      var objectOverlays: [ObjectOverlay] = []
+      var handOverlays: [HandOverlay] = []
 
       guard !landmarks.isEmpty else {
         return []
@@ -238,18 +231,17 @@ class OverlayView: UIView {
         }
 
         let dots: [CGPoint] = transformedLandmark.map({CGPoint(x: CGFloat($0.x) * originalImageSize.width * offsetsAndScaleFactor.scaleFactor + offsetsAndScaleFactor.xOffset, y: CGFloat($0.y) * originalImageSize.height * offsetsAndScaleFactor.scaleFactor + offsetsAndScaleFactor.yOffset)})
-        let lineConnections: [LineConnection] = [LineConnection(
-          lines: HandLandmarker.handConnections
+        let lines: [Line] = HandLandmarker.handConnections
             .map({ connection in
               let start = dots[Int(connection.start)]
               let end = dots[Int(connection.end)]
               return Line(from: start,
                           to: end)
-            }))]
+            })
 
-        objectOverlays.append(ObjectOverlay(dots: dots, lineConnectios: lineConnections))
+        handOverlays.append(HandOverlay(dots: dots, lines: lines))
       }
 
-      return objectOverlays
+      return handOverlays
     }
 }

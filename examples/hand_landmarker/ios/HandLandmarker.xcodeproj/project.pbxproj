@@ -17,7 +17,7 @@
 		BFCDAE2E2AAEB2A800EC4371 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BFCDAE2D2AAEB2A800EC4371 /* Assets.xcassets */; };
 		BFCDAE312AAEB2A800EC4371 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BFCDAE2F2AAEB2A800EC4371 /* LaunchScreen.storyboard */; };
 		BFCDAE3C2AAEB2A800EC4371 /* HandLandmarkerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE3B2AAEB2A800EC4371 /* HandLandmarkerTests.swift */; };
-		BFCDAE612AAEB82C00EC4371 /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE552AAEB82C00EC4371 /* OverlayView.swift */; };
+		BFCDAE612AAEB82C00EC4371 /* HandOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE552AAEB82C00EC4371 /* HandOverlay.swift */; };
 		BFCDAE622AAEB82C00EC4371 /* MediaLibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE572AAEB82C00EC4371 /* MediaLibraryViewController.swift */; };
 		BFCDAE632AAEB82C00EC4371 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE582AAEB82C00EC4371 /* RootViewController.swift */; };
 		BFCDAE642AAEB82C00EC4371 /* BottomSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE592AAEB82C00EC4371 /* BottomSheetViewController.swift */; };
@@ -55,7 +55,7 @@
 		BFCDAE322AAEB2A800EC4371 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BFCDAE372AAEB2A800EC4371 /* HandLandmarkerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HandLandmarkerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BFCDAE3B2AAEB2A800EC4371 /* HandLandmarkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandLandmarkerTests.swift; sourceTree = "<group>"; };
-		BFCDAE552AAEB82C00EC4371 /* OverlayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OverlayView.swift; sourceTree = "<group>"; };
+		BFCDAE552AAEB82C00EC4371 /* HandOverlay.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HandOverlay.swift; sourceTree = "<group>"; };
 		BFCDAE572AAEB82C00EC4371 /* MediaLibraryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MediaLibraryViewController.swift; sourceTree = "<group>"; };
 		BFCDAE582AAEB82C00EC4371 /* RootViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
 		BFCDAE592AAEB82C00EC4371 /* BottomSheetViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BottomSheetViewController.swift; sourceTree = "<group>"; };
@@ -157,7 +157,7 @@
 		BFCDAE542AAEB82C00EC4371 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				BFCDAE552AAEB82C00EC4371 /* OverlayView.swift */,
+				BFCDAE552AAEB82C00EC4371 /* HandOverlay.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -367,7 +367,7 @@
 				BFCDAE632AAEB82C00EC4371 /* RootViewController.swift in Sources */,
 				BFCDAE672AAEB82C00EC4371 /* HandLandmarkerService.swift in Sources */,
 				BFCDAE642AAEB82C00EC4371 /* BottomSheetViewController.swift in Sources */,
-				BFCDAE612AAEB82C00EC4371 /* OverlayView.swift in Sources */,
+				BFCDAE612AAEB82C00EC4371 /* HandOverlay.swift in Sources */,
 				BFCDAE252AAEB2A700EC4371 /* AppDelegate.swift in Sources */,
 				BFCDAE652AAEB82C00EC4371 /* CameraViewController.swift in Sources */,
 				BFCDAE682AAEB82C00EC4371 /* DefaultConstants.swift in Sources */,

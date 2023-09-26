@@ -150,11 +150,11 @@ class CameraViewController: UIViewController {
     handLandmarkerService = nil
     handLandmarkerService = HandLandmarkerService
       .liveStreamHandLandmarkerService(
-        modelPath: InferenceConfigManager.sharedInstance.modelPath,
-        numHands: InferenceConfigManager.sharedInstance.numHands,
-        minHandDetectionConfidence: InferenceConfigManager.sharedInstance.minHandDetectionConfidence,
-        minHandPresenceConfidence: InferenceConfigManager.sharedInstance.minHandPresenceConfidence,
-        minTrackingConfidence: InferenceConfigManager.sharedInstance.minTrackingConfidence,
+        modelPath: InferenceConfigurationManager.sharedInstance.modelPath,
+        numHands: InferenceConfigurationManager.sharedInstance.numHands,
+        minHandDetectionConfidence: InferenceConfigurationManager.sharedInstance.minHandDetectionConfidence,
+        minHandPresenceConfidence: InferenceConfigurationManager.sharedInstance.minHandPresenceConfidence,
+        minTrackingConfidence: InferenceConfigurationManager.sharedInstance.minTrackingConfidence,
         liveStreamDelegate: self)
   }
   
@@ -167,7 +167,7 @@ class CameraViewController: UIViewController {
     NotificationCenter.default
       .addObserver(self,
                    selector: #selector(clearAndInitializeHandLandmarkerService),
-                   name: InferenceConfigManager.notificationName,
+                   name: InferenceConfigurationManager.notificationName,
                    object: nil)
     isObserving = true
   }
@@ -176,7 +176,7 @@ class CameraViewController: UIViewController {
     if isObserving {
       NotificationCenter.default
         .removeObserver(self,
-                        name:InferenceConfigManager.notificationName,
+                        name:InferenceConfigurationManager.notificationName,
                         object: nil)
     }
     isObserving = false
@@ -234,14 +234,14 @@ extension CameraViewController: HandLandmarkerServiceLiveStreamDelegate {
         weakSelf.inferenceResultDeliveryDelegate?.didPerformInference(result: result)
         guard let handLandmarkerResult = result?.handLandmarkerResults.first as? HandLandmarkerResult else { return }
         let imageSize = weakSelf.cameraFeedService.videoResolution
-        let objectOverlays = OverlayView.objectOverlays(
+        let handOverlays = OverlayView.handOverlays(
           fromLandmarks: handLandmarkerResult.landmarks,
           inferredOnImageOfSize: imageSize,
           ovelayViewSize: weakSelf.overlayView.bounds.size,
           imageContentMode: weakSelf.overlayView.imageContentMode,
           andOrientation: UIImage.Orientation.from(
             deviceOrientation: UIDevice.current.orientation))
-        weakSelf.overlayView.draw(objectOverlays: objectOverlays,
+        weakSelf.overlayView.draw(handOverlays: handOverlays,
                          inBoundsOfContentImageOfSize: imageSize,
                          imageContentMode: weakSelf.cameraFeedService.videoGravity.contentMode)
       }
