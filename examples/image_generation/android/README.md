@@ -6,16 +6,16 @@ There are three primary ways that you can use this new demo and MediaPipe Task:
 
 1.  Standard diffusion to generate new images based on a text prompt.
 
-![Diffusion example](/images/diffusion.gif?raw=true "Diffusion example")
+![Diffusion example](images/diffusion.gif?raw=true "Diffusion example")
 
     
 2.  Diffusion with a plugin that works with other existing tasks and models to provide structure for your new generations.
 
-![Plugin example](/images/plugin.gif?raw=true "Plugin example")
+![Plugin example](images/plugin.gif?raw=true "Plugin example")
     
 3.  Diffusion with Low-Rank Adaptation (LoRA) weights that allow you to create images of specific concepts that you pre-define for your unique use-cases.
 
-![LoRA example](/images/lora.gif?raw=true "LoRA example")
+![LoRA example](images/lora.gif?raw=true "LoRA example")
 
 ## Build the demo using Android Studio
 
