@@ -177,7 +177,7 @@ class PluginActivity : AppCompatActivity() {
         if (message.isNullOrEmpty()) return
         runOnUiThread {
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-            Log.e("Test", message)
+            Log.e("ImgGen Error", message)
         }
         // prevent showing error message twice
         viewModel.clearError()
