@@ -117,7 +117,6 @@ class DiffusionActivity : AppCompatActivity() {
         if (message.isNullOrEmpty()) return
         runOnUiThread {
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-            Log.e("Test", message)
         }
         // prevent showing error message twice
         viewModel.clearError()

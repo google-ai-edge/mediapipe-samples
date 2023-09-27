@@ -30,3 +30,5 @@ Optionally, you can create a new set of weights to use with the LoRA option, add
 When your models/weights are ready, copy them to your development device. For this example the files are loaded into the `/data/local/tmp/image_generator/bins` directory.
 
 To use the face, edge, or depth plugins, you will need additional models stored in the app's `assets` directory. These will be automatically downloaded and installed with your APK through the `download_models.gradle` build script located in this project.
+
+An example weights file can be found [here](https://storage.googleapis.com/mediapipe-models/image_generator/LoRA_weights/teapot_lora.task) for the key term 'monadikos teapot'.

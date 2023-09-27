@@ -40,7 +40,6 @@ class PluginActivity : AppCompatActivity() {
                 if (uri != null) {
                     val bitmap = ImageUtils.decodeBitmapFromUri(this, uri)
                     if (bitmap != null) {
-                        Log.e("Test", "saving bitmap from gallery")
                         viewModel.updateInputBitmap(cropBitmapToSquare(bitmap))
                     }
                 }

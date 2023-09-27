@@ -13,9 +13,9 @@
     <string name="tv_prompt_hint">Input your prompt here</string>
     <string name="edt_iterations_hint">20</string>
     <string name="edt_seed_hint">0</string>
-    <string name="default_prompt_diffusion">Larry Page of Google making a pizza</string>
+    <string name="default_prompt_diffusion">a colorful cartoon raccoon wearing a floppy wide brimmed hat holding a stick walking through the forest, animated, three-quarter view, painting</string>
     <string name="default_prompt_plugin">an ancient marble statue wearing a brightly colored rainbow wig</string>
-    <string name="default_lora_plugin">a bright purple teapot sitting on top of a green table with orange teacups</string>
+    <string name="default_lora_plugin">a side view of a bright purple monadikos teapot sitting on top of a green table with orange saucers</string>
     <string name="tv_display_each_iteration">Display each iteration</string>
     <string name="tv_only_display_final_image">Only display final image</string>
     <string name="tv_use_lora">Use Lora</string>
