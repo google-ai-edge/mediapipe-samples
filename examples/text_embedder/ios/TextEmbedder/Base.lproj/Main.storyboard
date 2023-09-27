@@ -236,34 +236,6 @@
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
-                <view contentMode="scaleToFill" id="BA4-9W-OAA">
-                    <rect key="frame" x="0.0" y="0.0" width="240" height="72"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                    <subviews>
-                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ic_mediapipe" translatesAutoresizingMaskIntoConstraints="NO" id="iUz-Sh-ijq">
-                            <rect key="frame" x="0.0" y="28.666666666666671" width="40" height="40"/>
-                            <constraints>
-                                <constraint firstAttribute="height" constant="40" id="NbF-Xa-kGx"/>
-                                <constraint firstAttribute="width" constant="40" id="vbh-NR-JGY"/>
-                            </constraints>
-                        </imageView>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="TextClassifier" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="By2-Mc-N1O">
-                            <rect key="frame" x="40" y="38" width="192" height="21"/>
-                            <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
-                            <nil key="textColor"/>
-                            <nil key="highlightedColor"/>
-                        </label>
-                    </subviews>
-                    <viewLayoutGuide key="safeArea" id="gZZ-SU-3Hv"/>
-                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                    <constraints>
-                        <constraint firstItem="iUz-Sh-ijq" firstAttribute="leading" secondItem="gZZ-SU-3Hv" secondAttribute="leading" id="8FR-1s-ef8"/>
-                        <constraint firstItem="gZZ-SU-3Hv" firstAttribute="trailing" secondItem="By2-Mc-N1O" secondAttribute="trailing" constant="8" id="bYT-L0-HVM"/>
-                        <constraint firstItem="By2-Mc-N1O" firstAttribute="centerY" secondItem="iUz-Sh-ijq" secondAttribute="centerY" id="f2t-Qn-06d"/>
-                        <constraint firstItem="iUz-Sh-ijq" firstAttribute="centerY" secondItem="gZZ-SU-3Hv" secondAttribute="centerY" id="jxH-CK-niK"/>
-                        <constraint firstItem="By2-Mc-N1O" firstAttribute="leading" secondItem="iUz-Sh-ijq" secondAttribute="trailing" id="xJB-aA-bma"/>
-                    </constraints>
-                </view>
             </objects>
             <point key="canvasLocation" x="973.28244274809151" y="-2.1126760563380285"/>
         </scene>

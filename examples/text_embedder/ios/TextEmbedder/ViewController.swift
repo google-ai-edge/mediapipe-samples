@@ -53,6 +53,10 @@ class ViewController: UIViewController {
     }
   }
 
+  deinit {
+    NotificationCenter.default.removeObserver(self)
+  }
+
   @IBAction func clearButton1TouchUpInside(_ sender: Any) {
     input1TextView.text = ""
     updateButtonState()
