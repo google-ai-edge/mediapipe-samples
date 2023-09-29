@@ -1,0 +1,46 @@
+/*
+ * Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *             http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+task downloadFaceTaskFile(type: Download) {
+    src 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task'
+    dest project.ext.ASSET_DIR + '/face_landmarker.task'
+    overwrite false
+}
+
+task downloadFacePluginFile(type: Download) {
+    src 'https://storage.googleapis.com/mediapipe-models/image_generator/plugin_models/float32/latest/face_landmark_plugin.tflite'
+    dest project.ext.ASSET_DIR + '/face_landmark_plugin.tflite'
+    overwrite false
+}
+
+task downloadEdgePluginFile(type: Download) {
+    src 'https://storage.googleapis.com/mediapipe-models/image_generator/plugin_models/float32/latest/canny_edge_plugin.tflite'
+    dest project.ext.ASSET_DIR + '/canny_edge_plugin.tflite'
+    overwrite false
+}
+
+task downloadDepthModelFile(type: Download) {
+    src 'https://storage.googleapis.com/mediapipe-models/image_generator/condition_image_models/float16/latest/depth_512_512_fp16_opt_w_metadata.tflite'
+    dest project.ext.ASSET_DIR + '/depth_model.tflite'
+    overwrite false
+}
+
+task downloadDepthPluginFile(type: Download) {
+    src 'https://storage.googleapis.com/mediapipe-models/image_generator/plugin_models/float32/latest/depth_plugin.tflite'
+    dest project.ext.ASSET_DIR + '/depth_plugin.tflite'
+    overwrite false
+}
+
+preBuild.dependsOn downloadFaceTaskFile, downloadFacePluginFile, downloadEdgePluginFile, downloadDepthModelFile, downloadDepthPluginFile

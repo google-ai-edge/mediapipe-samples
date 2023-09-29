@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/toolbar_background"
+    android:orientation="vertical"
+    android:padding="10dp"
+    tools:context=".diffusion.DiffusionActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:layout_alignParentTop="true">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@null"
+            android:src="@drawable/media_pipe_banner" />
+    </androidx.appcompat.widget.Toolbar>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_display_iteration"
+        android:layout_width="wrap_content"
+        android:layout_below="@id/toolbar"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnDiffusion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Standalone Generation" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnPlugins"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Generation with Plugins" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnLoRA"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Generation with LoRA weights" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+</RelativeLayout>
