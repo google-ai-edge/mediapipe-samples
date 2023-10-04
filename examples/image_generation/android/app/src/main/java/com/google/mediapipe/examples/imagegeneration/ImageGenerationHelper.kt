@@ -39,7 +39,6 @@ class ImageGenerationHelper(
 
         val faceModelBaseOptions = BaseOptions.builder()
             .setModelAssetPath("face_landmarker.task")
-            .setDelegate(Delegate.GPU)
             .build()
 
         val facePluginModelBaseOptions = BaseOptions.builder()
@@ -68,7 +67,6 @@ class ImageGenerationHelper(
 
         val edgePluginModelBaseOptions = BaseOptions.builder()
             .setModelAssetPath("canny_edge_plugin.tflite")
-            .setDelegate(Delegate.GPU)
             .build()
 
         val edgeConditionOptions = EdgeConditionOptions.builder()
@@ -94,12 +92,10 @@ class ImageGenerationHelper(
 
         val depthModelBaseOptions = BaseOptions.builder()
             .setModelAssetPath("depth_model.tflite")
-            .setDelegate(Delegate.GPU)
             .build()
 
         val depthPluginModelBaseOptions = BaseOptions.builder()
             .setModelAssetPath("depth_plugin.tflite")
-            .setDelegate(Delegate.GPU)
             .build()
 
         val depthConditionOptions =

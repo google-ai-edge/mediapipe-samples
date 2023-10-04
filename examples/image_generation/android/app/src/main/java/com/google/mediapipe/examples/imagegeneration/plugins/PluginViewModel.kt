@@ -55,7 +55,6 @@ class PluginViewModel : ViewModel() {
     }
 
     fun updateInputBitmap(bitmap: Bitmap) {
-        Log.e("Test", "update input bitmap")
         _uiState.update { it.copy(inputBitmap = bitmap) }
     }
 
