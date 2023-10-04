@@ -23,6 +23,7 @@
     <string name="tv_load_picture">Load Picture</string>
     <string name="tv_open_camera">Open Camera</string>
     <string name="btn_seed_randomize">Randomize</string>
+    <string name="tv_plugin_type_label">Plugin type: </string>
     <string-array name="plugins">
         <item>Face</item>
         <item>Depth</item>

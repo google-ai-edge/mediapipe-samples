@@ -40,7 +40,7 @@ class PluginActivity : AppCompatActivity() {
                 if (uri != null) {
                     val bitmap = ImageUtils.decodeBitmapFromUri(this, uri)
                     if (bitmap != null) {
-                        viewModel.updateInputBitmap(cropBitmapToSquare(bitmap))
+                        viewModel.updateInputBitmap(bitmap)//cropBitmapToSquare(bitmap))
                     }
                 }
             }
@@ -50,7 +50,7 @@ class PluginActivity : AppCompatActivity() {
             if (result.resultCode == RESULT_OK) {
                 val bitmap = result.data?.extras?.get("data") as? Bitmap
                 if (bitmap != null) {
-                    viewModel.updateInputBitmap(cropBitmapToSquare(bitmap))
+                    viewModel.updateInputBitmap(bitmap)//cropBitmapToSquare(bitmap))
                 }
             }
         }
@@ -213,7 +213,7 @@ class PluginActivity : AppCompatActivity() {
     }
 
     private fun openGallery() {
-        val intent = Intent(Intent.ACTION_PICK)
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "image/*"
         openGalleryResultLauncher.launch(intent)
     }
@@ -244,7 +244,7 @@ class PluginActivity : AppCompatActivity() {
         val width = bitmap.width
         val height = bitmap.height
         val cropSize = if (width > height) height else width
-        return Bitmap.createBitmap(bitmap, 0, 0, cropSize, cropSize)
+        return Bitmap.createScaledBitmap(bitmap, cropSize, cropSize, false)
     }
 
     override fun onDestroy() {

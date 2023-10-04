@@ -8,6 +8,7 @@ import android.graphics.Paint
 import com.google.mediapipe.framework.image.BitmapExtractor
 import com.google.mediapipe.framework.image.MPImage
 import com.google.mediapipe.tasks.core.BaseOptions
+import com.google.mediapipe.tasks.core.Delegate
 import com.google.mediapipe.tasks.vision.imagegenerator.ImageGenerator
 import com.google.mediapipe.tasks.vision.imagegenerator.ImageGenerator.ConditionOptions
 import com.google.mediapipe.tasks.vision.imagegenerator.ImageGenerator.ConditionOptions.ConditionType
@@ -31,13 +32,14 @@ class ImageGenerationHelper(
         imageGenerator = ImageGenerator.createFromOptions(context, options)
     }
 
-    fun initializeImageGeneratorWithPlugins(modelPath: String) {
+    fun initializeImageGeneratorWithFacePlugin(modelPath: String) {
         val options = ImageGeneratorOptions.builder()
             .setImageGeneratorModelDirectory(modelPath)
             .build()
 
         val faceModelBaseOptions = BaseOptions.builder()
             .setModelAssetPath("face_landmarker.task")
+            .setDelegate(Delegate.GPU)
             .build()
 
         val facePluginModelBaseOptions = BaseOptions.builder()
@@ -51,8 +53,22 @@ class ImageGenerationHelper(
             .setMinFacePresenceConfidence(0.3f)
             .build()
 
+        val conditionOptions = ConditionOptions.builder()
+            .setFaceConditionOptions(faceConditionOptions)
+            .build()
+
+        imageGenerator =
+            ImageGenerator.createFromOptions(context, options, conditionOptions)
+    }
+
+    fun initializeImageGeneratorWithEdgePlugin(modelPath: String) {
+        val options = ImageGeneratorOptions.builder()
+            .setImageGeneratorModelDirectory(modelPath)
+            .build()
+
         val edgePluginModelBaseOptions = BaseOptions.builder()
             .setModelAssetPath("canny_edge_plugin.tflite")
+            .setDelegate(Delegate.GPU)
             .build()
 
         val edgeConditionOptions = EdgeConditionOptions.builder()
@@ -63,12 +79,27 @@ class ImageGenerationHelper(
             .setPluginModelBaseOptions(edgePluginModelBaseOptions)
             .build()
 
+        val conditionOptions = ConditionOptions.builder()
+            .setEdgeConditionOptions(edgeConditionOptions)
+            .build()
+
+        imageGenerator =
+            ImageGenerator.createFromOptions(context, options, conditionOptions)
+    }
+
+    fun initializeImageGeneratorWithDepthPlugin(modelPath: String) {
+        val options = ImageGeneratorOptions.builder()
+            .setImageGeneratorModelDirectory(modelPath)
+            .build()
+
         val depthModelBaseOptions = BaseOptions.builder()
             .setModelAssetPath("depth_model.tflite")
+            .setDelegate(Delegate.GPU)
             .build()
 
         val depthPluginModelBaseOptions = BaseOptions.builder()
             .setModelAssetPath("depth_plugin.tflite")
+            .setDelegate(Delegate.GPU)
             .build()
 
         val depthConditionOptions =
@@ -78,8 +109,6 @@ class ImageGenerationHelper(
                 .build()
 
         val conditionOptions = ConditionOptions.builder()
-            .setFaceConditionOptions(faceConditionOptions)
-            .setEdgeConditionOptions(edgeConditionOptions)
             .setDepthConditionOptions(depthConditionOptions)
             .build()
 
@@ -166,9 +195,7 @@ class ImageGenerationHelper(
         inputImage: MPImage,
         conditionType: ConditionType
     ): Bitmap {
-        val result =
-            imageGenerator.createConditionImage(inputImage, conditionType)
-        return BitmapExtractor.extract(result)
+        return BitmapExtractor.extract(imageGenerator.createConditionImage(inputImage, conditionType))
     }
 
     fun close() {
