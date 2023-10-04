@@ -246,19 +246,19 @@
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 
-        <ImageView
-            android:id="@+id/imgOutput"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:adjustViewBounds="true"
-            android:contentDescription="@null" />
-
         <TextView
             android:id="@+id/tvDisclaimer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="invisible"
             android:text="@string/legal_disclaimer" />
+
+        <ImageView
+            android:id="@+id/imgOutput"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:adjustViewBounds="true"
+            android:contentDescription="@null" />
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 </RelativeLayout>
