@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -17,6 +18,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.mediapipe.examples.imagegeneration.ImageUtils
 import com.google.mediapipe.examples.imagegeneration.R
 import com.google.mediapipe.examples.imagegeneration.databinding.ActivityPluginBinding
+import com.google.mediapipe.tasks.vision.imagegenerator.ImageGenerator
 import kotlinx.coroutines.launch
 import java.lang.Math.abs
 import java.util.*
@@ -26,8 +28,6 @@ class PluginActivity : AppCompatActivity() {
         private const val DEFAULT_DISPLAY_ITERATION = 5
         private const val DEFAULT_ITERATION = 20
         private const val DEFAULT_SEED = 0
-        private val DEFAULT_PROMPT = R.string.default_prompt_plugin
-        private const val DEFAULT_PLUGIN = 0 // FACE
         private val DEFAULT_DISPLAY_OPTIONS = R.id.radio_final // FINAL
     }
 
@@ -86,6 +86,7 @@ class PluginActivity : AppCompatActivity() {
                     if (uiState.isGenerating) {
                         binding.btnGenerate.isEnabled = false
                         binding.btnGenerate.text = uiState.generatingMessage
+                        binding.tvDisclaimer.visibility = View.VISIBLE
                     } else {
                         binding.btnGenerate.text = "Generate"
                         if (uiState.initialized) {
@@ -113,6 +114,12 @@ class PluginActivity : AppCompatActivity() {
     private fun handleListener() {
         binding.btnInitialize.setOnClickListener {
             viewModel.initializeImageGenerator()
+            when(viewModel.uiState.value.plugins) {
+                ImageGenerator.ConditionOptions.ConditionType.FACE -> binding.edtPrompt.setText(getString(R.string.default_prompt_plugin_face))
+                ImageGenerator.ConditionOptions.ConditionType.EDGE -> binding.edtPrompt.setText(getString(R.string.default_prompt_plugin_edge))
+                ImageGenerator.ConditionOptions.ConditionType.DEPTH -> binding.edtPrompt.setText(getString(R.string.default_prompt_plugin_depth))
+            }
+
             closeSoftKeyboard()
         }
         binding.btnGenerate.setOnClickListener {
@@ -213,7 +220,7 @@ class PluginActivity : AppCompatActivity() {
     }
 
     private fun openGallery() {
-        val intent = Intent(Intent.ACTION_PICK)
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "image/*"
         openGalleryResultLauncher.launch(intent)
     }
@@ -225,10 +232,8 @@ class PluginActivity : AppCompatActivity() {
 
     private fun setDefaultValue() {
         with(binding) {
-            edtPrompt.setText(getString(DEFAULT_PROMPT))
             edtIterations.setText(DEFAULT_ITERATION.toString())
             edtSeed.setText(DEFAULT_SEED.toString())
-            spinnerPlugins.setSelection(DEFAULT_PLUGIN)
             radioDisplayOptions.check(DEFAULT_DISPLAY_OPTIONS)
             edtDisplayIteration.setText(DEFAULT_DISPLAY_ITERATION.toString())
         }
@@ -244,7 +249,7 @@ class PluginActivity : AppCompatActivity() {
         val width = bitmap.width
         val height = bitmap.height
         val cropSize = if (width > height) height else width
-        return Bitmap.createBitmap(bitmap, 0, 0, cropSize, cropSize)
+        return Bitmap.createScaledBitmap(bitmap, cropSize, cropSize, false)
     }
 
     override fun onDestroy() {

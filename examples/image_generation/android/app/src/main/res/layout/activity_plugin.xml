@@ -60,6 +60,25 @@
             </RadioGroup>
         </androidx.appcompat.widget.LinearLayoutCompat>
 
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="@string/tv_plugin_type_label" />
+
+            <!--face/depth/edge plugins-->
+            <Spinner
+                android:id="@+id/spinner_plugins"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:spinnerMode="dropdown" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
         <Button
             android:id="@+id/btn_initialize"
             android:layout_width="match_parent"
@@ -153,13 +172,6 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <!--face/depth/edge plugins-->
-            <Spinner
-                android:id="@+id/spinner_plugins"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:spinnerMode="dropdown" />
-
             <Button
                 android:id="@+id/btn_open_gallery"
                 android:layout_width="wrap_content"
@@ -240,6 +252,13 @@
             android:layout_height="match_parent"
             android:adjustViewBounds="true"
             android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/tvDisclaimer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="invisible"
+            android:text="@string/legal_disclaimer" />
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 </RelativeLayout>

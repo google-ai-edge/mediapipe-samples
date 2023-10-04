@@ -2,6 +2,7 @@ package com.google.mediapipe.examples.imagegeneration.loraweights
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -51,6 +52,7 @@ class LoRAWeightActivity : AppCompatActivity() {
                     if (uiState.isGenerating) {
                         binding.btnGenerate.isEnabled = false
                         binding.btnGenerate.text = uiState.generatingMessage
+                        binding.tvDisclaimer.visibility = View.VISIBLE
                     } else {
                         binding.btnGenerate.text = "Generate"
                         if (uiState.initialized) {

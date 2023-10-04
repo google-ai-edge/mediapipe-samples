@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.google.mediapipe.examples.imagegeneration.ImageGenerationHelper
 import com.google.mediapipe.framework.image.BitmapImageBuilder
@@ -84,7 +85,11 @@ class PluginViewModel : ViewModel() {
             val mainLooper = Looper.getMainLooper()
             GlobalScope.launch {
                 val startTime = System.currentTimeMillis()
-                helper?.initializeImageGeneratorWithPlugins(MODEL_PATH)
+                when(conditionType) {
+                    ConditionType.FACE -> helper?.initializeImageGeneratorWithFacePlugin(MODEL_PATH)
+                    ConditionType.EDGE -> helper?.initializeImageGeneratorWithEdgePlugin(MODEL_PATH)
+                    ConditionType.DEPTH -> helper?.initializeImageGeneratorWithDepthPlugin(MODEL_PATH)
+                }
 
                 Handler(mainLooper).post {
                     _uiState.update {

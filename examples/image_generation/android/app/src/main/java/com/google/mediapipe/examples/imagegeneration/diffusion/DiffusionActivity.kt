@@ -1,7 +1,9 @@
 package com.google.mediapipe.examples.imagegeneration.diffusion
 
+import android.opengl.Visibility
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -51,6 +53,7 @@ class DiffusionActivity : AppCompatActivity() {
                     if (uiState.isGenerating) {
                         binding.btnGenerate.isEnabled = false
                         binding.btnGenerate.text = uiState.generatingMessage
+                        binding.tvDisclaimer.visibility = View.VISIBLE
                     } else {
                         binding.btnGenerate.text = "Generate"
                         if (uiState.initialized) {
@@ -61,7 +64,6 @@ class DiffusionActivity : AppCompatActivity() {
                         }
                     }
                     binding.imgOutput.setImageBitmap(uiState.outputBitmap)
-
                     showError(uiState.error)
                     showGenerateTime(uiState.generateTime)
                     showInitializedTime(uiState.initializedTime)
