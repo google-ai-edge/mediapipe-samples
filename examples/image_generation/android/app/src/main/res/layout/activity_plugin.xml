@@ -235,14 +235,6 @@
                 android:contentDescription="@null"
                 android:scaleType="centerInside" />
 
-            <ImageView
-                android:id="@+id/imgConditionImage"
-                android:layout_width="0dp"
-                android:layout_height="100dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_weight="1"
-                android:contentDescription="@null"
-                android:scaleType="centerInside" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 

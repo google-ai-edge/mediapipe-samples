@@ -142,16 +142,10 @@ class PluginViewModel : ViewModel() {
             return
         }
 
-        // Create condition image
-        val mpImage = BitmapImageBuilder(inputImage).build()
-        val conditionBitmap =
-            helper?.createConditionImage(mpImage, conditionType)
-
         _uiState.update {
             it.copy(
                 generatingMessage = "Generating...",
-                isGenerating = true,
-                conditionBitmap = conditionBitmap
+                isGenerating = true
             )
         }
 
@@ -214,7 +208,6 @@ data class UiState(
     val error: String? = null,
     val inputBitmap: Bitmap? = null,
     val outputBitmap: Bitmap? = null,
-    val conditionBitmap: Bitmap? = null,
     val displayOptions: DisplayOptions = DisplayOptions.FINAL,
     val plugins: ConditionType = ConditionType.FACE,
     val displayIteration: Int? = null,
