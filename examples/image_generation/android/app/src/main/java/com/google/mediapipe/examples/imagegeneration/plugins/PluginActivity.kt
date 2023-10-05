@@ -98,7 +98,6 @@ class PluginActivity : AppCompatActivity() {
                     }
                     binding.imgOutput.setImageBitmap(uiState.outputBitmap)
                     binding.imgDisplayInput.setImageBitmap(uiState.inputBitmap)
-                    binding.imgConditionImage.setImageBitmap(uiState.conditionBitmap)
 
                     showError(uiState.error)
                     showGenerationTime(uiState.generateTime)
