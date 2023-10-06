@@ -79,7 +79,7 @@ final class TextEmbedderTests: XCTestCase {
     equals expectedEmbedding: Embedding
   ) throws {
     let textEmbedderServiceResult =
-    try XCTUnwrap(textEmbedderService.embeder(text: text))
+    try XCTUnwrap(textEmbedderService.embed(text: text))
     assertEmbeddingResultHasOneEmbedding(textEmbedderServiceResult)
     assertEmbeddingAreEqual(textEmbedderServiceResult.embeddings.first!, expectedEmbeddingResult: expectedEmbedding)
   }

@@ -25,17 +25,17 @@ class TextEmbedderService {
   func compare(text1: String?, text2: String?) -> Float? {
     guard let text1 = text1,
           let text2 = text2,
-          let text1Embedder = embeder(text: text1)?.embeddings.first,
-          let text2Embedder = embeder(text: text2)?.embeddings.first else {
+          let text1EmbedderResult = embed(text: text1)?.embeddings.first,
+          let text2EmbedderResult = embed(text: text2)?.embeddings.first else {
       return nil
       
     }
      let cosineSimilarity = try? Float(
-      truncating: TextEmbedder.cosineSimilarity(embedding1: text1Embedder, embedding2: text2Embedder))
+      truncating: TextEmbedder.cosineSimilarity(embedding1: text1EmbedderResult, embedding2: text2EmbedderResult))
     return cosineSimilarity ?? 0
   }
 
-  func embeder(text: String) -> EmbeddingResult? {
+  func embed(text: String) -> EmbeddingResult? {
     guard let textEmbedder = textEmbedder else { return nil }
     return try? textEmbedder.embed(text: text).embeddingResult
   }

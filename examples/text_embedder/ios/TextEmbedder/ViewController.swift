@@ -24,6 +24,7 @@ class ViewController: UIViewController {
   @IBOutlet weak var input2TextView: UITextView!
 
   @IBOutlet weak var bottomSpaceLayoutConstraint: NSLayoutConstraint!
+  @IBOutlet weak var contentScrollView: UIScrollView!
   @IBOutlet weak var resultLabel: UILabel!
 
   let backgroundQueue = DispatchQueue(
@@ -31,8 +32,8 @@ class ViewController: UIViewController {
     qos: .userInteractive
   )
 
-  private var isText2Editing: Bool = false
   private var textEmbedderService: TextEmbedderService?
+  private let textViewBotomSpace: CGFloat = 100
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -44,7 +45,7 @@ class ViewController: UIViewController {
     // Keyboard notification
     NotificationCenter.default.addObserver(
       self,
-      selector: #selector(keyboardDidChangeFrame), name: UIResponder.keyboardWillChangeFrameNotification,
+      selector: #selector(keyboardWillChangeFrame), name: UIResponder.keyboardWillChangeFrameNotification,
       object: nil)
 
     // Setup the TextEmbedder Service.
@@ -90,12 +91,27 @@ class ViewController: UIViewController {
   private func setupUI() {
     input1TextView.text = Constants.defaultText
     input2TextView.text = Constants.defaultText
+    input1TextView.inputAccessoryView = createInputAccessoryView()
+    input2TextView.inputAccessoryView = createInputAccessoryView()
   }
 
   private func hideKeyboardWhenTappedAround() {
     let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
     tap.cancelsTouchesInView = false
     view.addGestureRecognizer(tap)
+  }
+
+  private func createInputAccessoryView() -> UIView {
+    let inputAccessoryView = UIView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 44))
+    inputAccessoryView.backgroundColor = .lightGray
+
+    let doneButton = UIButton(frame: CGRect(x: view.bounds.width - 80, y: 5, width: 60, height: 30))
+    doneButton.setTitle("Done", for: .normal)
+    doneButton.setTitleColor(.white, for: .normal)
+    doneButton.backgroundColor = UIColor(displayP3Red: 0, green: 127/255.0, blue: 139/255.0, alpha: 1)
+    doneButton.addTarget(self, action: #selector(dismissKeyboard), for: .touchUpInside)
+    inputAccessoryView.addSubview(doneButton)
+    return inputAccessoryView
   }
 
   @objc private func dismissKeyboard() {
@@ -108,12 +124,15 @@ class ViewController: UIViewController {
     compareButton.isEnabled = !input1TextView.text.isEmpty && !input2TextView.text.isEmpty
   }
 
-  @objc private func keyboardDidChangeFrame(notification: Notification) {
-    guard isText2Editing == true,
-      let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
-    bottomSpaceLayoutConstraint.constant = view.bounds.height - frame.cgRectValue.origin.y
-    UIView.animate(withDuration: 0.3) {
-      self.view.layoutIfNeeded()
+  @objc private func keyboardWillChangeFrame(notification: Notification) {
+    guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
+    if view.bounds.size.height - frame.cgRectValue.origin.y == 0 {
+      contentScrollView.scrollRectToVisible(CGRect(x: 0, y: 0, width: contentScrollView.bounds.width, height: contentScrollView.bounds.height), animated: true)
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        self.bottomSpaceLayoutConstraint.constant = 0
+      }
+    } else {
+      bottomSpaceLayoutConstraint.constant = view.bounds.size.height - view.safeAreaInsets.bottom - frame.cgRectValue.origin.y
     }
   }
 }
@@ -124,15 +143,14 @@ extension ViewController: UITextViewDelegate {
     updateButtonState()
   }
 
-  func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {
+  func textViewDidBeginEditing(_ textView: UITextView) {
     if textView == input2TextView {
-      isText2Editing = true
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+        self.contentScrollView.scrollRectToVisible(CGRect(x: 0, y: self.bottomSpaceLayoutConstraint.constant - self.textViewBotomSpace, width: self.contentScrollView.bounds.width, height: self.contentScrollView.bounds.height), animated: true)
+      }
+    } else {
+      contentScrollView.scrollRectToVisible(CGRect(x: 0, y: 0, width: contentScrollView.bounds.width, height: contentScrollView.bounds.height), animated: true)
     }
-    return true
-  }
-
-  func textViewDidEndEditing(_ textView: UITextView) {
-    isText2Editing = false
   }
 }
 
