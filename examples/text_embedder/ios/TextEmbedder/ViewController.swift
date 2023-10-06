@@ -38,7 +38,7 @@ class ViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     setupUI()
-    hideKeyboardWhenTappedAround()
+    hideKeyboardOnBackgroundTap()
     input1TextView.delegate = self
     input2TextView.delegate = self
 
@@ -95,7 +95,7 @@ class ViewController: UIViewController {
     input2TextView.inputAccessoryView = createInputAccessoryView()
   }
 
-  private func hideKeyboardWhenTappedAround() {
+  private func hideKeyboardOnBackgroundTap() {
     let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
     tap.cancelsTouchesInView = false
     view.addGestureRecognizer(tap)
