@@ -25,7 +25,7 @@
 		BFCDAE662AAEB82C00EC4371 /* CameraFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE5C2AAEB82C00EC4371 /* CameraFeedService.swift */; };
 		BFCDAE672AAEB82C00EC4371 /* HandLandmarkerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE5D2AAEB82C00EC4371 /* HandLandmarkerService.swift */; };
 		BFCDAE682AAEB82C00EC4371 /* DefaultConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE5F2AAEB82C00EC4371 /* DefaultConstants.swift */; };
-		BFCDAE692AAEB82C00EC4371 /* InferenceConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE602AAEB82C00EC4371 /* InferenceConfigManager.swift */; };
+		BFCDAE692AAEB82C00EC4371 /* InferenceConfigurationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE602AAEB82C00EC4371 /* InferenceConfigurationManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,7 +63,7 @@
 		BFCDAE5C2AAEB82C00EC4371 /* CameraFeedService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedService.swift; sourceTree = "<group>"; };
 		BFCDAE5D2AAEB82C00EC4371 /* HandLandmarkerService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HandLandmarkerService.swift; sourceTree = "<group>"; };
 		BFCDAE5F2AAEB82C00EC4371 /* DefaultConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultConstants.swift; sourceTree = "<group>"; };
-		BFCDAE602AAEB82C00EC4371 /* InferenceConfigManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceConfigManager.swift; sourceTree = "<group>"; };
+		BFCDAE602AAEB82C00EC4371 /* InferenceConfigurationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceConfigurationManager.swift; sourceTree = "<group>"; };
 		D6309757C0B73AC4C4CE0B6E /* Pods-HandLandmarkerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HandLandmarkerTests.debug.xcconfig"; path = "Target Support Files/Pods-HandLandmarkerTests/Pods-HandLandmarkerTests.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -186,7 +186,7 @@
 			isa = PBXGroup;
 			children = (
 				BFCDAE5F2AAEB82C00EC4371 /* DefaultConstants.swift */,
-				BFCDAE602AAEB82C00EC4371 /* InferenceConfigManager.swift */,
+				BFCDAE602AAEB82C00EC4371 /* InferenceConfigurationManager.swift */,
 			);
 			path = Configs;
 			sourceTree = "<group>";
@@ -362,7 +362,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BFCDAE692AAEB82C00EC4371 /* InferenceConfigManager.swift in Sources */,
+				BFCDAE692AAEB82C00EC4371 /* InferenceConfigurationManager.swift in Sources */,
 				BFCDAE662AAEB82C00EC4371 /* CameraFeedService.swift in Sources */,
 				BFCDAE632AAEB82C00EC4371 /* RootViewController.swift in Sources */,
 				BFCDAE672AAEB82C00EC4371 /* HandLandmarkerService.swift in Sources */,
