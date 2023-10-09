@@ -16,7 +16,7 @@
     <string name="default_prompt_diffusion">a colorful cartoon raccoon wearing a floppy wide brimmed hat holding a stick walking through the forest, animated, three-quarter view, painting</string>
     <string name="default_prompt_plugin_face">an ancient marble statue wearing a brightly colored rainbow wig</string>
     <string name="default_prompt_plugin_edge">a box overflowing with brightly colored flowers</string>
-    <string name="default_prompt_plugin_depth">Depth test</string>
+    <string name="default_prompt_plugin_depth">A modern green race car</string>
     <string name="default_lora_plugin">a side view of a bright purple monadikos teapot sitting on top of a green table with orange saucers</string>
     <string name="tv_display_each_iteration">Display each iteration</string>
     <string name="tv_only_display_final_image">Only display final image</string>
