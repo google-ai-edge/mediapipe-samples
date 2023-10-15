@@ -43,12 +43,13 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:layout_alignParentTop="true"
-            android:background="@color/toolbar_background">
+            android:background="@color/icActive">
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/media_pipe_banner" />
+                android:src="@drawable/ge_logo"
+                android:layout_gravity="center"/>
         </androidx.appcompat.widget.Toolbar>
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
@@ -56,8 +57,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/toolbar"
-            app:itemIconTint="@color/bg_nav_item"
-            app:itemTextColor="@color/bg_nav_item"
+            app:itemIconTint="@color/htwGreen"
+            app:itemTextColor="@color/htwGreen"
             app:menu="@menu/menu_bottom_nav" />
 
         <View
@@ -65,6 +66,6 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_below="@id/navigation"
-            android:background="@android:color/darker_gray" />
+            android:background="@color/icActive" />
     </RelativeLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

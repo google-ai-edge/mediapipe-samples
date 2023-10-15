@@ -51,6 +51,7 @@ class GestureRecognizerHelper(
         setupGestureRecognizer()
     }
 
+    //closes and resets the GR by deleting the reference
     fun clearGestureRecognizer() {
         gestureRecognizer?.close()
         gestureRecognizer = null

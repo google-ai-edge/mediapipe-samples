@@ -28,4 +28,8 @@
     <color name="icActive">#FFFFFFFF</color>
     <color name="icFocused">#DDFFFFFF</color>
     <color name="icPressed">#AAFFFFFF</color>
+    <color name="htwGrey">#AFAFAF</color>
+    <color name="htwGreen">#76B900</color>
+    <color name="htwBlue">#0082D1</color>
+    <color name="htwOrange">#FF5F00</color>
 </resources>
