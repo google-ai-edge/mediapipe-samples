@@ -136,7 +136,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             setUpCamera()
         }
 
-        // Create the PoseLandmarkerHelper that will posele the inference
+        // Create the PoseLandmarkerHelper that will handle the inference
         backgroundExecutor.execute {
             poseLandmarkerHelper = PoseLandmarkerHelper(
                 context = requireContext(),
