@@ -32,6 +32,7 @@ import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizer
 import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizerResult
 
+//initialize & setup (delegate CPU or GPU)
 class GestureRecognizerHelper(
     var minHandDetectionConfidence: Float = DEFAULT_HAND_DETECTION_CONFIDENCE,
     var minHandTrackingConfidence: Float = DEFAULT_HAND_TRACKING_CONFIDENCE,
@@ -118,7 +119,6 @@ class GestureRecognizerHelper(
         imageProxy: ImageProxy,
     ) {
         val frameTime = SystemClock.uptimeMillis()
-
         // Copy out RGB bits from the frame to a bitmap buffer
         val bitmapBuffer = Bitmap.createBitmap(
             imageProxy.width, imageProxy.height, Bitmap.Config.ARGB_8888
@@ -129,8 +129,8 @@ class GestureRecognizerHelper(
         val matrix = Matrix().apply {
             // Rotate the frame received from the camera to be in the same direction as it'll be shown
             postRotate(imageProxy.imageInfo.rotationDegrees.toFloat())
-
             // flip image since we only support front camera
+            // flip image if the camera is facing front
             postScale(
                 -1f, 1f, imageProxy.width.toFloat(), imageProxy.height.toFloat()
             )
