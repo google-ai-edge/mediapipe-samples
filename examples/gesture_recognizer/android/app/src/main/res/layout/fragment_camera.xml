@@ -20,16 +20,30 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- Original
     <androidx.camera.view.PreviewView
         android:id="@+id/view_finder"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:scaleType="fillStart" />
+    -->
+
+    <!-- Camera preview in a small window -->
+    <androidx.camera.view.PreviewView
+        android:id="@+id/view_finder"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_gravity="end"
+        android:layout_margin="10dp"
+        app:scaleType="fillStart" /> <!--> //for correct scaling of camera view and GR-->
 
     <com.google.mediapipe.examples.gesturerecognizer.OverlayView
         android:id="@+id/overlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_gravity="end"
+        android:layout_margin="10dp"
+        app:scaleType="fillStart" /> <!--> //for correct scaling of camera view and GR-->
 
     <include
         android:id="@+id/bottom_sheet_layout"
@@ -51,7 +65,7 @@
     <View
         android:layout_width="wrap_content"
         android:layout_height="1dp"
-        android:background="@color/mp_color_primary"
+        android:background="@color/htwGreen"
         app:layout_anchor="@id/recyclerview_results"
         app:layout_anchorGravity="bottom" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
