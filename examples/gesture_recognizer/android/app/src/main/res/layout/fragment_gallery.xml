@@ -75,7 +75,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
-        android:backgroundTint="@color/mp_color_primary"
+        android:backgroundTint="@color/htwGreen"
         android:contentDescription="@null"
         android:src="@drawable/ic_baseline_add_24"
         app:layout_anchor="@id/recyclerview_results"
@@ -103,7 +103,7 @@
     <View
         android:layout_width="wrap_content"
         android:layout_height="1dp"
-        android:background="@color/mp_color_primary"
+        android:background="@color/htwGreen"
         app:layout_anchor="@id/recyclerview_results"
         app:layout_anchorGravity="bottom" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
