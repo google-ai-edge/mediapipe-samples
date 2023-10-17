@@ -130,7 +130,7 @@
 		BF5EEC742AB7FDE600189276 /* GestureRecognizer */ = {
 			isa = PBXGroup;
 			children = (
-				BF5EECB52AB801F200189276 /* Configs */,
+				BF5EECB52AB801F200189276 /* Configurations */,
 				BF5EECB22AB801F200189276 /* Services */,
 				BF5EECAD2AB801F200189276 /* ViewContoller */,
 				BF5EECAB2AB801F200189276 /* Views */,
@@ -182,13 +182,13 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
-		BF5EECB52AB801F200189276 /* Configs */ = {
+		BF5EECB52AB801F200189276 /* Configurations */ = {
 			isa = PBXGroup;
 			children = (
 				BF5EECB62AB801F200189276 /* DefaultConstants.swift */,
 				BF5EECB72AB801F200189276 /* InferenceConfigurationManager.swift */,
 			);
-			path = Configs;
+			path = Configurations;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
