@@ -35,6 +35,21 @@ class ViewController: UIViewController {
   private var textEmbedderService: TextEmbedderService?
   private let textViewBotomSpace: CGFloat = 100
 
+  //InputAccessoryView constants
+  private let inputAccessoryViewHeight: CGFloat = 44
+  private let doneButtonSpaceRight: CGFloat = 20
+  private let doneButtonWidth: CGFloat = 60
+  private let doneButtonHeight: CGFloat = 30
+  private let doneButtonSpaceTop: CGFloat = 5
+  private let doneButtonTitle: String = "Done"
+  private let doneButtonBackgroudColor: UIColor = UIColor(displayP3Red: 0, green: 127/255.0, blue: 139/255.0, alpha: 1)
+
+  // Keyboard show and hiden animation time
+  private let keyboardAnimationTime = 0.3
+
+  // The time waiting for scroll view set frame
+  private let delayTimeScrollToVisible = 0.2
+
   override func viewDidLoad() {
     super.viewDidLoad()
     setupUI()
@@ -102,13 +117,18 @@ class ViewController: UIViewController {
   }
 
   private func createInputAccessoryView() -> UIView {
-    let inputAccessoryView = UIView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 44))
+    let inputAccessoryView = UIView(
+      frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: inputAccessoryViewHeight))
     inputAccessoryView.backgroundColor = .lightGray
 
-    let doneButton = UIButton(frame: CGRect(x: view.bounds.width - 80, y: 5, width: 60, height: 30))
-    doneButton.setTitle("Done", for: .normal)
+    let doneButton = UIButton(frame: CGRect(
+      x: view.bounds.width - doneButtonWidth - doneButtonSpaceRight,
+      y: doneButtonSpaceTop,
+      width: doneButtonWidth,
+      height: doneButtonHeight))
+    doneButton.setTitle(doneButtonTitle, for: .normal)
     doneButton.setTitleColor(.white, for: .normal)
-    doneButton.backgroundColor = UIColor(displayP3Red: 0, green: 127/255.0, blue: 139/255.0, alpha: 1)
+    doneButton.backgroundColor = doneButtonBackgroudColor
     doneButton.addTarget(self, action: #selector(dismissKeyboard), for: .touchUpInside)
     inputAccessoryView.addSubview(doneButton)
     return inputAccessoryView
@@ -128,7 +148,7 @@ class ViewController: UIViewController {
     guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
     if view.bounds.size.height - frame.cgRectValue.origin.y == 0 {
       contentScrollView.scrollRectToVisible(CGRect(x: 0, y: 0, width: contentScrollView.bounds.width, height: contentScrollView.bounds.height), animated: true)
-      DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+      DispatchQueue.main.asyncAfter(deadline: .now() + keyboardAnimationTime) {
         self.bottomSpaceLayoutConstraint.constant = 0
       }
     } else {
@@ -145,7 +165,7 @@ extension ViewController: UITextViewDelegate {
 
   func textViewDidBeginEditing(_ textView: UITextView) {
     if textView == input2TextView {
-      DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+      DispatchQueue.main.asyncAfter(deadline: .now() + delayTimeScrollToVisible) {
         self.contentScrollView.scrollRectToVisible(CGRect(x: 0, y: self.bottomSpaceLayoutConstraint.constant - self.textViewBotomSpace, width: self.contentScrollView.bounds.width, height: self.contentScrollView.bounds.height), animated: true)
       }
     } else {
