@@ -1,0 +1,15 @@
+platform :ios, '15.0'
+
+target 'TextEmbedder' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+  pod 'MediaPipeTasksText', '0.10.5'
+
+  # Pods for TextEmbedder
+
+end
+
+target 'TextEmbedderTests' do
+  inherit! :search_paths
+  # Pods for testing
+end

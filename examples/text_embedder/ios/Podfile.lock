@@ -4,7 +4,7 @@ PODS:
     - MediaPipeTasksCommon (= 0.10.5)
 
 DEPENDENCIES:
-  - MediaPipeTasksText
+  - MediaPipeTasksText (= 0.10.5)
 
 SPEC REPOS:
   trunk:
@@ -15,6 +15,6 @@ SPEC CHECKSUMS:
   MediaPipeTasksCommon: 235e81afa9f7bd5b5b39f00a858bfb2539d1a52f
   MediaPipeTasksText: d359653b471d424b0a3b9a564b474bba2e4cf69a
 
-PODFILE CHECKSUM: 51f76d4617e8d16dafaecd763548c7b4d8be00e5
+PODFILE CHECKSUM: 93aea3ec1bb08db63e89ddd1ad388461eba5dc31
 
 COCOAPODS: 1.12.1
