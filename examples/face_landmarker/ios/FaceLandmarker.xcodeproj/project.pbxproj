@@ -107,13 +107,13 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		BF3499DA2ACA6484007E6081 /* Configs */ = {
+		BF3499DA2ACA6484007E6081 /* Configurations */ = {
 			isa = PBXGroup;
 			children = (
 				BF3499DB2ACA6484007E6081 /* DefaultConstants.swift */,
 				BF3499DC2ACA6484007E6081 /* InferenceConfigurationManager.swift */,
 			);
-			path = Configs;
+			path = Configurations;
 			sourceTree = "<group>";
 		};
 		BF3499DD2ACA6484007E6081 /* Services */ = {
@@ -156,7 +156,7 @@
 		BFEE41E92A45351E00BA1A35 /* FaceLandmarker */ = {
 			isa = PBXGroup;
 			children = (
-				BF3499DA2ACA6484007E6081 /* Configs */,
+				BF3499DA2ACA6484007E6081 /* Configurations */,
 				BF3499DD2ACA6484007E6081 /* Services */,
 				BF3499E02ACA6484007E6081 /* Views */,
 				BFD91ED52A74F2F300FD4649 /* face_landmarker.task */,
