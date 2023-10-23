@@ -189,7 +189,7 @@ class HandLandmarkerService: NSObject {
       videoDelegate?.handLandmarkerService(self, willBeginDetection: frameCount)
     }
 
-    let handLandmarkerResultTuple = detectObjectsInFramesGenerated(
+    let handLandmarkerResultTuple = detectHandLandmarksInFramesGenerated(
       by: assetGenerator,
       totalFrameCount: frameCount,
       atIntervalsOf: inferenceIntervalInMilliseconds)
@@ -209,7 +209,7 @@ class HandLandmarkerService: NSObject {
     return generator
   }
 
-  private func detectObjectsInFramesGenerated(
+  private func detectHandLandmarksInFramesGenerated(
     by assetGenerator: AVAssetImageGenerator,
     totalFrameCount frameCount: Int,
     atIntervalsOf inferenceIntervalMs: Double)
