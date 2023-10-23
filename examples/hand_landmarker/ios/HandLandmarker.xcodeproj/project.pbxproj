@@ -130,7 +130,7 @@
 		BFCDAE232AAEB2A700EC4371 /* HandLandmarker */ = {
 			isa = PBXGroup;
 			children = (
-				BFCDAE5E2AAEB82C00EC4371 /* Configs */,
+				BFCDAE5E2AAEB82C00EC4371 /* Configurations */,
 				BFCDAE5B2AAEB82C00EC4371 /* Services */,
 				BFCDAE562AAEB82C00EC4371 /* ViewContoller */,
 				BFCDAE542AAEB82C00EC4371 /* Views */,
@@ -182,13 +182,13 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
-		BFCDAE5E2AAEB82C00EC4371 /* Configs */ = {
+		BFCDAE5E2AAEB82C00EC4371 /* Configurations */ = {
 			isa = PBXGroup;
 			children = (
 				BFCDAE5F2AAEB82C00EC4371 /* DefaultConstants.swift */,
 				BFCDAE602AAEB82C00EC4371 /* InferenceConfigurationManager.swift */,
 			);
-			path = Configs;
+			path = Configurations;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
