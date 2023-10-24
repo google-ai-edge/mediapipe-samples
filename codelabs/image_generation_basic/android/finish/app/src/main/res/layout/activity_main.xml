@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/toolbar_background"
+    android:orientation="vertical"
+    android:padding="10dp"
+    tools:context=".MainActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:layout_alignParentTop="true">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@null"
+            android:src="@drawable/media_pipe_banner" />
+    </androidx.appcompat.widget.Toolbar>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_initialize_section"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/toolbar"
+        android:orientation="vertical">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:labelFor="@id/radioDisplayOptions"
+                android:text="@string/tv_display_options" />
+
+            <RadioGroup
+                android:id="@+id/radioDisplayOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <RadioButton
+                    android:id="@+id/radio_final"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="@string/tv_only_display_final_image" />
+
+                <RadioButton
+                    android:id="@+id/radio_iteration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:text="@string/tv_display_each_iteration" />
+            </RadioGroup>
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <Button
+            android:id="@+id/btn_initialize"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/btn_initialize" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_generate_section"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ll_initialize_section"
+        android:orientation="vertical">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_prompt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tv_prompt" />
+
+            <EditText
+                android:id="@+id/edt_prompt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="top"
+                android:hint="@string/tv_prompt_hint"
+                android:importantForAutofill="no"
+                android:inputType="textMultiLine"
+                android:labelFor="@id/tv_prompt"
+                android:lines="4"
+                android:textColor="@color/text_color" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_iterations"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tv_iterations_upper" />
+
+            <EditText
+                android:id="@+id/edt_iterations"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="@string/edt_iterations_hint"
+                android:importantForAutofill="no"
+                android:inputType="number"
+                android:labelFor="@id/tv_iterations"
+                android:minWidth="48dp"
+                android:textAlignment="center"
+                android:textColor="@color/text_color" />
+
+            <TextView
+                android:id="@+id/tv_seed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="@string/tv_seed" />
+
+            <EditText
+                android:id="@+id/edt_seed"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="@string/edt_seed_hint"
+                android:importantForAutofill="no"
+                android:inputType="number"
+                android:labelFor="@id/tv_seed"
+                android:minWidth="48dp"
+                android:textAlignment="center"
+                android:textColor="@color/text_color" />
+
+            <Button
+                android:id="@+id/btn_seed_random"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_seed_randomize" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/ll_display_iteration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tv_display" />
+
+            <EditText
+                android:id="@+id/edt_display_iteration"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:hint="@string/edt_display"
+                android:importantForAutofill="no"
+                android:inputType="number"
+                android:minWidth="48dp"
+                android:textAlignment="textEnd"
+                android:textColor="@color/text_color" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tv_iterations" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <Button
+            android:id="@+id/btn_generate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/btn_generate" />
+
+        <ImageView
+            android:id="@+id/imgOutput"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:adjustViewBounds="true"
+            android:contentDescription="@null" />
+        <TextView
+            android:id="@+id/tvDisclaimer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="invisible"
+            android:text="@string/legal_disclaimer" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+</RelativeLayout>
