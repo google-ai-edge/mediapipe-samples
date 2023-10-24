@@ -16,7 +16,6 @@ import com.google.mediapipe.tasks.vision.imagegenerator.ImageGenerator.Condition
 import com.google.mediapipe.tasks.vision.imagegenerator.ImageGenerator.ConditionOptions.FaceConditionOptions
 import com.google.mediapipe.tasks.vision.imagegenerator.ImageGenerator.ImageGeneratorOptions
 
-
 class ImageGenerationHelper(
     val context: Context
 ) {

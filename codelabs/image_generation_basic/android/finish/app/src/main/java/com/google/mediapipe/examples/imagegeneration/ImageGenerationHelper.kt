@@ -16,7 +16,6 @@ import com.google.mediapipe.tasks.vision.imagegenerator.ImageGenerator.Condition
 import com.google.mediapipe.tasks.vision.imagegenerator.ImageGenerator.ConditionOptions.FaceConditionOptions
 import com.google.mediapipe.tasks.vision.imagegenerator.ImageGenerator.ImageGeneratorOptions
 
-
 class ImageGenerationHelper(
     val context: Context
 ) {
@@ -25,16 +24,24 @@ class ImageGenerationHelper(
 
     fun initializeImageGenerator(modelPath: String) {
         // Step 2 - initialize the image generator
+        val options = ImageGeneratorOptions.builder()
+            .setImageGeneratorModelDirectory(modelPath)
+            .build()
+
+        imageGenerator = ImageGenerator.createFromOptions(context, options)
     }
 
     fun setInput(prompt: String, iteration: Int, seed: Int) {
         // Step 3 - accept inputs
+        imageGenerator.setInputs(prompt, iteration, seed)
     }
 
 
     fun generate(prompt: String, iteration: Int, seed: Int): Bitmap {
         // Step 4 - generate without showing iterations
-        return Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
+        val result = imageGenerator.generate(prompt, iteration, seed)
+        val bitmap = BitmapExtractor.extract(result?.generatedImage())
+        return bitmap
     }
 
     fun execute(showResult: Boolean): Bitmap {

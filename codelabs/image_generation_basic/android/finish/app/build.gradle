@@ -47,4 +47,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
     // Step 1 - Add dependency
+    implementation 'com.google.mediapipe:tasks-vision-image-generator:latest.release'
 }
