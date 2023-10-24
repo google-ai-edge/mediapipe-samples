@@ -46,7 +46,22 @@ class ImageGenerationHelper(
 
     fun execute(showResult: Boolean): Bitmap {
         // Step 5 - generate with iterations
-        return Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
+        val result = imageGenerator.execute(showResult)
+
+        if (result == null || result.generatedImage() == null) {
+            return Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888)
+                .apply {
+                    val canvas = Canvas(this)
+                    val paint = Paint()
+                    paint.color = Color.WHITE
+                    canvas.drawPaint(paint)
+                }
+        }
+
+        val bitmap =
+            BitmapExtractor.extract(result.generatedImage())
+
+        return bitmap
     }
 
     fun close() {
