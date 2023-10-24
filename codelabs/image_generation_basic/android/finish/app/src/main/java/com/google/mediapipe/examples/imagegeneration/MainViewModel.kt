@@ -15,7 +15,8 @@ class DiffusionViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(UiState())
     private var helper: ImageGenerationHelper? = null
     val uiState: StateFlow<UiState> = _uiState
-    private val MODEL_PATH = "/data/local/tmp/image_generator/bins/"
+
+    private val MODEL_PATH = ""// Step 6 - set model path
 
     fun updateDisplayIteration(displayIteration: Int?) {
         _uiState.update { it.copy(displayIteration = displayIteration) }
@@ -120,26 +121,9 @@ class DiffusionViewModel : ViewModel() {
             val startTime = System.currentTimeMillis()
             // if display option is final, use generate method, else use execute method
             if (uiState.value.displayOptions == DisplayOptions.FINAL) {
-                val result = helper?.generate(prompt, iteration, seed)
-                _uiState.update {
-                    it.copy(outputBitmap = result)
-                }
+                // Step 7 - Generate without showing iterations
             } else {
-                helper?.setInput(prompt, iteration, seed)
-                for (step in 0 until iteration) {
-                    isDisplayStep =
-                        (displayIteration > 0 && ((step + 1) % displayIteration == 0))
-                    val result = helper?.execute(isDisplayStep)
-
-                    if (isDisplayStep) {
-                        _uiState.update {
-                            it.copy(
-                                outputBitmap = result,
-                                generatingMessage = "Generating... (${step + 1}/$iteration)",
-                            )
-                        }
-                    }
-                }
+                // Step 8 - Generate with showing iterations
             }
             _uiState.update {
                 it.copy(

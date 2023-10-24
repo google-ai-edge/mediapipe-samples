@@ -24,21 +24,21 @@ class ImageGenerationHelper(
     lateinit var imageGenerator: ImageGenerator
 
     fun initializeImageGenerator(modelPath: String) {
-        // Step 1 - initialize the image generator
+        // Step 2 - initialize the image generator
     }
 
     fun setInput(prompt: String, iteration: Int, seed: Int) {
-        // Step 2 - accept inputs
+        // Step 3 - accept inputs
     }
 
 
     fun generate(prompt: String, iteration: Int, seed: Int): Bitmap {
-        // Step 3 - generate without showing iterations
+        // Step 4 - generate without showing iterations
         return Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
     }
 
     fun execute(showResult: Boolean): Bitmap {
-        // Step 4 - generate with iterations
+        // Step 5 - generate with iterations
         return Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
     }
 

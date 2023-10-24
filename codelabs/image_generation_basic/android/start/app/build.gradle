@@ -35,9 +35,6 @@ android {
     }
 }
 
-// Downloads the TFLite and Task files used for plugins
-project.ext.ASSET_DIR = projectDir.toString() + '/src/main/assets'
-
 dependencies {
 
     implementation 'androidx.core:core-ktx:1.8.0'
@@ -48,5 +45,6 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-    implementation 'com.google.mediapipe:tasks-vision-image-generator:0.10.5.2'
+
+    // Step 1 - Add dependency
 }

@@ -23,45 +23,23 @@ class ImageGenerationHelper(
 
     lateinit var imageGenerator: ImageGenerator
 
-    // Setup image generation model with output size, iteration
     fun initializeImageGenerator(modelPath: String) {
-        val options = ImageGeneratorOptions.builder()
-            .setImageGeneratorModelDirectory(modelPath)
-            .build()
-
-        imageGenerator = ImageGenerator.createFromOptions(context, options)
+        // Step 2 - initialize the image generator
     }
 
-    // Set input prompt, iteration, seed
     fun setInput(prompt: String, iteration: Int, seed: Int) {
-        imageGenerator.setInputs(prompt, iteration, seed)
+        // Step 3 - accept inputs
     }
 
 
     fun generate(prompt: String, iteration: Int, seed: Int): Bitmap {
-        val result = imageGenerator.generate(prompt, iteration, seed)
-        val bitmap = BitmapExtractor.extract(result?.generatedImage())
-        return bitmap
+        // Step 4 - generate without showing iterations
+        return Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
     }
 
     fun execute(showResult: Boolean): Bitmap {
-        // execute image generation model
-        val result = imageGenerator.execute(showResult)
-
-        if (result == null || result.generatedImage() == null) {
-            return Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888)
-                .apply {
-                    val canvas = Canvas(this)
-                    val paint = Paint()
-                    paint.color = Color.WHITE
-                    canvas.drawPaint(paint)
-                }
-        }
-
-        val bitmap =
-            BitmapExtractor.extract(result.generatedImage())
-
-        return bitmap
+        // Step 5 - generate with iterations
+        return Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
     }
 
     fun close() {
