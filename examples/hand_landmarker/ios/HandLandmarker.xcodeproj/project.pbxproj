@@ -1,0 +1,668 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		390980DAF1C0BF696F2F9034 /* libPods-HandLandmarkerTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6A5255B9766F2DC5A4177BEC /* libPods-HandLandmarkerTests.a */; };
+		BE623C897110F7E0442419C4 /* Pods_HandLandmarker.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C35377F7CB8DB927779D1AD /* Pods_HandLandmarker.framework */; };
+		BF5EEC682AB7EBB500189276 /* thumbs-up.png in Resources */ = {isa = PBXBuildFile; fileRef = BF5EEC672AB7EBB500189276 /* thumbs-up.png */; };
+		BF5EECA72AB7FFB600189276 /* hand_landmarker.task in Resources */ = {isa = PBXBuildFile; fileRef = BF5EECA62AB7FFB600189276 /* hand_landmarker.task */; };
+		BFCDAE252AAEB2A700EC4371 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE242AAEB2A700EC4371 /* AppDelegate.swift */; };
+		BFCDAE272AAEB2A700EC4371 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE262AAEB2A700EC4371 /* SceneDelegate.swift */; };
+		BFCDAE2C2AAEB2A700EC4371 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BFCDAE2A2AAEB2A700EC4371 /* Main.storyboard */; };
+		BFCDAE2E2AAEB2A800EC4371 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BFCDAE2D2AAEB2A800EC4371 /* Assets.xcassets */; };
+		BFCDAE312AAEB2A800EC4371 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BFCDAE2F2AAEB2A800EC4371 /* LaunchScreen.storyboard */; };
+		BFCDAE3C2AAEB2A800EC4371 /* HandLandmarkerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE3B2AAEB2A800EC4371 /* HandLandmarkerTests.swift */; };
+		BFCDAE612AAEB82C00EC4371 /* HandOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE552AAEB82C00EC4371 /* HandOverlay.swift */; };
+		BFCDAE622AAEB82C00EC4371 /* MediaLibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE572AAEB82C00EC4371 /* MediaLibraryViewController.swift */; };
+		BFCDAE632AAEB82C00EC4371 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE582AAEB82C00EC4371 /* RootViewController.swift */; };
+		BFCDAE642AAEB82C00EC4371 /* BottomSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE592AAEB82C00EC4371 /* BottomSheetViewController.swift */; };
+		BFCDAE652AAEB82C00EC4371 /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE5A2AAEB82C00EC4371 /* CameraViewController.swift */; };
+		BFCDAE662AAEB82C00EC4371 /* CameraFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE5C2AAEB82C00EC4371 /* CameraFeedService.swift */; };
+		BFCDAE672AAEB82C00EC4371 /* HandLandmarkerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE5D2AAEB82C00EC4371 /* HandLandmarkerService.swift */; };
+		BFCDAE682AAEB82C00EC4371 /* DefaultConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE5F2AAEB82C00EC4371 /* DefaultConstants.swift */; };
+		BFCDAE692AAEB82C00EC4371 /* InferenceConfigurationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE602AAEB82C00EC4371 /* InferenceConfigurationManager.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		BFCDAE382AAEB2A800EC4371 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BFCDAE192AAEB2A700EC4371 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BFCDAE202AAEB2A700EC4371;
+			remoteInfo = HandLandmarker;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0BC8870F177D4B0E156D0440 /* Pods-HandLandmarkerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HandLandmarkerTests.release.xcconfig"; path = "Target Support Files/Pods-HandLandmarkerTests/Pods-HandLandmarkerTests.release.xcconfig"; sourceTree = "<group>"; };
+		1E80675CBEC6C300C36D39CD /* Pods-HandLandmarker.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HandLandmarker.release.xcconfig"; path = "Target Support Files/Pods-HandLandmarker/Pods-HandLandmarker.release.xcconfig"; sourceTree = "<group>"; };
+		5C35377F7CB8DB927779D1AD /* Pods_HandLandmarker.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HandLandmarker.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6A5255B9766F2DC5A4177BEC /* libPods-HandLandmarkerTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HandLandmarkerTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B19658A239090768FF9A5F9F /* Pods-HandLandmarker.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HandLandmarker.debug.xcconfig"; path = "Target Support Files/Pods-HandLandmarker/Pods-HandLandmarker.debug.xcconfig"; sourceTree = "<group>"; };
+		BF5EEC672AB7EBB500189276 /* thumbs-up.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "thumbs-up.png"; sourceTree = "<group>"; };
+		BF5EECA62AB7FFB600189276 /* hand_landmarker.task */ = {isa = PBXFileReference; lastKnownFileType = file; path = hand_landmarker.task; sourceTree = "<group>"; };
+		BFCDAE212AAEB2A700EC4371 /* HandLandmarker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HandLandmarker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BFCDAE242AAEB2A700EC4371 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		BFCDAE262AAEB2A700EC4371 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		BFCDAE2B2AAEB2A700EC4371 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		BFCDAE2D2AAEB2A800EC4371 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		BFCDAE302AAEB2A800EC4371 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		BFCDAE322AAEB2A800EC4371 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BFCDAE372AAEB2A800EC4371 /* HandLandmarkerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HandLandmarkerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BFCDAE3B2AAEB2A800EC4371 /* HandLandmarkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandLandmarkerTests.swift; sourceTree = "<group>"; };
+		BFCDAE552AAEB82C00EC4371 /* HandOverlay.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HandOverlay.swift; sourceTree = "<group>"; };
+		BFCDAE572AAEB82C00EC4371 /* MediaLibraryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MediaLibraryViewController.swift; sourceTree = "<group>"; };
+		BFCDAE582AAEB82C00EC4371 /* RootViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
+		BFCDAE592AAEB82C00EC4371 /* BottomSheetViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BottomSheetViewController.swift; sourceTree = "<group>"; };
+		BFCDAE5A2AAEB82C00EC4371 /* CameraViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
+		BFCDAE5C2AAEB82C00EC4371 /* CameraFeedService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedService.swift; sourceTree = "<group>"; };
+		BFCDAE5D2AAEB82C00EC4371 /* HandLandmarkerService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HandLandmarkerService.swift; sourceTree = "<group>"; };
+		BFCDAE5F2AAEB82C00EC4371 /* DefaultConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultConstants.swift; sourceTree = "<group>"; };
+		BFCDAE602AAEB82C00EC4371 /* InferenceConfigurationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceConfigurationManager.swift; sourceTree = "<group>"; };
+		D6309757C0B73AC4C4CE0B6E /* Pods-HandLandmarkerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HandLandmarkerTests.debug.xcconfig"; path = "Target Support Files/Pods-HandLandmarkerTests/Pods-HandLandmarkerTests.debug.xcconfig"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BFCDAE1E2AAEB2A700EC4371 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BE623C897110F7E0442419C4 /* Pods_HandLandmarker.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BFCDAE342AAEB2A800EC4371 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				390980DAF1C0BF696F2F9034 /* libPods-HandLandmarkerTests.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		5192FF35E5B729E5C4F6FC34 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				B19658A239090768FF9A5F9F /* Pods-HandLandmarker.debug.xcconfig */,
+				1E80675CBEC6C300C36D39CD /* Pods-HandLandmarker.release.xcconfig */,
+				D6309757C0B73AC4C4CE0B6E /* Pods-HandLandmarkerTests.debug.xcconfig */,
+				0BC8870F177D4B0E156D0440 /* Pods-HandLandmarkerTests.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		74E1882A27B0590FA659A466 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5C35377F7CB8DB927779D1AD /* Pods_HandLandmarker.framework */,
+				6A5255B9766F2DC5A4177BEC /* libPods-HandLandmarkerTests.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		BFCDAE182AAEB2A700EC4371 = {
+			isa = PBXGroup;
+			children = (
+				BFCDAE232AAEB2A700EC4371 /* HandLandmarker */,
+				BFCDAE3A2AAEB2A800EC4371 /* HandLandmarkerTests */,
+				BFCDAE222AAEB2A700EC4371 /* Products */,
+				5192FF35E5B729E5C4F6FC34 /* Pods */,
+				74E1882A27B0590FA659A466 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		BFCDAE222AAEB2A700EC4371 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BFCDAE212AAEB2A700EC4371 /* HandLandmarker.app */,
+				BFCDAE372AAEB2A800EC4371 /* HandLandmarkerTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BFCDAE232AAEB2A700EC4371 /* HandLandmarker */ = {
+			isa = PBXGroup;
+			children = (
+				BFCDAE5E2AAEB82C00EC4371 /* Configurations */,
+				BFCDAE5B2AAEB82C00EC4371 /* Services */,
+				BFCDAE562AAEB82C00EC4371 /* ViewContoller */,
+				BFCDAE542AAEB82C00EC4371 /* Views */,
+				BFCDAE242AAEB2A700EC4371 /* AppDelegate.swift */,
+				BFCDAE262AAEB2A700EC4371 /* SceneDelegate.swift */,
+				BFCDAE2A2AAEB2A700EC4371 /* Main.storyboard */,
+				BFCDAE2D2AAEB2A800EC4371 /* Assets.xcassets */,
+				BF5EECA62AB7FFB600189276 /* hand_landmarker.task */,
+				BFCDAE2F2AAEB2A800EC4371 /* LaunchScreen.storyboard */,
+				BFCDAE322AAEB2A800EC4371 /* Info.plist */,
+			);
+			path = HandLandmarker;
+			sourceTree = "<group>";
+		};
+		BFCDAE3A2AAEB2A800EC4371 /* HandLandmarkerTests */ = {
+			isa = PBXGroup;
+			children = (
+				BF5EEC672AB7EBB500189276 /* thumbs-up.png */,
+				BFCDAE3B2AAEB2A800EC4371 /* HandLandmarkerTests.swift */,
+			);
+			path = HandLandmarkerTests;
+			sourceTree = "<group>";
+		};
+		BFCDAE542AAEB82C00EC4371 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				BFCDAE552AAEB82C00EC4371 /* HandOverlay.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		BFCDAE562AAEB82C00EC4371 /* ViewContoller */ = {
+			isa = PBXGroup;
+			children = (
+				BFCDAE572AAEB82C00EC4371 /* MediaLibraryViewController.swift */,
+				BFCDAE582AAEB82C00EC4371 /* RootViewController.swift */,
+				BFCDAE592AAEB82C00EC4371 /* BottomSheetViewController.swift */,
+				BFCDAE5A2AAEB82C00EC4371 /* CameraViewController.swift */,
+			);
+			path = ViewContoller;
+			sourceTree = "<group>";
+		};
+		BFCDAE5B2AAEB82C00EC4371 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				BFCDAE5C2AAEB82C00EC4371 /* CameraFeedService.swift */,
+				BFCDAE5D2AAEB82C00EC4371 /* HandLandmarkerService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		BFCDAE5E2AAEB82C00EC4371 /* Configurations */ = {
+			isa = PBXGroup;
+			children = (
+				BFCDAE5F2AAEB82C00EC4371 /* DefaultConstants.swift */,
+				BFCDAE602AAEB82C00EC4371 /* InferenceConfigurationManager.swift */,
+			);
+			path = Configurations;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BFCDAE202AAEB2A700EC4371 /* HandLandmarker */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BFCDAE4B2AAEB2A800EC4371 /* Build configuration list for PBXNativeTarget "HandLandmarker" */;
+			buildPhases = (
+				7A7FE6070D4D8E43FA2501E9 /* [CP] Check Pods Manifest.lock */,
+				BF5EECA52AB7FEDB00189276 /* Download model */,
+				BFCDAE1D2AAEB2A700EC4371 /* Sources */,
+				BFCDAE1E2AAEB2A700EC4371 /* Frameworks */,
+				BFCDAE1F2AAEB2A700EC4371 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HandLandmarker;
+			productName = HandLandmarker;
+			productReference = BFCDAE212AAEB2A700EC4371 /* HandLandmarker.app */;
+			productType = "com.apple.product-type.application";
+		};
+		BFCDAE362AAEB2A800EC4371 /* HandLandmarkerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BFCDAE4E2AAEB2A800EC4371 /* Build configuration list for PBXNativeTarget "HandLandmarkerTests" */;
+			buildPhases = (
+				21E52BA9D743DF66BA6974EB /* [CP] Check Pods Manifest.lock */,
+				BFCDAE332AAEB2A800EC4371 /* Sources */,
+				BFCDAE342AAEB2A800EC4371 /* Frameworks */,
+				BFCDAE352AAEB2A800EC4371 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BFCDAE392AAEB2A800EC4371 /* PBXTargetDependency */,
+			);
+			name = HandLandmarkerTests;
+			productName = HandLandmarkerTests;
+			productReference = BFCDAE372AAEB2A800EC4371 /* HandLandmarkerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BFCDAE192AAEB2A700EC4371 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1430;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					BFCDAE202AAEB2A700EC4371 = {
+						CreatedOnToolsVersion = 14.3.1;
+					};
+					BFCDAE362AAEB2A800EC4371 = {
+						CreatedOnToolsVersion = 14.3.1;
+						TestTargetID = BFCDAE202AAEB2A700EC4371;
+					};
+				};
+			};
+			buildConfigurationList = BFCDAE1C2AAEB2A700EC4371 /* Build configuration list for PBXProject "HandLandmarker" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = BFCDAE182AAEB2A700EC4371;
+			productRefGroup = BFCDAE222AAEB2A700EC4371 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BFCDAE202AAEB2A700EC4371 /* HandLandmarker */,
+				BFCDAE362AAEB2A800EC4371 /* HandLandmarkerTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BFCDAE1F2AAEB2A700EC4371 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF5EECA72AB7FFB600189276 /* hand_landmarker.task in Resources */,
+				BFCDAE312AAEB2A800EC4371 /* LaunchScreen.storyboard in Resources */,
+				BFCDAE2E2AAEB2A800EC4371 /* Assets.xcassets in Resources */,
+				BFCDAE2C2AAEB2A700EC4371 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BFCDAE352AAEB2A800EC4371 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF5EEC682AB7EBB500189276 /* thumbs-up.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		21E52BA9D743DF66BA6974EB /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-HandLandmarkerTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		7A7FE6070D4D8E43FA2501E9 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-HandLandmarker-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		BF5EECA52AB7FEDB00189276 /* Download model */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download model";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/RunScripts/download_models.sh\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BFCDAE1D2AAEB2A700EC4371 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BFCDAE692AAEB82C00EC4371 /* InferenceConfigurationManager.swift in Sources */,
+				BFCDAE662AAEB82C00EC4371 /* CameraFeedService.swift in Sources */,
+				BFCDAE632AAEB82C00EC4371 /* RootViewController.swift in Sources */,
+				BFCDAE672AAEB82C00EC4371 /* HandLandmarkerService.swift in Sources */,
+				BFCDAE642AAEB82C00EC4371 /* BottomSheetViewController.swift in Sources */,
+				BFCDAE612AAEB82C00EC4371 /* HandOverlay.swift in Sources */,
+				BFCDAE252AAEB2A700EC4371 /* AppDelegate.swift in Sources */,
+				BFCDAE652AAEB82C00EC4371 /* CameraViewController.swift in Sources */,
+				BFCDAE682AAEB82C00EC4371 /* DefaultConstants.swift in Sources */,
+				BFCDAE622AAEB82C00EC4371 /* MediaLibraryViewController.swift in Sources */,
+				BFCDAE272AAEB2A700EC4371 /* SceneDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BFCDAE332AAEB2A800EC4371 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BFCDAE3C2AAEB2A800EC4371 /* HandLandmarkerTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BFCDAE392AAEB2A800EC4371 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BFCDAE202AAEB2A700EC4371 /* HandLandmarker */;
+			targetProxy = BFCDAE382AAEB2A800EC4371 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		BFCDAE2A2AAEB2A700EC4371 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BFCDAE2B2AAEB2A700EC4371 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		BFCDAE2F2AAEB2A800EC4371 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BFCDAE302AAEB2A800EC4371 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		BFCDAE492AAEB2A800EC4371 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BFCDAE4A2AAEB2A800EC4371 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		BFCDAE4C2AAEB2A800EC4371 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = B19658A239090768FF9A5F9F /* Pods-HandLandmarker.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HandLandmarker/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to detection the hand landmarks that appear in the camera feed.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.HandLandmarker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BFCDAE4D2AAEB2A800EC4371 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1E80675CBEC6C300C36D39CD /* Pods-HandLandmarker.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HandLandmarker/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to detection the hand landmarks that appear in the camera feed.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.HandLandmarker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		BFCDAE4F2AAEB2A800EC4371 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = D6309757C0B73AC4C4CE0B6E /* Pods-HandLandmarkerTests.debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.HandLandmarkerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HandLandmarker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/HandLandmarker";
+			};
+			name = Debug;
+		};
+		BFCDAE502AAEB2A800EC4371 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0BC8870F177D4B0E156D0440 /* Pods-HandLandmarkerTests.release.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.HandLandmarkerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HandLandmarker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/HandLandmarker";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BFCDAE1C2AAEB2A700EC4371 /* Build configuration list for PBXProject "HandLandmarker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BFCDAE492AAEB2A800EC4371 /* Debug */,
+				BFCDAE4A2AAEB2A800EC4371 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BFCDAE4B2AAEB2A800EC4371 /* Build configuration list for PBXNativeTarget "HandLandmarker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BFCDAE4C2AAEB2A800EC4371 /* Debug */,
+				BFCDAE4D2AAEB2A800EC4371 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BFCDAE4E2AAEB2A800EC4371 /* Build configuration list for PBXNativeTarget "HandLandmarkerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BFCDAE4F2AAEB2A800EC4371 /* Debug */,
+				BFCDAE502AAEB2A800EC4371 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BFCDAE192AAEB2A700EC4371 /* Project object */;
+}
