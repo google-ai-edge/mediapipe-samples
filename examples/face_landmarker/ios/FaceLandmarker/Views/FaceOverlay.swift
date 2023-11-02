@@ -32,10 +32,10 @@ struct LineConnection {
  */
 struct FaceOverlay {
   let dots: [CGPoint]
-  let lineConnectios: [LineConnection]
+  let lineConnections: [LineConnection]
 }
 
-/// Custom view to visualize the face landmarks result on top of the input image.
+/// Custom view to visualize the face landmarker result on top of the input image.
 class OverlayView: UIView {
 
   var faceOverlays: [FaceOverlay] = []
@@ -90,7 +90,7 @@ class OverlayView: UIView {
   override func draw(_ rect: CGRect) {
     for faceOverlay in faceOverlays {
       drawDots(faceOverlay.dots)
-      for lineConnection in faceOverlay.lineConnectios {
+      for lineConnection in faceOverlay.lineConnections {
         drawLines(lineConnection.lines, lineColor: lineConnection.color)
       }
     }
@@ -209,7 +209,7 @@ class OverlayView: UIView {
 
   // Helper to get object overlays from detections.
   static func faceOverlays(
-    fromLandmarks landmarks: [[NormalizedLandmark]],
+    fromMultipleFaceLandmarks landmarks: [[NormalizedLandmark]],
     inferredOnImageOfSize originalImageSize: CGSize,
     ovelayViewSize: CGSize,
     imageContentMode: UIView.ContentMode,
@@ -226,19 +226,19 @@ class OverlayView: UIView {
         tobeDrawnInViewOfSize: ovelayViewSize,
         withContentMode: imageContentMode)
 
-      for landmark in landmarks {
-        var transformedLandmark: [CGPoint]!
+      for faceLandmarks in landmarks {
+        var transformedFaceLandmarks: [CGPoint]!
 
         switch orientation {
         case .left:
-          transformedLandmark = landmark.map({CGPoint(x: CGFloat($0.y), y: 1 - CGFloat($0.x))})
+          transformedFaceLandmarks = faceLandmarks.map({CGPoint(x: CGFloat($0.y), y: 1 - CGFloat($0.x))})
         case .right:
-          transformedLandmark = landmark.map({CGPoint(x: 1 - CGFloat($0.y), y: CGFloat($0.x))})
+          transformedFaceLandmarks = faceLandmarks.map({CGPoint(x: 1 - CGFloat($0.y), y: CGFloat($0.x))})
         default:
-          transformedLandmark = landmark.map({CGPoint(x: CGFloat($0.x), y: CGFloat($0.y))})
+          transformedFaceLandmarks = faceLandmarks.map({CGPoint(x: CGFloat($0.x), y: CGFloat($0.y))})
         }
 
-        let dots: [CGPoint] = transformedLandmark.map({CGPoint(x: CGFloat($0.x) * originalImageSize.width * offsetsAndScaleFactor.scaleFactor + offsetsAndScaleFactor.xOffset, y: CGFloat($0.y) * originalImageSize.height * offsetsAndScaleFactor.scaleFactor + offsetsAndScaleFactor.yOffset)})
+        let dots: [CGPoint] = transformedFaceLandmarks.map({CGPoint(x: CGFloat($0.x) * originalImageSize.width * offsetsAndScaleFactor.scaleFactor + offsetsAndScaleFactor.xOffset, y: CGFloat($0.y) * originalImageSize.height * offsetsAndScaleFactor.scaleFactor + offsetsAndScaleFactor.yOffset)})
 
         var lineConnections: [LineConnection] = []
         lineConnections.append(LineConnection(
@@ -290,7 +290,7 @@ class OverlayView: UIView {
             return Line(from: start, to: end)
         })))
 
-        faceOverlays.append(FaceOverlay(dots: dots, lineConnectios: lineConnections))
+        faceOverlays.append(FaceOverlay(dots: dots, lineConnections: lineConnections))
       }
 
       return faceOverlays

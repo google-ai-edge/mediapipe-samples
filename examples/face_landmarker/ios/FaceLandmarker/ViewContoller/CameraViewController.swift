@@ -235,7 +235,7 @@ extension CameraViewController: FaceLandmarkerServiceLiveStreamDelegate {
         guard let faceLandmarkerResult = result?.faceLandmarkerResults.first as? FaceLandmarkerResult else { return }
         let imageSize = weakSelf.cameraFeedService.videoResolution
         let faceOverlays = OverlayView.faceOverlays(
-          fromLandmarks: faceLandmarkerResult.faceLandmarks,
+          fromMultipleFaceLandmarks: faceLandmarkerResult.faceLandmarks,
           inferredOnImageOfSize: imageSize,
           ovelayViewSize: weakSelf.overlayView.bounds.size,
           imageContentMode: weakSelf.overlayView.imageContentMode,

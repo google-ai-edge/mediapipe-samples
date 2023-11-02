@@ -189,7 +189,7 @@ class FaceLandmarkerService: NSObject {
       videoDelegate?.faceLandmarkerService(self, willBeginDetection: frameCount)
     }
 
-    let faceLandmarkerResultTuple = detectObjectsInFramesGenerated(
+    let faceLandmarkerResultTuple = detectFaceLandmarksInFramesGenerated(
       by: assetGenerator,
       totalFrameCount: frameCount,
       atIntervalsOf: inferenceIntervalInMilliseconds)
@@ -209,7 +209,7 @@ class FaceLandmarkerService: NSObject {
     return generator
   }
 
-  private func detectObjectsInFramesGenerated(
+  private func detectFaceLandmarksInFramesGenerated(
     by assetGenerator: AVAssetImageGenerator,
     totalFrameCount frameCount: Int,
     atIntervalsOf inferenceIntervalMs: Double)

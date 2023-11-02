@@ -276,7 +276,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
           weakSelf.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
           let imageSize = image.size
           let faceOverlays = OverlayView.faceOverlays(
-            fromLandmarks: faceLandmarkerResult.faceLandmarks,
+            fromMultipleFaceLandmarks: faceLandmarkerResult.faceLandmarks,
             inferredOnImageOfSize: imageSize,
             ovelayViewSize: weakSelf.overlayView.bounds.size,
             imageContentMode: weakSelf.overlayView.imageContentMode,
@@ -333,7 +333,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
           }
           let imageSize = resultBundle.size
           let faceOverlays = OverlayView.faceOverlays(
-            fromLandmarks: faceLandmarkerResult.faceLandmarks,
+            fromMultipleFaceLandmarks: faceLandmarkerResult.faceLandmarks,
             inferredOnImageOfSize: imageSize,
             ovelayViewSize: weakSelf.overlayView.bounds.size,
             imageContentMode: weakSelf.overlayView.imageContentMode,
