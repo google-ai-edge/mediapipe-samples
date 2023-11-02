@@ -201,7 +201,7 @@ class OverlayView: UIView {
 
   // Helper to get object overlays from detections.
   static func handOverlays(
-    fromLandmarks landmarks: [[NormalizedLandmark]],
+    fromMultipleHandLandmarks landmarks: [[NormalizedLandmark]],
     inferredOnImageOfSize originalImageSize: CGSize,
     ovelayViewSize: CGSize,
     imageContentMode: UIView.ContentMode,
@@ -218,19 +218,19 @@ class OverlayView: UIView {
         tobeDrawnInViewOfSize: ovelayViewSize,
         withContentMode: imageContentMode)
 
-      for landmark in landmarks {
-        var transformedLandmark: [CGPoint]!
+      for handLandmarks in landmarks {
+        var transformedHandLandmarks: [CGPoint]!
 
         switch orientation {
         case .left:
-          transformedLandmark = landmark.map({CGPoint(x: CGFloat($0.y), y: 1 - CGFloat($0.x))})
+          transformedHandLandmarks = handLandmarks.map({CGPoint(x: CGFloat($0.y), y: 1 - CGFloat($0.x))})
         case .right:
-          transformedLandmark = landmark.map({CGPoint(x: 1 - CGFloat($0.y), y: CGFloat($0.x))})
+          transformedHandLandmarks = handLandmarks.map({CGPoint(x: 1 - CGFloat($0.y), y: CGFloat($0.x))})
         default:
-          transformedLandmark = landmark.map({CGPoint(x: CGFloat($0.x), y: CGFloat($0.y))})
+          transformedHandLandmarks = handLandmarks.map({CGPoint(x: CGFloat($0.x), y: CGFloat($0.y))})
         }
 
-        let dots: [CGPoint] = transformedLandmark.map({CGPoint(x: CGFloat($0.x) * originalImageSize.width * offsetsAndScaleFactor.scaleFactor + offsetsAndScaleFactor.xOffset, y: CGFloat($0.y) * originalImageSize.height * offsetsAndScaleFactor.scaleFactor + offsetsAndScaleFactor.yOffset)})
+        let dots: [CGPoint] = transformedHandLandmarks.map({CGPoint(x: CGFloat($0.x) * originalImageSize.width * offsetsAndScaleFactor.scaleFactor + offsetsAndScaleFactor.xOffset, y: CGFloat($0.y) * originalImageSize.height * offsetsAndScaleFactor.scaleFactor + offsetsAndScaleFactor.yOffset)})
         let lines: [Line] = HandLandmarker.handConnections
             .map({ connection in
               let start = dots[Int(connection.start)]
