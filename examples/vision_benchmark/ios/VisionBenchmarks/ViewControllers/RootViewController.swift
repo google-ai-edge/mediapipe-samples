@@ -16,33 +16,38 @@ import UIKit
 
 class RootViewController: UITableViewController {
 
+
+  // MARK: Private Instance Variables
+  private let cellIdentifier = "Cell"
+  private let datas: [VisionTask] = [.FaceDetector]
+
   override func viewDidLoad() {
     super.viewDidLoad()
-    
-    tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
+    tableView.register(UITableViewCell.self, forCellReuseIdentifier: cellIdentifier)
   }
-
-
 }
 
+// MARK: UITableViewDatasources
 extension RootViewController {
-  override func numberOfSections(in tableView: UITableView) -> Int {
-    1
-  }
-
   override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    1
+    datas.count
   }
 
   override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-    let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-    cell.textLabel?.text = "FaceDetector"
+    let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
+    let data = datas[indexPath.row]
+    cell.textLabel?.text = data.title
     return cell
   }
 
   override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-    guard let vc = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "face_detector") as? FaceDetectorBenchmarksViewController else { return }
-    navigationController?.pushViewController(vc, animated: true)
+    let visionTask = datas[indexPath.row]
+    switch visionTask {
+    case .FaceDetector:
+      let identifier = "FaceDetectorBenchmarksViewController"
+      guard let vc = UIStoryboard(name: "Main", bundle: nil)
+        .instantiateViewController(identifier: identifier) as? FaceDetectorBenchmarksViewController else { return }
+      navigationController?.pushViewController(vc, animated: true)
+    }
   }
 }
-

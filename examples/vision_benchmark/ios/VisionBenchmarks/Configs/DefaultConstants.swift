@@ -23,3 +23,13 @@ struct DefaultConstants {
     static let modelPath: String? = Bundle.main.path(forResource: "blaze_face_short_range", ofType: "tflite")
   }
 }
+
+enum VisionTask {
+  case FaceDetector
+  var title: String {
+    switch self {
+    case .FaceDetector:
+      return "FaceDetector Benchmark"
+    }
+  }
+}

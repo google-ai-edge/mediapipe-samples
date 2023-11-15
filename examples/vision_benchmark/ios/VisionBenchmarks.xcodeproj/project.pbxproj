@@ -18,6 +18,8 @@
 		BF285A742B032F9F00823A7D /* FaceDetectorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF285A732B032F9F00823A7D /* FaceDetectorService.swift */; };
 		BF285A762B0330A900823A7D /* blaze_face_short_range.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF285A752B0330A900823A7D /* blaze_face_short_range.tflite */; };
 		BF285A792B03310200823A7D /* DefaultConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF285A782B03310200823A7D /* DefaultConstants.swift */; };
+		BF87C15D2B045DCC00758EA5 /* VisionBenchmarkDetailTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF87C15B2B045DCC00758EA5 /* VisionBenchmarkDetailTableViewCell.swift */; };
+		BF87C15E2B045DCC00758EA5 /* VisionBenchmarkDetailTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = BF87C15C2B045DCC00758EA5 /* VisionBenchmarkDetailTableViewCell.xib */; };
 		BFC020892B03577D00A6D847 /* face_test.jpg in Resources */ = {isa = PBXBuildFile; fileRef = BFC020882B03577D00A6D847 /* face_test.jpg */; };
 		BFC0208C2B035B8D00A6D847 /* Calculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFC0208B2B035B8D00A6D847 /* Calculator.swift */; };
 		BFC0208F2B035C6200A6D847 /* face2.png in Resources */ = {isa = PBXBuildFile; fileRef = BFC0208E2B035C6200A6D847 /* face2.png */; };
@@ -38,6 +40,8 @@
 		BF285A732B032F9F00823A7D /* FaceDetectorService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FaceDetectorService.swift; sourceTree = "<group>"; };
 		BF285A752B0330A900823A7D /* blaze_face_short_range.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; name = blaze_face_short_range.tflite; path = ../../../face_detector/ios/FaceDetector/blaze_face_short_range.tflite; sourceTree = "<group>"; };
 		BF285A782B03310200823A7D /* DefaultConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultConstants.swift; sourceTree = "<group>"; };
+		BF87C15B2B045DCC00758EA5 /* VisionBenchmarkDetailTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionBenchmarkDetailTableViewCell.swift; sourceTree = "<group>"; };
+		BF87C15C2B045DCC00758EA5 /* VisionBenchmarkDetailTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = VisionBenchmarkDetailTableViewCell.xib; sourceTree = "<group>"; };
 		BFC020882B03577D00A6D847 /* face_test.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = face_test.jpg; sourceTree = "<group>"; };
 		BFC0208B2B035B8D00A6D847 /* Calculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Calculator.swift; sourceTree = "<group>"; };
 		BFC0208E2B035C6200A6D847 /* face2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = face2.png; sourceTree = "<group>"; };
@@ -77,6 +81,7 @@
 		BF285A5A2B03292D00823A7D /* VisionBenchmarks */ = {
 			isa = PBXGroup;
 			children = (
+				BF87C15A2B045D9100758EA5 /* Views */,
 				BFC0208A2B035B6800A6D847 /* Units */,
 				BF285A772B0330ED00823A7D /* Configs */,
 				BF285A722B032F7700823A7D /* Services */,
@@ -119,6 +124,15 @@
 			path = Configs;
 			sourceTree = "<group>";
 		};
+		BF87C15A2B045D9100758EA5 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				BF87C15B2B045DCC00758EA5 /* VisionBenchmarkDetailTableViewCell.swift */,
+				BF87C15C2B045DCC00758EA5 /* VisionBenchmarkDetailTableViewCell.xib */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		BFC0208A2B035B6800A6D847 /* Units */ = {
 			isa = PBXGroup;
 			children = (
@@ -151,6 +165,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BF285A6C2B03292F00823A7D /* Build configuration list for PBXNativeTarget "VisionBenchmarks" */;
 			buildPhases = (
+				BF87C15F2B04730B00758EA5 /* Download FaceDetector Model */,
 				C5687CECEADCAFA0AD741632 /* [CP] Check Pods Manifest.lock */,
 				BF285A542B03292D00823A7D /* Sources */,
 				BF285A552B03292D00823A7D /* Frameworks */,
@@ -208,6 +223,7 @@
 				BF285A652B03292F00823A7D /* Assets.xcassets in Resources */,
 				BF285A762B0330A900823A7D /* blaze_face_short_range.tflite in Resources */,
 				BF285A632B03292D00823A7D /* Main.storyboard in Resources */,
+				BF87C15E2B045DCC00758EA5 /* VisionBenchmarkDetailTableViewCell.xib in Resources */,
 				BFC0208F2B035C6200A6D847 /* face2.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -215,6 +231,24 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		BF87C15F2B04730B00758EA5 /* Download FaceDetector Model */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download FaceDetector Model";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/RunScripts/download_models.sh\"\n";
+		};
 		C5687CECEADCAFA0AD741632 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -248,6 +282,7 @@
 				BF285A792B03310200823A7D /* DefaultConstants.swift in Sources */,
 				BF285A5C2B03292D00823A7D /* AppDelegate.swift in Sources */,
 				BF285A5E2B03292D00823A7D /* SceneDelegate.swift in Sources */,
+				BF87C15D2B045DCC00758EA5 /* VisionBenchmarkDetailTableViewCell.swift in Sources */,
 				BF285A712B032F5B00823A7D /* FaceDetectorBenchmarksViewController.swift in Sources */,
 				BFC0208C2B035B8D00A6D847 /* Calculator.swift in Sources */,
 				BF285A742B032F9F00823A7D /* FaceDetectorService.swift in Sources */,
@@ -404,14 +439,14 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 9PLS9MU793;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = VisionBenchmarks/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -435,14 +470,14 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 9PLS9MU793;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = VisionBenchmarks/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

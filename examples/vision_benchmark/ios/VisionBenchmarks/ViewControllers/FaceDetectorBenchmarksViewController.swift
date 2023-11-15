@@ -18,67 +18,81 @@ class FaceDetectorBenchmarksViewController: UIViewController {
 
   var percentileValue: Double?
 
+  // MARK: Storyboards Connections
   @IBOutlet weak var tableView: UITableView!
+  @IBOutlet weak var percentileLabel: UILabel!
 
-  private let images: [UIImage] = [UIImage(named: "face_test.jpg")!,
-                                   UIImage(named: "face2.png")!,
-                                   UIImage(named: "face_test.jpg")!,
-                                   UIImage(named: "face2.png")!,
-                                   UIImage(named: "face_test.jpg")!,
-                                   UIImage(named: "face_test.jpg")!,
-                                   UIImage(named: "face2.png")!
-                                   ]
+  // MARK: Constants
+  private let testImages: [UIImage] = [
+    UIImage(named: "face_test.jpg")!,
+    UIImage(named: "face2.png")!]
+  private let percentile: Double = 95
+
+  // MARK: Private Instance Variables
+  private var faceDetectorService: FaceDetectorService?
+  private var displayDatas: [VisionBenchmarkDetailData] = []
+  private var cellClassName = String(describing: VisionBenchmarkDetailTableViewCell.self)
 
   override func viewDidLoad() {
     super.viewDidLoad()
     title = "Face Detector Benchmarks"
-    benchmarksStillImage()
+    initFaceDetectorService()
+    setupTableView()
+  }
+
+  private func initFaceDetectorService() {
+    faceDetectorService = FaceDetectorService.stillImageDetectorService(
+      modelPath: DefaultConstants.FaceDetectorConstants.modelPath,
+      minDetectionConfidence: DefaultConstants.FaceDetectorConstants.minDetectionConfidence,
+      minSuppressionThreshold: DefaultConstants.FaceDetectorConstants.minSuppressionThreshold)
   }
 
   private func setupTableView() {
-    tableView.rowHeight = 44
-    tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
+    tableView.rowHeight = VisionBenchmarkDetailTableViewCell.cellHeight
+    tableView.register(
+      UINib(nibName: cellClassName, bundle: nil),
+      forCellReuseIdentifier: cellClassName)
   }
 
   //  stillImageDetectorService
-  private func benchmarksStillImage() {
-    guard let faceDetector = FaceDetectorService.stillImageDetectorService(
-      modelPath: DefaultConstants.FaceDetectorConstants.modelPath,
-      minDetectionConfidence: DefaultConstants.FaceDetectorConstants.minDetectionConfidence,
-      minSuppressionThreshold: DefaultConstants.FaceDetectorConstants.minSuppressionThreshold) else {
+  private func benchmarkStillImage() {
+    guard let faceDetectorService = faceDetectorService else {
         print("can't create services")
         return
       }
-    var times: [Double] = []
-    for image in images {
-      guard let result = faceDetector.detect(image: image) else { fatalError("can not get result") }
-      times.append(result.inferenceTime)
-      print(result.inferenceTime)
+    displayDatas = []
+    var inferenceTimes: [Double] = []
+    for image in testImages {
+      guard let result = faceDetectorService.detect(image: image) else { fatalError("can not get result") }
+      displayDatas.append(VisionBenchmarkDetailData(
+        image: image,
+        inferenceTime: result.inferenceTime))
+      inferenceTimes.append(result.inferenceTime)
     }
 
-    if let percentileValue = Calculator.calculatePercentile(data: times, percentile: 95.0) {
-      print("95th percentile: \(percentileValue)")
-      self.percentileValue = percentileValue
-      tableView.reloadData()
+    if let percentileValue = Calculator.calculatePercentile(data: inferenceTimes, percentile: percentile) {
+      percentileLabel.text = "\(percentileValue)"
     }
+    tableView.reloadData()
+  }
+
+  // MARK: Action
+  @IBAction func caculatorButtonTouchUpInside(_ sender: Any) {
+    benchmarkStillImage()
   }
 }
 
+// MARK: UITableViewDataSource
 extension FaceDetectorBenchmarksViewController: UITableViewDataSource {
 
-  func numberOfSections(in tableView: UITableView) -> Int {
-    return 1
-  }
-
   func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    return 1
+    return displayDatas.count
   }
 
   func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-    let cell = tableView.dequeueReusableCell(withIdentifier: "Cell")!
-    if let percentileValue = percentileValue {
-      cell.textLabel?.text = "95th percentile: \(percentileValue)"
-    }
+    guard let cell = tableView.dequeueReusableCell(withIdentifier: cellClassName, for: indexPath) as? VisionBenchmarkDetailTableViewCell else { fatalError("can not load cell") }
+    let data = displayDatas[indexPath.row]
+    cell.updateVisionBenchmarkDetailData(data)
     return cell
   }
 }
