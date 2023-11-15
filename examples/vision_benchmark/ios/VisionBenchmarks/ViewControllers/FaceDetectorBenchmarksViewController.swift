@@ -21,7 +21,7 @@ class FaceDetectorBenchmarksViewController: UIViewController {
   // MARK: Storyboards Connections
   @IBOutlet weak var tableView: UITableView!
   @IBOutlet weak var percentileLabel: UILabel!
-
+  @IBOutlet weak var activityView: UIView!
   // MARK: Constants
   private let testImages: [UIImage] = [
     UIImage(named: "face_test.jpg")!,
@@ -54,12 +54,13 @@ class FaceDetectorBenchmarksViewController: UIViewController {
       forCellReuseIdentifier: cellClassName)
   }
 
-  //  stillImageDetectorService
+  // StillImageDetectorService
   private func benchmarkStillImage() {
     guard let faceDetectorService = faceDetectorService else {
         print("can't create services")
         return
       }
+    activityView.isHidden = false
     displayDatas = []
     var inferenceTimes: [Double] = []
     for image in testImages {
@@ -69,6 +70,8 @@ class FaceDetectorBenchmarksViewController: UIViewController {
         inferenceTime: result.inferenceTime))
       inferenceTimes.append(result.inferenceTime)
     }
+
+    activityView.isHidden = true
 
     if let percentileValue = Calculator.calculatePercentile(data: inferenceTimes, percentile: percentile) {
       percentileLabel.text = "\(percentileValue)"

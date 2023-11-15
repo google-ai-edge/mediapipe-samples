@@ -2,6 +2,7 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="22154" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="JJy-No-KOz">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
+        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22130"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -121,20 +122,39 @@
                                     <outlet property="delegate" destination="DDw-gm-XN4" id="aAz-Pc-v7U"/>
                                 </connections>
                             </tableView>
+                            <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Tts-Za-Le1">
+                                <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                                <subviews>
+                                    <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="large" translatesAutoresizingMaskIntoConstraints="NO" id="xIe-Sf-g68">
+                                        <rect key="frame" x="178" y="407.66666666666669" width="37" height="37"/>
+                                        <color key="color" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </activityIndicatorView>
+                                </subviews>
+                                <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstItem="xIe-Sf-g68" firstAttribute="centerY" secondItem="Tts-Za-Le1" secondAttribute="centerY" id="5c9-i2-8Rd"/>
+                                    <constraint firstItem="xIe-Sf-g68" firstAttribute="centerX" secondItem="Tts-Za-Le1" secondAttribute="centerX" id="X6t-Ss-jEc"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="r4N-q6-hcC"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="cSg-9D-5zI" firstAttribute="leading" secondItem="r4N-q6-hcC" secondAttribute="leading" id="5kF-YQ-o1C"/>
+                            <constraint firstAttribute="bottom" secondItem="Tts-Za-Le1" secondAttribute="bottom" id="7pO-8v-X9y"/>
                             <constraint firstItem="r4N-q6-hcC" firstAttribute="trailing" secondItem="cSg-9D-5zI" secondAttribute="trailing" id="LcW-ov-Noh"/>
                             <constraint firstItem="r4N-q6-hcC" firstAttribute="bottom" secondItem="cSg-9D-5zI" secondAttribute="bottom" id="QMD-ev-Kj5"/>
+                            <constraint firstItem="Tts-Za-Le1" firstAttribute="top" secondItem="rTM-Gp-UmT" secondAttribute="top" id="Ro9-Ot-t9G"/>
                             <constraint firstItem="png-Pb-mhJ" firstAttribute="top" secondItem="r4N-q6-hcC" secondAttribute="top" id="XLI-YW-pan"/>
                             <constraint firstItem="png-Pb-mhJ" firstAttribute="leading" secondItem="r4N-q6-hcC" secondAttribute="leading" id="Y8A-dZ-eTf"/>
+                            <constraint firstItem="Tts-Za-Le1" firstAttribute="leading" secondItem="rTM-Gp-UmT" secondAttribute="leading" id="cdO-qp-Ax0"/>
+                            <constraint firstAttribute="trailing" secondItem="Tts-Za-Le1" secondAttribute="trailing" id="gva-1n-RVh"/>
                             <constraint firstItem="cSg-9D-5zI" firstAttribute="top" secondItem="png-Pb-mhJ" secondAttribute="bottom" id="hbG-df-JDs"/>
                             <constraint firstItem="r4N-q6-hcC" firstAttribute="trailing" secondItem="png-Pb-mhJ" secondAttribute="trailing" id="oIV-uv-jZK"/>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="activityView" destination="Tts-Za-Le1" id="wMW-yb-3dm"/>
                         <outlet property="percentileLabel" destination="kxP-xR-gDQ" id="KYZ-2G-YCu"/>
                         <outlet property="tableView" destination="cSg-9D-5zI" id="Qpn-Fj-qab"/>
                     </connections>
