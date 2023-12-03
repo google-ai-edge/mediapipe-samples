@@ -27,6 +27,7 @@ class FaceBlendshapesResultAdapter :
     RecyclerView.Adapter<FaceBlendshapesResultAdapter.ViewHolder>() {
     companion object {
         private const val NO_VALUE = "--"
+        const val TAG = "FaceBlendshapesResultAdapter"
     }
 
     private var categories: MutableList<Category?> = MutableList(52) { null }
