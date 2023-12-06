@@ -27,24 +27,24 @@ class FaceBlendshapesResultAdapter :
     RecyclerView.Adapter<FaceBlendshapesResultAdapter.ViewHolder>() {
     companion object {
         private const val NO_VALUE = "--"
-        const val TAG = "FaceBlendshapesResultAdapter"
     }
 
     private var categories: MutableList<Category?> = MutableList(52) { null }
 
     fun updateResults(faceLandmarkerResult: FaceLandmarkerResult? = null) {
         categories = MutableList(52) { null }
-        if (faceLandmarkerResult != null) {
-            try {
-                val sortedCategories = faceLandmarkerResult.faceBlendshapes().get()[0].sortedBy { -it.score() }
-                val min = kotlin.math.min(sortedCategories.size, categories.size)
-                for (i in 0 until min) {
-                    categories[i] = sortedCategories[i]
-                }
+        if (faceLandmarkerResult != null && faceLandmarkerResult.faceBlendshapes().isPresent) {
+            val faceBlendshapes = faceLandmarkerResult.faceBlendshapes().get()
+            val sortedCategories = faceBlendshapes[0].sortedByDescending { it.score() }
+            val min = kotlin.math.min(sortedCategories.size, categories.size)
+            for (i in 0 until min) {
+                categories[i] = sortedCategories[i]
             }
-            catch (e: Exception){
-                Log.e(TAG, "FaceBlendshapesResultAdapter failed to load face landmark result with error: " + e.message)
-            }
+        } else {
+            Log.v(
+                "FaceBlendshapesResultAdapter",
+                "FaceBlendshapes is null or no value is present for this frame"
+            )
         }
     }
 
