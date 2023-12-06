@@ -43,7 +43,7 @@ class FaceBlendshapesResultAdapter :
         } else {
             Log.v(
                 "FaceBlendshapesResultAdapter",
-                "FaceBlendshapes is null or no value is present for this frame"
+                "FaceLandmarkerResult is null or faceBlendshapes has no value is present for this frame"
             )
         }
     }
