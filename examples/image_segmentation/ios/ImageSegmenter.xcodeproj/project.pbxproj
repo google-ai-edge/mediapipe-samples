@@ -17,11 +17,9 @@
 		BF6EBB662B1EB5BF00CD13FB /* ImageSegmenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB652B1EB5BF00CD13FB /* ImageSegmenterTests.swift */; };
 		BF6EBB702B1EB5BF00CD13FB /* ImageSegmenterUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB6F2B1EB5BF00CD13FB /* ImageSegmenterUITests.swift */; };
 		BF6EBB722B1EB5BF00CD13FB /* ImageSegmenterUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB712B1EB5BF00CD13FB /* ImageSegmenterUITestsLaunchTests.swift */; };
-		BF6EBB8F2B1EB75B00CD13FB /* FaceOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB7F2B1EB75B00CD13FB /* FaceOverlay.swift */; };
 		BF6EBB912B1EB75B00CD13FB /* ImageSegmenterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB822B1EB75B00CD13FB /* ImageSegmenterService.swift */; };
 		BF6EBB922B1EB75B00CD13FB /* CameraFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB832B1EB75B00CD13FB /* CameraFeedService.swift */; };
-		BF6EBB932B1EB75B00CD13FB /* RemoveBgShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB842B1EB75B00CD13FB /* RemoveBgShaders.metal */; };
-		BF6EBB942B1EB75B00CD13FB /* UIImage+ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB862B1EB75B00CD13FB /* UIImage+ext.swift */; };
+		BF6EBB932B1EB75B00CD13FB /* ChangeShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB842B1EB75B00CD13FB /* ChangeShaders.metal */; };
 		BF6EBB952B1EB75B00CD13FB /* InferenceConfigurationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB882B1EB75B00CD13FB /* InferenceConfigurationManager.swift */; };
 		BF6EBB962B1EB75B00CD13FB /* DefaultConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB892B1EB75B00CD13FB /* DefaultConstants.swift */; };
 		BF6EBB972B1EB75B00CD13FB /* MediaLibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB8B2B1EB75B00CD13FB /* MediaLibraryViewController.swift */; };
@@ -29,7 +27,7 @@
 		BF6EBB992B1EB75B00CD13FB /* BottomSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB8D2B1EB75B00CD13FB /* BottomSheetViewController.swift */; };
 		BF6EBB9A2B1EB75B00CD13FB /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB8E2B1EB75B00CD13FB /* CameraViewController.swift */; };
 		BF6EBB9C2B200D9400CD13FB /* PreviewMetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB9B2B200D9400CD13FB /* PreviewMetalView.swift */; };
-		BF6EBBA22B20531800CD13FB /* DemoRender.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBBA12B20531800CD13FB /* DemoRender.swift */; };
+		BF6EBBA22B20531800CD13FB /* Render.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBBA12B20531800CD13FB /* Render.swift */; };
 		BF6EBBA62B2070F000CD13FB /* RenderToMtlViewShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBBA52B2070F000CD13FB /* RenderToMtlViewShaders.metal */; };
 		BF6EBBA82B20712600CD13FB /* selfie_segmenter.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF6EBBA72B20712600CD13FB /* selfie_segmenter.tflite */; };
 		BF6EBBAA2B20720B00CD13FB /* bg1.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BF6EBBA92B20720B00CD13FB /* bg1.jpeg */; };
@@ -74,11 +72,9 @@
 		BF6EBB6B2B1EB5BF00CD13FB /* ImageSegmenterUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ImageSegmenterUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF6EBB6F2B1EB5BF00CD13FB /* ImageSegmenterUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSegmenterUITests.swift; sourceTree = "<group>"; };
 		BF6EBB712B1EB5BF00CD13FB /* ImageSegmenterUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSegmenterUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		BF6EBB7F2B1EB75B00CD13FB /* FaceOverlay.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FaceOverlay.swift; sourceTree = "<group>"; };
 		BF6EBB822B1EB75B00CD13FB /* ImageSegmenterService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageSegmenterService.swift; sourceTree = "<group>"; };
 		BF6EBB832B1EB75B00CD13FB /* CameraFeedService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedService.swift; sourceTree = "<group>"; };
-		BF6EBB842B1EB75B00CD13FB /* RemoveBgShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = RemoveBgShaders.metal; sourceTree = "<group>"; };
-		BF6EBB862B1EB75B00CD13FB /* UIImage+ext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+ext.swift"; sourceTree = "<group>"; };
+		BF6EBB842B1EB75B00CD13FB /* ChangeShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ChangeShaders.metal; sourceTree = "<group>"; };
 		BF6EBB882B1EB75B00CD13FB /* InferenceConfigurationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceConfigurationManager.swift; sourceTree = "<group>"; };
 		BF6EBB892B1EB75B00CD13FB /* DefaultConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultConstants.swift; sourceTree = "<group>"; };
 		BF6EBB8B2B1EB75B00CD13FB /* MediaLibraryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MediaLibraryViewController.swift; sourceTree = "<group>"; };
@@ -86,7 +82,7 @@
 		BF6EBB8D2B1EB75B00CD13FB /* BottomSheetViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BottomSheetViewController.swift; sourceTree = "<group>"; };
 		BF6EBB8E2B1EB75B00CD13FB /* CameraViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
 		BF6EBB9B2B200D9400CD13FB /* PreviewMetalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewMetalView.swift; sourceTree = "<group>"; };
-		BF6EBBA12B20531800CD13FB /* DemoRender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoRender.swift; sourceTree = "<group>"; };
+		BF6EBBA12B20531800CD13FB /* Render.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Render.swift; sourceTree = "<group>"; };
 		BF6EBBA52B2070F000CD13FB /* RenderToMtlViewShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = RenderToMtlViewShaders.metal; sourceTree = "<group>"; };
 		BF6EBBA72B20712600CD13FB /* selfie_segmenter.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = selfie_segmenter.tflite; sourceTree = "<group>"; };
 		BF6EBBA92B20720B00CD13FB /* bg1.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = bg1.jpeg; sourceTree = "<group>"; };
@@ -200,7 +196,6 @@
 		BF6EBB7E2B1EB75B00CD13FB /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				BF6EBB7F2B1EB75B00CD13FB /* FaceOverlay.swift */,
 				BF6EBB9B2B200D9400CD13FB /* PreviewMetalView.swift */,
 			);
 			path = Views;
@@ -211,7 +206,7 @@
 			children = (
 				BF6EBB822B1EB75B00CD13FB /* ImageSegmenterService.swift */,
 				BF6EBB832B1EB75B00CD13FB /* CameraFeedService.swift */,
-				BF6EBBA12B20531800CD13FB /* DemoRender.swift */,
+				BF6EBBA12B20531800CD13FB /* Render.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -219,9 +214,8 @@
 		BF6EBB852B1EB75B00CD13FB /* Units */ = {
 			isa = PBXGroup;
 			children = (
-				BF6EBB842B1EB75B00CD13FB /* RemoveBgShaders.metal */,
+				BF6EBB842B1EB75B00CD13FB /* ChangeShaders.metal */,
 				BF6EBBA52B2070F000CD13FB /* RenderToMtlViewShaders.metal */,
-				BF6EBB862B1EB75B00CD13FB /* UIImage+ext.swift */,
 			);
 			path = Units;
 			sourceTree = "<group>";
@@ -480,11 +474,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BF6EBB942B1EB75B00CD13FB /* UIImage+ext.swift in Sources */,
 				BF6EBB982B1EB75B00CD13FB /* RootViewController.swift in Sources */,
 				BF6EBBA62B2070F000CD13FB /* RenderToMtlViewShaders.metal in Sources */,
-				BF6EBB8F2B1EB75B00CD13FB /* FaceOverlay.swift in Sources */,
-				BF6EBBA22B20531800CD13FB /* DemoRender.swift in Sources */,
+				BF6EBBA22B20531800CD13FB /* Render.swift in Sources */,
 				BF6EBB912B1EB75B00CD13FB /* ImageSegmenterService.swift in Sources */,
 				BF6EBB4F2B1EB5BE00CD13FB /* AppDelegate.swift in Sources */,
 				BF6EBB922B1EB75B00CD13FB /* CameraFeedService.swift in Sources */,
@@ -494,7 +486,7 @@
 				BF6EBB9C2B200D9400CD13FB /* PreviewMetalView.swift in Sources */,
 				BF6EBB512B1EB5BE00CD13FB /* SceneDelegate.swift in Sources */,
 				BF6EBB9A2B1EB75B00CD13FB /* CameraViewController.swift in Sources */,
-				BF6EBB932B1EB75B00CD13FB /* RemoveBgShaders.metal in Sources */,
+				BF6EBB932B1EB75B00CD13FB /* ChangeShaders.metal in Sources */,
 				BF6EBB992B1EB75B00CD13FB /* BottomSheetViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -676,6 +668,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = H83UK2M7VU;
@@ -698,6 +691,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.imagesegmenter.ImageSegmenter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -710,6 +704,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = H83UK2M7VU;
@@ -732,6 +727,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.imagesegmenter.ImageSegmenter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

@@ -29,23 +29,23 @@ protocol ImageSegmenterServiceLiveStreamDelegate: AnyObject {
  This protocol must be adopted by any class that wants to take appropriate actions during  different stages of face landmark on videos.
  */
 protocol ImageSegmenterServiceVideoDelegate: AnyObject {
- func imageSegmenterService(_ imageSegmenterService: ImageSegmenterService,
-                                  didFinishSegmentionOnVideoFrame index: Int)
- func imageSegmenterService(_ imageSegmenterService: ImageSegmenterService,
+  func imageSegmenterService(_ imageSegmenterService: ImageSegmenterService,
+                             didFinishSegmentionOnVideoFrame index: Int)
+  func imageSegmenterService(_ imageSegmenterService: ImageSegmenterService,
                              willBeginSegmention totalframeCount: Int)
 }
 
 
 // Initializes and calls the MediaPipe APIs for segmention.
 class ImageSegmenterService: NSObject {
-
+  
   weak var liveStreamDelegate: ImageSegmenterServiceLiveStreamDelegate?
   weak var videoDelegate: ImageSegmenterServiceVideoDelegate?
-
+  
   var imageSegmenter: ImageSegmenter?
   private(set) var runningMode = RunningMode.image
   var modelPath: String
-
+  
   // MARK: - Custom Initializer
   private init?(modelPath: String?,
                 runningMode:RunningMode) {
@@ -53,10 +53,10 @@ class ImageSegmenterService: NSObject {
     self.modelPath = modelPath
     self.runningMode = runningMode
     super.init()
-
+    
     createImageSegmenter()
   }
-
+  
   private func createImageSegmenter() {
     let imageSegmenterOptions = ImageSegmenterOptions()
     imageSegmenterOptions.runningMode = runningMode
@@ -72,38 +72,38 @@ class ImageSegmenterService: NSObject {
       print(error)
     }
   }
-
+  
   // MARK: - Static Initializers
   static func videoImageSegmenterService(
     modelPath: String?,
     videoDelegate: ImageSegmenterServiceVideoDelegate?) -> ImageSegmenterService? {
-    let imageSegmenterService = ImageSegmenterService(
-      modelPath: modelPath,
-      runningMode: .video)
-    imageSegmenterService?.videoDelegate = videoDelegate
-    return imageSegmenterService
-  }
-
+      let imageSegmenterService = ImageSegmenterService(
+        modelPath: modelPath,
+        runningMode: .video)
+      imageSegmenterService?.videoDelegate = videoDelegate
+      return imageSegmenterService
+    }
+  
   static func liveStreamImageSegmenterService(
     modelPath: String?,
     liveStreamDelegate: ImageSegmenterServiceLiveStreamDelegate?) -> ImageSegmenterService? {
-    let imageSegmenterService = ImageSegmenterService(
-      modelPath: modelPath,
-      runningMode: .liveStream)
-    imageSegmenterService?.liveStreamDelegate = liveStreamDelegate
-
-    return imageSegmenterService
-  }
-
+      let imageSegmenterService = ImageSegmenterService(
+        modelPath: modelPath,
+        runningMode: .liveStream)
+      imageSegmenterService?.liveStreamDelegate = liveStreamDelegate
+      
+      return imageSegmenterService
+    }
+  
   static func stillImageSegmenterService(
     modelPath: String?) -> ImageSegmenterService? {
-    let imageSegmenterService = ImageSegmenterService(
-      modelPath: modelPath,
-      runningMode: .image)
-
-    return imageSegmenterService
-  }
-
+      let imageSegmenterService = ImageSegmenterService(
+        modelPath: modelPath,
+        runningMode: .image)
+      
+      return imageSegmenterService
+    }
+  
   // MARK: - Segmention Methods for Different Modes
   /**
    This method return ImageSegmenterResult and infrenceTime when receive an image
@@ -119,25 +119,25 @@ class ImageSegmenterService: NSObject {
       let inferenceTime = Date().timeIntervalSince(startDate) * 1000
       return ResultBundle(inferenceTime: inferenceTime, imageSegmenterResults: [result])
     } catch {
-        print(error)
-        return nil
+      print(error)
+      return nil
     }
   }
-
+  
   func segmentAsync(
     sampleBuffer: CMSampleBuffer,
     orientation: UIImage.Orientation,
     timeStamps: Int) {
-    guard let image = try? MPImage(sampleBuffer: sampleBuffer, orientation: orientation) else {
-      return
+      guard let image = try? MPImage(sampleBuffer: sampleBuffer, orientation: orientation) else {
+        return
+      }
+      do {
+        try imageSegmenter?.segmentAsync(image: image, timestampInMilliseconds: timeStamps)
+      } catch {
+        print(error)
+      }
     }
-    do {
-      try imageSegmenter?.segmentAsync(image: image, timestampInMilliseconds: timeStamps)
-    } catch {
-      print(error)
-    }
-  }
-
+  
   func segment(
     videoAsset: AVAsset,
     durationInMilliseconds: Double,
@@ -150,15 +150,14 @@ class ImageSegmenterService: NSObject {
       videoDelegate?.imageSegmenterService(self, willBeginSegmention: frameCount)
     }
 
-    let imageSegmenterResultTuple = segmentImageInFramesGenerated(
+    let imageSegmenterResults = segmentImageInFramesGenerated(
       by: assetGenerator,
       totalFrameCount: frameCount,
       atIntervalsOf: inferenceIntervalInMilliseconds)
 
     return ResultBundle(
       inferenceTime: Date().timeIntervalSince(startDate) / Double(frameCount) * 1000,
-      imageSegmenterResults: imageSegmenterResultTuple.imageSegmenterResults,
-      size: imageSegmenterResultTuple.videoSize)
+      imageSegmenterResults: imageSegmenterResults)
   }
 
   private func imageGenerator(with videoAsset: AVAsset) -> AVAssetImageGenerator {
@@ -174,24 +173,21 @@ class ImageSegmenterService: NSObject {
     by assetGenerator: AVAssetImageGenerator,
     totalFrameCount frameCount: Int,
     atIntervalsOf inferenceIntervalMs: Double)
-  -> (imageSegmenterResults: [ImageSegmenterResult?], videoSize: CGSize)  {
+  -> [ImageSegmenterResult?]  {
     var imageSegmenterResults: [ImageSegmenterResult?] = []
-    var videoSize = CGSize.zero
 
     for i in 0..<frameCount {
       let timestampMs = Int(inferenceIntervalMs) * i // ms
       let image: CGImage
       do {
         let time = CMTime(value: Int64(timestampMs), timescale: 1000)
-          //        CMTime(seconds: Double(timestampMs) / 1000, preferredTimescale: 1000)
         image = try assetGenerator.copyCGImage(at: time, actualTime: nil)
       } catch {
         print(error)
-        return (imageSegmenterResults, videoSize)
+        return imageSegmenterResults
       }
 
       let uiImage = UIImage(cgImage:image)
-      videoSize = uiImage.size
 
       do {
         let result = try imageSegmenter?.segment(
@@ -206,7 +202,7 @@ class ImageSegmenterService: NSObject {
         }
       }
 
-    return (imageSegmenterResults, videoSize)
+    return imageSegmenterResults
   }
 }
 
@@ -228,4 +224,9 @@ struct ResultBundle {
   let inferenceTime: Double
   let imageSegmenterResults: [ImageSegmenterResult?]
   var size: CGSize = .zero
+}
+
+struct VideoFrame {
+  let pixelBuffer: CVPixelBuffer
+  let formatDescription: CMFormatDescription
 }

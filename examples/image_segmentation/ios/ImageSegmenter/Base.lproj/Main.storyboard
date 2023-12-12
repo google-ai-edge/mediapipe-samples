@@ -399,14 +399,13 @@
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <mtkView contentMode="scaleToFill" colorPixelFormat="BGRA8Unorm" depthStencilPixelFormat="Invalid" preferredFramesPerSecond="30" translatesAutoresizingMaskIntoConstraints="NO" id="jTD-1n-5gl" customClass="PreviewMetalView" customModule="ImageSegmenter" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="59" width="393" height="759"/>
+                            </mtkView>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="UT5-w7-OjM">
                                 <rect key="frame" x="0.0" y="59" width="393" height="759"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </imageView>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Sfh-5s-l7y" customClass="OverlayView" customModule="ImageSegmenter">
-                                <rect key="frame" x="0.0" y="59" width="393" height="759"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            </view>
                             <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="c8P-gU-0Bs">
                                 <rect key="frame" x="0.0" y="59" width="393" height="759"/>
                                 <subviews>
@@ -458,30 +457,30 @@
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="m31-ST-YG7" firstAttribute="leading" secondItem="zQB-07-hhL" secondAttribute="leading" constant="10" id="0AJ-PC-d5j"/>
-                            <constraint firstItem="UIb-bm-QFk" firstAttribute="trailing" secondItem="Sfh-5s-l7y" secondAttribute="trailing" id="0HM-3X-WU0"/>
                             <constraint firstItem="UIb-bm-QFk" firstAttribute="trailing" secondItem="4qW-7H-Z8p" secondAttribute="trailing" constant="20" id="3lk-SG-qzY"/>
                             <constraint firstItem="c8P-gU-0Bs" firstAttribute="top" secondItem="UIb-bm-QFk" secondAttribute="top" id="4Co-sF-TQp"/>
+                            <constraint firstItem="jTD-1n-5gl" firstAttribute="trailing" secondItem="UIb-bm-QFk" secondAttribute="trailing" id="9h4-V2-mtF"/>
                             <constraint firstAttribute="trailing" secondItem="m31-ST-YG7" secondAttribute="trailing" constant="10" id="DQT-5f-XLI"/>
-                            <constraint firstItem="Sfh-5s-l7y" firstAttribute="leading" secondItem="UIb-bm-QFk" secondAttribute="leading" id="IPV-gn-XFh"/>
                             <constraint firstItem="UIb-bm-QFk" firstAttribute="trailing" secondItem="UT5-w7-OjM" secondAttribute="trailing" id="Mrv-Fl-ldn"/>
                             <constraint firstItem="m31-ST-YG7" firstAttribute="centerY" secondItem="UIb-bm-QFk" secondAttribute="centerY" id="OT9-oc-NF0"/>
+                            <constraint firstItem="jTD-1n-5gl" firstAttribute="leading" secondItem="UIb-bm-QFk" secondAttribute="leading" id="OZ3-wg-QCp"/>
                             <constraint firstItem="UIb-bm-QFk" firstAttribute="bottom" secondItem="c8P-gU-0Bs" secondAttribute="bottom" id="RNu-UJ-PAh"/>
-                            <constraint firstItem="Sfh-5s-l7y" firstAttribute="top" secondItem="UIb-bm-QFk" secondAttribute="top" id="T7u-wF-6n9"/>
+                            <constraint firstItem="jTD-1n-5gl" firstAttribute="top" secondItem="UIb-bm-QFk" secondAttribute="top" id="Rrq-MY-a8x"/>
                             <constraint firstItem="UIb-bm-QFk" firstAttribute="trailing" secondItem="c8P-gU-0Bs" secondAttribute="trailing" id="Vkv-zN-6wy"/>
                             <constraint firstItem="UT5-w7-OjM" firstAttribute="top" secondItem="UIb-bm-QFk" secondAttribute="top" id="bVG-eg-kOs"/>
                             <constraint firstItem="UIb-bm-QFk" firstAttribute="bottom" secondItem="UT5-w7-OjM" secondAttribute="bottom" id="gHb-cL-IOX"/>
-                            <constraint firstItem="UIb-bm-QFk" firstAttribute="bottom" secondItem="Sfh-5s-l7y" secondAttribute="bottom" id="jI9-NA-KQR"/>
                             <constraint firstItem="c8P-gU-0Bs" firstAttribute="leading" secondItem="UIb-bm-QFk" secondAttribute="leading" id="jO0-g2-yTY"/>
                             <constraint firstItem="UIb-bm-QFk" firstAttribute="bottom" secondItem="4qW-7H-Z8p" secondAttribute="bottom" constant="61" id="pf9-L7-SgR"/>
                             <constraint firstItem="UT5-w7-OjM" firstAttribute="leading" secondItem="UIb-bm-QFk" secondAttribute="leading" id="q8g-cY-pZ4"/>
+                            <constraint firstItem="UIb-bm-QFk" firstAttribute="bottom" secondItem="jTD-1n-5gl" secondAttribute="bottom" id="twu-80-oWu"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="imageEmptyLabel" destination="m31-ST-YG7" id="WDx-UD-6Do"/>
-                        <outlet property="overlayView" destination="Sfh-5s-l7y" id="kXw-q0-wZw"/>
                         <outlet property="pickFromGalleryButton" destination="4qW-7H-Z8p" id="93a-aa-nv7"/>
                         <outlet property="pickFromGalleryButtonBottomSpace" destination="pf9-L7-SgR" id="s14-EG-MiX"/>
                         <outlet property="pickedImageView" destination="UT5-w7-OjM" id="g7o-Vr-iSG"/>
+                        <outlet property="previewView" destination="jTD-1n-5gl" id="qe3-Jy-H7k"/>
                         <outlet property="progressView" destination="c9i-xv-hbd" id="IDY-jo-jaz"/>
                     </connections>
                 </viewController>

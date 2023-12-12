@@ -343,7 +343,7 @@ extension CameraFeedService: AVCaptureVideoDataOutputSampleBufferDelegate {
   /** This method delegates the CVPixelBuffer of the frame seen by the camera currently.
    */
   func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-    delegate?.didOutput(sampleBuffer: sampleBuffer, orientation: UIImage.Orientation.from(deviceOrientation: UIDevice.current.orientation))
+    delegate?.didOutput(sampleBuffer: sampleBuffer, orientation: .upMirrored)
   }
 }
 

@@ -24,11 +24,11 @@ import MetalPerformanceShaders
  * presenting them with the landmarks of the face to the user.
  */
 class MediaLibraryViewController: UIViewController {
-  
+
   // MARK: Constants
   private struct Constants {
     static let edgeOffset: CGFloat = 2.0
-    static let inferenceTimeIntervalInMilliseconds = 300.0
+    static let inferenceTimeIntervalInMilliseconds = 200.0
     static let milliSeconds = 1000.0
     static let savedPhotosNotAvailableText = "Saved photos album is not available."
     static let mediaEmptyText =
@@ -38,85 +38,75 @@ class MediaLibraryViewController: UIViewController {
   // MARK: Face Segmenter Service
   weak var interfaceUpdatesDelegate: InterfaceUpdatesDelegate?
   weak var inferenceResultDeliveryDelegate: InferenceResultDeliveryDelegate?
-  
+
   // MARK: Controllers that manage functionality
   private lazy var pickerController = UIImagePickerController()
   private var playerViewController: AVPlayerViewController?
-  
+
   // MARK: Face Segmenter Service
   private var imageSegmenterService: ImageSegmenterService?
-  
+  private let render = Render()
+
   // MARK: Private properties
-  private var playerTimeObserverToken : Any?
-  
+  private var renderVideoTimer: Timer?
+
   // MARK: Storyboards Connections
-  @IBOutlet weak var overlayView: OverlayView!
   @IBOutlet weak var pickFromGalleryButton: UIButton!
   @IBOutlet weak var progressView: UIProgressView!
   @IBOutlet weak var imageEmptyLabel: UILabel!
   @IBOutlet weak var pickedImageView: UIImageView!
   @IBOutlet weak var pickFromGalleryButtonBottomSpace: NSLayoutConstraint!
-  
+  @IBOutlet weak var previewView: PreviewMetalView!
+
   override func viewDidLoad() {
     super.viewDidLoad()
-    setupDrive()
-  }
-
-  func setupDrive() {
-    device = MTLCreateSystemDefaultDevice()
-    library = device.makeDefaultLibrary()!
-    commandQueue = device.makeCommandQueue()!
   }
 
   override func viewWillLayoutSubviews() {
     super.viewWillLayoutSubviews()
     redrawBoundingBoxesForCurrentDeviceOrientation()
   }
-  
+
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
     interfaceUpdatesDelegate?.shouldClicksBeEnabled(true)
-    
+
     guard UIImagePickerController.isSourceTypeAvailable(.savedPhotosAlbum) else {
-     pickFromGalleryButton.isEnabled = false
-     self.imageEmptyLabel.text = Constants.savedPhotosNotAvailableText
-     return
+      pickFromGalleryButton.isEnabled = false
+      self.imageEmptyLabel.text = Constants.savedPhotosNotAvailableText
+      return
     }
     pickFromGalleryButton.isEnabled = true
     self.imageEmptyLabel.text = Constants.mediaEmptyText
   }
-  
+
   override func viewWillDisappear(_ animated: Bool) {
     super.viewWillDisappear(animated)
     clearPlayerView()
-    if imageSegmenterService?.runningMode == .video {
-      overlayView.clear()
-    }
     imageSegmenterService = nil
   }
-  
+
   @IBAction func onClickPickFromGallery(_ sender: Any) {
     interfaceUpdatesDelegate?.shouldClicksBeEnabled(true)
     configurePickerController()
     present(pickerController, animated: true)
   }
-    
+
   private func configurePickerController() {
     pickerController.delegate = self
     pickerController.sourceType = .savedPhotosAlbum
     pickerController.mediaTypes = [UTType.image.identifier, UTType.movie.identifier]
     pickerController.allowsEditing = false
   }
-  
+
   private func addPlayerViewControllerAsChild() {
     guard let playerViewController = playerViewController else {
       return
     }
     playerViewController.view.translatesAutoresizingMaskIntoConstraints = false
-    
+
     self.addChild(playerViewController)
     self.view.addSubview(playerViewController.view)
-    self.view.bringSubviewToFront(self.overlayView)
     self.view.bringSubviewToFront(self.pickFromGalleryButton)
     NSLayoutConstraint.activate([
       playerViewController.view.leadingAnchor.constraint(
@@ -130,7 +120,7 @@ class MediaLibraryViewController: UIViewController {
     ])
     playerViewController.didMove(toParent: self)
   }
-  
+
   private func removePlayerViewController() {
     defer {
       playerViewController?.view.removeFromSuperview()
@@ -141,29 +131,27 @@ class MediaLibraryViewController: UIViewController {
     playerViewController?.player?.pause()
     playerViewController?.player = nil
   }
-  
+
   private func removeObservers(player: AVPlayer?) {
     guard let player = player else {
       return
     }
-    
-    if let timeObserverToken = playerTimeObserverToken {
-      player.removeTimeObserver(timeObserverToken)
-      playerTimeObserverToken = nil
-    }
-    
+
+    renderVideoTimer?.invalidate()
+    renderVideoTimer = nil
+
   }
 
   private func openMediaLibrary() {
     configurePickerController()
     present(pickerController, animated: true)
   }
-  
+
   private func clearPlayerView() {
     imageEmptyLabel.isHidden = false
     removePlayerViewController()
   }
-  
+
   private func showProgressView() {
     guard let progressSuperview = progressView.superview?.superview else {
       return
@@ -173,7 +161,7 @@ class MediaLibraryViewController: UIViewController {
     progressView.observedProgress = nil
     self.view.bringSubviewToFront(progressSuperview)
   }
-  
+
   private func hideProgressView() {
     guard let progressSuperview = progressView.superview?.superview else {
       return
@@ -181,334 +169,219 @@ class MediaLibraryViewController: UIViewController {
     self.view.sendSubviewToBack(progressSuperview)
     self.progressView.superview?.superview?.isHidden = true
   }
-  
+
   func layoutUIElements(withInferenceViewHeight height: CGFloat) {
     pickFromGalleryButtonBottomSpace.constant =
     height + Constants.pickFromGalleryButtonInset
     view.layoutSubviews()
   }
-  
+
   func redrawBoundingBoxesForCurrentDeviceOrientation() {
     guard let imageSegmenterService = imageSegmenterService,
           imageSegmenterService.runningMode == .image ||
-          self.playerViewController?.player?.timeControlStatus == .paused else {
+            self.playerViewController?.player?.timeControlStatus == .paused else {
       return
     }
-    overlayView
-      .redrawFaceOverlays(
-        forNewDeviceOrientation: UIDevice.current.orientation)
   }
-  
+
   deinit {
     playerViewController?.player?.removeTimeObserver(self)
-  }
-
-  // MARK: - MTL
-  var device: MTLDevice!
-  var library: MTLLibrary!
-  var commandQueue: MTLCommandQueue!
-#warning ("Demo shader")
-  func demoRemoveBg(result: ImageSegmenterResult, image: UIImage) -> UIImage? {
-//    let imageOrientation = image.imageOrientation.rawValue
-    return image
-    let function = (library.makeFunction(name: "drawWithInvertedColor"))!
-    var computePipeline: MTLComputePipelineState?
-    do {
-      computePipeline = try device.makeComputePipelineState(function: function)
-    } catch {
-      print(error)
-    }
-    guard let computePipeline = computePipeline else { return nil }
-    let textureLoader = MTKTextureLoader(device: device)
-    let image2 = UIImage(named: "bg1.jpeg")!
-    var inputTexture: MTLTexture!
-    do {
-      inputTexture = try textureLoader.newTexture(cgImage: image.cgImage!)
-    } catch {
-      print(error)
-      return nil
-    }
-    let inputTexture2 = try? textureLoader.newTexture(cgImage: image2.cgImage!)
-    let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm, width: inputTexture.width, height: inputTexture.height, mipmapped: false)
-    textureDescriptor.usage = .unknown
-
-    let outputTexture = device.makeTexture(descriptor: textureDescriptor)
-    let inputScaleTexture = device.makeTexture(descriptor: textureDescriptor)
-    resizeTexture(sourceTexture: inputTexture2!, desTexture: inputScaleTexture!, targetSize: MTLSize(width: inputTexture.width, height: inputTexture.height, depth: 1), resizeMode: .scaleToFill)
-
-    let marks = result.confidenceMasks
-//      for _mark in marks! {
-    let _mark = marks![0]
-    let float32Data = _mark.float32Data
-    let legth = _mark.width * _mark.height * MemoryLayout<Float>.size
-    let bs = device.makeBuffer(bytes: float32Data, length: legth)
-    let date = Date()
-    let commandBuffer = commandQueue!.makeCommandBuffer()
-    let commandEncoder = commandBuffer!.makeComputeCommandEncoder()
-    commandEncoder?.setComputePipelineState(computePipeline)
-    commandEncoder?.setTexture(inputTexture, index: 0)
-    commandEncoder?.setTexture(inputScaleTexture, index: 1)
-    commandEncoder?.setTexture(outputTexture, index: 2)
-    commandEncoder?.setBuffer(bs, offset: 0, index: 3)
-    let threadsPerThreadGroup = MTLSize(width: 16, height: 16, depth: 1)
-    let threadgroupsPerGrid = MTLSize(width: inputTexture.width / 16 + 1, height: inputTexture.height / 16 + 1, depth: 1)
-    print(inputTexture.width)
-    print(inputTexture.height)
-    print(threadgroupsPerGrid)
-    print(threadsPerThreadGroup)
-    commandEncoder?.dispatchThreadgroups(threadgroupsPerGrid, threadsPerThreadgroup: threadsPerThreadGroup)
-    commandEncoder?.endEncoding()
-    commandBuffer?.commit()
-    commandBuffer?.waitUntilCompleted()
-    let timems = Date().timeIntervalSince(date) * 1000
-    print("\(timems) ms")
-    let ciimage = CIImage(mtlTexture: outputTexture!)?.oriented(.up)
-    return UIImage(ciImage: ciimage!)
-  }
-
-  func resizeTexture(sourceTexture: MTLTexture, desTexture: MTLTexture, targetSize:MTLSize, resizeMode: UIView.ContentMode) {
-    guard let queue = self.commandQueue,
-          let commandBuffer = queue.makeCommandBuffer() else {
-      print("FrameMixer resizeTexture command buffer create failed")
-      return
-    }
-
-    let device = queue.device;
-
-    // Scale texture
-    let sourceWidth = sourceTexture.width
-    let sourceHeight = sourceTexture.height
-    let widthRatio: Double = Double(targetSize.width) / Double(sourceWidth)
-    let heightRatio: Double = Double(targetSize.height) / Double(sourceHeight)
-    var scaleX: Double = 0;
-    var scaleY: Double  = 0;
-    var translateX: Double = 0;
-    var translateY: Double = 0;
-    if resizeMode == .scaleToFill {
-      //ScaleFill
-      scaleX = Double(targetSize.width) / Double(sourceWidth)
-      scaleY = Double(targetSize.height) / Double(sourceHeight)
-
-    } else if resizeMode == .scaleAspectFit {
-      //AspectFit
-      if heightRatio > widthRatio {
-        scaleX = Double(targetSize.width) / Double(sourceWidth)
-        scaleY = scaleX
-        let currentHeight = Double(sourceHeight) * scaleY
-        translateY = (Double(targetSize.height) - currentHeight) * 0.5
-      } else {
-        scaleY = Double(targetSize.height) / Double(sourceHeight)
-        scaleX = scaleY
-        let currentWidth = Double(sourceWidth) * scaleX
-        translateX = (Double(targetSize.width) - currentWidth) * 0.5
-      }
-    } else if resizeMode == .scaleAspectFill {
-      //AspectFill
-      if heightRatio > widthRatio {
-        scaleY = Double(targetSize.height) / Double(sourceHeight)
-        scaleX = scaleY
-        let currentWidth = Double(sourceWidth) * scaleX
-        translateX = (Double(targetSize.width) - currentWidth) * 0.5
-
-      } else {
-        scaleX = Double(targetSize.width) / Double(sourceWidth)
-        scaleY = scaleX
-        let currentHeight = Double(sourceHeight) * scaleY
-        translateY = (Double(targetSize.height) - currentHeight) * 0.5
-      }
-    }
-    var transform = MPSScaleTransform(scaleX: scaleX, scaleY: scaleY, translateX: translateX, translateY: translateY)
-    if #available(iOS 11.0, *) {
-      let scale = MPSImageBilinearScale.init(device: device)
-//      let scale = MPSImageLanczosScale(device: device)
-      withUnsafePointer(to: &transform) { (transformPtr: UnsafePointer<MPSScaleTransform>) -> () in
-        scale.scaleTransform = transformPtr
-        scale.encode(commandBuffer: commandBuffer, sourceTexture: sourceTexture, destinationTexture: desTexture)
-      }
-    } else {
-      print("Frame mixer resizeTexture failed, only support iOS 11.0")
-    }
-
-    commandBuffer.commit()
-    commandBuffer.waitUntilCompleted()
   }
 }
 
 extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-  
+
   func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
     picker.dismiss(animated: true)
   }
-  
+
   func imagePickerController(
     _ picker: UIImagePickerController,
     didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-    clearPlayerView()
-    pickedImageView.image = nil
-    overlayView.clear()
-    
-    picker.dismiss(animated: true)
-    
-    guard let mediaType = info[.mediaType] as? String else {
-      return
-    }
-    
-    switch mediaType {
-    case UTType.movie.identifier:
-      guard let mediaURL = info[.mediaURL] as? URL else {
-        imageEmptyLabel.isHidden = false
+      clearPlayerView()
+      pickedImageView.image = nil
+
+      picker.dismiss(animated: true)
+
+      guard let mediaType = info[.mediaType] as? String else {
         return
       }
-      clearAndInitializeImageSegmenterService(runningMode: .video)
-      let asset = AVAsset(url: mediaURL)
-      Task {
-        interfaceUpdatesDelegate?.shouldClicksBeEnabled(false)
-        showProgressView()
-        
-        guard let videoDuration = try? await asset.load(.duration).seconds else {
-          hideProgressView()
+
+      switch mediaType {
+      case UTType.movie.identifier:
+        guard let mediaURL = info[.mediaURL] as? URL else {
+          imageEmptyLabel.isHidden = false
           return
         }
-        
-        let resultBundle = await self.imageSegmenterService?.segment(
-          videoAsset: asset,
-          durationInMilliseconds: videoDuration * Constants.milliSeconds,
-          inferenceIntervalInMilliseconds: Constants.inferenceTimeIntervalInMilliseconds)
-        
-        hideProgressView()
+        clearAndInitializeImageSegmenterService(runningMode: .video)
+        let asset = AVAsset(url: mediaURL)
+        Task {
+          interfaceUpdatesDelegate?.shouldClicksBeEnabled(false)
+          showProgressView()
 
-        DispatchQueue.main.async {
-          self.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
+          guard let videoDuration = try? await asset.load(.duration).seconds else {
+            hideProgressView()
+            return
+          }
+
+          guard let resultBundle = await self.imageSegmenterService?.segment(
+            videoAsset: asset,
+            durationInMilliseconds: videoDuration * 1000,
+            inferenceIntervalInMilliseconds: Constants.inferenceTimeIntervalInMilliseconds) else { return }
+
+          hideProgressView()
+          DispatchQueue.main.async {
+            self.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
+            self.imageEmptyLabel.isHidden = true
+          }
+          renderVideo(
+            videoAsset: asset,
+            videoDuration: videoDuration,
+            resultBundle: resultBundle)
         }
-        
-        playVideo(
-          mediaURL: mediaURL,
-          videoDuration: videoDuration,
-          resultBundle: resultBundle)
-      }
-        
-      imageEmptyLabel.isHidden = true
-    case UTType.image.identifier:
-      guard let image = info[.originalImage] as? UIImage else {
-        imageEmptyLabel.isHidden = false
+
+      case UTType.image.identifier:
+        guard let image = info[.originalImage] as? UIImage else {
+          imageEmptyLabel.isHidden = false
+          break
+        }
+        imageEmptyLabel.isHidden = true
+
+        showProgressView()
+
+        clearAndInitializeImageSegmenterService(runningMode: .image)
+
+        DispatchQueue.global(qos: .userInteractive).async { [weak self] in
+          let maxImageWidth = 700.0
+          guard let weakSelf = self,
+                let resultBundle = weakSelf.imageSegmenterService?.segment(image: image),
+                let imageSegmenterResult = resultBundle.imageSegmenterResults.first,
+                let imageSegmenterResult = imageSegmenterResult else {
+            DispatchQueue.main.async {
+              self?.hideProgressView()
+            }
+            return
+          }
+
+          DispatchQueue.main.async {
+            weakSelf.hideProgressView()
+            weakSelf.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
+            let imageSize = image.size
+          }
+        }
+      default:
         break
       }
-      imageEmptyLabel.isHidden = true
-      
-      showProgressView()
-      
-      clearAndInitializeImageSegmenterService(runningMode: .image)
-      
-      DispatchQueue.global(qos: .userInteractive).async { [weak self] in
-        let maxImageWidth = 700.0
-        var newImage: UIImage!
-        if image.size.width > maxImageWidth {
-          newImage = image.scale(maxImageWidth/image.size.width)
-        } else {
-          newImage = image
-        }
-        guard let weakSelf = self,
-              let resultBundle = weakSelf.imageSegmenterService?.segment(image: newImage),
-              let imageSegmenterResult = resultBundle.imageSegmenterResults.first,
-              let imageSegmenterResult = imageSegmenterResult else {
-          DispatchQueue.main.async {
-            self?.hideProgressView()
-          }
-          return
-        }
-          
-        DispatchQueue.main.async {
-          weakSelf.hideProgressView()
-          weakSelf.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
-          let imageSize = newImage.size
-          let newImage = weakSelf.demoRemoveBg(result: imageSegmenterResult, image: newImage)
-          weakSelf.pickedImageView.image = newImage
-//          let faceOverlays = OverlayView.faceOverlays(
-//            fromMultipleFaceLandmarks: imageSegmenterResult.faceLandmarks,
-//            inferredOnImageOfSize: imageSize,
-//            ovelayViewSize: weakSelf.overlayView.bounds.size,
-//            imageContentMode: weakSelf.overlayView.imageContentMode,
-//            andOrientation: image.imageOrientation)
-//          weakSelf.overlayView.draw(faceOverlays: faceOverlays,
-//                           inBoundsOfContentImageOfSize: imageSize,
-//                                    imageContentMode: .scaleAspectFit)
-        }
-      }
-    default:
-      break
     }
+
+  private func imageGenerator(with videoAsset: AVAsset) -> AVAssetImageGenerator {
+    let generator = AVAssetImageGenerator(asset: videoAsset)
+    generator.requestedTimeToleranceBefore = CMTimeMake(value: 1, timescale: 25)
+    generator.requestedTimeToleranceAfter = CMTimeMake(value: 1, timescale: 25)
+    generator.appliesPreferredTrackTransform = true
+
+    return generator
   }
 
   func clearAndInitializeImageSegmenterService(runningMode: RunningMode) {
     imageSegmenterService = nil
     switch runningMode {
-      case .image:
+    case .image:
       imageSegmenterService = ImageSegmenterService.stillImageSegmenterService(
         modelPath: InferenceConfigurationManager.sharedInstance.modelPath)
-      case .video:
+    case .video:
       imageSegmenterService = ImageSegmenterService.videoImageSegmenterService(
         modelPath: InferenceConfigurationManager.sharedInstance.modelPath,
         videoDelegate: self)
-      default:
-        break;
+    default:
+      break;
     }
   }
-  
-  private func playVideo(mediaURL: URL, videoDuration: Double, resultBundle: ResultBundle?) {
-    playVideo(asset: AVAsset(url: mediaURL))
-    playerTimeObserverToken = playerViewController?.player?.addPeriodicTimeObserver(
-      forInterval: CMTime(value: Int64(Constants.inferenceTimeIntervalInMilliseconds),
-                          timescale: Int32(Constants.milliSeconds)),
-      queue: DispatchQueue(label: "com.google.mediapipe.MediaLibraryViewController.timeObserverQueue", qos: .userInteractive),
-      using: { [weak self] (time: CMTime) in
-        DispatchQueue.main.async {
-          let index =
-            Int(CMTimeGetSeconds(time) * Constants.milliSeconds / Constants.inferenceTimeIntervalInMilliseconds)
-          guard
-                let weakSelf = self,
-                let resultBundle = resultBundle,
-                index < resultBundle.imageSegmenterResults.count,
-                let imageSegmenterResult = resultBundle.imageSegmenterResults[index] else {
-            return
-          }
-          let imageSize = resultBundle.size
-//          let faceOverlays = OverlayView.faceOverlays(
-//            fromMultipleFaceLandmarks: imageSegmenterResult.faceLandmarks,
-//            inferredOnImageOfSize: imageSize,
-//            ovelayViewSize: weakSelf.overlayView.bounds.size,
-//            imageContentMode: weakSelf.overlayView.imageContentMode,
-//            andOrientation: .up)
-//          weakSelf.overlayView.draw(faceOverlays: faceOverlays,
-//                           inBoundsOfContentImageOfSize: imageSize,
-//                                    imageContentMode: .scaleAspectFit)
-          
-          // Enable clicks on inferenceVC if playback has ended.
-          if (floor(CMTimeGetSeconds(time) +
-                    Constants.inferenceTimeIntervalInMilliseconds / Constants.milliSeconds)
-              >= floor(videoDuration)) {
-            weakSelf.interfaceUpdatesDelegate?.shouldClicksBeEnabled(true)
-          }
-        }
+
+  private func renderVideo(videoAsset: AVAsset,
+                           videoDuration: Double,
+                           resultBundle: ResultBundle) {
+    var frameIndex = 0
+    let imageSegmenterResults = resultBundle.imageSegmenterResults
+    let frameCount = imageSegmenterResults.count
+    let timeInterval = videoDuration / Double(frameCount)
+    let assetGenerator = imageGenerator(with: videoAsset)
+    guard let formatDescription = getVideoFormatDescription(from: videoAsset) else { return }
+    renderVideoTimer = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true, block: { [weak self] _ in
+      guard let self else { return }
+      if frameCount <= frameIndex {
+        renderVideoTimer?.invalidate()
+        renderVideoTimer = nil
+        return
+      }
+      let imageSegmenterResult = imageSegmenterResults[frameIndex]!
+      let timestampMs = timeInterval * Double(frameIndex) * 1000 // ms
+      print(timestampMs, "\n\n\n")
+      let image: CGImage
+      do {
+        let time = CMTime(value: Int64(timestampMs), timescale: 1000)
+        image = try assetGenerator.copyCGImage(at: time, actualTime: nil)
+      } catch {
+        print(error)
+        frameIndex += 1
+        return
+      }
+      let marks = imageSegmenterResult.confidenceMasks
+      let _mark = marks![0]
+      let float32Data = _mark.float32Data
+      if !render.isPrepared {
+        render.prepare(with: formatDescription, outputRetainedBufferCountHint: 3)
+      }
+      
+      let outputPixelBuffer = render.render(cgImage: image, segmentDatas: float32Data)
+      DispatchQueue.main.async {
+        self.previewView.pixelBuffer = outputPixelBuffer
+      }
+      frameIndex += 1
     })
+
   }
-  
-  private func playVideo(asset: AVAsset) {
-    if playerViewController == nil {
-      let playerViewController = AVPlayerViewController()
-      self.playerViewController = playerViewController
-    }
-    
-    let playerItem = AVPlayerItem(asset: asset)
-    if let player = playerViewController?.player {
-      player.replaceCurrentItem(with: playerItem)
-    }
-    else {
-      playerViewController?.player = AVPlayer(playerItem: playerItem)
-    }
-    
-    playerViewController?.showsPlaybackControls = false
-    addPlayerViewControllerAsChild()
-    playerViewController?.player?.play()
+
+  func getVideoFormatDescription(from asset: AVAsset) -> CMFormatDescription? {
+      // Get the video track from the asset
+      guard let videoTrack = asset.tracks(withMediaType: AVMediaType.video).first else {
+          print("No video track found in the asset.")
+          return nil
+      }
+
+      // Create an asset reader
+      do {
+          let assetReader = try AVAssetReader(asset: asset)
+
+          // Create an asset reader track output
+          let outputSettings: [String: Any] = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
+          let trackOutput = AVAssetReaderTrackOutput(track: videoTrack, outputSettings: outputSettings)
+          assetReader.add(trackOutput)
+
+          // Start the asset reader
+          if assetReader.startReading() {
+              defer {
+                  assetReader.cancelReading()
+              }
+
+              // Read a sample to get the format description
+              if let sampleBuffer = trackOutput.copyNextSampleBuffer() {
+                  if let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) {
+                      return formatDescription
+                  } else {
+                      print("Failed to get format description from sample buffer.")
+                  }
+              } else {
+                  print("Failed to read a sample buffer.")
+              }
+          } else {
+              print("Failed to start asset reader.")
+          }
+      } catch {
+          print("Error creating asset reader: \(error)")
+      }
+
+      return nil
   }
 }
 

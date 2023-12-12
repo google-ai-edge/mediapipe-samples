@@ -27,15 +27,16 @@ class CameraViewController: UIViewController {
   private struct Constants {
     static let edgeOffset: CGFloat = 2.0
   }
-  
+
   weak var inferenceResultDeliveryDelegate: InferenceResultDeliveryDelegate?
   weak var interfaceUpdatesDelegate: InterfaceUpdatesDelegate?
-  
+
   @IBOutlet weak var previewView: PreviewMetalView!
   @IBOutlet weak var cameraUnavailableLabel: UILabel!
   @IBOutlet weak var resumeButton: UIButton!
-  
-  private var currentResultDatas: [Float]?
+
+  private var videoPixelBuffer: CVImageBuffer!
+  private var formatDescription: CMFormatDescription!
   private var isSessionRunning = false
   private var isObserving = false
   private let backgroundQueue = DispatchQueue(label: "com.google.mediapipe.cameraController.backgroundQueue")
@@ -43,7 +44,7 @@ class CameraViewController: UIViewController {
   // MARK: Controllers that manage functionality
   // Handles all the camera related functionality
   private lazy var cameraFeedService = CameraFeedService()
-  let filter = DemoRender()
+  private let render = Render()
 
   private let imageSegmenterServiceQueue = DispatchQueue(
     label: "com.google.mediapipe.cameraController.imageSegmenterServiceQueue",
@@ -82,13 +83,13 @@ class CameraViewController: UIViewController {
       }
     }
   }
-  
+
   override func viewWillDisappear(_ animated: Bool) {
     super.viewWillDisappear(animated)
     cameraFeedService.stopSession()
     clearImageSegmenterServiceOnSessionInterruption()
   }
-  
+
   override func viewDidLoad() {
     super.viewDidLoad()
     cameraFeedService.delegate = self
@@ -96,7 +97,7 @@ class CameraViewController: UIViewController {
   }
 
 #endif
-  
+
   // Resume camera session when click button resume
   @IBAction func onClickResume(_ sender: Any) {
     cameraFeedService.resumeInterruptedSession {[weak self] isSessionRunning in
@@ -114,7 +115,7 @@ class CameraViewController: UIViewController {
       message:
         "Camera permissions have been denied for this app. You can change this by going to Settings",
       preferredStyle: .alert)
-    
+
     let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
     let settingsAction = UIAlertAction(title: "Settings", style: .default) { (action) in
       UIApplication.shared.open(
@@ -122,25 +123,25 @@ class CameraViewController: UIViewController {
     }
     alertController.addAction(cancelAction)
     alertController.addAction(settingsAction)
-    
+
     present(alertController, animated: true, completion: nil)
   }
-  
+
   private func presentVideoConfigurationErrorAlert() {
     let alert = UIAlertController(
       title: "Camera Configuration Failed",
       message: "There was an error while configuring camera.",
       preferredStyle: .alert)
     alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-    
+
     self.present(alert, animated: true)
   }
-  
+
   private func initializeImageSegmenterServiceOnSessionResumption() {
     clearAndInitializeImageSegmenterService()
     startObserveConfigChanges()
   }
-  
+
   @objc private func clearAndInitializeImageSegmenterService() {
     imageSegmenterService = nil
     imageSegmenterService = ImageSegmenterService
@@ -148,12 +149,12 @@ class CameraViewController: UIViewController {
         modelPath: InferenceConfigurationManager.sharedInstance.modelPath,
         liveStreamDelegate: self)
   }
-  
+
   private func clearImageSegmenterServiceOnSessionInterruption() {
     stopObserveConfigChanges()
     imageSegmenterService = nil
   }
-  
+
   private func startObserveConfigChanges() {
     NotificationCenter.default
       .addObserver(self,
@@ -162,7 +163,7 @@ class CameraViewController: UIViewController {
                    object: nil)
     isObserving = true
   }
-  
+
   private func stopObserveConfigChanges() {
     if isObserving {
       NotificationCenter.default
@@ -175,27 +176,17 @@ class CameraViewController: UIViewController {
 }
 
 extension CameraViewController: CameraFeedServiceDelegate {
-  
+
   func didOutput(sampleBuffer: CMSampleBuffer, orientation: UIImage.Orientation) {
     let currentTimeMs = Date().timeIntervalSince1970 * 1000
 
     guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
-        let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) else {
-            return
+          let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) else {
+      return
     }
 
-    if !filter.isPrepared {
-
-      filter.prepare(with: formatDescription, outputRetainedBufferCountHint: 3)
-    }
-
-    if currentResultDatas != nil {
-      let out = filter.render(pixelBuffer: videoPixelBuffer, segmentDatas: currentResultDatas)
-      DispatchQueue.main.async {
-        self.previewView.pixelBuffer = out
-      }
-      currentResultDatas = nil
-    }
+    self.videoPixelBuffer = videoPixelBuffer
+    self.formatDescription = formatDescription
 
     backgroundQueue.async { [weak self] in
       self?.imageSegmenterService?.segmentAsync(
@@ -204,7 +195,7 @@ extension CameraViewController: CameraFeedServiceDelegate {
         timeStamps: Int(currentTimeMs))
     }
   }
-  
+
   // MARK: Session Handling Alerts
   func sessionWasInterrupted(canResumeManually resumeManually: Bool) {
     // Updates the UI when session is interupted.
@@ -215,14 +206,14 @@ extension CameraViewController: CameraFeedServiceDelegate {
     }
     clearImageSegmenterServiceOnSessionInterruption()
   }
-  
+
   func sessionInterruptionEnded() {
     // Updates UI once session interruption has ended.
     cameraUnavailableLabel.isHidden = true
     resumeButton.isHidden = true
     initializeImageSegmenterServiceOnSessionResumption()
   }
-  
+
   func didEncounterSessionRuntimeError() {
     // Handles session run time error by updating the UI and providing a button if session can be
     // manually resumed.
@@ -239,10 +230,14 @@ extension CameraViewController: ImageSegmenterServiceLiveStreamDelegate {
     let marks = imageSegmenterResult.confidenceMasks
     let _mark = marks![0]
     let float32Data = _mark.float32Data
-    let legth = _mark.width * _mark.height
-    let arrary = [Float32](UnsafeBufferPointer(start: float32Data, count: legth))
-    currentResultDatas = arrary
+
+    if !render.isPrepared {
+      render.prepare(with: formatDescription, outputRetainedBufferCountHint: 3)
+    }
+
+    let outputPixelBuffer = render.render(pixelBuffer: videoPixelBuffer, segmentDatas: float32Data)
     DispatchQueue.main.async {
+      self.previewView.pixelBuffer = outputPixelBuffer
       self.inferenceResultDeliveryDelegate?.didPerformInference(result: result)
     }
   }
