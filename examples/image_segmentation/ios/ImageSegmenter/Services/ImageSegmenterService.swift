@@ -137,7 +137,24 @@ class ImageSegmenterService: NSObject {
         print(error)
       }
     }
-  
+
+  func segment(
+    by videoFrame: CGImage,
+    orientation: UIImage.Orientation,
+    timeStamps: Int)
+  -> ImageSegmenterResult?  {
+
+
+      do {
+        let mpImage = try MPImage(uiImage: UIImage(cgImage: videoFrame))
+        let result = try imageSegmenter?.segment(videoFrame: mpImage, timestampInMilliseconds: timeStamps)
+        return result
+        } catch {
+          print(error)
+          return nil
+        }
+      }
+
   func segment(
     videoAsset: AVAsset,
     durationInMilliseconds: Double,

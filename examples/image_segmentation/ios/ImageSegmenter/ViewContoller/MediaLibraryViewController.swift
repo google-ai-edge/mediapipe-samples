@@ -195,6 +195,56 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     picker.dismiss(animated: true)
   }
 
+  #warning("playvideo")
+  private func playVideoWidthEX(asset: AVAsset) {
+    let videoDescription = getVideoFormatDescription(from: asset)
+    guard let formatDescription = videoDescription.description else { return }
+    if playerViewController == nil {
+      let playerViewController = AVPlayerViewController()
+      self.playerViewController = playerViewController
+    }
+
+    let playerItem = AVPlayerItem(asset: asset)
+
+    if let player = playerViewController?.player {
+      player.replaceCurrentItem(with: playerItem)
+    }
+    else {
+      playerViewController?.player = AVPlayer(playerItem: playerItem)
+    }
+
+    playerViewController?.showsPlaybackControls = false
+    addPlayerViewControllerAsChild()
+    guard let player = playerViewController?.player, let playerItem = player.currentItem else { return }
+    let timeRange = CMTimeRange(start: .zero, duration: asset.duration)
+    let videoComposition = AVMutableVideoComposition(asset: asset) { request in
+      let sourceImage = request.sourceImage
+      print(request.compositionTime)
+      let time = Float((request.compositionTime - timeRange.start).seconds)
+      let cgimage = self.render.getCGImmage(ciImage: sourceImage)
+      guard let result = self.imageSegmenterService?.segment(by: cgimage, orientation: .up, timeStamps: Int(time * 1000)) else {
+        request.finish(with: sourceImage, context: nil)
+        return
+      }
+      let marks = result.confidenceMasks
+      let _mark = marks![0]
+      let float32Data = _mark.float32Data
+      if !self.render.isPrepared {
+        self.render.prepare(with: formatDescription, outputRetainedBufferCountHint: 3, needChangeWidthHeight: videoDescription.needChangeWidthHeight)
+      }
+
+      guard let outputPixelBuffer = self.render.render(ciImage: sourceImage, segmentDatas: float32Data) else {
+        request.finish(with: sourceImage, context: nil)
+        return
+      }
+      let outputImage = CIImage(cvImageBuffer: outputPixelBuffer)
+      request.finish(with: outputImage, context: nil)
+    }
+
+    playerItem.videoComposition = videoComposition
+    playerViewController?.player?.play()
+  }
+
   func imagePickerController(
     _ picker: UIImagePickerController,
     didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
@@ -215,30 +265,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
         }
         clearAndInitializeImageSegmenterService(runningMode: .video)
         let asset = AVAsset(url: mediaURL)
-        Task {
-          interfaceUpdatesDelegate?.shouldClicksBeEnabled(false)
-          showProgressView()
-
-          guard let videoDuration = try? await asset.load(.duration).seconds else {
-            hideProgressView()
-            return
-          }
-
-          guard let resultBundle = await self.imageSegmenterService?.segment(
-            videoAsset: asset,
-            durationInMilliseconds: videoDuration * 1000,
-            inferenceIntervalInMilliseconds: Constants.inferenceTimeIntervalInMilliseconds) else { return }
-
-          hideProgressView()
-          DispatchQueue.main.async {
-            self.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
-            self.imageEmptyLabel.isHidden = true
-          }
-          renderVideo(
-            videoAsset: asset,
-            videoDuration: videoDuration,
-            resultBundle: resultBundle)
-        }
+        playVideoWidthEX(asset: asset)
 
       case UTType.image.identifier:
         guard let image = info[.originalImage] as? UIImage else {
@@ -252,7 +279,6 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
         clearAndInitializeImageSegmenterService(runningMode: .image)
 
         DispatchQueue.global(qos: .userInteractive).async { [weak self] in
-          let maxImageWidth = 700.0
           guard let weakSelf = self,
                 let resultBundle = weakSelf.imageSegmenterService?.segment(image: image),
                 let imageSegmenterResult = resultBundle.imageSegmenterResults.first,
@@ -266,7 +292,6 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
           DispatchQueue.main.async {
             weakSelf.hideProgressView()
             weakSelf.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
-            let imageSize = image.size
           }
         }
       default:
@@ -306,7 +331,8 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     let frameCount = imageSegmenterResults.count
     let timeInterval = videoDuration / Double(frameCount)
     let assetGenerator = imageGenerator(with: videoAsset)
-    guard let formatDescription = getVideoFormatDescription(from: videoAsset) else { return }
+    let videoDescription = getVideoFormatDescription(from: videoAsset)
+    guard let formatDescription = videoDescription.description else { return }
     renderVideoTimer = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true, block: { [weak self] _ in
       guard let self else { return }
       if frameCount <= frameIndex {
@@ -342,12 +368,19 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
 
   }
 
-  func getVideoFormatDescription(from asset: AVAsset) -> CMFormatDescription? {
+  func getVideoFormatDescription(from asset: AVAsset) -> (description: CMFormatDescription?, needChangeWidthHeight: Bool)  {
       // Get the video track from the asset
       guard let videoTrack = asset.tracks(withMediaType: AVMediaType.video).first else {
           print("No video track found in the asset.")
-          return nil
+          return (nil, false)
       }
+    let naturalSize = videoTrack.naturalSize
+    let size = videoTrack.naturalSize.applying(videoTrack.preferredTransform)
+    let newSize = CGSize(width: abs(size.width), height: abs(size.height))
+    var needChangeWidthHeight = false
+    if naturalSize.width == newSize.height {
+      needChangeWidthHeight = true
+    }
 
       // Create an asset reader
       do {
@@ -366,8 +399,8 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
 
               // Read a sample to get the format description
               if let sampleBuffer = trackOutput.copyNextSampleBuffer() {
-                  if let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) {
-                      return formatDescription
+                if let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) {
+                      return (formatDescription, needChangeWidthHeight)
                   } else {
                       print("Failed to get format description from sample buffer.")
                   }
@@ -381,7 +414,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
           print("Error creating asset reader: \(error)")
       }
 
-      return nil
+      return (nil, false)
   }
 }
 

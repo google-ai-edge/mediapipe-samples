@@ -21,9 +21,16 @@ class Render {
   private let metalDevice = MTLCreateSystemDefaultDevice()!
   
   private var computePipelineState: MTLComputePipelineState?
-  
+
+  private let image2 = UIImage(named: "bg1.jpeg")!
+
+  var inputTexture2: MTLTexture?
+
   private var textureCache: CVMetalTextureCache!
-  
+  let context: CIContext
+
+  let textureLoader: MTKTextureLoader
+
   private lazy var commandQueue: MTLCommandQueue? = {
     return self.metalDevice.makeCommandQueue()
   }()
@@ -36,13 +43,18 @@ class Render {
     } catch {
       print("Could not create pipeline state: \(error)")
     }
+    context =  CIContext(mtlDevice: metalDevice)
+    textureLoader = MTKTextureLoader(device: metalDevice)
+    inputTexture2 = try? textureLoader.newTexture(cgImage: image2.cgImage!)
   }
   
-  func prepare(with formatDescription: CMFormatDescription, outputRetainedBufferCountHint: Int) {
+  func prepare(with formatDescription: CMFormatDescription,
+               outputRetainedBufferCountHint: Int,
+               needChangeWidthHeight: Bool = false) {
     reset()
     
     (outputPixelBufferPool, _, outputFormatDescription) = allocateOutputBufferPool(with: formatDescription,
-                                                                                   outputRetainedBufferCountHint: outputRetainedBufferCountHint)
+                                                                                   outputRetainedBufferCountHint: outputRetainedBufferCountHint, needChangeWidthHeight: needChangeWidthHeight)
     if outputPixelBufferPool == nil {
       return
     }
@@ -79,7 +91,6 @@ class Render {
       print("Allocation failure: Could not get pixel buffer from pool. (\(self.description))")
       return nil
     }
-    let textureLoader = MTKTextureLoader(device: metalDevice)
     guard let outputTexture = makeTextureFromCVPixelBuffer(pixelBuffer: outputPixelBuffer, textureFormat: .bgra8Unorm) else {
       return nil
     }
@@ -91,8 +102,74 @@ class Render {
       return nil
     }
 
-    let image2 = UIImage(named: "bg1.jpeg")!
-    let inputTexture2 = try? textureLoader.newTexture(cgImage: image2.cgImage!)
+    let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm, width: inputTexture.width, height: inputTexture.height, mipmapped: false)
+    textureDescriptor.usage = .unknown
+    let inputScaleTexture = metalDevice.makeTexture(descriptor: textureDescriptor)
+
+    resizeTexture(sourceTexture: inputTexture2!, desTexture: inputScaleTexture!, targetSize: MTLSize(width: inputTexture.width, height: inputTexture.height, depth: 1), resizeMode: .scaleToFill)
+
+    // Set up command queue, buffer, and encoder.
+    guard let commandQueue = commandQueue,
+          let commandBuffer = commandQueue.makeCommandBuffer(),
+          let commandEncoder = commandBuffer.makeComputeCommandEncoder() else {
+      print("Failed to create a Metal command queue.")
+      CVMetalTextureCacheFlush(textureCache!, 0)
+      return nil
+    }
+
+    commandEncoder.label = "Demo Metal"
+    commandEncoder.setComputePipelineState(computePipelineState!)
+    commandEncoder.setTexture(inputTexture, index: 0)
+    commandEncoder.setTexture(inputScaleTexture, index: 1)
+    commandEncoder.setTexture(outputTexture, index: 2)
+    let buffer = metalDevice.makeBuffer(bytes: segmentDatas, length: inputTexture.width * inputTexture.height * MemoryLayout<Float32>.size)!
+    commandEncoder.setBuffer(buffer, offset: 0, index: 0)
+
+    // Set up the thread groups.
+    let width = computePipelineState!.threadExecutionWidth
+    let height = computePipelineState!.maxTotalThreadsPerThreadgroup / width
+    let threadsPerThreadgroup = MTLSizeMake(width, height, 1)
+    let threadgroupsPerGrid = MTLSize(width: (inputTexture.width + width - 1) / width,
+                                      height: (inputTexture.height + height - 1) / height,
+                                      depth: 1)
+    commandEncoder.dispatchThreadgroups(threadgroupsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
+
+    commandEncoder.endEncoding()
+    commandBuffer.commit()
+    return outputPixelBuffer
+  }
+
+  func getCGImmage(ciImage: CIImage) -> CGImage {
+    guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { fatalError("error") }
+    return cgImage
+  }
+
+  func render(ciImage: CIImage, segmentDatas: UnsafePointer<Float32>?) -> CVPixelBuffer? {
+
+    guard let segmentDatas = segmentDatas, isPrepared else {
+      print("segmentDatas not found")
+      return nil
+    }
+
+    var newPixelBuffer: CVPixelBuffer?
+    CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault, outputPixelBufferPool!, &newPixelBuffer)
+    guard let outputPixelBuffer = newPixelBuffer else {
+      print("Allocation failure: Could not get pixel buffer from pool. (\(self.description))")
+      return nil
+    }
+    guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { fatalError("error") }
+    print(cgImage.width, cgImage.height)
+
+    guard let outputTexture = makeTextureFromCVPixelBuffer(pixelBuffer: outputPixelBuffer, textureFormat: .bgra8Unorm) else {
+      return nil
+    }
+    var inputTexture: MTLTexture!
+    do {
+      inputTexture = try textureLoader.newTexture(cgImage: cgImage)
+    } catch {
+      print(error)
+      return nil
+    }
     let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm, width: inputTexture.width, height: inputTexture.height, mipmapped: false)
     textureDescriptor.usage = .unknown
     let inputScaleTexture = metalDevice.makeTexture(descriptor: textureDescriptor)
@@ -147,10 +224,7 @@ class Render {
           let outputTexture = makeTextureFromCVPixelBuffer(pixelBuffer: outputPixelBuffer, textureFormat: .bgra8Unorm) else {
       return nil
     }
-    
-    let image2 = UIImage(named: "bg1.jpeg")!
-    let textureLoader = MTKTextureLoader(device: metalDevice)
-    let inputTexture2 = try? textureLoader.newTexture(cgImage: image2.cgImage!)
+
     let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm, width: inputTexture.width, height: inputTexture.height, mipmapped: false)
     textureDescriptor.usage = .unknown
     let inputScaleTexture = metalDevice.makeTexture(descriptor: textureDescriptor)
@@ -270,7 +344,7 @@ class Render {
   }
 }
 
-func allocateOutputBufferPool(with inputFormatDescription: CMFormatDescription, outputRetainedBufferCountHint: Int) ->(
+func allocateOutputBufferPool(with inputFormatDescription: CMFormatDescription, outputRetainedBufferCountHint: Int, needChangeWidthHeight: Bool) ->(
   outputBufferPool: CVPixelBufferPool?,
   outputColorSpace: CGColorSpace?,
   outputFormatDescription: CMFormatDescription?) {
@@ -282,10 +356,16 @@ func allocateOutputBufferPool(with inputFormatDescription: CMFormatDescription, 
     }
     
     let inputDimensions = CMVideoFormatDescriptionGetDimensions(inputFormatDescription)
+    var width = inputDimensions.width
+    var height = inputDimensions.height
+    if needChangeWidthHeight {
+      width = height
+      height = inputDimensions.width
+    }
     var pixelBufferAttributes: [String: Any] = [
       kCVPixelBufferPixelFormatTypeKey as String: UInt(inputMediaSubType),
-      kCVPixelBufferWidthKey as String: Int(inputDimensions.width),
-      kCVPixelBufferHeightKey as String: Int(inputDimensions.height),
+      kCVPixelBufferWidthKey as String: Int(width),
+      kCVPixelBufferHeightKey as String: Int(height),
       kCVPixelBufferIOSurfacePropertiesKey as String: [:]
     ]
     
