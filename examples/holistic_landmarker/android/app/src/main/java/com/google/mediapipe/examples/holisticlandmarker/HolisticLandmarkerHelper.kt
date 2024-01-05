@@ -194,10 +194,10 @@ class HolisticLandmarkerHelper(
                                 resultList.add(detectionResult)
                             }
                     } catch (e: MediaPipeException) {
-                        resultList.add(null);
+                        resultList.add(null)
                     }
                 } ?: kotlin.run {
-                resultList.add(null);
+                resultList.add(null)
             }
         }
 

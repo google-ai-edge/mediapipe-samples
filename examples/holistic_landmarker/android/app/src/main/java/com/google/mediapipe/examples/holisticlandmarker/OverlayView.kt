@@ -19,7 +19,6 @@ package com.google.mediapipe.examples.holisticlandmarker
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
@@ -40,7 +39,6 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     private var facePaint = Paint()
     private var handPaint = Paint()
     private var posePaint = Paint()
-    private var pointPaint = Paint()
 
     private var scaleFactor: Float = 1f
     private var imageWidth: Int = 1
@@ -53,7 +51,6 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     fun clear() {
         results = null
         facePaint.reset()
-        pointPaint.reset()
         invalidate()
         initPaints()
     }
@@ -73,11 +70,6 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
             ContextCompat.getColor(context!!, R.color.color_pose)
         posePaint.strokeWidth = LANDMARK_STROKE_WIDTH
         posePaint.style = Paint.Style.STROKE
-
-
-        pointPaint.color = Color.YELLOW
-        pointPaint.strokeWidth = LANDMARK_STROKE_WIDTH
-        pointPaint.style = Paint.Style.FILL
     }
 
     override fun draw(canvas: Canvas) {
@@ -211,6 +203,5 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
     companion object {
         private const val LANDMARK_STROKE_WIDTH = 8F
-        private const val TAG = "Holistic Landmarker Overlay"
     }
 }
