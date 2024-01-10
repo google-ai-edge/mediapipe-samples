@@ -78,6 +78,67 @@ class Render {
     isPrepared = false
   }
 
+  func render(image: UIImage, segmentDatas: UnsafePointer<Float32>?) -> UIImage? {
+    guard let segmentDatas = segmentDatas else {
+      print("segmentDatas not found")
+      return nil
+    }
+
+    var inputTexture: MTLTexture!
+    do {
+      guard let cgImage = image.fixOrientationCGimage() else { return nil }
+      print(cgImage.width)
+      print(cgImage.height)
+      inputTexture = try textureLoader.newTexture(cgImage: cgImage)
+    } catch {
+      print(error)
+      return nil
+    }
+
+    print(inputTexture.width)
+    print(inputTexture.height)
+    let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm, width: inputTexture.width, height: inputTexture.height, mipmapped: false)
+    textureDescriptor.usage = .unknown
+    let inputScaleTexture = metalDevice.makeTexture(descriptor: textureDescriptor)
+
+    resizeTexture(sourceTexture: inputTexture2!, desTexture: inputScaleTexture!, targetSize: MTLSize(width: inputTexture.width, height: inputTexture.height, depth: 1), resizeMode: .scaleToFill)
+
+    // Set up command queue, buffer, and encoder.
+    guard let commandQueue = commandQueue,
+          let commandBuffer = commandQueue.makeCommandBuffer(),
+          let commandEncoder = commandBuffer.makeComputeCommandEncoder() else {
+      print("Failed to create a Metal command queue.")
+      CVMetalTextureCacheFlush(textureCache!, 0)
+      return nil
+    }
+
+    let outputTexture = metalDevice.makeTexture(descriptor: textureDescriptor)
+
+    commandEncoder.label = "Demo Metal"
+    commandEncoder.setComputePipelineState(computePipelineState!)
+    commandEncoder.setTexture(inputTexture, index: 0)
+    commandEncoder.setTexture(inputScaleTexture, index: 1)
+    commandEncoder.setTexture(outputTexture, index: 2)
+    let buffer = metalDevice.makeBuffer(bytes: segmentDatas, length: inputTexture.width * inputTexture.height * MemoryLayout<Float32>.size)!
+    commandEncoder.setBuffer(buffer, offset: 0, index: 0)
+
+    // Set up the thread groups.
+    let width = computePipelineState!.threadExecutionWidth
+    let height = computePipelineState!.maxTotalThreadsPerThreadgroup / width
+    let threadsPerThreadgroup = MTLSizeMake(width, height, 1)
+    let threadgroupsPerGrid = MTLSize(width: (inputTexture.width + width - 1) / width,
+                                      height: (inputTexture.height + height - 1) / height,
+                                      depth: 1)
+    commandEncoder.dispatchThreadgroups(threadgroupsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
+
+    commandEncoder.endEncoding()
+    commandBuffer.commit()
+    commandBuffer.waitUntilCompleted()
+    guard let ciImage = CIImage(mtlTexture: outputTexture!) else { return nil }
+    return UIImage(ciImage: ciImage)
+
+  }
+
   func render(cgImage: CGImage, segmentDatas: UnsafePointer<Float32>?) -> CVPixelBuffer? {
 
     guard let segmentDatas = segmentDatas, isPrepared else {
@@ -437,3 +498,71 @@ private func preallocateBuffers(pool: CVPixelBufferPool, allocationThreshold: In
   pixelBuffers.removeAll()
 }
 
+
+
+public extension UIImage {
+
+    func fixOrientationCGimage() -> CGImage? {
+
+        guard let cgImage = cgImage else { return nil }
+//      return cgImage
+
+        if imageOrientation == .up { return cgImage }
+
+        var transform = CGAffineTransform.identity
+
+        switch imageOrientation {
+
+        case .down, .downMirrored:
+          transform = transform.translatedBy(x: size.width, y: size.height)
+          transform = transform.rotated(by: CGFloat.pi)
+
+        case .left, .leftMirrored:
+          transform = transform.translatedBy(x: size.width, y: 0)
+          transform = transform.rotated(by: -CGFloat.pi/2)
+
+        case .right, .rightMirrored:
+            transform = transform.translatedBy(x: 0, y: size.height)
+          transform = transform.rotated(by: CGFloat.pi/2)
+
+        case .up, .upMirrored:
+            break
+        default:
+          break
+        }
+
+        switch imageOrientation {
+
+        case .upMirrored, .downMirrored:
+          transform = transform.translatedBy(x: size.width, y: 0)
+          transform = transform.scaledBy(x: -1, y: 1)
+
+        case .leftMirrored, .rightMirrored:
+          transform = transform.translatedBy(x: size.height, y: 0)
+          transform = transform.scaledBy(x: -1, y: 1)
+
+        default:
+            break
+        }
+
+        if let ctx = CGContext(data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: cgImage.bitsPerComponent, bytesPerRow: 0, space: cgImage.colorSpace!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) {
+
+            ctx.concatenate(transform)
+
+            switch imageOrientation {
+
+            case .left, .leftMirrored, .right, .rightMirrored:
+                ctx.draw(cgImage, in: CGRect(x: 0, y: 0, width: size.height, height: size.width))
+
+            default:
+                ctx.draw(cgImage, in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
+            }
+
+            if let finalImage = ctx.makeImage() {
+                return finalImage
+            }
+        }
+
+        return nil
+    }
+}

@@ -133,13 +133,8 @@ class MediaLibraryViewController: UIViewController {
   }
 
   private func removeObservers(player: AVPlayer?) {
-    guard let player = player else {
-      return
-    }
-
     renderVideoTimer?.invalidate()
     renderVideoTimer = nil
-
   }
 
   private func openMediaLibrary() {
@@ -195,8 +190,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     picker.dismiss(animated: true)
   }
 
-  #warning("playvideo")
-  private func playVideoWidthEX(asset: AVAsset) {
+  private func playVideoAnDetect(asset: AVAsset) {
     let videoDescription = getVideoFormatDescription(from: asset)
     guard let formatDescription = videoDescription.description else { return }
     if playerViewController == nil {
@@ -265,7 +259,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
         }
         clearAndInitializeImageSegmenterService(runningMode: .video)
         let asset = AVAsset(url: mediaURL)
-        playVideoWidthEX(asset: asset)
+        playVideoAnDetect(asset: asset)
 
       case UTType.image.identifier:
         guard let image = info[.originalImage] as? UIImage else {
@@ -279,8 +273,8 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
         clearAndInitializeImageSegmenterService(runningMode: .image)
 
         DispatchQueue.global(qos: .userInteractive).async { [weak self] in
-          guard let weakSelf = self,
-                let resultBundle = weakSelf.imageSegmenterService?.segment(image: image),
+          guard let self = self,
+                let resultBundle = self.imageSegmenterService?.segment(image: image),
                 let imageSegmenterResult = resultBundle.imageSegmenterResults.first,
                 let imageSegmenterResult = imageSegmenterResult else {
             DispatchQueue.main.async {
@@ -290,8 +284,13 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
           }
 
           DispatchQueue.main.async {
-            weakSelf.hideProgressView()
-            weakSelf.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
+            self.hideProgressView()
+            self.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
+            let marks = imageSegmenterResult.confidenceMasks
+            let _mark = marks![0]
+            let float32Data = _mark.float32Data
+            let newImage = self.render.render(image: image, segmentDatas: float32Data)
+            self.pickedImageView.image = newImage
           }
         }
       default:
