@@ -250,6 +250,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
       guard let mediaType = info[.mediaType] as? String else {
         return
       }
+      render.reset()
 
       switch mediaType {
       case UTType.movie.identifier:
@@ -266,6 +267,8 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
           imageEmptyLabel.isHidden = false
           break
         }
+//        let cgImage = image.fixedOrientation()
+//        self.pickedImageView.image = UIImage.init(cgImage: cgImage!, scale: 1, orientation: .up)
         imageEmptyLabel.isHidden = true
 
         showProgressView()
@@ -285,6 +288,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
 
           DispatchQueue.main.async {
             self.hideProgressView()
+            self.render.prepare(with: image.size, outputRetainedBufferCountHint: 3)
             self.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
             let marks = imageSegmenterResult.confidenceMasks
             let _mark = marks![0]

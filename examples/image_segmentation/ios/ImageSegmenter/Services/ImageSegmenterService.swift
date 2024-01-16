@@ -109,11 +109,10 @@ class ImageSegmenterService: NSObject {
    This method return ImageSegmenterResult and infrenceTime when receive an image
    **/
   func segment(image: UIImage) -> ResultBundle? {
-    let cgimage = image.fixOrientationCGimage()!
-    guard let mpImage = try? MPImage(uiImage: image, orientation: image.imageOrientation) else {
+    let fixImage = UIImage.init(cgImage: image.fixedOrientation()!, scale: 1, orientation: .up)
+    guard let mpImage = try? MPImage(uiImage: fixImage, orientation: .up) else {
       return nil
     }
-    print(image.imageOrientation.rawValue)
     do {
       let startDate = Date()
       let result = try imageSegmenter?.segment(image: mpImage)
