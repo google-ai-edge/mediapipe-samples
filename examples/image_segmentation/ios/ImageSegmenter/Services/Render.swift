@@ -158,7 +158,8 @@ class Render {
     commandBuffer.commit()
     commandBuffer.waitUntilCompleted()
     guard let ciImage = CIImage(mtlTexture: outputTexture) else { return nil }
-    return UIImage(ciImage: ciImage, scale: 1, orientation: .down)
+    let newCiimage = ciImage.transformed(by: ciImage.orientationTransform(for: .downMirrored))
+    return UIImage(ciImage: newCiimage)
 
   }
 
@@ -569,26 +570,26 @@ private func preallocateBuffers(pool: CVPixelBufferPool, allocationThreshold: In
 }
 
 extension UIImage {
-  
-  
+
+
   func fixedOrientation() -> CGImage? {
-    
+
     guard let cgImage = self.cgImage else {
       //CGImage is not available
       return nil
     }
-    
+
     guard imageOrientation != UIImage.Orientation.up else {
       //This is default orientation, don't need to do anything
       return cgImage.copy()
     }
-    
+
     guard let colorSpace = cgImage.colorSpace, let ctx = CGContext(data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: cgImage.bitsPerComponent, bytesPerRow: 0, space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
       return nil //Not able to create CGContext
     }
-    
+
     var transform: CGAffineTransform = CGAffineTransform.identity
-    
+
     switch imageOrientation {
     case .down, .downMirrored:
       transform = transform.translatedBy(x: size.width, y: size.height)
@@ -605,7 +606,7 @@ extension UIImage {
     default:
       break
     }
-    
+
     //Flip image one more time if needed to, this is to prevent flipped image
     switch imageOrientation {
     case .upMirrored, .downMirrored:
@@ -618,9 +619,9 @@ extension UIImage {
     default:
       break
     }
-    
+
     ctx.concatenate(transform)
-    
+
     switch imageOrientation {
     case .left, .leftMirrored, .right, .rightMirrored:
       ctx.draw(self.cgImage!, in: CGRect(x: 0, y: 0, width: size.height, height: size.width))
@@ -628,7 +629,7 @@ extension UIImage {
       ctx.draw(self.cgImage!, in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
       break
     }
-    
+
     guard let newCGImage = ctx.makeImage() else { return nil }
     return newCGImage
   }
