@@ -10,14 +10,15 @@ half4 choseColor(half4 color1, half4 color2, float cf) {
   }
 }
 
-kernel void drawWithInvertedColor(texture2d<half, access::read> inTexture [[ texture (0) ]],
+kernel void mergeColor(texture2d<half, access::read> inTexture [[ texture (0) ]],
                                   texture2d<half, access::read> inTexture2 [[ texture (1) ]],
                                   texture2d<half, access::read_write> outTexture [[ texture (2) ]],
                                   device float* data_in [[ buffer(0) ]],
+                                  constant int& width [[buffer(1)]],
                                   uint2 gid [[ thread_position_in_grid ]]) {
   half4 color1 = inTexture.read(gid).rgba;
   half4 color2 = inTexture2.read(gid).rgba;
-  float cf = data_in[gid.y * outTexture.get_width() + gid.x];
+  float cf = data_in[gid.y * width + gid.x];
   half4 out = choseColor(color1, color2, cf);
   outTexture.write(out, gid);
 }

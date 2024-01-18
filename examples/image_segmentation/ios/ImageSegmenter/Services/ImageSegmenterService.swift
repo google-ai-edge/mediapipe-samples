@@ -17,7 +17,7 @@ import MediaPipeTasksVision
 import AVFoundation
 
 /**
- This protocol must be adopted by any class that wants to get the segmention results of the face landmarker in live stream mode.
+ This protocol must be adopted by any class that wants to get the segmention results of the image segmenter in live stream mode.
  */
 protocol ImageSegmenterServiceLiveStreamDelegate: AnyObject {
   func imageSegmenterService(_ imageSegmenterService: ImageSegmenterService,
@@ -26,7 +26,7 @@ protocol ImageSegmenterServiceLiveStreamDelegate: AnyObject {
 }
 
 /**
- This protocol must be adopted by any class that wants to take appropriate actions during  different stages of face landmark on videos.
+ This protocol must be adopted by any class that wants to take appropriate actions during  different stages of image segmenter on videos.
  */
 protocol ImageSegmenterServiceVideoDelegate: AnyObject {
   func imageSegmenterService(_ imageSegmenterService: ImageSegmenterService,
@@ -109,8 +109,9 @@ class ImageSegmenterService: NSObject {
    This method return ImageSegmenterResult and infrenceTime when receive an image
    **/
   func segment(image: UIImage) -> ResultBundle? {
-    let fixImage = UIImage.init(cgImage: image.fixedOrientation()!, scale: 1, orientation: .up)
-    guard let mpImage = try? MPImage(uiImage: fixImage, orientation: .up) else {
+    guard let cgImage = image.fixedOrientation() else { return nil }
+    let fixImage = UIImage(cgImage: cgImage, scale: 1.0, orientation: .up)
+    guard let mpImage = try? MPImage(uiImage: fixImage) else {
       return nil
     }
     do {

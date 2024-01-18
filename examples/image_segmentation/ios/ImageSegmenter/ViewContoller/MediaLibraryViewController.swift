@@ -21,7 +21,7 @@ import MetalPerformanceShaders
 
 /**
  * The view controller is responsible for performing segmention on videos or images selected by the user from the device media library and
- * presenting them with the landmarks of the face to the user.
+ * presenting them with the new backgrourd of the image to the user.
  */
 class MediaLibraryViewController: UIViewController {
 
@@ -32,11 +32,10 @@ class MediaLibraryViewController: UIViewController {
     static let milliSeconds = 1000.0
     static let savedPhotosNotAvailableText = "Saved photos album is not available."
     static let mediaEmptyText =
-    "Click + to add an image or a video to begin running the face landmark."
+    "Click + to add an image or a video to begin running the image sengmentation."
     static let pickFromGalleryButtonInset: CGFloat = 10.0
   }
   // MARK: Face Segmenter Service
-  weak var interfaceUpdatesDelegate: InterfaceUpdatesDelegate?
   weak var inferenceResultDeliveryDelegate: InferenceResultDeliveryDelegate?
 
   // MARK: Controllers that manage functionality
@@ -69,7 +68,6 @@ class MediaLibraryViewController: UIViewController {
 
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
-    interfaceUpdatesDelegate?.shouldClicksBeEnabled(true)
 
     guard UIImagePickerController.isSourceTypeAvailable(.savedPhotosAlbum) else {
       pickFromGalleryButton.isEnabled = false
@@ -87,7 +85,6 @@ class MediaLibraryViewController: UIViewController {
   }
 
   @IBAction func onClickPickFromGallery(_ sender: Any) {
-    interfaceUpdatesDelegate?.shouldClicksBeEnabled(true)
     configurePickerController()
     present(pickerController, animated: true)
   }
@@ -267,8 +264,6 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
           imageEmptyLabel.isHidden = false
           break
         }
-//        let cgImage = image.fixedOrientation()
-//        self.pickedImageView.image = UIImage.init(cgImage: cgImage!, scale: 1, orientation: .up)
         imageEmptyLabel.isHidden = true
 
         showProgressView()
@@ -324,51 +319,6 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     default:
       break;
     }
-  }
-
-  private func renderVideo(videoAsset: AVAsset,
-                           videoDuration: Double,
-                           resultBundle: ResultBundle) {
-    var frameIndex = 0
-    let imageSegmenterResults = resultBundle.imageSegmenterResults
-    let frameCount = imageSegmenterResults.count
-    let timeInterval = videoDuration / Double(frameCount)
-    let assetGenerator = imageGenerator(with: videoAsset)
-    let videoDescription = getVideoFormatDescription(from: videoAsset)
-    guard let formatDescription = videoDescription.description else { return }
-    renderVideoTimer = Timer.scheduledTimer(withTimeInterval: timeInterval, repeats: true, block: { [weak self] _ in
-      guard let self else { return }
-      if frameCount <= frameIndex {
-        renderVideoTimer?.invalidate()
-        renderVideoTimer = nil
-        return
-      }
-      let imageSegmenterResult = imageSegmenterResults[frameIndex]!
-      let timestampMs = timeInterval * Double(frameIndex) * 1000 // ms
-      print(timestampMs, "\n\n\n")
-      let image: CGImage
-      do {
-        let time = CMTime(value: Int64(timestampMs), timescale: 1000)
-        image = try assetGenerator.copyCGImage(at: time, actualTime: nil)
-      } catch {
-        print(error)
-        frameIndex += 1
-        return
-      }
-      let marks = imageSegmenterResult.confidenceMasks
-      let _mark = marks![0]
-      let float32Data = _mark.float32Data
-      if !render.isPrepared {
-        render.prepare(with: formatDescription, outputRetainedBufferCountHint: 3)
-      }
-      
-      let outputPixelBuffer = render.render(cgImage: image, segmentDatas: float32Data)
-      DispatchQueue.main.async {
-        self.previewView.pixelBuffer = outputPixelBuffer
-      }
-      frameIndex += 1
-    })
-
   }
 
   func getVideoFormatDescription(from asset: AVAsset) -> (description: CMFormatDescription?, needChangeWidthHeight: Bool)  {

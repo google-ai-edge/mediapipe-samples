@@ -21,7 +21,7 @@ import MetalPerformanceShaders
 
 /**
  * The view controller is responsible for performing segmention on incoming frames from the live camera and presenting the frames with the
- * landmark of the landmarked faces to the user.
+ * new backgrourd to the user.
  */
 class CameraViewController: UIViewController {
   private struct Constants {
@@ -29,7 +29,6 @@ class CameraViewController: UIViewController {
   }
 
   weak var inferenceResultDeliveryDelegate: InferenceResultDeliveryDelegate?
-  weak var interfaceUpdatesDelegate: InterfaceUpdatesDelegate?
 
   @IBOutlet weak var previewView: PreviewMetalView!
   @IBOutlet weak var cameraUnavailableLabel: UILabel!

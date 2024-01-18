@@ -18,10 +18,6 @@ protocol InferenceResultDeliveryDelegate: AnyObject {
   func didPerformInference(result: ResultBundle?)
 }
 
-protocol InterfaceUpdatesDelegate: AnyObject {
-  func shouldClicksBeEnabled(_ isEnabled: Bool)
-}
-
 /** The view controller is responsible for presenting and handling the tabbed controls for switching between the live camera feed and
   * media library view controllers. It also handles the presentation of the inferenceVC
   */
@@ -30,14 +26,10 @@ class RootViewController: UIViewController {
   // MARK: Storyboards Connections
   @IBOutlet weak var tabBarContainerView: UIView!
   @IBOutlet weak var runningModeTabbar: UITabBar!
-  @IBOutlet weak var bottomSheetViewBottomSpace: NSLayoutConstraint!
-  @IBOutlet weak var bottomViewHeightConstraint: NSLayoutConstraint!
   
   // MARK: Constants
   private struct Constants {
-    static let inferenceBottomHeight = 260.0
-    static let expandButtonHeight = 41.0
-    static let expandButtonTopSpace = 10.0
+    static let inferenceBottomHeight = 30.0
     static let mediaLibraryViewControllerStoryBoardId = "MEDIA_LIBRARY_VIEW_CONTROLLER"
     static let cameraViewControllerStoryBoardId = "CAMERA_VIEW_CONTROLLER"
     static let storyBoardName = "Main"
@@ -49,56 +41,19 @@ class RootViewController: UIViewController {
   private var inferenceViewController: BottomSheetViewController?
   private var cameraViewController: CameraViewController?
   private var mediaLibraryViewController: MediaLibraryViewController?
-  
-  // MARK: Private Instance Variables
-  private var totalBottomSheetHeight: CGFloat {
-    guard let isOpen = inferenceViewController?.toggleBottomSheetButton.isSelected else {
-      return 0.0
-    }
-    
-    return isOpen ? Constants.inferenceBottomHeight - self.view.safeAreaInsets.bottom
-      : Constants.expandButtonHeight + Constants.expandButtonTopSpace
-  }
 
   // MARK: View Handling Methods
   override func viewDidLoad() {
     super.viewDidLoad()
-    // Create face landmarker helper
     
-    inferenceViewController?.isUIEnabled = true
     runningModeTabbar.selectedItem = runningModeTabbar.items?.first
     runningModeTabbar.delegate = self
     instantiateCameraViewController()
     switchTo(childViewController: cameraViewController, fromViewController: nil)
   }
   
-  override func viewWillLayoutSubviews() {
-    super.viewWillLayoutSubviews()
-    
-    guard inferenceViewController?.toggleBottomSheetButton.isSelected == true else {
-      bottomSheetViewBottomSpace.constant = -Constants.inferenceBottomHeight
-      + Constants.expandButtonHeight
-      + self.view.safeAreaInsets.bottom
-      + Constants.expandButtonTopSpace
-      return
-    }
-    
-    bottomSheetViewBottomSpace.constant = 0.0
-  }
-  
   override var preferredStatusBarStyle: UIStatusBarStyle {
     return .lightContent
-  }
-  
-  // MARK: Storyboard Segue Handlers
-  override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-    super.prepare(for: segue, sender: sender)
-    if segue.identifier == Constants.inferenceVCEmbedSegueName {
-      inferenceViewController = segue.destination as? BottomSheetViewController
-      inferenceViewController?.delegate = self
-      bottomViewHeightConstraint.constant = Constants.inferenceBottomHeight
-      view.layoutSubviews()
-    }
   }
   
   // MARK: Private Methods
@@ -115,7 +70,6 @@ class RootViewController: UIViewController {
     }
     
     viewController.inferenceResultDeliveryDelegate = self
-    viewController.interfaceUpdatesDelegate = self
     
     cameraViewController = viewController
   }
@@ -131,18 +85,8 @@ class RootViewController: UIViewController {
       return
     }
     
-    viewController.interfaceUpdatesDelegate = self
     viewController.inferenceResultDeliveryDelegate = self
     mediaLibraryViewController = viewController
-  }
-  
-  private func updateMediaLibraryControllerUI() {
-    guard let mediaLibraryViewController = mediaLibraryViewController else {
-      return
-    }
-    
-    mediaLibraryViewController.layoutUIElements(
-      withInferenceViewHeight: self.totalBottomSheetHeight)
   }
 }
 
@@ -204,8 +148,6 @@ extension RootViewController: UITabBarDelegate {
     switchTo(
       childViewController: toViewController,
       fromViewController: fromViewController)
-    self.shouldClicksBeEnabled(true)
-    self.updateMediaLibraryControllerUI()
   }
 }
 
@@ -219,36 +161,4 @@ extension RootViewController: InferenceResultDeliveryDelegate {
     }
     inferenceViewController?.update(inferenceTimeString: inferenceTimeString)
   }
-}
-
-// MARK: InterfaceUpdatesDelegate Methods
-extension RootViewController: InterfaceUpdatesDelegate {
-  func shouldClicksBeEnabled(_ isEnabled: Bool) {
-    inferenceViewController?.isUIEnabled = isEnabled
-  }
-}
-
-// MARK: InferenceViewControllerDelegate Methods
-extension RootViewController: BottomSheetViewControllerDelegate {
-  func viewController(
-    _ viewController: BottomSheetViewController,
-    didSwitchBottomSheetViewState isOpen: Bool) {
-      if isOpen == true {
-        bottomSheetViewBottomSpace.constant = 0.0
-      }
-      else {
-        bottomSheetViewBottomSpace.constant = -Constants.inferenceBottomHeight
-        + Constants.expandButtonHeight
-        + self.view.safeAreaInsets.bottom
-        + Constants.expandButtonTopSpace
-      }
-      
-      UIView.animate(withDuration: 0.3) {[weak self] in
-        guard let weakSelf = self else {
-          return
-        }
-        weakSelf.view.layoutSubviews()
-        weakSelf.updateMediaLibraryControllerUI()
-      }
-    }
 }
