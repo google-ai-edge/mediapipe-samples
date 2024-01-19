@@ -208,15 +208,18 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     addPlayerViewControllerAsChild()
     guard let player = playerViewController?.player, let playerItem = player.currentItem else { return }
     let timeRange = CMTimeRange(start: .zero, duration: asset.duration)
-    let videoComposition = AVMutableVideoComposition(asset: asset) { request in
+    let videoComposition = AVMutableVideoComposition(asset: asset) { [weak self] request in
+      guard let self = self else { return }
       let sourceImage = request.sourceImage
       print(request.compositionTime)
       let time = Float((request.compositionTime - timeRange.start).seconds)
       let cgimage = self.render.getCGImmage(ciImage: sourceImage)
-      guard let result = self.imageSegmenterService?.segment(by: cgimage, orientation: .up, timeStamps: Int(time * 1000)) else {
+      guard let resultBundle = self.imageSegmenterService?.segment(by: cgimage, orientation: .up, timeStamps: Int(time * 1000)) else {
         request.finish(with: sourceImage, context: nil)
         return
       }
+      self.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
+      guard let result = resultBundle.imageSegmenterResults.first, let result = result else { return }
       let marks = result.confidenceMasks
       let _mark = marks![0]
       let float32Data = _mark.float32Data

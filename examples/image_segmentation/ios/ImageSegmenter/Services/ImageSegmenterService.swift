@@ -143,13 +143,15 @@ class ImageSegmenterService: NSObject {
     by videoFrame: CGImage,
     orientation: UIImage.Orientation,
     timeStamps: Int)
-  -> ImageSegmenterResult?  {
+  -> ResultBundle?  {
 
 
       do {
         let mpImage = try MPImage(uiImage: UIImage(cgImage: videoFrame))
+        let startDate = Date()
         let result = try imageSegmenter?.segment(videoFrame: mpImage, timestampInMilliseconds: timeStamps)
-        return result
+        let inferenceTime = Date().timeIntervalSince(startDate) * 1000
+        return ResultBundle(inferenceTime: inferenceTime, imageSegmenterResults: [result])
         } catch {
           print(error)
           return nil

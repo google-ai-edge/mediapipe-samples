@@ -55,7 +55,16 @@ class RootViewController: UIViewController {
   override var preferredStatusBarStyle: UIStatusBarStyle {
     return .lightContent
   }
-  
+
+  // MARK: Storyboard Segue Handlers
+  override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+    super.prepare(for: segue, sender: sender)
+    if segue.identifier == Constants.inferenceVCEmbedSegueName {
+      inferenceViewController = segue.destination as? BottomSheetViewController
+      view.layoutSubviews()
+    }
+  }
+
   // MARK: Private Methods
   private func instantiateCameraViewController() {
     guard cameraViewController == nil else {
@@ -159,6 +168,8 @@ extension RootViewController: InferenceResultDeliveryDelegate {
     if let inferenceTime = result?.inferenceTime {
       inferenceTimeString = String(format: "%.2fms", inferenceTime)
     }
-    inferenceViewController?.update(inferenceTimeString: inferenceTimeString)
+    DispatchQueue.main.async {
+      self.inferenceViewController?.update(inferenceTimeString: inferenceTimeString)
+    }
   }
 }
