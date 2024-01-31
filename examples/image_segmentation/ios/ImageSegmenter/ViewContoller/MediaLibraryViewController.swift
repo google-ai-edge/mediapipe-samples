@@ -42,12 +42,26 @@ class MediaLibraryViewController: UIViewController {
   private lazy var pickerController = UIImagePickerController()
   private var playerViewController: AVPlayerViewController?
 
+  private let backgroundQueue = DispatchQueue(label: "com.google.mediapipe.cameraController.backgroundQueue")
+  private let imageSegmenterServiceQueue = DispatchQueue(
+    label: "com.google.mediapipe.cameraController.imageSegmenterServiceQueue",
+    attributes: .concurrent)
+
   // MARK: Face Segmenter Service
   private var imageSegmenterService: ImageSegmenterService?
+//  private var imageSegmenterService: ImageSegmenterService? {
+//    get {
+//      imageSegmenterServiceQueue.sync {
+//        return self._imageSegmenterService
+//      }
+//    }
+//    set {
+//      imageSegmenterServiceQueue.async(flags: .barrier) {
+//        self._imageSegmenterService = newValue
+//      }
+//    }
+//  }
   private let render = Render()
-
-  // MARK: Private properties
-  private var renderVideoTimer: Timer?
 
   // MARK: Storyboards Connections
   @IBOutlet weak var pickFromGalleryButton: UIButton!
@@ -124,14 +138,9 @@ class MediaLibraryViewController: UIViewController {
       playerViewController?.willMove(toParent: nil)
       playerViewController?.removeFromParent()
     }
-    removeObservers(player: playerViewController?.player)
+
     playerViewController?.player?.pause()
     playerViewController?.player = nil
-  }
-
-  private func removeObservers(player: AVPlayer?) {
-    renderVideoTimer?.invalidate()
-    renderVideoTimer = nil
   }
 
   private func openMediaLibrary() {
@@ -210,29 +219,30 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     let timeRange = CMTimeRange(start: .zero, duration: asset.duration)
     let videoComposition = AVMutableVideoComposition(asset: asset) { [weak self] request in
       guard let self = self else { return }
-      let sourceImage = request.sourceImage
-      print(request.compositionTime)
-      let time = Float((request.compositionTime - timeRange.start).seconds)
-      let cgimage = self.render.getCGImmage(ciImage: sourceImage)
-      guard let resultBundle = self.imageSegmenterService?.segment(by: cgimage, orientation: .up, timeStamps: Int(time * 1000)) else {
-        request.finish(with: sourceImage, context: nil)
-        return
-      }
-      self.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
-      guard let result = resultBundle.imageSegmenterResults.first, let result = result else { return }
-      let marks = result.confidenceMasks
-      let _mark = marks![0]
-      let float32Data = _mark.float32Data
-      if !self.render.isPrepared {
-        self.render.prepare(with: formatDescription, outputRetainedBufferCountHint: 3, needChangeWidthHeight: videoDescription.needChangeWidthHeight)
-      }
+      backgroundQueue.async {
+        let sourceImage = request.sourceImage
+        let time = Float((request.compositionTime - timeRange.start).seconds)
+        let cgimage = self.render.getCGImmage(ciImage: sourceImage)
+        guard let resultBundle = self.imageSegmenterService?.segment(by: cgimage, orientation: .up, timeStamps: Int(time * 1000)) else {
+          request.finish(with: sourceImage, context: nil)
+          return
+        }
+        self.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
+        guard let result = resultBundle.imageSegmenterResults.first, let result = result else { return }
+        let marks = result.confidenceMasks
+        let _mark = marks![0]
+        let float32Data = _mark.float32Data
+        if !self.render.isPrepared {
+          self.render.prepare(with: formatDescription, outputRetainedBufferCountHint: 3, needChangeWidthHeight: videoDescription.needChangeWidthHeight)
+        }
 
-      guard let outputPixelBuffer = self.render.render(ciImage: sourceImage, segmentDatas: float32Data) else {
-        request.finish(with: sourceImage, context: nil)
-        return
+        guard let outputPixelBuffer = self.render.render(ciImage: sourceImage, segmentDatas: float32Data) else {
+          request.finish(with: sourceImage, context: nil)
+          return
+        }
+        let outputImage = CIImage(cvImageBuffer: outputPixelBuffer)
+        request.finish(with: outputImage, context: nil)
       }
-      let outputImage = CIImage(cvImageBuffer: outputPixelBuffer)
-      request.finish(with: outputImage, context: nil)
     }
 
     playerItem.videoComposition = videoComposition
@@ -317,19 +327,18 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
         modelPath: InferenceConfigurationManager.sharedInstance.modelPath)
     case .video:
       imageSegmenterService = ImageSegmenterService.videoImageSegmenterService(
-        modelPath: InferenceConfigurationManager.sharedInstance.modelPath,
-        videoDelegate: self)
+        modelPath: InferenceConfigurationManager.sharedInstance.modelPath)
     default:
       break;
     }
   }
 
   func getVideoFormatDescription(from asset: AVAsset) -> (description: CMFormatDescription?, needChangeWidthHeight: Bool)  {
-      // Get the video track from the asset
-      guard let videoTrack = asset.tracks(withMediaType: AVMediaType.video).first else {
-          print("No video track found in the asset.")
-          return (nil, false)
-      }
+    // Get the video track from the asset
+    guard let videoTrack = asset.tracks(withMediaType: AVMediaType.video).first else {
+      print("No video track found in the asset.")
+      return (nil, false)
+    }
     let naturalSize = videoTrack.naturalSize
     let size = videoTrack.naturalSize.applying(videoTrack.preferredTransform)
     let newSize = CGSize(width: abs(size.width), height: abs(size.height))
@@ -338,51 +347,38 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
       needChangeWidthHeight = true
     }
 
-      // Create an asset reader
-      do {
-          let assetReader = try AVAssetReader(asset: asset)
+    // Create an asset reader
+    do {
+      let assetReader = try AVAssetReader(asset: asset)
 
-          // Create an asset reader track output
-          let outputSettings: [String: Any] = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
-          let trackOutput = AVAssetReaderTrackOutput(track: videoTrack, outputSettings: outputSettings)
-          assetReader.add(trackOutput)
+      // Create an asset reader track output
+      let outputSettings: [String: Any] = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
+      let trackOutput = AVAssetReaderTrackOutput(track: videoTrack, outputSettings: outputSettings)
+      assetReader.add(trackOutput)
 
-          // Start the asset reader
-          if assetReader.startReading() {
-              defer {
-                  assetReader.cancelReading()
-              }
+      // Start the asset reader
+      if assetReader.startReading() {
+        defer {
+          assetReader.cancelReading()
+        }
 
-              // Read a sample to get the format description
-              if let sampleBuffer = trackOutput.copyNextSampleBuffer() {
-                if let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) {
-                      return (formatDescription, needChangeWidthHeight)
-                  } else {
-                      print("Failed to get format description from sample buffer.")
-                  }
-              } else {
-                  print("Failed to read a sample buffer.")
-              }
+        // Read a sample to get the format description
+        if let sampleBuffer = trackOutput.copyNextSampleBuffer() {
+          if let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) {
+            return (formatDescription, needChangeWidthHeight)
           } else {
-              print("Failed to start asset reader.")
+            print("Failed to get format description from sample buffer.")
           }
-      } catch {
-          print("Error creating asset reader: \(error)")
+        } else {
+          print("Failed to read a sample buffer.")
+        }
+      } else {
+        print("Failed to start asset reader.")
       }
+    } catch {
+      print("Error creating asset reader: \(error)")
+    }
 
-      return (nil, false)
+    return (nil, false)
   }
 }
-
-extension MediaLibraryViewController: ImageSegmenterServiceVideoDelegate {
-
-  func imageSegmenterService(_ imageSegmenterService: ImageSegmenterService, willBeginSegmention totalframeCount: Int) {
-    progressView.observedProgress = Progress(totalUnitCount: Int64(totalframeCount))
-  }
-
-  func imageSegmenterService(_ imageSegmenterService: ImageSegmenterService, didFinishSegmentionOnVideoFrame index: Int) {
-    progressView.observedProgress?.completedUnitCount = Int64(index + 1)
-  }
-}
-
-
