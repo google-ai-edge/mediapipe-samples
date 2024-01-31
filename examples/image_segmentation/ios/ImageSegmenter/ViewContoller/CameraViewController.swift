@@ -178,7 +178,6 @@ extension CameraViewController: CameraFeedServiceDelegate {
 
   func didOutput(sampleBuffer: CMSampleBuffer, orientation: UIImage.Orientation) {
     let currentTimeMs = Date().timeIntervalSince1970 * 1000
-
     guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
           let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) else {
       return
@@ -235,10 +234,8 @@ extension CameraViewController: ImageSegmenterServiceLiveStreamDelegate {
     }
 
     let outputPixelBuffer = render.render(pixelBuffer: videoPixelBuffer, segmentDatas: float32Data)
-    DispatchQueue.main.async {
-      self.previewView.pixelBuffer = outputPixelBuffer
-      self.inferenceResultDeliveryDelegate?.didPerformInference(result: result)
-    }
+    previewView.pixelBuffer = outputPixelBuffer
+    inferenceResultDeliveryDelegate?.didPerformInference(result: result)
   }
 }
 
