@@ -6,7 +6,7 @@ This is a sample app that demonstrates how to use the LLM Inference API to run c
 
 This application must be run on a physical Android device to take advantage of the device GPU.
 
-[//]: # (TODO: Add a gif/screenshot)
+![LLM Inference Demo](llm_inference.png)
 
 ## Build the demo using Android Studio
 
@@ -35,4 +35,9 @@ This application must be run on a physical Android device to take advantage of t
 ### Models used
 
 [//]: # (TODO: Update this section with proper instructions on how to download a model)
-You can download your model from [TBD](https://ai.google.dev/tbd).
+You can download one of the models available on [TBD](https://ai.google.dev/tbd).
+
+Once you download it, place it under the path defined as `MODEL_PATH` in `InferenceModel` on the Android device
+ (eg. `/data/local/tmp/llm/model_gpu.tflite`).
+
+The easiest way to do that would be to use Android Studio's [Device Explorer](https://developer.android.com/studio/debug/device-file-explorer)
