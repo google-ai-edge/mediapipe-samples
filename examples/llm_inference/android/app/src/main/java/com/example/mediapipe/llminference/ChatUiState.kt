@@ -1,4 +1,4 @@
-package com.example.mediapipe.llminference.ui.screens
+package com.example.mediapipe.llminference
 
 import androidx.compose.runtime.toMutableStateList
 

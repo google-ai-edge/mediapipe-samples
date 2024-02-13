@@ -1,4 +1,4 @@
-package com.example.mediapipe.llminference.ui.screens
+package com.example.mediapipe.llminference
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,8 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.example.mediapipe.llminference.R
-import com.example.mediapipe.llminference.InferenceModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

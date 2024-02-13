@@ -1,4 +1,4 @@
-package com.example.mediapipe.llminference.ui.screens
+package com.example.mediapipe.llminference
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -36,7 +36,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.mediapipe.llminference.R
 
 @Composable
 internal fun ChatRoute(

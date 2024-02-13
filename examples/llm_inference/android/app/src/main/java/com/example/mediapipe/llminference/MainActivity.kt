@@ -18,8 +18,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.mediapipe.llminference.ui.screens.ChatRoute
-import com.example.mediapipe.llminference.ui.screens.LoadingRoute
 import com.example.mediapipe.llminference.ui.theme.LLMInferenceTheme
 
 const val START_SCREEN = "start_screen"
