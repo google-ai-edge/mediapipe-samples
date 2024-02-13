@@ -5,7 +5,7 @@ import androidx.compose.runtime.toMutableStateList
 /**
  * Used to represent a ChatMessage
  */
-data class ChatMessage (
+data class ChatMessage(
     val message: String,
     val isFromUser: Boolean = false
 )
@@ -17,17 +17,10 @@ class ChatUiState(
     val messages: List<ChatMessage> = _messages
 
     fun addUserMessage(text: String) {
-        _messages.add(0, ChatMessage(
-            message = text,
-            isFromUser = true
-        )
-        )
+        _messages.add(ChatMessage(text, true))
     }
 
     fun addModelMessage(text: String) {
-        _messages.add(0, ChatMessage(
-            message = text,
-            isFromUser = false
-        ))
+        _messages.add(ChatMessage(text, false))
     }
 }

@@ -1,7 +1,7 @@
 package com.example.mediapipe.llminference.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,13 +9,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,12 +31,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mediapipe.llminference.R
 
@@ -69,19 +69,15 @@ fun ChatScreen(
                 .padding(horizontal = 8.dp),
             reverseLayout = true
         ) {
-            items(uiState.messages) { chat ->
-                if (chat.isFromUser) {
-                    UserChatItem(prompt = chat.message)
-                } else {
-                    ModelChatItem(response = chat.message)
-                }
+            items(uiState.messages.reversed()) { chat ->
+                ChatItem(chat)
             }
         }
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp, start = 4.dp, end = 4.dp),
+                .padding(vertical = 16.dp, horizontal = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
@@ -131,39 +127,56 @@ fun ChatScreen(
 }
 
 @Composable
-fun UserChatItem(prompt: String) {
-    Column(
-        modifier = Modifier.padding(start = 100.dp, bottom = 16.dp)
-    ) {
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.primary)
-                .padding(16.dp),
-            text = prompt,
-            fontSize = 17.sp,
-            color = MaterialTheme.colorScheme.onPrimary
-        )
-
+fun ChatItem(
+    chatMessage: ChatMessage
+) {
+    val backgroundColor = if (chatMessage.isFromUser) {
+        MaterialTheme.colorScheme.tertiaryContainer
+    } else {
+        MaterialTheme.colorScheme.primaryContainer
     }
-}
 
-@Composable
-fun ModelChatItem(response: String) {
+    val bubbleShape = if (chatMessage.isFromUser) {
+        RoundedCornerShape(20.dp, 4.dp, 20.dp, 20.dp)
+    } else {
+        RoundedCornerShape(4.dp, 20.dp, 20.dp, 20.dp)
+    }
+
+    val horizontalAlignment = if (chatMessage.isFromUser) {
+        Alignment.End
+    } else {
+        Alignment.Start
+    }
+
     Column(
-        modifier = Modifier.padding(end = 100.dp, bottom = 16.dp)
+        horizontalAlignment = horizontalAlignment,
+        modifier = Modifier
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .fillMaxWidth()
     ) {
+        val author = if (chatMessage.isFromUser) {
+            stringResource(R.string.user_label)
+        } else {
+            stringResource(R.string.model_label)
+        }
         Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.secondary)
-                .padding(16.dp),
-            text = response,
-            fontSize = 17.sp,
-            color = MaterialTheme.colorScheme.onSecondary
+            text = author,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(bottom = 4.dp)
         )
-
+        Row {
+            BoxWithConstraints {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = backgroundColor),
+                    shape = bubbleShape,
+                    modifier = Modifier.widthIn(0.dp, maxWidth * 0.9f)
+                ) {
+                    Text(
+                        text = chatMessage.message,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+        }
     }
 }

@@ -3,4 +3,6 @@
     <string name="loading_model">Loading model</string>
     <string name="chat_label">Message</string>
     <string name="action_send">Send</string>
+    <string name="user_label">User</string>
+    <string name="model_label">Model</string>
 </resources>
