@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.launch
 
 class ChatViewModel(
@@ -20,18 +21,32 @@ class ChatViewModel(
     val uiState: StateFlow<ChatUiState> =
         _uiState.asStateFlow()
 
-
     fun sendMessage(userMessage: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            _uiState.value.addUserMessage(userMessage)
+            _uiState.value.addMessage(userMessage, USER_PREFIX)
             try {
                 val fullPrompt = _uiState.value.fullPrompt
 
-                var result = inferenceModel.generateResponse(fullPrompt)
-                result = result.replace(fullPrompt, "")
-                _uiState.value.addModelMessage(result)
+                inferenceModel.generateResponseAsync(fullPrompt)
+                var currentMessageId: String? = null
+                inferenceModel.partialResults
+                    .collectIndexed { index, (partialResult, isDone) ->
+                        if (index == 0) {
+                            currentMessageId =
+                                _uiState.value.createNewModelMessage(partialResult)
+                        } else {
+                            currentMessageId?.let {
+                                _uiState.value.appendMessage(currentMessageId!!, partialResult)
+                                if (isDone) {
+                                    // Append the Suffix to the complete message
+                                    _uiState.value.appendMessage(currentMessageId!!, END_TURN)
+                                    currentMessageId = null
+                                }
+                            }
+                        }
+                    }
             } catch (e: Exception) {
-                _uiState.value.addModelMessage(e.localizedMessage ?: "Unknown Error")
+                _uiState.value.addMessage(e.localizedMessage ?: "Unknown Error", MODEL_PREFIX)
             }
         }
     }

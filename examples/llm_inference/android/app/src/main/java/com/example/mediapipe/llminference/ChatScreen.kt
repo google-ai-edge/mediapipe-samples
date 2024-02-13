@@ -181,6 +181,6 @@ fun ChatItem(
 }
 
 internal fun formatMessage(message: String, prefix: String): String {
-    return message.replace(TURN_PREFIX + prefix + "\n", "")
-        .replace(TURN_SUFFIX, "")
+    return message.replace(START_TURN + prefix + "\n", "")
+        .replace(END_TURN, "")
 }

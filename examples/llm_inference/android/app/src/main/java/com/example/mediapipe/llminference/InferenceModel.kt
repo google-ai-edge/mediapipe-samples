@@ -4,12 +4,21 @@ import android.content.Context
 import com.google.mediapipe.tasks.core.Delegate
 import com.google.mediapipe.tasks.genai.llminference.LlmInference
 import java.io.File
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 
 class InferenceModel private constructor(context: Context) {
     private var llmInference: LlmInference
 
     private val modelExists: Boolean
         get() = File(MODEL_PATH).exists()
+
+    private val _partialResults = MutableSharedFlow<Pair<String, Boolean>>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    val partialResults: SharedFlow<Pair<String, Boolean>> = _partialResults
 
     init {
         if (!modelExists) {
@@ -24,13 +33,16 @@ class InferenceModel private constructor(context: Context) {
             .setTopK(1)
             .setRandomSeed(0)
             .setTemperature(0f)
+            .setResultListener { partialResult, done ->
+                _partialResults.tryEmit(partialResult to done)
+            }
             .build()
 
         llmInference = LlmInference.createFromOptions(context, options)
     }
 
-    fun generateResponse(prompt: String): String {
-        return llmInference.generateResponse(prompt)
+    fun generateResponseAsync(prompt: String) {
+        llmInference.generateResponseAsync(prompt)
     }
 
     companion object {

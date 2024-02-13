@@ -1,9 +1,10 @@
 package com.example.mediapipe.llminference
 
 import androidx.compose.runtime.toMutableStateList
+import java.util.UUID
 
-const val TURN_PREFIX = "<start_of_turn>"
-const val TURN_SUFFIX = "<end_of_turn>"
+const val START_TURN = "<start_of_turn>"
+const val END_TURN = "<end_of_turn>"
 const val USER_PREFIX = "user"
 const val MODEL_PREFIX = "model"
 
@@ -11,6 +12,7 @@ const val MODEL_PREFIX = "model"
  * Used to represent a ChatMessage
  */
 data class ChatMessage(
+    val id: String = UUID.randomUUID().toString(),
     val message: String,
     val author: String
 ) {
@@ -24,25 +26,40 @@ class ChatUiState(
     private val _messages: MutableList<ChatMessage> = messages.toMutableStateList()
     val messages: List<ChatMessage> = _messages
 
+    // Only using the last 4 messages to keep input + output short
     val fullPrompt: String
-        get() = _messages.joinToString(separator = "\n") { it.message }
+        get() = _messages.takeLast(4).joinToString(separator = "\n") { it.message }
 
-    fun addUserMessage(text: String) {
-        _messages.add(ChatMessage(
-            formatMessage(text, USER_PREFIX),
-            USER_PREFIX
-        ))
+    /**
+     * Creates a new message using the specified text.
+     * Returns the id of that message.
+     */
+    fun createNewModelMessage(text: String): String {
+        val chatMessage = ChatMessage(
+            message = "$START_TURN$MODEL_PREFIX\n$text",
+            author = MODEL_PREFIX
+        )
+        _messages.add(chatMessage)
+        return chatMessage.id
     }
 
-    fun addModelMessage(text: String) {
-        _messages.add(ChatMessage(
-            formatMessage(text, MODEL_PREFIX),
-            MODEL_PREFIX
-        ))
+    /**
+     * Appends the specified text to the message with the specified ID
+     */
+    fun appendMessage(id: String, text: String) {
+        val index = _messages.indexOfFirst { it.id == id }
+        if (index != -1) {
+            val newText = _messages[index].message + text
+            _messages[index] = _messages[index].copy(message = newText)
+        }
     }
 
-    private fun formatMessage(
-        originalMessage: String,
-        prefix: String
-    ) = "$TURN_PREFIX$prefix\n$originalMessage$TURN_SUFFIX"
+    fun addMessage(text: String, author: String): String {
+        val chatMessage = ChatMessage(
+            message = "$START_TURN$author\n$text$END_TURN",
+            author = author
+        )
+        _messages.add(chatMessage)
+        return chatMessage.id
+    }
 }
