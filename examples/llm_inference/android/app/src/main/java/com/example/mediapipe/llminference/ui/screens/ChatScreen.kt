@@ -40,7 +40,9 @@ import com.example.mediapipe.llminference.R
 
 @Composable
 internal fun ChatRoute(
-    chatViewModel: ChatViewModel = viewModel(factory = ChatViewModel.getFactory(LocalContext.current.applicationContext))
+    chatViewModel: ChatViewModel = viewModel(
+        factory = ChatViewModel.getFactory(LocalContext.current.applicationContext)
+    )
 ) {
     val uiState by chatViewModel.uiState.collectAsState()
     ChatScreen(uiState) { message ->

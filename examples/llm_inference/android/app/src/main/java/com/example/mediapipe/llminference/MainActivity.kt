@@ -18,7 +18,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navOptions
 import com.example.mediapipe.llminference.ui.screens.ChatRoute
 import com.example.mediapipe.llminference.ui.screens.LoadingRoute
 import com.example.mediapipe.llminference.ui.theme.LLMInferenceTheme
@@ -41,18 +40,21 @@ class MainActivity : ComponentActivity() {
                             .padding(innerPadding),
                         color = MaterialTheme.colorScheme.background,
                     ) {
-                        val navHostController = rememberNavController()
+                        val navController = rememberNavController()
 
                         NavHost(
-                            navController = navHostController,
+                            navController = navController,
                             startDestination = START_SCREEN
                         ) {
                             composable(START_SCREEN) {
                                 LoadingRoute(
                                     onModelLoaded = {
-                                        navHostController.navigate(CHAT_SCREEN,
-                                            navOptions { launchSingleTop = true })
-                                    })
+                                        navController.navigate(CHAT_SCREEN) {
+                                            popUpTo(START_SCREEN) { inclusive = true }
+                                            launchSingleTop = true
+                                        }
+                                    }
+                                )
                             }
 
                             composable(CHAT_SCREEN) {
