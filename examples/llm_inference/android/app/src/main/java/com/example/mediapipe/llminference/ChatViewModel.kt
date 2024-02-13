@@ -25,7 +25,10 @@ class ChatViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.value.addUserMessage(userMessage)
             try {
-                val result = inferenceModel.generateResponse(userMessage)
+                val fullPrompt = _uiState.value.fullPrompt
+
+                var result = inferenceModel.generateResponse(fullPrompt)
+                result = result.replace(fullPrompt, "")
                 _uiState.value.addModelMessage(result)
             } catch (e: Exception) {
                 _uiState.value.addModelMessage(e.localizedMessage ?: "Unknown Error")

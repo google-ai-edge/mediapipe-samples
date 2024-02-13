@@ -132,7 +132,7 @@ fun ChatItem(
     val backgroundColor = if (chatMessage.isFromUser) {
         MaterialTheme.colorScheme.tertiaryContainer
     } else {
-        MaterialTheme.colorScheme.primaryContainer
+        MaterialTheme.colorScheme.secondaryContainer
     }
 
     val bubbleShape = if (chatMessage.isFromUser) {
@@ -171,11 +171,16 @@ fun ChatItem(
                     modifier = Modifier.widthIn(0.dp, maxWidth * 0.9f)
                 ) {
                     Text(
-                        text = chatMessage.message,
+                        text = formatMessage(chatMessage.message, chatMessage.author),
                         modifier = Modifier.padding(16.dp)
                     )
                 }
             }
         }
     }
+}
+
+internal fun formatMessage(message: String, prefix: String): String {
+    return message.replace(TURN_PREFIX + prefix + "\n", "")
+        .replace(TURN_SUFFIX, "")
 }
