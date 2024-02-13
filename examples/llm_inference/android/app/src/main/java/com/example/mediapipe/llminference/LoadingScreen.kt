@@ -26,7 +26,6 @@ internal fun LoadingRoute(
 ) {
     val context = LocalContext.current.applicationContext
     var errorMessage by remember { mutableStateOf("") }
-    var finishedLoading by remember { mutableStateOf(false) }
 
     if (errorMessage != "") {
         ErrorMessage(errorMessage)
@@ -34,7 +33,7 @@ internal fun LoadingRoute(
         LoadingIndicator()
     }
 
-    LaunchedEffect(finishedLoading, block = {
+    LaunchedEffect(Unit, block = {
         // Create the LlmInference in a separate thread
         withContext(Dispatchers.IO) {
             try {
@@ -42,7 +41,6 @@ internal fun LoadingRoute(
                 // Notify the UI that the model has finished loading
                 withContext(Dispatchers.Main) {
                     onModelLoaded()
-                    finishedLoading = true
                 }
             } catch (e: Exception) {
                 errorMessage = e.localizedMessage ?: "UnknownError"
