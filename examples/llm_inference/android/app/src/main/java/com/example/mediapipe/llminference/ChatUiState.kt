@@ -13,8 +13,9 @@ const val MODEL_PREFIX = "model"
  */
 data class ChatMessage(
     val id: String = UUID.randomUUID().toString(),
-    val message: String,
-    val author: String
+    val message: String = "",
+    val author: String,
+    val isLoading: Boolean = false
 ) {
     val isFromUser: Boolean
         get() = author == USER_PREFIX
@@ -31,13 +32,13 @@ class ChatUiState(
         get() = _messages.takeLast(4).joinToString(separator = "\n") { it.message }
 
     /**
-     * Creates a new message using the specified text.
+     * Creates a new loading message.
      * Returns the id of that message.
      */
-    fun createNewModelMessage(text: String): String {
+    fun createLoadingMessage(): String {
         val chatMessage = ChatMessage(
-            message = "$START_TURN$MODEL_PREFIX\n$text",
-            author = MODEL_PREFIX
+            author = MODEL_PREFIX,
+            isLoading = true
         )
         _messages.add(chatMessage)
         return chatMessage.id
@@ -50,7 +51,7 @@ class ChatUiState(
         val index = _messages.indexOfFirst { it.id == id }
         if (index != -1) {
             val newText = _messages[index].message + text
-            _messages[index] = _messages[index].copy(message = newText)
+            _messages[index] = _messages[index].copy(message = newText, isLoading = false)
         }
     }
 

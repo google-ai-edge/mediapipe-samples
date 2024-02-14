@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -177,10 +178,16 @@ fun ChatItem(
                     shape = bubbleShape,
                     modifier = Modifier.widthIn(0.dp, maxWidth * 0.9f)
                 ) {
-                    Text(
-                        text = formatMessage(chatMessage.message, chatMessage.author),
-                        modifier = Modifier.padding(16.dp)
-                    )
+                    if (chatMessage.isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    } else {
+                        Text(
+                            text = formatMessage(chatMessage.message, chatMessage.author),
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
                 }
             }
         }

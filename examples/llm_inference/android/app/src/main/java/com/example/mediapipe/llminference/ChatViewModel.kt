@@ -29,17 +29,17 @@ class ChatViewModel(
     fun sendMessage(userMessage: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.value.addMessage(userMessage, USER_PREFIX)
+            var currentMessageId: String? = _uiState.value.createLoadingMessage()
             setInputEnabled(false)
             try {
                 val fullPrompt = _uiState.value.fullPrompt
 
                 inferenceModel.generateResponseAsync(fullPrompt)
-                var currentMessageId: String? = null
                 inferenceModel.partialResults
                     .collectIndexed { index, (partialResult, isDone) ->
                         if (index == 0) {
-                            currentMessageId =
-                                _uiState.value.createNewModelMessage(partialResult)
+                            _uiState.value.appendMessage(currentMessageId!!,
+                                    "$START_TURN$MODEL_PREFIX\n$partialResult")
                         } else {
                             currentMessageId?.let {
                                 _uiState.value.appendMessage(currentMessageId!!, partialResult)
