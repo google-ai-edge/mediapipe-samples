@@ -27,12 +27,7 @@ class InferenceModel private constructor(context: Context) {
 
         val options = LlmInference.LlmInferenceOptions.builder()
             .setModelPath(MODEL_PATH)
-            .setDelegate(Delegate.GPU)
-            .setNumDecodeStepsPerSync(3)
             .setMaxSequenceLength(1024)
-            .setTopK(1)
-            .setRandomSeed(0)
-            .setTemperature(0f)
             .setResultListener { partialResult, done ->
                 _partialResults.tryEmit(partialResult to done)
             }
