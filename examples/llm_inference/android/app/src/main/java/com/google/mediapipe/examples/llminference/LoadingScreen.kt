@@ -1,4 +1,4 @@
-package com.example.mediapipe.llminference
+package com.google.mediapipe.examples.llminference
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

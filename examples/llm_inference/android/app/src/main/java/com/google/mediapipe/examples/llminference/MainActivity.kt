@@ -1,4 +1,4 @@
-package com.example.mediapipe.llminference
+package com.google.mediapipe.examples.llminference
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -18,7 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.mediapipe.llminference.ui.theme.LLMInferenceTheme
+import com.google.mediapipe.examples.llminference.ui.theme.LLMInferenceTheme
 
 const val START_SCREEN = "start_screen"
 const val CHAT_SCREEN = "chat_screen"

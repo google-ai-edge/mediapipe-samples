@@ -17,4 +17,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "LLM Inference"
 include(":app")
- 

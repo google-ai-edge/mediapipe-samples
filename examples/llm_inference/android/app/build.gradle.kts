@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.mediapipe.llminference"
+    namespace = "com.google.mediapipe.examples.llminference"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.mediapipe.llminference"
+        applicationId = "com.google.mediapipe.examples.llminference"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

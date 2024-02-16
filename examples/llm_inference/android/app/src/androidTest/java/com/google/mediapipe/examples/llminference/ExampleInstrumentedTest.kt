@@ -1,4 +1,4 @@
-package com.example.mediapipe.llminference
+package com.google.mediapipe.examples.llminference
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

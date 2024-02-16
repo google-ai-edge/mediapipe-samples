@@ -1,4 +1,4 @@
-package com.example.mediapipe.llminference.ui.theme
+package com.google.mediapipe.examples.llminference.ui.theme
 
 import android.app.Activity
 import android.os.Build

@@ -1,4 +1,4 @@
-package com.example.mediapipe.llminference
+package com.google.mediapipe.examples.llminference
 
 import androidx.compose.runtime.toMutableStateList
 import java.util.UUID

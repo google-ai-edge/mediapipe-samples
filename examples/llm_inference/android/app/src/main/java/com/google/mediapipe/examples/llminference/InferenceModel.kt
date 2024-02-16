@@ -1,7 +1,6 @@
-package com.example.mediapipe.llminference
+package com.google.mediapipe.examples.llminference
 
 import android.content.Context
-import com.google.mediapipe.tasks.core.Delegate
 import com.google.mediapipe.tasks.genai.llminference.LlmInference
 import java.io.File
 import kotlinx.coroutines.channels.BufferOverflow
