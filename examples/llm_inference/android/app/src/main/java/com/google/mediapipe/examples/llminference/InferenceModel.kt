@@ -40,7 +40,7 @@ class InferenceModel private constructor(context: Context) {
     }
 
     companion object {
-        private const val MODEL_PATH = "/data/local/tmp/llm/model_gpu.tflite"
+        private const val MODEL_PATH = "/data/local/tmp/llm/model.tflite"
         private var instance: InferenceModel? = null
 
         fun getInstance(context: Context): InferenceModel {

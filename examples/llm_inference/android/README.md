@@ -38,6 +38,6 @@ This application must be run on a physical Android device to take advantage of t
 You can download one of the models available on [TBD](https://ai.google.dev/tbd).
 
 Once you download it, place it under the path defined as `MODEL_PATH` in `InferenceModel` on the Android device
- (eg. `/data/local/tmp/llm/model_gpu.tflite`).
+ (eg. `/data/local/tmp/llm/model.tflite`).
 
 The easiest way to do that would be to use Android Studio's [Device Explorer](https://developer.android.com/studio/debug/device-file-explorer)
