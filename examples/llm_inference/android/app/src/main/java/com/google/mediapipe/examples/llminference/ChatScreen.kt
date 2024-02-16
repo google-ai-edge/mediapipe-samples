@@ -86,12 +86,9 @@ fun ChatScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            Column {
-
-            }
+            Column { }
 
             Spacer(modifier = Modifier.width(8.dp))
-
 
             TextField(
                 value = userMessage,
@@ -127,9 +124,7 @@ fun ChatScreen(
                     modifier = Modifier
                 )
             }
-
         }
-
     }
 }
 

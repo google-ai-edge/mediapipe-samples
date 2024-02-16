@@ -36,15 +36,15 @@ class ChatViewModel(
 
                 inferenceModel.generateResponseAsync(fullPrompt)
                 inferenceModel.partialResults
-                    .collectIndexed { index, (partialResult, isDone) ->
+                    .collectIndexed { index, (partialResult, done) ->
                         if (index == 0) {
                             _uiState.value.appendMessage(currentMessageId!!,
                                     "$START_TURN$MODEL_PREFIX\n$partialResult")
                         } else {
                             currentMessageId?.let {
                                 _uiState.value.appendMessage(currentMessageId!!, partialResult)
-                                if (isDone) {
-                                    // Append the Suffix to the complete message
+                                if (done) {
+                                    // Append the suffix to the complete message
                                     _uiState.value.appendMessage(currentMessageId!!, END_TURN)
                                     currentMessageId = null
                                     // Re-enable text input
