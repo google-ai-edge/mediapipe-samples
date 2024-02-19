@@ -16,9 +16,11 @@ class ChatViewModel(
     private val inferenceModel: InferenceModel
 ) : ViewModel() {
 
-    private val _uiState: MutableStateFlow<ChatUiState> =
-        MutableStateFlow(ChatUiState())
-    val uiState: StateFlow<ChatUiState> =
+    // `GemmaUiState()` is optimized for the Gemma model.
+    // Replace it with `ChatUiState()` if you're using a different model
+    private val _uiState: MutableStateFlow<UiState> =
+        MutableStateFlow(GemmaUiState())
+    val uiState: StateFlow<UiState> =
         _uiState.asStateFlow()
 
     private val _textInputEnabled: MutableStateFlow<Boolean> =
@@ -33,23 +35,17 @@ class ChatViewModel(
             setInputEnabled(false)
             try {
                 val fullPrompt = _uiState.value.fullPrompt
-
                 inferenceModel.generateResponseAsync(fullPrompt)
                 inferenceModel.partialResults
-                    .collectIndexed { index, (partialResult, done) ->
-                        if (index == 0) {
-                            _uiState.value.appendMessage(currentMessageId!!,
-                                    "$START_TURN$MODEL_PREFIX\n$partialResult")
-                        } else {
-                            currentMessageId?.let {
-                                _uiState.value.appendMessage(currentMessageId!!, partialResult)
-                                if (done) {
-                                    // Append the suffix to the complete message
-                                    _uiState.value.appendMessage(currentMessageId!!, END_TURN)
-                                    currentMessageId = null
-                                    // Re-enable text input
-                                    setInputEnabled(true)
-                                }
+                    .collect { (partialResult, done) ->
+                        currentMessageId?.let {
+                            _uiState.value.appendMessage(currentMessageId!!, partialResult)
+                            if (done) {
+                                _uiState.value.appendMessage(currentMessageId!!, "",
+                                    done = true)
+                                currentMessageId = null
+                                // Re-enable text input
+                                setInputEnabled(true)
                             }
                         }
                     }

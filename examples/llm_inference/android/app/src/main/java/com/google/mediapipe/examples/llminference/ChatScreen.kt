@@ -56,7 +56,7 @@ internal fun ChatRoute(
 
 @Composable
 fun ChatScreen(
-    uiState: ChatUiState,
+    uiState: UiState,
     textInputEnabled: Boolean = true,
     onSendMessage: (String) -> Unit
 ) {
@@ -179,7 +179,7 @@ fun ChatItem(
                         )
                     } else {
                         Text(
-                            text = formatMessage(chatMessage.message, chatMessage.author),
+                            text = chatMessage.message,
                             modifier = Modifier.padding(16.dp)
                         )
                     }
@@ -187,9 +187,4 @@ fun ChatItem(
             }
         }
     }
-}
-
-internal fun formatMessage(message: String, prefix: String): String {
-    return message.replace(START_TURN + prefix + "\n", "")
-        .replace(END_TURN, "")
 }

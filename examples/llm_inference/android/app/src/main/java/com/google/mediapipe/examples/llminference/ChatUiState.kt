@@ -1,53 +1,51 @@
 package com.google.mediapipe.examples.llminference
 
-import androidx.compose.runtime.toMutableStateList
-import java.util.UUID
-
-const val START_TURN = "<start_of_turn>"
-const val END_TURN = "<end_of_turn>"
 const val USER_PREFIX = "user"
 const val MODEL_PREFIX = "model"
 
-/**
- * Used to represent a ChatMessage
- */
-data class ChatMessage(
-    val id: String = UUID.randomUUID().toString(),
-    val message: String = "",
-    val author: String,
-    val isLoading: Boolean = false
-) {
-    val isFromUser: Boolean
-        get() = author == USER_PREFIX
-}
-
-class ChatUiState(
-    messages: List<ChatMessage> = emptyList()
-) {
-    private val _messages: MutableList<ChatMessage> = messages.toMutableStateList()
-    val messages: List<ChatMessage> = _messages
-
-    // Only using the last 4 messages to keep input + output short
+interface UiState {
+    val messages: List<ChatMessage>
     val fullPrompt: String
-        get() = _messages.takeLast(4).joinToString(separator = "\n") { it.message }
 
     /**
      * Creates a new loading message.
      * Returns the id of that message.
      */
-    fun createLoadingMessage(): String {
-        val chatMessage = ChatMessage(
-            author = MODEL_PREFIX,
-            isLoading = true
-        )
+    fun createLoadingMessage(): String
+
+    /**
+     * Appends the specified text to the message with the specified ID.
+     * @param done - indicates whether the model has finished generating the message.
+     */
+    fun appendMessage(id: String, text: String, done: Boolean = false)
+
+    /**
+     * Creates a new message with the specified text and author.
+     * Return the id of that message.
+     */
+    fun addMessage(text: String, author: String): String
+}
+
+/**
+ * A sample implementation of [UiState] that can be used with any model.
+ */
+class ChatUiState(
+    messages: List<ChatMessage> = emptyList()
+) : UiState {
+    private val _messages: MutableList<ChatMessage> = messages.toMutableList()
+    override val messages: List<ChatMessage> = _messages
+
+    // Prompt the model with the current chat history
+    override val fullPrompt: String
+        get() = _messages.joinToString(separator = "\n") { it.message }
+
+    override fun createLoadingMessage(): String {
+        val chatMessage = ChatMessage(author = MODEL_PREFIX, isLoading = true)
         _messages.add(chatMessage)
         return chatMessage.id
     }
 
-    /**
-     * Appends the specified text to the message with the specified ID
-     */
-    fun appendMessage(id: String, text: String) {
+    override fun appendMessage(id: String, text: String, done: Boolean) {
         val index = _messages.indexOfFirst { it.id == id }
         if (index != -1) {
             val newText = _messages[index].message + text
@@ -55,7 +53,61 @@ class ChatUiState(
         }
     }
 
-    fun addMessage(text: String, author: String): String {
+    override fun addMessage(text: String, author: String): String {
+        val chatMessage = ChatMessage(
+            message = text,
+            author = author
+        )
+        _messages.add(chatMessage)
+        return chatMessage.id
+    }
+}
+
+/**
+ * An implementation of [UiState] to be used with the Gemma model.
+ */
+class GemmaUiState(
+    messages: List<ChatMessage> = emptyList()
+) : UiState {
+    private val START_TURN = "<start_of_turn>"
+    private val END_TURN = "<end_of_turn>"
+
+    private val _messages: MutableList<ChatMessage> = messages.toMutableList()
+    override val messages: List<ChatMessage>
+        get() = _messages
+            .map {
+                // Remove the prefix and suffix before showing a message in the UI
+                it.copy(
+                    message = it.message.replace(START_TURN + it.author + "\n", "")
+                        .replace(END_TURN, "")
+                )
+            }
+
+    // Only using the last 4 messages to keep input + output short
+    override val fullPrompt: String
+        get() = _messages.takeLast(4).joinToString(separator = "\n") { it.message }
+
+    override fun createLoadingMessage(): String {
+        val chatMessage = ChatMessage(author = MODEL_PREFIX, isLoading = true)
+        _messages.add(chatMessage)
+        return chatMessage.id
+    }
+
+    override fun appendMessage(id: String, text: String, done: Boolean) {
+        val index = _messages.indexOfFirst { it.id == id }
+        if (index != -1) {
+            val newText = if (done) {
+                // Append the Suffix when model is done generating the response
+                _messages[index].message + END_TURN
+            } else {
+                // Append the Prefix and the returned text
+                _messages[index].message + "$START_TURN$MODEL_PREFIX\n$text"
+            }
+            _messages[index] = _messages[index].copy(message = newText, isLoading = false)
+        }
+    }
+
+    override fun addMessage(text: String, author: String): String {
         val chatMessage = ChatMessage(
             message = "$START_TURN$author\n$text$END_TURN",
             author = author
