@@ -43,7 +43,7 @@ class CameraViewController: UIViewController {
   // MARK: Controllers that manage functionality
   // Handles all the camera related functionality
   private lazy var cameraFeedService = CameraFeedService()
-  private let render = Render()
+  private let render = SegmentedImageRenderer()
 
   private let imageSegmenterServiceQueue = DispatchQueue(
     label: "com.google.mediapipe.cameraController.imageSegmenterServiceQueue",
@@ -145,7 +145,7 @@ class CameraViewController: UIViewController {
     imageSegmenterService = nil
     imageSegmenterService = ImageSegmenterService
       .liveStreamImageSegmenterService(
-        modelPath: InferenceConfigurationManager.sharedInstance.modelPath,
+        modelPath: InferenceConfigurationManager.sharedInstance.model.modelPath,
         liveStreamDelegate: self)
   }
 
@@ -224,16 +224,17 @@ extension CameraViewController: CameraFeedServiceDelegate {
 extension CameraViewController: ImageSegmenterServiceLiveStreamDelegate {
 
   func imageSegmenterService(_ imageSegmenterService: ImageSegmenterService, didFinishSegmention result: ResultBundle?, error: Error?) {
-    guard let imageSegmenterResult = result?.imageSegmenterResults.first as? ImageSegmenterResult else { return }
-    let marks = imageSegmenterResult.confidenceMasks
-    let _mark = marks![0]
-    let float32Data = _mark.float32Data
+    guard let imageSegmenterResult = result?.imageSegmenterResults.first as? ImageSegmenterResult,
+      let confidenceMasks = imageSegmenterResult.categoryMask else { return }
+    let confidenceMask = confidenceMasks.uint8Data
+//    let bytesArray = UnsafeBufferPointer(start: confidenceMask, count: confidenceMasks.width * confidenceMasks.height).map{$0}
+//    print(bytesArray[0], bytesArray[1])
 
     if !render.isPrepared {
       render.prepare(with: formatDescription, outputRetainedBufferCountHint: 3)
     }
 
-    let outputPixelBuffer = render.render(pixelBuffer: videoPixelBuffer, segmentDatas: float32Data)
+    let outputPixelBuffer = render.render(pixelBuffer: videoPixelBuffer, segmentDatas: confidenceMask)
     previewView.pixelBuffer = outputPixelBuffer
     inferenceResultDeliveryDelegate?.didPerformInference(result: result)
   }

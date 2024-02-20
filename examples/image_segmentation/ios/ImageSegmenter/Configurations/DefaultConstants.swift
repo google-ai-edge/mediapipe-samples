@@ -17,18 +17,42 @@ import UIKit
 
 // MARK: Define default constants
 struct DefaultConstants {
+  static let model: Model = .deeplabV3
+}
 
-  static let lineWidth: CGFloat = 2
-  static let pointRadius: CGFloat = 2
-  static let pointColor = UIColor.yellow
-  static let pointFillColor = UIColor.red
+// MARK: Model
+enum Model: Int, CaseIterable {
+  case selfieSegmenter
+  case deeplabV3
 
-  static let faceOvalConnectionsColor = UIColor(red: 0, green: 127/255.0, blue: 139/255.0, alpha: 1)
-  static let rightEyebrowConnectionsColor = UIColor(red: 18/255.0, green: 181/255.0, blue: 203/255.0, alpha: 1)
-  static let leftEyebrowConnectionsColor = UIColor(red: 18/255.0, green: 181/255.0, blue: 203/255.0, alpha: 1)
-  static let rightEyeConnectionsColor = UIColor(red: 279/255.0, green: 171/255.0, blue: 0, alpha: 1)
-  static let leftEyeConnectionsColor = UIColor(red: 279/255.0, green: 171/255.0, blue: 0, alpha: 1)
-  static let lipsConnectionsColor = UIColor(red: 176/255.0, green: 0, blue: 32/255.0, alpha: 1)
+  var name: String {
+    switch self {
+    case .selfieSegmenter:
+      return "Selfie segmenter"
+    case .deeplabV3:
+      return "Deeplab V3"
+    }
+  }
 
-  static let modelPath: String? = Bundle.main.path(forResource: "selfie_segmenter", ofType: "tflite")
+  var modelPath: String? {
+    switch self {
+    case .selfieSegmenter:
+      return Bundle.main.path(
+        forResource: "selfie_segmenter", ofType: "tflite")
+    case .deeplabV3:
+      return Bundle.main.path(
+        forResource: "deeplab_v3", ofType: "tflite")
+    }
+  }
+
+  init?(name: String) {
+    switch name {
+    case "Selfie segmenter":
+      self.init(rawValue: 0)
+    case "Deeplab V3":
+      self.init(rawValue: 1)
+    default:
+      return nil
+    }
+  }
 }

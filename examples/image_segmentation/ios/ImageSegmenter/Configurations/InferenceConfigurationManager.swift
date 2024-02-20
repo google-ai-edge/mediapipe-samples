@@ -20,7 +20,10 @@ import Foundation
  */
 
 class InferenceConfigurationManager: NSObject {
-  var modelPath: String? = DefaultConstants.modelPath
+
+  var model: Model = DefaultConstants.model {
+    didSet { postConfigChangedNotification() }
+  }
 
   static let sharedInstance = InferenceConfigurationManager()
   
@@ -30,5 +33,4 @@ class InferenceConfigurationManager: NSObject {
     NotificationCenter.default
       .post(name: InferenceConfigurationManager.notificationName, object: nil)
   }
-
 }

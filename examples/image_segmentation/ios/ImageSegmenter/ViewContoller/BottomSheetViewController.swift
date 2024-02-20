@@ -14,9 +14,26 @@
 
 import UIKit
 
+protocol BottomSheetViewControllerDelegate: AnyObject {
+  /**
+   This method is called when the user opens or closes the bottom sheet.
+  **/
+  func viewController(
+    _ viewController: BottomSheetViewController,
+    didSwitchBottomSheetViewState isOpen: Bool)
+}
+
 /** The view controller is responsible for presenting the controls to change the meta data for the image segmenter and updating the singleton`` DetectorMetadata`` on user input.
  */
 class BottomSheetViewController: UIViewController {
+
+  enum Action {
+    case changeModel(Model)
+    case changeBottomSheetViewBottomSpace(Bool)
+  }
+
+  // MARK: Delegates
+  weak var delegate: BottomSheetViewControllerDelegate?
 
   // MARK: Storyboards Connections
   @IBOutlet weak var inferenceTimeNameLabel: UILabel!

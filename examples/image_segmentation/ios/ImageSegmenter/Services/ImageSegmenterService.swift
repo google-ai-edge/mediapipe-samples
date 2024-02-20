@@ -60,7 +60,7 @@ class ImageSegmenterService: NSObject {
   private func createImageSegmenter() {
     let imageSegmenterOptions = ImageSegmenterOptions()
     imageSegmenterOptions.runningMode = runningMode
-    imageSegmenterOptions.shouldOutputConfidenceMasks = true
+    imageSegmenterOptions.shouldOutputCategoryMask = true
     imageSegmenterOptions.baseOptions.modelAssetPath = modelPath
     if runningMode == .liveStream {
       imageSegmenterOptions.imageSegmenterLiveStreamDelegate = self
@@ -138,7 +138,7 @@ class ImageSegmenterService: NSObject {
     }
 
   func segment(
-    by videoFrame: CGImage,
+    videoFrame: CGImage,
     orientation: UIImage.Orientation,
     timeStamps: Int)
   -> ResultBundle?  {

@@ -6,7 +6,7 @@ import UIKit
 import MetalPerformanceShaders
 import MetalKit
 
-class Render {
+class SegmentedImageRenderer {
 
   var description: String = "Metal"
 
@@ -94,9 +94,9 @@ class Render {
     isPrepared = false
   }
 
-  func render(image: UIImage, segmentDatas: UnsafePointer<Float32>?) -> UIImage? {
-    guard let segmentDatas = segmentDatas else {
-      print("segmentDatas not found")
+  func render(image: UIImage, confidenceMasks: UnsafePointer<UInt8>?) -> UIImage? {
+    guard let confidenceMasks = confidenceMasks else {
+      print("confidenceMasks not found")
       return nil
     }
 
@@ -139,7 +139,7 @@ class Render {
     commandEncoder.setTexture(inputTexture, index: 0)
     commandEncoder.setTexture(inputScaleTexture, index: 1)
     commandEncoder.setTexture(outputTexture, index: 2)
-    let buffer = metalDevice.makeBuffer(bytes: segmentDatas, length: inputTexture.width * inputTexture.height * MemoryLayout<Float32>.size)!
+    let buffer = metalDevice.makeBuffer(bytes: confidenceMasks, length: inputTexture.width * inputTexture.height * MemoryLayout<UInt8>.size)!
     commandEncoder.setBuffer(buffer, offset: 0, index: 0)
     var imageWidth: Int = Int(inputTexture.width)
     commandEncoder.setBytes(&imageWidth, length: MemoryLayout<Int>.size, index: 1)
@@ -228,11 +228,11 @@ class Render {
 
     commandEncoder.endEncoding()
     commandBuffer.commit()
+    commandBuffer.waitUntilCompleted()
     return outputPixelBuffer
   }
 
-  func render(pixelBuffer: CVPixelBuffer, segmentDatas: UnsafePointer<Float32>?) -> CVPixelBuffer? {
-
+  func render(pixelBuffer: CVPixelBuffer, segmentDatas: UnsafePointer<UInt8>?) -> CVPixelBuffer? {
     guard let segmentDatas = segmentDatas, isPrepared else {
       print("segmentDatas not found")
       return nil
@@ -269,7 +269,7 @@ class Render {
     commandEncoder.setTexture(inputTexture, index: 0)
     commandEncoder.setTexture(inputScaleTexture, index: 1)
     commandEncoder.setTexture(outputTexture, index: 2)
-    let buffer = metalDevice.makeBuffer(bytes: segmentDatas, length: inputTexture.width * inputTexture.height * MemoryLayout<Float32>.size)!
+    let buffer = metalDevice.makeBuffer(bytes: segmentDatas, length: inputTexture.width * inputTexture.height * MemoryLayout<UInt8>.size)!
     commandEncoder.setBuffer(buffer, offset: 0, index: 0)
     var imageWidth: Int = Int(inputTexture.width)
     commandEncoder.setBytes(&imageWidth, length: MemoryLayout<Int>.size, index: 1)
