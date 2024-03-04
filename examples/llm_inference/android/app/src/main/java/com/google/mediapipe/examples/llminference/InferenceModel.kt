@@ -26,7 +26,7 @@ class InferenceModel private constructor(context: Context) {
 
         val options = LlmInference.LlmInferenceOptions.builder()
             .setModelPath(MODEL_PATH)
-            .setMaxSequenceLength(1024)
+            .setMaxTokens(1024)
             .setResultListener { partialResult, done ->
                 _partialResults.tryEmit(partialResult to done)
             }
