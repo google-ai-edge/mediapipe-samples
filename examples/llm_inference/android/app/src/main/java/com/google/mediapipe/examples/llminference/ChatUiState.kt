@@ -104,7 +104,7 @@ class GemmaUiState(
         if (index != -1) {
             val newText = if (done) {
                 // Append the Suffix when model is done generating the response
-                _messages[index].message + END_TURN
+                _messages[index].message + text + END_TURN
             } else {
                 // Append the text
                 _messages[index].message + text
