@@ -6,6 +6,7 @@ import java.io.File
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 class InferenceModel private constructor(context: Context) {
     private var llmInference: LlmInference
@@ -17,7 +18,7 @@ class InferenceModel private constructor(context: Context) {
         extraBufferCapacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
-    val partialResults: SharedFlow<Pair<String, Boolean>> = _partialResults
+    val partialResults: SharedFlow<Pair<String, Boolean>> = _partialResults.asSharedFlow()
 
     init {
         if (!modelExists) {

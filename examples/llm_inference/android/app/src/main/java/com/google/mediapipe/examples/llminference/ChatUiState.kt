@@ -1,5 +1,7 @@
 package com.google.mediapipe.examples.llminference
 
+import androidx.compose.runtime.toMutableStateList
+
 const val USER_PREFIX = "user"
 const val MODEL_PREFIX = "model"
 
@@ -32,7 +34,7 @@ interface UiState {
 class ChatUiState(
     messages: List<ChatMessage> = emptyList()
 ) : UiState {
-    private val _messages: MutableList<ChatMessage> = messages.toMutableList()
+    private val _messages: MutableList<ChatMessage> = messages.toMutableStateList()
     override val messages: List<ChatMessage> = _messages
 
     // Prompt the model with the current chat history
@@ -72,7 +74,7 @@ class GemmaUiState(
     private val START_TURN = "<start_of_turn>"
     private val END_TURN = "<end_of_turn>"
 
-    private val _messages: MutableList<ChatMessage> = messages.toMutableList()
+    private val _messages: MutableList<ChatMessage> = messages.toMutableStateList()
     override val messages: List<ChatMessage>
         get() = _messages
             .map {
