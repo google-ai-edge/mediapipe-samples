@@ -95,6 +95,10 @@ class GemmaUiState(
         return chatMessage.id
     }
 
+    fun appendFirstMessage(id: String, text: String) {
+        appendMessage(id, "$START_TURN$MODEL_PREFIX\n$text", false)
+    }
+
     override fun appendMessage(id: String, text: String, done: Boolean) {
         val index = _messages.indexOfFirst { it.id == id }
         if (index != -1) {
@@ -102,8 +106,8 @@ class GemmaUiState(
                 // Append the Suffix when model is done generating the response
                 _messages[index].message + END_TURN
             } else {
-                // Append the Prefix and the returned text
-                _messages[index].message + "$START_TURN$MODEL_PREFIX\n$text"
+                // Append the text
+                _messages[index].message + text
             }
             _messages[index] = _messages[index].copy(message = newText, isLoading = false)
         }

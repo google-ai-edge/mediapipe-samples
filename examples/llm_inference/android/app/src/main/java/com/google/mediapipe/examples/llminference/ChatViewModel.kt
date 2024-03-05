@@ -17,9 +17,8 @@ class ChatViewModel(
 ) : ViewModel() {
 
     // `GemmaUiState()` is optimized for the Gemma model.
-    // Replace it with `ChatUiState()` if you're using a different model
-    private val _uiState: MutableStateFlow<UiState> =
-        MutableStateFlow(GemmaUiState())
+    // Replace `GemmaUiState` with `ChatUiState()` if you're using a different model
+    private val _uiState: MutableStateFlow<GemmaUiState> = MutableStateFlow(GemmaUiState())
     val uiState: StateFlow<UiState> =
         _uiState.asStateFlow()
 
@@ -37,12 +36,14 @@ class ChatViewModel(
                 val fullPrompt = _uiState.value.fullPrompt
                 inferenceModel.generateResponseAsync(fullPrompt)
                 inferenceModel.partialResults
-                    .collect { (partialResult, done) ->
+                    .collectIndexed { index, (partialResult, done) ->
                         currentMessageId?.let {
-                            _uiState.value.appendMessage(currentMessageId!!, partialResult)
+                            if (index == 0) {
+                                _uiState.value.appendFirstMessage(it, partialResult)
+                            } else {
+                                _uiState.value.appendMessage(it, partialResult, done)
+                            }
                             if (done) {
-                                _uiState.value.appendMessage(currentMessageId!!, "",
-                                    done = true)
                                 currentMessageId = null
                                 // Re-enable text input
                                 setInputEnabled(true)
