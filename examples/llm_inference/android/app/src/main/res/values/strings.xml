@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">On device LLM chat</string>
+    <string name="app_name">MediaPipe LLM Inference</string>
     <string name="loading_model">Loading model</string>
     <string name="chat_label">Message</string>
     <string name="action_send">Send</string>
