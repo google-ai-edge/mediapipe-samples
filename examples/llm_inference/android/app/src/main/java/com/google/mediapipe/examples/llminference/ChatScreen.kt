@@ -74,7 +74,7 @@ fun ChatScreen(
                 .padding(horizontal = 8.dp),
             reverseLayout = true
         ) {
-            items(uiState.messages.reversed()) { chat ->
+            items(uiState.messages) { chat ->
                 ChatItem(chat)
             }
         }

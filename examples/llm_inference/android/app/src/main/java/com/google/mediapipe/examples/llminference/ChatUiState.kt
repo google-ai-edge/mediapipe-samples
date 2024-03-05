@@ -35,7 +35,7 @@ class ChatUiState(
     messages: List<ChatMessage> = emptyList()
 ) : UiState {
     private val _messages: MutableList<ChatMessage> = messages.toMutableStateList()
-    override val messages: List<ChatMessage> = _messages
+    override val messages: List<ChatMessage> = _messages.reversed()
 
     // Prompt the model with the current chat history
     override val fullPrompt: String
@@ -83,7 +83,7 @@ class GemmaUiState(
                     message = it.message.replace(START_TURN + it.author + "\n", "")
                         .replace(END_TURN, "")
                 )
-            }
+            }.reversed()
 
     // Only using the last 4 messages to keep input + output short
     override val fullPrompt: String
