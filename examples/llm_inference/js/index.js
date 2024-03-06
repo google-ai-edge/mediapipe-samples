@@ -53,7 +53,7 @@ async function runDemo() {
   submit.value = 'Loading the model...'
   LlmInference
       .createFromOptions(genaiFileset, {
-        baseOptions: {modelAssetPath: modelUrl},
+        baseOptions: {modelAssetPath: modelFileName},
         maxTokens: 512,
         topK: 1,
         temperature: 1.0,
