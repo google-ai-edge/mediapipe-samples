@@ -32,6 +32,7 @@ function displayNewTokens(tokens, complete) {
     if (!output.textContent) {
       output.textContent = 'Result is empty';
     }
+    submit.disabled = false;
   }
 }
 
@@ -46,17 +47,12 @@ async function runDemo() {
   submit.onclick = () => {
     output.textContent = '';
     submit.disabled = true;
-    llmInference.generateResponse(input.value, displayNewTokens).then(() => {
-      submit.disabled = false;
-    });
+    llmInference.generateResponse(input.value, displayNewTokens);
   };
 
   submit.value = 'Loading the model...'
   LlmInference
-      .createFromModelPath(
-          genaiFileset,
-          modelFileName,
-          )
+      .createFromModelPath(genaiFileset, modelFileName)
       .then(llm => {
         llmInference = llm;
         submit.disabled = false;
