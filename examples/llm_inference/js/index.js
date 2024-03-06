@@ -26,14 +26,10 @@ const modelFileName = 'llm.tflite'; /* Update the file name */
  * Display tokens to the output text box.
  */
 function displayNewTokens(tokens, complete) {
-  if (output.textContent != null && output.textContent.length > 0) {
-    output.textContent += tokens;
-  } else {
-    output.textContent = tokens;
-  }
+  output.textContent += tokens;
 
   if (complete) {
-    if (output.textContent == null || output.textContent.length === 0) {
+    if (!output.textContent) {
       output.textContent = 'Result is empty';
     }
   }
@@ -45,38 +41,29 @@ function displayNewTokens(tokens, complete) {
 async function runDemo() {
   const genaiFileset = await FilesetResolver.forGenAiTasks(
       'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-genai/wasm');
-  const llmInferenceOptions = {
-    baseOptions: {modelAssetPath: modelFileName},
-  };
-
   let llmInference;
 
   submit.onclick = () => {
     output.textContent = '';
     submit.disabled = true;
-    llmInference.generateResponse(input.value, displayNewTokens).finally(() => {
+    llmInference.generateResponse(input.value, displayNewTokens).then(() => {
       submit.disabled = false;
     });
   };
 
   submit.value = 'Loading the model...'
   LlmInference
-      .createFromOptions(
+      .createFromModelPath(
           genaiFileset,
-          llmInferenceOptions,
+          modelFileName,
           )
       .then(llm => {
         llmInference = llm;
         submit.disabled = false;
         submit.value = 'Get Response'
+      }).catch(() =>{
+        alert('Failed to initialize the task.');
       });
-
-  window.onbeforeunload = () => {
-    if (llmInference) {
-      llmInference.close();
-      llmInference = null;
-    }
-  };
 }
 
 runDemo();
