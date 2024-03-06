@@ -20,7 +20,7 @@ const input = document.getElementById('input');
 const output = document.getElementById('output');
 const submit = document.getElementById('submit');
 
-const modelFileName = 'llm.tflite'; /* Update the file name */
+const modelFileName = 'llm.bin'; /* Update the file name */
 
 /**
  * Display tokens to the output text box.
