@@ -52,12 +52,19 @@ async function runDemo() {
 
   submit.value = 'Loading the model...'
   LlmInference
-      .createFromModelPath(genaiFileset, modelFileName)
+      .createFromOptions(genaiFileset, {
+        baseOptions: {modelAssetPath: modelUrl},
+        maxTokens: 512,
+        topK: 1,
+        temperature: 1.0,
+        randomSeed: 1
+      })
       .then(llm => {
         llmInference = llm;
         submit.disabled = false;
         submit.value = 'Get Response'
-      }).catch(() =>{
+      })
+      .catch(() => {
         alert('Failed to initialize the task.');
       });
 }
