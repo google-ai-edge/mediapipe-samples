@@ -7,7 +7,7 @@ This web sample demonstrates how to use the LLM Inference API to run common text
 
 ## Prerequisites
 
-* A device that can access Chrome and has WebGPU support (Desktop and Laptop are recommanded).
+* A browser with WebGPU support (such as Chrome, Edge or Opera).
 
 ## Running the demo
 
