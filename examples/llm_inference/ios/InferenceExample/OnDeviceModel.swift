@@ -83,7 +83,7 @@ final class Chat {
   private let model: OnDeviceModel
 
   private let basePrompt =
-      "You are a general-purpose chatbot. Respond to the latest message given the chat history below:\n"
+      "You are a helpful chatbot. Respond to the latest message given the chat history below:\n"
 
   private var history = [String]()
 
