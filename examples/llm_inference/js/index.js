@@ -20,13 +20,13 @@ const input = document.getElementById('input');
 const output = document.getElementById('output');
 const submit = document.getElementById('submit');
 
-const modelFileName = 'llm.tflite'; /* Update the file name */
+const modelFileName = 'gemma-2b-it-gpu-int4.bin'; /* Update the file name */
 
 /**
- * Display tokens to the output text box.
+ * Display newly generated partial results to the output text box.
  */
-function displayNewTokens(tokens, complete) {
-  output.textContent += tokens;
+function displayPartialResults(partialResults, complete) {
+  output.textContent += partialResults;
 
   if (complete) {
     if (!output.textContent) {
@@ -47,7 +47,7 @@ async function runDemo() {
   submit.onclick = () => {
     output.textContent = '';
     submit.disabled = true;
-    llmInference.generateResponse(input.value, displayNewTokens);
+    llmInference.generateResponse(input.value, displayPartialResults);
   };
 
   submit.value = 'Loading the model...'
