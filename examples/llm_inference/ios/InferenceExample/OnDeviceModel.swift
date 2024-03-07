@@ -23,11 +23,53 @@ final class OnDeviceModel {
     return LlmInference(options: llmOptions)
   }()
 
-  func generateResponse(prompt: String) async throws -> String {
-    return try await Task {
-      return try inference.generateResponse(inputText: prompt)
+  // Temporary to remove extra replace characters left over in model output.
+  // Remove this function once no longer necessary.
+  private func cleanOutput(_ string: String) -> String {
+    let replaceCharacter: Character = "\u{FFFD}"
+    return string.reduce("") { partialResult, next in
+      guard let last = partialResult.last else {
+        if next == replaceCharacter {
+          return partialResult
+        }
+        return String(next)
+      }
+
+      let lastCharacterIsWhitespace = last.unicodeScalars.reduce(false, {
+        $0 || CharacterSet.whitespacesAndNewlines.contains($1)
+      })
+      if next == replaceCharacter {
+        if lastCharacterIsWhitespace {
+          return partialResult
+        }
+        return partialResult + " "
+      }
+      return partialResult + String(next)
     }
-    .value
+  }
+
+  func generateResponse(prompt: String) async throws -> String {
+    var partialResult = ""
+    return try await withCheckedThrowingContinuation { continuation in
+      do {
+        try inference.generateResponseAsync(inputText: prompt) { partialResponse, error in
+          if let error = error {
+            continuation.resume(throwing: error)
+            return
+          }
+          if let partial = partialResponse {
+            partialResult += partial.trimmingCharacters(in: .illegalCharacters)
+          }
+        } completion: {
+          let aggregate = self.cleanOutput(partialResult)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+          continuation.resume(returning: aggregate)
+          partialResult = ""
+        }
+      } catch let error {
+        continuation.resume(throwing: error)
+      }
+    }
   }
 
   func startChat() -> Chat {
@@ -59,6 +101,9 @@ final class Chat {
 
     history.append(text)
     history.append(reply)
+
+    print("Prompt: \(prompt)")
+    print("Reply: \(reply)")
     return reply
   }
 
