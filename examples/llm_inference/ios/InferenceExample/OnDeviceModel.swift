@@ -18,35 +18,10 @@ import MediaPipeTasksGenAI
 final class OnDeviceModel {
 
   private var inference: LlmInference! = {
-    let path = Bundle.main.path(forResource: "model_cpu", ofType: "tflite")!
+    let path = Bundle.main.path(forResource: "gemma-2b-it-cpu-int4", ofType: "bin")!
     let llmOptions = LlmInference.Options(modelPath: path)
     return LlmInference(options: llmOptions)
   }()
-
-  // Temporary to remove extra replace characters left over in model output.
-  // Remove this function once no longer necessary.
-  private func cleanOutput(_ string: String) -> String {
-    let replaceCharacter: Character = "\u{FFFD}"
-    return string.reduce("") { partialResult, next in
-      guard let last = partialResult.last else {
-        if next == replaceCharacter {
-          return partialResult
-        }
-        return String(next)
-      }
-
-      let lastCharacterIsWhitespace = last.unicodeScalars.reduce(false, {
-        $0 || CharacterSet.whitespacesAndNewlines.contains($1)
-      })
-      if next == replaceCharacter {
-        if lastCharacterIsWhitespace {
-          return partialResult
-        }
-        return partialResult + " "
-      }
-      return partialResult + String(next)
-    }
-  }
 
   func generateResponse(prompt: String) async throws -> String {
     var partialResult = ""
@@ -58,11 +33,10 @@ final class OnDeviceModel {
             return
           }
           if let partial = partialResponse {
-            partialResult += partial.trimmingCharacters(in: .illegalCharacters)
+            partialResult += partial
           }
         } completion: {
-          let aggregate = self.cleanOutput(partialResult)
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+          let aggregate = partialResult.trimmingCharacters(in: .whitespacesAndNewlines)
           continuation.resume(returning: aggregate)
           partialResult = ""
         }

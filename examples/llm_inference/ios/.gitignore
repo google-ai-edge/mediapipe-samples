@@ -1,6 +1,3 @@
-*.tflite
 *.bin
 InferenceExample.xcodeproj/xcuserdata/
-MediaPipeTasksGenAI.xcframework/
-MediaPipeTasksGenAIC.xcframework/
 .DS_Store

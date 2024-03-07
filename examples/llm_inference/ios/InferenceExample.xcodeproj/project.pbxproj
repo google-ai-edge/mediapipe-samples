@@ -7,16 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8D60EEED2B9A8A180019075E /* gemma-2b-it-cpu-int4.bin in Resources */ = {isa = PBXBuildFile; fileRef = 8D60EEEC2B9A8A180019075E /* gemma-2b-it-cpu-int4.bin */; };
 		8DCF4C452B99289E00427D77 /* InferenceExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DCF4C442B99289E00427D77 /* InferenceExampleApp.swift */; };
 		8DCF4C472B99289E00427D77 /* ConversationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DCF4C462B99289E00427D77 /* ConversationScreen.swift */; };
 		8DCF4C492B99289E00427D77 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8DCF4C482B99289E00427D77 /* Assets.xcassets */; };
 		8DCF4C4D2B99289E00427D77 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8DCF4C4C2B99289E00427D77 /* Preview Assets.xcassets */; };
 		8DCF4C582B992B9C00427D77 /* ConversationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DCF4C572B992B9C00427D77 /* ConversationViewModel.swift */; };
 		8DCF4C5C2B9939D700427D77 /* OnDeviceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DCF4C5B2B9939D700427D77 /* OnDeviceModel.swift */; };
-		8DCF4C602B99430400427D77 /* model_cpu.tflite in Resources */ = {isa = PBXBuildFile; fileRef = 8DCF4C5F2B99430400427D77 /* model_cpu.tflite */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		8D60EEEC2B9A8A180019075E /* gemma-2b-it-cpu-int4.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "gemma-2b-it-cpu-int4.bin"; sourceTree = "<group>"; };
 		8DCF4C412B99289E00427D77 /* InferenceExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = InferenceExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DCF4C442B99289E00427D77 /* InferenceExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InferenceExampleApp.swift; sourceTree = "<group>"; };
 		8DCF4C462B99289E00427D77 /* ConversationScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationScreen.swift; sourceTree = "<group>"; };
@@ -25,7 +26,6 @@
 		8DCF4C4C2B99289E00427D77 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		8DCF4C572B992B9C00427D77 /* ConversationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationViewModel.swift; sourceTree = "<group>"; };
 		8DCF4C5B2B9939D700427D77 /* OnDeviceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnDeviceModel.swift; sourceTree = "<group>"; };
-		8DCF4C5F2B99430400427D77 /* model_cpu.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = model_cpu.tflite; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -39,12 +39,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		540B7F154909C4C9EF376B57 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		8DCF4C382B99289D00427D77 = {
 			isa = PBXGroup;
 			children = (
 				8DCF4C432B99289E00427D77 /* InferenceExample */,
-				8DCF4C5F2B99430400427D77 /* model_cpu.tflite */,
 				8DCF4C422B99289E00427D77 /* Products */,
+				540B7F154909C4C9EF376B57 /* Pods */,
+				8D60EEEC2B9A8A180019075E /* gemma-2b-it-cpu-int4.bin */,
 			);
 			sourceTree = "<group>";
 		};
@@ -137,8 +145,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				8DCF4C4D2B99289E00427D77 /* Preview Assets.xcassets in Resources */,
-				8DCF4C602B99430400427D77 /* model_cpu.tflite in Resources */,
 				8DCF4C492B99289E00427D77 /* Assets.xcassets in Resources */,
+				8D60EEED2B9A8A180019075E /* gemma-2b-it-cpu-int4.bin in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
