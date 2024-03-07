@@ -72,9 +72,7 @@ class ConversationViewModel: ObservableObject {
   }
 
   private func internalSendMessage(_ text: String) async {
-    if busy {
-      chatTask?.cancel()
-    }
+    chatTask?.cancel()
 
     chatTask = Task {
       busy = true

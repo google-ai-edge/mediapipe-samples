@@ -67,6 +67,7 @@ struct ConversationScreen: View {
         .focused($focusedField, equals: .message)
         .onSubmit { sendOrStop() }
         .submitLabel(.send)
+        .disabled(viewModel.busy)
         .padding()
     }
     .toolbar {
