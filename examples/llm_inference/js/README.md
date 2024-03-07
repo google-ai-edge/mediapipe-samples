@@ -21,7 +21,7 @@ This sample app is easier to run.
 
 ### Sample app 2
 
-This sample app's codes help you understand the usage of API easier.
+This sample app has code which lends itself better to understanding the API.
 
 1. Make a folder for the task, named as `llm_task`, and copy the [index.html](https://github.com/googlesamples/mediapipe/blob/main/examples/llm_inference/js/index.html) and [index.js](https://github.com/googlesamples/mediapipe/blob/main/examples/llm_inference/js/index.js) files into your `llm_task` folder.
 2. Download one of the [compatible models](https://developers.google.com/mediapipe/solutions/genai/llm_inference#models) that you want to run, into the `llm_task` folder.
