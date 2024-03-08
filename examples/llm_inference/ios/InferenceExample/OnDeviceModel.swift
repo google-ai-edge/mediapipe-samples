@@ -56,9 +56,6 @@ final class Chat {
 
   private let model: OnDeviceModel
 
-  private let basePrompt =
-      "You are a helpful chatbot. Respond to the latest message given the chat history below:\n"
-
   private var history = [String]()
 
   init(model: OnDeviceModel) {
@@ -66,7 +63,7 @@ final class Chat {
   }
 
   private func compositePrompt(newMessage: String) -> String {
-    return basePrompt + history.joined(separator: "\n") + "\n" + newMessage
+    return history.joined(separator: "\n") + "\n" + newMessage
   }
 
   func sendMessage(_ text: String) async throws -> String {
