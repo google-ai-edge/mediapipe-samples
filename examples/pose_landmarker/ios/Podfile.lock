@@ -1,0 +1,20 @@
+PODS:
+  - MediaPipeTasksCommon (0.10.12)
+  - MediaPipeTasksVision (0.10.12):
+    - MediaPipeTasksCommon (= 0.10.12)
+
+DEPENDENCIES:
+  - MediaPipeTasksVision (= 0.10.12)
+
+SPEC REPOS:
+  trunk:
+    - MediaPipeTasksCommon
+    - MediaPipeTasksVision
+
+SPEC CHECKSUMS:
+  MediaPipeTasksCommon: 254e6bff77804b262f6ecf180477142ea551e802
+  MediaPipeTasksVision: 78d5c47cd7996b4d815bacba0a52dbf01458dfaf
+
+PODFILE CHECKSUM: 1e7f59eff42749a531528f7423d8835b804da38f
+
+COCOAPODS: 1.14.3
