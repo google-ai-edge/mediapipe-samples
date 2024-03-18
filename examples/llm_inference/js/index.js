@@ -54,10 +54,16 @@ async function runDemo() {
   LlmInference
       .createFromOptions(genaiFileset, {
         baseOptions: {modelAssetPath: modelFileName},
-        maxTokens: 512,
-        topK: 1,
-        temperature: 1.0,
-        randomSeed: 1
+        // maxTokens: 512,  // The maximum number of tokens (input tokens + output
+        //                  // tokens) the model handles.
+        // randomSeed: 1,   // The random seed used during text generation.
+        // topK: 1,  // The number of tokens the model considers at each step of
+        //           // generation. Limits predictions to the top k most-probable
+        //           // tokens. Setting randomSeed is required for this to make
+        //           // effects.
+        // temperature:
+        //     1.0,  // The amount of randomness introduced during generation.
+        //           // Setting randomSeed is required for this to make effects.
       })
       .then(llm => {
         llmInference = llm;
