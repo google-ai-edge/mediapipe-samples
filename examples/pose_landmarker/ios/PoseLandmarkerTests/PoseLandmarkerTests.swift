@@ -146,7 +146,6 @@ final class PoseLandmarkerTests: XCTestCase {
     minPoseDetectionConfidence: Float,
     minPosePresenceConfidence: Float,
     minTrackingConfidence: Float) throws -> PoseLandmarkerService {
-      print(model.name)
       let poseLandmarkerService = PoseLandmarkerService.stillImageLandmarkerService(
         modelPath: model.modelPath,
         numPoses: 1,
@@ -224,7 +223,6 @@ final class PoseLandmarkerTests: XCTestCase {
   ) throws {
     let poseLandmarkerResult =
     try XCTUnwrap(poseLandmarkerService.detect(image: image)!.poseLandmarkerResults[0])
-    print(poseLandmarkerResult)
     for landmark in poseLandmarkerResult.landmarks[0] {
       print("NormalizedLandmark(x: \(landmark.x), y: \(landmark.y), z: \(landmark.z), visibility: nil, presence: nil),")
     }
