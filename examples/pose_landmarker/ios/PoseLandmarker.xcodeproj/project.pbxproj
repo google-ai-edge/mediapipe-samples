@@ -13,8 +13,6 @@
 		BF49F8FA2BA81E6F0075959B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF49F8F92BA81E6F0075959B /* Assets.xcassets */; };
 		BF49F8FD2BA81E6F0075959B /* Base in Resources */ = {isa = PBXBuildFile; fileRef = BF49F8FC2BA81E6F0075959B /* Base */; };
 		BF49F9082BA81E700075959B /* PoseLandmarkerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF49F9072BA81E700075959B /* PoseLandmarkerTests.swift */; };
-		BF49F9122BA81E700075959B /* PoseLandmarkerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF49F9112BA81E700075959B /* PoseLandmarkerUITests.swift */; };
-		BF49F9142BA81E700075959B /* PoseLandmarkerUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF49F9132BA81E700075959B /* PoseLandmarkerUITestsLaunchTests.swift */; };
 		BF49F9212BA81F730075959B /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF49F9202BA81F730075959B /* SceneDelegate.swift */; };
 		BF49F92F2BA821B80075959B /* DefaultConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF49F9222BA821B80075959B /* DefaultConstants.swift */; };
 		BF49F9302BA821B80075959B /* InferenceConfigurationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF49F9232BA821B80075959B /* InferenceConfigurationManager.swift */; };
@@ -28,18 +26,12 @@
 		BF49F9392BA824CC0075959B /* pose_landmarker_lite.task in Resources */ = {isa = PBXBuildFile; fileRef = BF49F9382BA824CC0075959B /* pose_landmarker_lite.task */; };
 		BF49F93C2BA834D50075959B /* pose_landmarker_heavy.task in Resources */ = {isa = PBXBuildFile; fileRef = BF49F93A2BA834D50075959B /* pose_landmarker_heavy.task */; };
 		BF49F93D2BA834D50075959B /* pose_landmarker_full.task in Resources */ = {isa = PBXBuildFile; fileRef = BF49F93B2BA834D50075959B /* pose_landmarker_full.task */; };
+		BFE134132BA930040092BF4E /* test_image.jpg in Resources */ = {isa = PBXBuildFile; fileRef = BFE134122BA930040092BF4E /* test_image.jpg */; };
 		FA59FA5268D0C1CD91481592 /* libPods-PoseLandmarkerTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9AA2A96F11E3A326401F36F2 /* libPods-PoseLandmarkerTests.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
 		BF49F9042BA81E700075959B /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BF49F8E52BA81E6E0075959B /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = BF49F8EC2BA81E6E0075959B;
-			remoteInfo = PoseLandmarker;
-		};
-		BF49F90E2BA81E700075959B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = BF49F8E52BA81E6E0075959B /* Project object */;
 			proxyType = 1;
@@ -63,9 +55,6 @@
 		BF49F8FE2BA81E6F0075959B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BF49F9032BA81E700075959B /* PoseLandmarkerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PoseLandmarkerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF49F9072BA81E700075959B /* PoseLandmarkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseLandmarkerTests.swift; sourceTree = "<group>"; };
-		BF49F90D2BA81E700075959B /* PoseLandmarkerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PoseLandmarkerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		BF49F9112BA81E700075959B /* PoseLandmarkerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseLandmarkerUITests.swift; sourceTree = "<group>"; };
-		BF49F9132BA81E700075959B /* PoseLandmarkerUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseLandmarkerUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		BF49F9202BA81F730075959B /* SceneDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		BF49F9222BA821B80075959B /* DefaultConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultConstants.swift; sourceTree = "<group>"; };
 		BF49F9232BA821B80075959B /* InferenceConfigurationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceConfigurationManager.swift; sourceTree = "<group>"; };
@@ -79,6 +68,7 @@
 		BF49F9382BA824CC0075959B /* pose_landmarker_lite.task */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_landmarker_lite.task; sourceTree = "<group>"; };
 		BF49F93A2BA834D50075959B /* pose_landmarker_heavy.task */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_landmarker_heavy.task; sourceTree = "<group>"; };
 		BF49F93B2BA834D50075959B /* pose_landmarker_full.task */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_landmarker_full.task; sourceTree = "<group>"; };
+		BFE134122BA930040092BF4E /* test_image.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = test_image.jpg; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,13 +85,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				FA59FA5268D0C1CD91481592 /* libPods-PoseLandmarkerTests.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		BF49F90A2BA81E700075959B /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -133,7 +116,6 @@
 			children = (
 				BF49F8EF2BA81E6E0075959B /* PoseLandmarker */,
 				BF49F9062BA81E700075959B /* PoseLandmarkerTests */,
-				BF49F9102BA81E700075959B /* PoseLandmarkerUITests */,
 				BF49F8EE2BA81E6E0075959B /* Products */,
 				96E5B5D2B03BA2484C9C6B99 /* Pods */,
 				024AE8DDCB5455B073BDCB6E /* Frameworks */,
@@ -145,7 +127,6 @@
 			children = (
 				BF49F8ED2BA81E6E0075959B /* PoseLandmarker.app */,
 				BF49F9032BA81E700075959B /* PoseLandmarkerTests.xctest */,
-				BF49F90D2BA81E700075959B /* PoseLandmarkerUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -173,18 +154,10 @@
 		BF49F9062BA81E700075959B /* PoseLandmarkerTests */ = {
 			isa = PBXGroup;
 			children = (
+				BFE134122BA930040092BF4E /* test_image.jpg */,
 				BF49F9072BA81E700075959B /* PoseLandmarkerTests.swift */,
 			);
 			path = PoseLandmarkerTests;
-			sourceTree = "<group>";
-		};
-		BF49F9102BA81E700075959B /* PoseLandmarkerUITests */ = {
-			isa = PBXGroup;
-			children = (
-				BF49F9112BA81E700075959B /* PoseLandmarkerUITests.swift */,
-				BF49F9132BA81E700075959B /* PoseLandmarkerUITestsLaunchTests.swift */,
-			);
-			path = PoseLandmarkerUITests;
 			sourceTree = "<group>";
 		};
 		BF49F9242BA821B80075959B /* Configurations */ = {
@@ -265,24 +238,6 @@
 			productReference = BF49F9032BA81E700075959B /* PoseLandmarkerTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		BF49F90C2BA81E700075959B /* PoseLandmarkerUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = BF49F91D2BA81E700075959B /* Build configuration list for PBXNativeTarget "PoseLandmarkerUITests" */;
-			buildPhases = (
-				BF49F9092BA81E700075959B /* Sources */,
-				BF49F90A2BA81E700075959B /* Frameworks */,
-				BF49F90B2BA81E700075959B /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				BF49F90F2BA81E700075959B /* PBXTargetDependency */,
-			);
-			name = PoseLandmarkerUITests;
-			productName = PoseLandmarkerUITests;
-			productReference = BF49F90D2BA81E700075959B /* PoseLandmarkerUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -297,10 +252,6 @@
 						CreatedOnToolsVersion = 15.3;
 					};
 					BF49F9022BA81E700075959B = {
-						CreatedOnToolsVersion = 15.3;
-						TestTargetID = BF49F8EC2BA81E6E0075959B;
-					};
-					BF49F90C2BA81E700075959B = {
 						CreatedOnToolsVersion = 15.3;
 						TestTargetID = BF49F8EC2BA81E6E0075959B;
 					};
@@ -321,7 +272,6 @@
 			targets = (
 				BF49F8EC2BA81E6E0075959B /* PoseLandmarker */,
 				BF49F9022BA81E700075959B /* PoseLandmarkerTests */,
-				BF49F90C2BA81E700075959B /* PoseLandmarkerUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -344,13 +294,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		BF49F90B2BA81E700075959B /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
+				BFE134132BA930040092BF4E /* test_image.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -449,15 +393,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		BF49F9092BA81E700075959B /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				BF49F9142BA81E700075959B /* PoseLandmarkerUITestsLaunchTests.swift in Sources */,
-				BF49F9122BA81E700075959B /* PoseLandmarkerUITests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -465,11 +400,6 @@
 			isa = PBXTargetDependency;
 			target = BF49F8EC2BA81E6E0075959B /* PoseLandmarker */;
 			targetProxy = BF49F9042BA81E700075959B /* PBXContainerItemProxy */;
-		};
-		BF49F90F2BA81E700075959B /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = BF49F8EC2BA81E6E0075959B /* PoseLandmarker */;
-			targetProxy = BF49F90E2BA81E700075959B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -688,14 +618,16 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = H83UK2M7VU;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.poselandmarker.PoseLandmarkerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -709,54 +641,20 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = H83UK2M7VU;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.poselandmarker.PoseLandmarkerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PoseLandmarker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PoseLandmarker";
-			};
-			name = Release;
-		};
-		BF49F91E2BA81E700075959B /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = H83UK2M7VU;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.poselandmarker.PoseLandmarkerUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = PoseLandmarker;
-			};
-			name = Debug;
-		};
-		BF49F91F2BA81E700075959B /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = H83UK2M7VU;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.poselandmarker.PoseLandmarkerUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = PoseLandmarker;
 			};
 			name = Release;
 		};
@@ -786,15 +684,6 @@
 			buildConfigurations = (
 				BF49F91B2BA81E700075959B /* Debug */,
 				BF49F91C2BA81E700075959B /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		BF49F91D2BA81E700075959B /* Build configuration list for PBXNativeTarget "PoseLandmarkerUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				BF49F91E2BA81E700075959B /* Debug */,
-				BF49F91F2BA81E700075959B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
