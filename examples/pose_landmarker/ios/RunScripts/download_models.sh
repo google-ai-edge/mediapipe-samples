@@ -40,3 +40,4 @@ else
     curl -o ${TASK_FILE} https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/pose_landmarker_heavy.task
     echo "INFO: Downloaded pose_landmarker_heavy.task to $TASK_FILE ."
 fi
+
