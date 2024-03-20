@@ -41,7 +41,7 @@ class InferenceModel private constructor(context: Context) {
     }
 
     companion object {
-        private const val MODEL_PATH = "/data/local/tmp/llm/model.tflite"
+        private const val MODEL_PATH = "/data/local/tmp/llm/model.bin"
         private var instance: InferenceModel? = null
 
         fun getInstance(context: Context): InferenceModel {
