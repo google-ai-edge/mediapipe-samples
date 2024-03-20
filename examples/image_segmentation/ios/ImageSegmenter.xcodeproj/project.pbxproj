@@ -31,7 +31,6 @@
 		BF6EBBA22B20531800CD13FB /* SegmentedImageRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBBA12B20531800CD13FB /* SegmentedImageRenderer.swift */; };
 		BF6EBBA62B2070F000CD13FB /* RenderToMtlViewShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBBA52B2070F000CD13FB /* RenderToMtlViewShaders.metal */; };
 		BF6EBBA82B20712600CD13FB /* selfie_segmenter.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF6EBBA72B20712600CD13FB /* selfie_segmenter.tflite */; };
-		BF6EBBAA2B20720B00CD13FB /* bg1.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BF6EBBA92B20720B00CD13FB /* bg1.jpeg */; };
 		FBCBDD23FAD8125B5F819751 /* libPods-ImageSegmenterUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D95B4C9DB808B140005D1F61 /* libPods-ImageSegmenterUITests.a */; };
 /* End PBXBuildFile section */
 
@@ -87,7 +86,6 @@
 		BF6EBBA12B20531800CD13FB /* SegmentedImageRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentedImageRenderer.swift; sourceTree = "<group>"; };
 		BF6EBBA52B2070F000CD13FB /* RenderToMtlViewShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = RenderToMtlViewShaders.metal; sourceTree = "<group>"; };
 		BF6EBBA72B20712600CD13FB /* selfie_segmenter.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = selfie_segmenter.tflite; sourceTree = "<group>"; };
-		BF6EBBA92B20720B00CD13FB /* bg1.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = bg1.jpeg; sourceTree = "<group>"; };
 		CB81BA1A32936BF6829D8CD6 /* Pods_ImageSegmenter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ImageSegmenter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D95B4C9DB808B140005D1F61 /* libPods-ImageSegmenterUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ImageSegmenterUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E17D861DD2F87160038B0515 /* Pods-ImageSegmenterTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageSegmenterTests.release.xcconfig"; path = "Target Support Files/Pods-ImageSegmenterTests/Pods-ImageSegmenterTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -172,7 +170,6 @@
 				BF6EBBA72B20712600CD13FB /* selfie_segmenter.tflite */,
 				BF2D8E642B830C7A0050C3B6 /* deeplab_v3.tflite */,
 				BF6EBB572B1EB5BF00CD13FB /* Assets.xcassets */,
-				BF6EBBA92B20720B00CD13FB /* bg1.jpeg */,
 				BF6EBB592B1EB5BF00CD13FB /* LaunchScreen.storyboard */,
 				BF6EBB5C2B1EB5BF00CD13FB /* Info.plist */,
 			);
@@ -361,7 +358,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BF6EBBAA2B20720B00CD13FB /* bg1.jpeg in Resources */,
 				BF6EBB5B2B1EB5BF00CD13FB /* LaunchScreen.storyboard in Resources */,
 				BF6EBB582B1EB5BF00CD13FB /* Assets.xcassets in Resources */,
 				BF2D8E652B830C7B0050C3B6 /* deeplab_v3.tflite in Resources */,
@@ -675,7 +671,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = H83UK2M7VU;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -711,7 +707,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = H83UK2M7VU;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;

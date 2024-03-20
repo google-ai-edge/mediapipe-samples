@@ -20,8 +20,6 @@ class SegmentedImageRenderer {
 
   private var computePipelineState: MTLComputePipelineState?
 
-  private let image2 = UIImage(named: "bg1.jpeg")!
-
   var inputTexture2: MTLTexture?
 
   private var textureCache: CVMetalTextureCache!
@@ -43,7 +41,6 @@ class SegmentedImageRenderer {
     }
     context =  CIContext(mtlDevice: metalDevice)
     textureLoader = MTKTextureLoader(device: metalDevice)
-    inputTexture2 = try? textureLoader.newTexture(cgImage: image2.cgImage!)
   }
 
   func prepare(with imageSize: CGSize,
@@ -94,8 +91,8 @@ class SegmentedImageRenderer {
     isPrepared = false
   }
 
-  func render(image: UIImage, confidenceMasks: UnsafePointer<UInt8>?) -> UIImage? {
-    guard let confidenceMasks = confidenceMasks else {
+  func render(image: UIImage, categoryMasks: UnsafePointer<UInt8>?) -> UIImage? {
+    guard let categoryMasks = categoryMasks else {
       print("confidenceMasks not found")
       return nil
     }
@@ -121,9 +118,6 @@ class SegmentedImageRenderer {
 
     let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm, width: inputTexture.width, height: inputTexture.height, mipmapped: false)
     textureDescriptor.usage = .unknown
-    let inputScaleTexture = metalDevice.makeTexture(descriptor: textureDescriptor)
-
-    resizeTexture(sourceTexture: inputTexture2!, desTexture: inputScaleTexture!, targetSize: MTLSize(width: inputTexture.width, height: inputTexture.height, depth: 1), resizeMode: .scaleToFill)
 
     // Set up command queue, buffer, and encoder.
     guard let commandQueue = commandQueue,
@@ -137,9 +131,8 @@ class SegmentedImageRenderer {
     commandEncoder.label = "Render Image"
     commandEncoder.setComputePipelineState(computePipelineState!)
     commandEncoder.setTexture(inputTexture, index: 0)
-    commandEncoder.setTexture(inputScaleTexture, index: 1)
-    commandEncoder.setTexture(outputTexture, index: 2)
-    let buffer = metalDevice.makeBuffer(bytes: confidenceMasks, length: inputTexture.width * inputTexture.height * MemoryLayout<UInt8>.size)!
+    commandEncoder.setTexture(outputTexture, index: 1)
+    let buffer = metalDevice.makeBuffer(bytes: categoryMasks, length: inputTexture.width * inputTexture.height * MemoryLayout<UInt8>.size)!
     commandEncoder.setBuffer(buffer, offset: 0, index: 0)
     var imageWidth: Int = Int(inputTexture.width)
     commandEncoder.setBytes(&imageWidth, length: MemoryLayout<Int>.size, index: 1)
@@ -251,9 +244,6 @@ class SegmentedImageRenderer {
 
     let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm, width: inputTexture.width, height: inputTexture.height, mipmapped: false)
     textureDescriptor.usage = .unknown
-    let inputScaleTexture = metalDevice.makeTexture(descriptor: textureDescriptor)
-
-    resizeTexture(sourceTexture: inputTexture2!, desTexture: inputScaleTexture!, targetSize: MTLSize(width: inputTexture.width, height: inputTexture.height, depth: 1), resizeMode: .scaleToFill)
 
     // Set up command queue, buffer, and encoder.
     guard let commandQueue = commandQueue,
@@ -267,8 +257,7 @@ class SegmentedImageRenderer {
     commandEncoder.label = "Demo Metal"
     commandEncoder.setComputePipelineState(computePipelineState!)
     commandEncoder.setTexture(inputTexture, index: 0)
-    commandEncoder.setTexture(inputScaleTexture, index: 1)
-    commandEncoder.setTexture(outputTexture, index: 2)
+    commandEncoder.setTexture(outputTexture, index: 1)
     let buffer = metalDevice.makeBuffer(bytes: segmentDatas, length: inputTexture.width * inputTexture.height * MemoryLayout<UInt8>.size)!
     commandEncoder.setBuffer(buffer, offset: 0, index: 0)
     var imageWidth: Int = Int(inputTexture.width)

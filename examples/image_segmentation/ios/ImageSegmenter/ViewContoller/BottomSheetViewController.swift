@@ -38,13 +38,51 @@ class BottomSheetViewController: UIViewController {
   // MARK: Storyboards Connections
   @IBOutlet weak var inferenceTimeNameLabel: UILabel!
   @IBOutlet weak var inferenceTimeLabel: UILabel!
-  
+  @IBOutlet weak var choseModelButton: UIButton!
+  @IBOutlet weak var toggleBottomSheetButton: UIButton!
+
   override func viewDidLoad() {
     super.viewDidLoad()
+    setupUI()
   }
-  
+
+  // MARK: - Private function
+  private func setupUI() {
+    // Choose model option
+    let selectedModelAction = {(action: UIAction) in
+      self.updateModel(modelTitle: action.title)
+    }
+
+    let actions: [UIAction] = Model.allCases.compactMap { model in
+      return UIAction(
+        title: model.name,
+        state: (InferenceConfigurationManager.sharedInstance.model == model) ? .on : .off,
+        handler: selectedModelAction
+      )
+    }
+
+    choseModelButton.menu = UIMenu(children: actions)
+    choseModelButton.showsMenuAsPrimaryAction = true
+    choseModelButton.changesSelectionAsPrimaryAction = true
+  }
+
+  private func updateModel(modelTitle: String) {
+    guard let model = Model(name: modelTitle) else {
+      return
+    }
+    InferenceConfigurationManager.sharedInstance.model = model
+  }
+
   // MARK: - Public Functions
   func update(inferenceTimeString: String) {
     inferenceTimeLabel.text = inferenceTimeString
+  }
+
+  // MARK: IBAction
+  @IBAction func expandButtonTouchUpInside(_ sender: UIButton) {
+    sender.isSelected.toggle()
+    inferenceTimeLabel.isHidden = !sender.isSelected
+    inferenceTimeNameLabel.isHidden = !sender.isSelected
+    delegate?.viewController(self, didSwitchBottomSheetViewState: sender.isSelected)
   }
 }

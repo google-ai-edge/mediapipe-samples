@@ -47,7 +47,6 @@ class BottomSheetViewController: UIViewController {
   @IBOutlet weak var maxResultStepper: UIStepper!
   @IBOutlet weak var maxResultLabel: UILabel!
   @IBOutlet weak var toggleBottomSheetButton: UIButton!
-  @IBOutlet weak var toggleBottomSheetButtonTopSpace: NSLayoutConstraint!
   
   // MARK: Instance Variables
   var isUIEnabled: Bool = false {

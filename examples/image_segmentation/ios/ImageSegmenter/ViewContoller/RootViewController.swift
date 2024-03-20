@@ -26,10 +26,14 @@ class RootViewController: UIViewController {
   // MARK: Storyboards Connections
   @IBOutlet weak var tabBarContainerView: UIView!
   @IBOutlet weak var runningModeTabbar: UITabBar!
-  
+  @IBOutlet weak var bottomSheetViewBottomSpace: NSLayoutConstraint!
+  @IBOutlet weak var bottomViewHeightConstraint: NSLayoutConstraint!
+
   // MARK: Constants
   private struct Constants {
-    static let inferenceBottomHeight = 30.0
+    static let inferenceBottomHeight = 180.0
+    static let expandButtonHeight = 41.0
+    static let expandButtonTopSpace = 10.0
     static let mediaLibraryViewControllerStoryBoardId = "MEDIA_LIBRARY_VIEW_CONTROLLER"
     static let cameraViewControllerStoryBoardId = "CAMERA_VIEW_CONTROLLER"
     static let storyBoardName = "Main"
@@ -42,6 +46,16 @@ class RootViewController: UIViewController {
   private var cameraViewController: CameraViewController?
   private var mediaLibraryViewController: MediaLibraryViewController?
 
+  // MARK: Private Instance Variables
+  private var totalBottomSheetHeight: CGFloat {
+    guard let isOpen = inferenceViewController?.toggleBottomSheetButton.isSelected else {
+      return 0.0
+    }
+
+    return isOpen ? Constants.inferenceBottomHeight - self.view.safeAreaInsets.bottom
+      : Constants.expandButtonHeight + Constants.expandButtonTopSpace
+  }
+
   // MARK: View Handling Methods
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -51,7 +65,21 @@ class RootViewController: UIViewController {
     instantiateCameraViewController()
     switchTo(childViewController: cameraViewController, fromViewController: nil)
   }
-  
+
+  override func viewWillLayoutSubviews() {
+    super.viewWillLayoutSubviews()
+
+    guard inferenceViewController?.toggleBottomSheetButton.isSelected == true else {
+      bottomSheetViewBottomSpace.constant = -Constants.inferenceBottomHeight
+      + Constants.expandButtonHeight
+      + self.view.safeAreaInsets.bottom
+      + Constants.expandButtonTopSpace
+      return
+    }
+
+    bottomSheetViewBottomSpace.constant = 0.0
+  }
+
   override var preferredStatusBarStyle: UIStatusBarStyle {
     return .lightContent
   }
@@ -61,6 +89,8 @@ class RootViewController: UIViewController {
     super.prepare(for: segue, sender: sender)
     if segue.identifier == Constants.inferenceVCEmbedSegueName {
       inferenceViewController = segue.destination as? BottomSheetViewController
+      inferenceViewController?.delegate = self
+      bottomViewHeightConstraint.constant = Constants.inferenceBottomHeight
       view.layoutSubviews()
     }
   }
@@ -96,6 +126,15 @@ class RootViewController: UIViewController {
     
     viewController.inferenceResultDeliveryDelegate = self
     mediaLibraryViewController = viewController
+  }
+
+  private func updateMediaLibraryControllerUI() {
+    guard let mediaLibraryViewController = mediaLibraryViewController else {
+      return
+    }
+
+    mediaLibraryViewController.layoutUIElements(
+      withInferenceViewHeight: self.totalBottomSheetHeight)
   }
 }
 
@@ -157,6 +196,7 @@ extension RootViewController: UITabBarDelegate {
     switchTo(
       childViewController: toViewController,
       fromViewController: fromViewController)
+    self.updateMediaLibraryControllerUI()
   }
 }
 
@@ -172,4 +212,29 @@ extension RootViewController: InferenceResultDeliveryDelegate {
       self.inferenceViewController?.update(inferenceTimeString: inferenceTimeString)
     }
   }
+}
+
+// MARK: BottomSheetViewControllerDelegate Methods
+extension RootViewController: BottomSheetViewControllerDelegate {
+  func viewController(
+    _ viewController: BottomSheetViewController,
+    didSwitchBottomSheetViewState isOpen: Bool) {
+      if isOpen == true {
+        bottomSheetViewBottomSpace.constant = 0.0
+      }
+      else {
+        bottomSheetViewBottomSpace.constant = -Constants.inferenceBottomHeight
+        + Constants.expandButtonHeight
+        + self.view.safeAreaInsets.bottom
+        + Constants.expandButtonTopSpace
+      }
+
+      UIView.animate(withDuration: 0.3) {[weak self] in
+        guard let weakSelf = self else {
+          return
+        }
+        weakSelf.view.layoutSubviews()
+        weakSelf.updateMediaLibraryControllerUI()
+      }
+    }
 }

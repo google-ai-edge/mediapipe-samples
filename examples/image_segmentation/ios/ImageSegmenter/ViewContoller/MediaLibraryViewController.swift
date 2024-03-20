@@ -292,7 +292,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
             self.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
             let mark = imageSegmenterResult.categoryMask
             let uint8Data = mark?.uint8Data
-            let newImage = self.render.render(image: image, confidenceMasks: uint8Data)
+            let newImage = self.render.render(image: image, categoryMasks: uint8Data)
             self.pickedImageView.image = newImage
           }
         }
