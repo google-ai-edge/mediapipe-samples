@@ -570,7 +570,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = H83UK2M7VU;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ObjectDetector/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to detection the objects that appear in the camera feed.";
@@ -603,7 +603,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = H83UK2M7VU;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ObjectDetector/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to detection the objects that appear in the camera feed.";
