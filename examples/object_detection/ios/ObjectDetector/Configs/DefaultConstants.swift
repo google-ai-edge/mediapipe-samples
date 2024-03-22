@@ -14,6 +14,7 @@
 
 import Foundation
 import UIKit
+import MediaPipeTasksVision
 
 // MARK: Define default constants
 struct DefaultConstants {
@@ -33,6 +34,7 @@ struct DefaultConstants {
   ]
   static let displayFont = UIFont.systemFont(ofSize: 14.0, weight: .medium)
   static let model: Model = .efficientdetLite0
+  static let delegate: Delegate = .CPU
 }
 
 // MARK: Model

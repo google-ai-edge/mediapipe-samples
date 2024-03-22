@@ -13,11 +13,12 @@
 // limitations under the License.
 
 import UIKit
+import MediaPipeTasksVision
 
 protocol BottomSheetViewControllerDelegate: AnyObject {
   /**
    This method is called when the user opens or closes the bottom sheet.
-  **/
+   **/
   func viewController(
     _ viewController: BottomSheetViewController,
     didSwitchBottomSheetViewState isOpen: Bool)
@@ -27,17 +28,17 @@ protocol BottomSheetViewControllerDelegate: AnyObject {
  * score threshold) and updating the singleton`` DetectorMetadata`` on user input.
  */
 class BottomSheetViewController: UIViewController {
-
+  
   enum Action {
     case changeScoreThreshold(Float)
     case changeMaxResults(Int)
     case changeModel(Model)
     case changeBottomSheetViewBottomSpace(Bool)
   }
-
+  
   // MARK: Delegates
   weak var delegate: BottomSheetViewControllerDelegate?
-
+  
   // MARK: Storyboards Connections
   @IBOutlet weak var choseModelButton: UIButton!
   @IBOutlet weak var inferenceTimeNameLabel: UILabel!
@@ -48,6 +49,7 @@ class BottomSheetViewController: UIViewController {
   @IBOutlet weak var maxResultLabel: UILabel!
   @IBOutlet weak var toggleBottomSheetButton: UIButton!
   @IBOutlet weak var toggleBottomSheetButtonTopSpace: NSLayoutConstraint!
+  @IBOutlet weak var delegateButton: UIButton!
   
   // MARK: Instance Variables
   var isUIEnabled: Bool = false {
@@ -67,16 +69,16 @@ class BottomSheetViewController: UIViewController {
     inferenceTimeLabel.text = inferenceTimeString
     inferenceTimeNameLabel.isHidden = false
   }
-
+  
   // MARK: - Private function
   private func setupUI() {
-
-    maxResultStepper.value = Double(InferenceConfigManager.sharedInstance.maxResults)
-    maxResultLabel.text = "\(InferenceConfigManager.sharedInstance.maxResults)"
-
-    thresholdStepper.value = Double(InferenceConfigManager.sharedInstance.scoreThreshold)
-    thresholdValueLabel.text = "\(InferenceConfigManager.sharedInstance.scoreThreshold)"
-
+    
+    maxResultStepper.value = Double(InferenceConfigurationManager.sharedInstance.maxResults)
+    maxResultLabel.text = "\(InferenceConfigurationManager.sharedInstance.maxResults)"
+    
+    thresholdStepper.value = Double(InferenceConfigurationManager.sharedInstance.scoreThreshold)
+    thresholdValueLabel.text = "\(InferenceConfigurationManager.sharedInstance.scoreThreshold)"
+    
     // Choose model option
     let selectedModelAction = {(action: UIAction) in
       self.updateModel(modelTitle: action.title)
@@ -85,7 +87,7 @@ class BottomSheetViewController: UIViewController {
     let actions: [UIAction] = Model.allCases.compactMap { model in
       return UIAction(
         title: model.name,
-        state: (InferenceConfigManager.sharedInstance.model == model) ? .on : .off,
+        state: (InferenceConfigurationManager.sharedInstance.model == model) ? .on : .off,
         handler: selectedModelAction
       )
     }
@@ -93,13 +95,34 @@ class BottomSheetViewController: UIViewController {
     choseModelButton.menu = UIMenu(children: actions)
     choseModelButton.showsMenuAsPrimaryAction = true
     choseModelButton.changesSelectionAsPrimaryAction = true
+    
+    let selectedDelegateAction = {(action: UIAction) in
+      self.updateDelegate(title: action.title)
+    }
+    
+    let delegates: [Delegate] = [.CPU, .GPU]
+    let delegateActions: [UIAction] = delegates.compactMap { delegate in
+      return UIAction(
+        title: delegate == .CPU ? "CPU" : "GPU",
+        state: (InferenceConfigurationManager.sharedInstance.delegate == delegate) ? .on : .off,
+        handler: selectedDelegateAction
+      )
+    }
+    
+    delegateButton.menu = UIMenu(children: delegateActions)
+    delegateButton.showsMenuAsPrimaryAction = true
+    delegateButton.changesSelectionAsPrimaryAction = true
   }
   
   private func updateModel(modelTitle: String) {
     guard let model = Model(name: modelTitle) else {
       return
     }
-    InferenceConfigManager.sharedInstance.model = model
+    InferenceConfigurationManager.sharedInstance.model = model
+  }
+  
+  private func updateDelegate(title: String) {
+    InferenceConfigurationManager.sharedInstance.delegate = title == "GPU" ? .GPU : .CPU
   }
   
   private func enableOrDisableClicks() {
@@ -115,16 +138,16 @@ class BottomSheetViewController: UIViewController {
     inferenceTimeNameLabel.isHidden = !sender.isSelected
     delegate?.viewController(self, didSwitchBottomSheetViewState: sender.isSelected)
   }
-
+  
   @IBAction func thresholdStepperValueChanged(_ sender: UIStepper) {
     let scoreThreshold = Float(sender.value)
-    InferenceConfigManager.sharedInstance.scoreThreshold = scoreThreshold
+    InferenceConfigurationManager.sharedInstance.scoreThreshold = scoreThreshold
     thresholdValueLabel.text = "\(scoreThreshold)"
   }
-
+  
   @IBAction func maxResultStepperValueChanged(_ sender: UIStepper) {
     let maxResults = Int(sender.value)
-    InferenceConfigManager.sharedInstance.maxResults = maxResults
+    InferenceConfigurationManager.sharedInstance.maxResults = maxResults
     maxResultLabel.text = "\(maxResults)"
   }
 }

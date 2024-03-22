@@ -46,10 +46,11 @@ class ObjectDetectorService: NSObject {
   private(set) var runningMode = RunningMode.image
   private var maxResults = 3
   private var scoreThreshold: Float = 0.5
-  var modelPath: String
+  private var modelPath: String
+  private var delegate: Delegate
 
   // MARK: - Custom Initializer
-  private init?(model: Model, maxResults: Int, scoreThreshold: Float, runningMode:RunningMode) {
+  private init?(model: Model, maxResults: Int, scoreThreshold: Float, runningMode:RunningMode, delegate: Delegate) {
     guard let modelPath = model.modelPath else {
       return nil
     }
@@ -57,6 +58,7 @@ class ObjectDetectorService: NSObject {
     self.maxResults = maxResults
     self.scoreThreshold = scoreThreshold
     self.runningMode = runningMode
+    self.delegate = delegate
     super.init()
     
     createObjectDetector()
@@ -68,6 +70,7 @@ class ObjectDetectorService: NSObject {
     objectDetectorOptions.maxResults = self.maxResults
     objectDetectorOptions.scoreThreshold = self.scoreThreshold
     objectDetectorOptions.baseOptions.modelAssetPath = modelPath
+    objectDetectorOptions.baseOptions.delegate = delegate
     if runningMode == .liveStream {
       objectDetectorOptions.objectDetectorLiveStreamDelegate = self
     }
@@ -83,12 +86,14 @@ class ObjectDetectorService: NSObject {
   static func videoObjectDetectorService(
     model: Model, maxResults: Int,
     scoreThreshold: Float,
-    videoDelegate: ObjectDetectorServiceVideoDelegate?) -> ObjectDetectorService? {
+    videoDelegate: ObjectDetectorServiceVideoDelegate?,
+    delegate: Delegate) -> ObjectDetectorService? {
     let objectDetectorService = ObjectDetectorService(
       model: model,
       maxResults: maxResults,
       scoreThreshold: scoreThreshold,
-      runningMode: .video)
+      runningMode: .video,
+      delegate: delegate)
     objectDetectorService?.videoDelegate = videoDelegate
     
     return objectDetectorService
@@ -97,12 +102,14 @@ class ObjectDetectorService: NSObject {
   static func liveStreamDetectorService(
     model: Model, maxResults: Int,
     scoreThreshold: Float,
-    liveStreamDelegate: ObjectDetectorServiceLiveStreamDelegate?) -> ObjectDetectorService? {
+    liveStreamDelegate: ObjectDetectorServiceLiveStreamDelegate?,
+    delegate: Delegate) -> ObjectDetectorService? {
     let objectDetectorService = ObjectDetectorService(
       model: model,
       maxResults: maxResults,
       scoreThreshold: scoreThreshold,
-      runningMode: .liveStream)
+      runningMode: .liveStream,
+      delegate: delegate)
     objectDetectorService?.liveStreamDelegate = liveStreamDelegate
     
     return objectDetectorService
@@ -110,13 +117,15 @@ class ObjectDetectorService: NSObject {
   
   static func stillImageDetectorService(
     model: Model, maxResults: Int,
-    scoreThreshold: Float) -> ObjectDetectorService? {
+    scoreThreshold: Float,
+    delegate: Delegate) -> ObjectDetectorService? {
     let objectDetectorService = ObjectDetectorService(
       model: model,
       maxResults: maxResults,
       scoreThreshold: scoreThreshold,
-      runningMode: .image)
-      
+      runningMode: .image,
+      delegate: delegate)
+
     return objectDetectorService
   }
   
