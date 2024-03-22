@@ -146,7 +146,8 @@ class CameraViewController: UIViewController {
     imageSegmenterService = ImageSegmenterService
       .liveStreamImageSegmenterService(
         modelPath: InferenceConfigurationManager.sharedInstance.model.modelPath,
-        liveStreamDelegate: self)
+        liveStreamDelegate: self,
+        delegate: InferenceConfigurationManager.sharedInstance.delegate)
   }
 
   private func clearImageSegmenterServiceOnSessionInterruption() {

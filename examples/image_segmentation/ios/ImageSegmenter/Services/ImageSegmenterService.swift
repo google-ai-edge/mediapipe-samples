@@ -45,13 +45,16 @@ class ImageSegmenterService: NSObject {
   var imageSegmenter: ImageSegmenter?
   private(set) var runningMode = RunningMode.image
   var modelPath: String
+  var delegate: Delegate
 
   // MARK: - Custom Initializer
   private init?(modelPath: String?,
-                runningMode:RunningMode) {
+                runningMode:RunningMode,
+                delegate: Delegate) {
     guard let modelPath = modelPath else { return nil }
     self.modelPath = modelPath
     self.runningMode = runningMode
+    self.delegate = delegate
     super.init()
 
     createImageSegmenter()
@@ -62,6 +65,7 @@ class ImageSegmenterService: NSObject {
     imageSegmenterOptions.runningMode = runningMode
     imageSegmenterOptions.shouldOutputCategoryMask = true
     imageSegmenterOptions.baseOptions.modelAssetPath = modelPath
+    imageSegmenterOptions.baseOptions.delegate = self.delegate
     if runningMode == .liveStream {
       imageSegmenterOptions.imageSegmenterLiveStreamDelegate = self
     }
@@ -75,29 +79,35 @@ class ImageSegmenterService: NSObject {
 
   // MARK: - Static Initializers
   static func videoImageSegmenterService(
-    modelPath: String?) -> ImageSegmenterService? {
+    modelPath: String?,
+    delegate: Delegate) -> ImageSegmenterService? {
       let imageSegmenterService = ImageSegmenterService(
         modelPath: modelPath,
-        runningMode: .video)
+        runningMode: .video,
+      delegate: delegate)
       return imageSegmenterService
     }
 
   static func liveStreamImageSegmenterService(
     modelPath: String?,
-    liveStreamDelegate: ImageSegmenterServiceLiveStreamDelegate?) -> ImageSegmenterService? {
+    liveStreamDelegate: ImageSegmenterServiceLiveStreamDelegate?,
+    delegate: Delegate) -> ImageSegmenterService? {
       let imageSegmenterService = ImageSegmenterService(
         modelPath: modelPath,
-        runningMode: .liveStream)
+        runningMode: .liveStream,
+      delegate: delegate)
       imageSegmenterService?.liveStreamDelegate = liveStreamDelegate
 
       return imageSegmenterService
     }
 
   static func stillImageSegmenterService(
-    modelPath: String?) -> ImageSegmenterService? {
+    modelPath: String?,
+    delegate: Delegate) -> ImageSegmenterService? {
       let imageSegmenterService = ImageSegmenterService(
         modelPath: modelPath,
-        runningMode: .image)
+        runningMode: .image,
+      delegate: delegate)
 
       return imageSegmenterService
     }

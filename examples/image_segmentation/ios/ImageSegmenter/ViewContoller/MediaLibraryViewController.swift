@@ -205,8 +205,6 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     addPlayerViewControllerAsChild()
     guard let player = playerViewController?.player, let playerItem = player.currentItem else { return }
     let timeRange = CMTimeRange(start: .zero, duration: asset.duration)
-    let buffersInFlight = 3
-    var currentUniformIndex = 0
     var datas: [UnsafePointer<Float32>] = []
     let videoComposition = AVMutableVideoComposition(asset: asset) { [weak self] request in
       guard let self = self else { return }
@@ -315,10 +313,12 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     switch runningMode {
     case .image:
       imageSegmenterService = ImageSegmenterService.stillImageSegmenterService(
-        modelPath: InferenceConfigurationManager.sharedInstance.model.modelPath)
+        modelPath: InferenceConfigurationManager.sharedInstance.model.modelPath,
+        delegate: InferenceConfigurationManager.sharedInstance.delegate)
     case .video:
       imageSegmenterService = ImageSegmenterService.videoImageSegmenterService(
-        modelPath: InferenceConfigurationManager.sharedInstance.model.modelPath)
+        modelPath: InferenceConfigurationManager.sharedInstance.model.modelPath,
+        delegate: InferenceConfigurationManager.sharedInstance.delegate)
     default:
       break;
     }
