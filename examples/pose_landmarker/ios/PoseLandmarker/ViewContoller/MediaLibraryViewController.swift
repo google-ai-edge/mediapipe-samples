@@ -300,7 +300,8 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
         numPoses: InferenceConfigurationManager.sharedInstance.numPoses,
         minPoseDetectionConfidence: InferenceConfigurationManager.sharedInstance.minPoseDetectionConfidence,
         minPosePresenceConfidence: InferenceConfigurationManager.sharedInstance.minPosePresenceConfidence,
-        minTrackingConfidence: InferenceConfigurationManager.sharedInstance.minTrackingConfidence)
+        minTrackingConfidence: InferenceConfigurationManager.sharedInstance.minTrackingConfidence,
+        delegate: InferenceConfigurationManager.sharedInstance.delegate)
       case .video:
       poseLandmarkerService = PoseLandmarkerService.videoPoseLandmarkerService(
         modelPath: InferenceConfigurationManager.sharedInstance.model.modelPath,
@@ -308,7 +309,8 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
         minPoseDetectionConfidence: InferenceConfigurationManager.sharedInstance.minPoseDetectionConfidence,
         minPosePresenceConfidence: InferenceConfigurationManager.sharedInstance.minPosePresenceConfidence,
         minTrackingConfidence: InferenceConfigurationManager.sharedInstance.minTrackingConfidence,
-        videoDelegate: self)
+        videoDelegate: self,
+        delegate: InferenceConfigurationManager.sharedInstance.delegate)
       default:
         break;
     }

@@ -155,7 +155,8 @@ class CameraViewController: UIViewController {
         minPoseDetectionConfidence: InferenceConfigurationManager.sharedInstance.minPoseDetectionConfidence,
         minPosePresenceConfidence: InferenceConfigurationManager.sharedInstance.minPosePresenceConfidence,
         minTrackingConfidence: InferenceConfigurationManager.sharedInstance.minTrackingConfidence,
-        liveStreamDelegate: self)
+        liveStreamDelegate: self,
+        delegate: InferenceConfigurationManager.sharedInstance.delegate)
   }
   
   private func clearPoseLandmarkerServiceOnSessionInterruption() {

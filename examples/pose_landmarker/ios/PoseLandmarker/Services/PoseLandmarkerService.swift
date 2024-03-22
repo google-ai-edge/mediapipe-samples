@@ -48,7 +48,8 @@ class PoseLandmarkerService: NSObject {
   private var minPoseDetectionConfidence: Float
   private var minPosePresenceConfidence: Float
   private var minTrackingConfidence: Float
-  var modelPath: String
+  private var modelPath: String
+  private var delegate: Delegate
 
   // MARK: - Custom Initializer
   private init?(modelPath: String?,
@@ -56,7 +57,8 @@ class PoseLandmarkerService: NSObject {
                 numPoses: Int,
                 minPoseDetectionConfidence: Float,
                 minPosePresenceConfidence: Float,
-                minTrackingConfidence: Float) {
+                minTrackingConfidence: Float,
+                delegate: Delegate) {
     guard let modelPath = modelPath else { return nil }
     self.modelPath = modelPath
     self.runningMode = runningMode
@@ -64,6 +66,7 @@ class PoseLandmarkerService: NSObject {
     self.minPoseDetectionConfidence = minPoseDetectionConfidence
     self.minPosePresenceConfidence = minPosePresenceConfidence
     self.minTrackingConfidence = minTrackingConfidence
+    self.delegate = delegate
     super.init()
 
     createPoseLandmarker()
@@ -77,6 +80,7 @@ class PoseLandmarkerService: NSObject {
     poseLandmarkerOptions.minPosePresenceConfidence = minPosePresenceConfidence
     poseLandmarkerOptions.minTrackingConfidence = minTrackingConfidence
     poseLandmarkerOptions.baseOptions.modelAssetPath = modelPath
+    poseLandmarkerOptions.baseOptions.delegate = delegate
     if runningMode == .liveStream {
       poseLandmarkerOptions.poseLandmarkerLiveStreamDelegate = self
     }
@@ -95,14 +99,16 @@ class PoseLandmarkerService: NSObject {
     minPoseDetectionConfidence: Float,
     minPosePresenceConfidence: Float,
     minTrackingConfidence: Float,
-    videoDelegate: PoseLandmarkerServiceVideoDelegate?) -> PoseLandmarkerService? {
+    videoDelegate: PoseLandmarkerServiceVideoDelegate?,
+    delegate: Delegate) -> PoseLandmarkerService? {
     let poseLandmarkerService = PoseLandmarkerService(
       modelPath: modelPath,
       runningMode: .video,
       numPoses: numPoses,
       minPoseDetectionConfidence: minPoseDetectionConfidence,
       minPosePresenceConfidence: minPosePresenceConfidence,
-      minTrackingConfidence: minTrackingConfidence)
+      minTrackingConfidence: minTrackingConfidence,
+      delegate: delegate)
     poseLandmarkerService?.videoDelegate = videoDelegate
     return poseLandmarkerService
   }
@@ -113,14 +119,16 @@ class PoseLandmarkerService: NSObject {
     minPoseDetectionConfidence: Float,
     minPosePresenceConfidence: Float,
     minTrackingConfidence: Float,
-    liveStreamDelegate: PoseLandmarkerServiceLiveStreamDelegate?) -> PoseLandmarkerService? {
+    liveStreamDelegate: PoseLandmarkerServiceLiveStreamDelegate?,
+    delegate: Delegate) -> PoseLandmarkerService? {
     let poseLandmarkerService = PoseLandmarkerService(
       modelPath: modelPath,
       runningMode: .liveStream,
       numPoses: numPoses,
       minPoseDetectionConfidence: minPoseDetectionConfidence,
       minPosePresenceConfidence: minPosePresenceConfidence,
-      minTrackingConfidence: minTrackingConfidence)
+      minTrackingConfidence: minTrackingConfidence,
+      delegate: delegate)
     poseLandmarkerService?.liveStreamDelegate = liveStreamDelegate
 
     return poseLandmarkerService
@@ -131,14 +139,16 @@ class PoseLandmarkerService: NSObject {
     numPoses: Int,
     minPoseDetectionConfidence: Float,
     minPosePresenceConfidence: Float,
-    minTrackingConfidence: Float) -> PoseLandmarkerService? {
+    minTrackingConfidence: Float,
+    delegate: Delegate) -> PoseLandmarkerService? {
     let poseLandmarkerService = PoseLandmarkerService(
       modelPath: modelPath,
       runningMode: .image,
       numPoses: numPoses,
       minPoseDetectionConfidence: minPoseDetectionConfidence,
       minPosePresenceConfidence: minPosePresenceConfidence,
-      minTrackingConfidence: minTrackingConfidence)
+      minTrackingConfidence: minTrackingConfidence,
+      delegate: delegate)
 
     return poseLandmarkerService
   }

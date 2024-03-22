@@ -14,6 +14,7 @@
 
 import Foundation
 import UIKit
+import MediaPipeTasksVision
 
 // MARK: Define default constants
 struct DefaultConstants {
@@ -30,6 +31,7 @@ struct DefaultConstants {
   static var minPosePresenceConfidence: Float = 0.5
   static var minTrackingConfidence: Float = 0.5
   static let model: Model = .pose_landmarker_lite
+  static let delegate: Delegate = .CPU
 }
 
 // MARK: Model

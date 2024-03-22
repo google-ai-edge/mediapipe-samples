@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import UIKit
+import MediaPipeTasksVision
 
 protocol BottomSheetViewControllerDelegate: AnyObject {
   /**
@@ -45,6 +46,7 @@ class BottomSheetViewController: UIViewController {
   @IBOutlet weak var choseModelButton: UIButton!
 
   @IBOutlet weak var toggleBottomSheetButton: UIButton!
+  @IBOutlet weak var delegateButton: UIButton!
 
   // MARK: Instance Variables
   var isUIEnabled: Bool = false {
@@ -91,10 +93,25 @@ class BottomSheetViewController: UIViewController {
         handler: selectedModelAction
       )
     }
-
     choseModelButton.menu = UIMenu(children: actions)
     choseModelButton.showsMenuAsPrimaryAction = true
     choseModelButton.changesSelectionAsPrimaryAction = true
+
+    let selectedDelegateAction = {(action: UIAction) in
+      self.updateDelegate(title: action.title)
+    }
+    let delegates: [Delegate] = [.CPU, .GPU]
+    let delegateActions: [UIAction] = delegates.compactMap { delegate in
+      return UIAction(
+        title: delegate == .CPU ? "CPU" : "GPU",
+        state: (InferenceConfigurationManager.sharedInstance.delegate == delegate) ? .on : .off,
+        handler: selectedDelegateAction
+      )
+    }
+
+    delegateButton.menu = UIMenu(children: delegateActions)
+    delegateButton.showsMenuAsPrimaryAction = true
+    delegateButton.changesSelectionAsPrimaryAction = true
   }
   
   private func enableOrDisableClicks() {
@@ -110,6 +127,11 @@ class BottomSheetViewController: UIViewController {
     }
     InferenceConfigurationManager.sharedInstance.model = model
   }
+
+  private func updateDelegate(title: String) {
+    InferenceConfigurationManager.sharedInstance.delegate = title == "GPU" ? .GPU : .CPU
+  }
+
 
   // MARK: IBAction
   @IBAction func expandButtonTouchUpInside(_ sender: UIButton) {
