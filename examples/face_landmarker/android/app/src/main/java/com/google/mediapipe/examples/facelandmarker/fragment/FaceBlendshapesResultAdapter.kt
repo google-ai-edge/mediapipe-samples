@@ -16,6 +16,7 @@
 
 package com.google.mediapipe.examples.facelandmarker.fragment
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -40,11 +41,6 @@ class FaceBlendshapesResultAdapter :
             for (i in 0 until min) {
                 categories[i] = sortedCategories[i]
             }
-        } else {
-            Log.v(
-                "FaceBlendshapesResultAdapter",
-                "FaceLandmarkerResult is null or faceBlendshapes has no value is present for this frame"
-            )
         }
     }
 
