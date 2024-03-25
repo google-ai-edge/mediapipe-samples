@@ -33,12 +33,18 @@ class FaceBlendshapesResultAdapter :
 
     fun updateResults(faceLandmarkerResult: FaceLandmarkerResult? = null) {
         categories = MutableList(52) { null }
-        if (faceLandmarkerResult != null) {
-            val sortedCategories = faceLandmarkerResult.faceBlendshapes().get()[0].sortedBy { -it.score() }
+        if (faceLandmarkerResult != null && faceLandmarkerResult.faceBlendshapes().isPresent) {
+            val faceBlendshapes = faceLandmarkerResult.faceBlendshapes().get()
+            val sortedCategories = faceBlendshapes[0].sortedByDescending { it.score() }
             val min = kotlin.math.min(sortedCategories.size, categories.size)
             for (i in 0 until min) {
                 categories[i] = sortedCategories[i]
             }
+        } else {
+            Log.v(
+                "FaceBlendshapesResultAdapter",
+                "FaceLandmarkerResult is null or faceBlendshapes has no value is present for this frame"
+            )
         }
     }
 
