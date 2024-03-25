@@ -76,13 +76,13 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
                 HandLandmarker.HAND_CONNECTIONS.forEach {
                     canvas.drawLine(
-                        handLandmarkerResult.landmarks().get(0).get(it!!.start())
+                        landmark.get(it!!.start())
                             .x() * imageWidth * scaleFactor,
-                        handLandmarkerResult.landmarks().get(0).get(it.start())
+                        landmark.get(it.start())
                             .y() * imageHeight * scaleFactor,
-                        handLandmarkerResult.landmarks().get(0).get(it.end())
+                        landmark.get(it.end())
                             .x() * imageWidth * scaleFactor,
-                        handLandmarkerResult.landmarks().get(0).get(it.end())
+                        landmark.get(it.end())
                             .y() * imageHeight * scaleFactor,
                         linePaint
                     )
