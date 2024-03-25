@@ -157,10 +157,11 @@ class CameraViewController: UIViewController {
     objectDetectorService = nil
       objectDetectorService = ObjectDetectorService
         .liveStreamDetectorService(
-          model: InferenceConfigManager.sharedInstance.model,
-          maxResults: InferenceConfigManager.sharedInstance.maxResults,
-          scoreThreshold: InferenceConfigManager.sharedInstance.scoreThreshold,
-          liveStreamDelegate: self)
+          model: InferenceConfigurationManager.sharedInstance.model,
+          maxResults: InferenceConfigurationManager.sharedInstance.maxResults,
+          scoreThreshold: InferenceConfigurationManager.sharedInstance.scoreThreshold,
+          liveStreamDelegate: self,
+          delegate: InferenceConfigurationManager.sharedInstance.delegate)
   }
   
   private func clearObjectDetectorServiceOnSessionInterruption() {
@@ -172,7 +173,7 @@ class CameraViewController: UIViewController {
     NotificationCenter.default
       .addObserver(self,
                    selector: #selector(clearAndInitializeObjectDetectorService),
-                   name: InferenceConfigManager.notificationName,
+                   name: InferenceConfigurationManager.notificationName,
                    object: nil)
     isObserving = true
   }
@@ -181,7 +182,7 @@ class CameraViewController: UIViewController {
     if isObserving {
       NotificationCenter.default
         .removeObserver(self,
-                        name:InferenceConfigManager.notificationName,
+                        name: InferenceConfigurationManager.notificationName,
                         object: nil)
     }
     isObserving = false

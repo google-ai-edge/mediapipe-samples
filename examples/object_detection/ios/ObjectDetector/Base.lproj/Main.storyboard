@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="l9g-3L-U89">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="l9g-3L-U89">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22684"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="UIMenu" message="Requires Xcode 11 or later." minToolsVersion="11.0" requiredIntegratedClassName="UICommandDiff"/>
@@ -125,6 +126,44 @@
                                             <constraint firstAttribute="height" constant="1" id="Xlb-hr-NyK"/>
                                         </constraints>
                                     </view>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="NzK-5c-MAF">
+                                        <rect key="frame" x="0.0" y="244" width="393" height="32"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Delegate" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oms-G0-MyQ">
+                                                <rect key="frame" x="16" y="7.6666666666666572" width="58" height="17"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <button opaque="NO" contentMode="scaleToFill" showsMenuAsPrimaryAction="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="aFq-ri-Hr7">
+                                                <rect key="frame" x="353" y="0.0" width="24" height="32"/>
+                                                <color key="backgroundColor" red="0.0" green="0.49803921569999998" blue="0.5450980392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="32" id="6Cg-ze-Ehv"/>
+                                                </constraints>
+                                                <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <menu key="menu" id="XtT-Ia-qgq">
+                                                    <children>
+                                                        <command title="item1" id="iou-2Y-r5k"/>
+                                                        <command title="item2" id="yL3-YM-jDD"/>
+                                                    </children>
+                                                </menu>
+                                                <buttonConfiguration key="configuration" style="plain"/>
+                                                <userDefinedRuntimeAttributes>
+                                                    <userDefinedRuntimeAttribute type="string" keyPath="layer.cornerRadius" value="8"/>
+                                                </userDefinedRuntimeAttributes>
+                                            </button>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="trailing" secondItem="aFq-ri-Hr7" secondAttribute="trailing" constant="16" id="5tr-dh-hhY"/>
+                                            <constraint firstItem="oms-G0-MyQ" firstAttribute="leading" secondItem="NzK-5c-MAF" secondAttribute="leading" constant="16" id="6o6-RK-RAx"/>
+                                            <constraint firstItem="aFq-ri-Hr7" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="oms-G0-MyQ" secondAttribute="trailing" id="eyT-Np-DPU"/>
+                                            <constraint firstItem="oms-G0-MyQ" firstAttribute="centerY" secondItem="aFq-ri-Hr7" secondAttribute="centerY" id="h06-XT-8Og"/>
+                                            <constraint firstAttribute="bottom" secondItem="aFq-ri-Hr7" secondAttribute="bottom" id="sO6-it-f3L"/>
+                                            <constraint firstItem="aFq-ri-Hr7" firstAttribute="top" secondItem="NzK-5c-MAF" secondAttribute="top" id="wKh-kV-Da9"/>
+                                        </constraints>
+                                    </view>
                                 </subviews>
                                 <color key="backgroundColor" red="0.99999600649999998" green="1" blue="1" alpha="0.79932968277945615" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
@@ -150,9 +189,12 @@
                                     <constraint firstItem="s05-yK-gXh" firstAttribute="centerY" secondItem="0nH-Zx-p69" secondAttribute="centerY" id="i6B-0T-nRV"/>
                                     <constraint firstItem="7MT-s0-Gcl" firstAttribute="leading" secondItem="WmQ-cb-lxE" secondAttribute="trailing" constant="4" id="mUj-pi-LYj"/>
                                     <constraint firstItem="d2C-9O-82c" firstAttribute="top" secondItem="0Hl-aV-l7w" secondAttribute="bottom" constant="32" id="mcI-24-pk6"/>
+                                    <constraint firstItem="NzK-5c-MAF" firstAttribute="leading" secondItem="AOI-Gh-SLK" secondAttribute="leading" id="mts-qE-zDM"/>
                                     <constraint firstItem="iaZ-s2-My0" firstAttribute="centerY" secondItem="0nH-Zx-p69" secondAttribute="centerY" id="o81-hG-imF"/>
                                     <constraint firstItem="4Av-AR-vvS" firstAttribute="trailing" secondItem="7MT-s0-Gcl" secondAttribute="trailing" id="qti-tf-eCr"/>
+                                    <constraint firstAttribute="trailing" secondItem="NzK-5c-MAF" secondAttribute="trailing" id="r2s-3B-VDA"/>
                                     <constraint firstItem="0Hl-aV-l7w" firstAttribute="top" secondItem="AOI-Gh-SLK" secondAttribute="top" constant="10" id="rl8-eu-Q06"/>
+                                    <constraint firstItem="NzK-5c-MAF" firstAttribute="top" secondItem="4Av-AR-vvS" secondAttribute="bottom" constant="12" id="uwB-Vx-sb2"/>
                                     <constraint firstItem="w11-Wg-LB1" firstAttribute="leading" secondItem="r1c-bf-rQA" secondAttribute="leading" id="vOd-lp-h4v"/>
                                     <constraint firstAttribute="trailing" secondItem="tZo-oH-ToE" secondAttribute="trailing" id="xSe-Ss-8WB"/>
                                     <constraint firstItem="tZo-oH-ToE" firstAttribute="top" secondItem="AOI-Gh-SLK" secondAttribute="top" id="yoR-Hn-w9J"/>
@@ -173,6 +215,7 @@
                     <navigationItem key="navigationItem" id="BIS-1q-gQH"/>
                     <connections>
                         <outlet property="choseModelButton" destination="4Av-AR-vvS" id="lVc-y6-jA6"/>
+                        <outlet property="delegateButton" destination="aFq-ri-Hr7" id="HhJ-dd-M00"/>
                         <outlet property="inferenceTimeLabel" destination="cRO-ho-FXh" id="tV1-AJ-pi9"/>
                         <outlet property="inferenceTimeNameLabel" destination="d2C-9O-82c" id="ZdG-9v-GaP"/>
                         <outlet property="maxResultLabel" destination="WmQ-cb-lxE" id="PIG-Gi-kpV"/>
