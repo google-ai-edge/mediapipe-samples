@@ -20,7 +20,6 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.google.mediapipe.tasks.vision.core.RunningMode
@@ -71,14 +70,6 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
         }
 
         results?.let { faceLandmarkerResult ->
-
-            if( faceLandmarkerResult.faceBlendshapes().isPresent) {
-                faceLandmarkerResult.faceBlendshapes().get().forEach {
-                    it.forEach {
-                        Log.e(TAG, it.displayName() + " " + it.score())
-                    }
-                }
-            }
 
             for(landmark in faceLandmarkerResult.faceLandmarks()) {
                 for(normalizedLandmark in landmark) {

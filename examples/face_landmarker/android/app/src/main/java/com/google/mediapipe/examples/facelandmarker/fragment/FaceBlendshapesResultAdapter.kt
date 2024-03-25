@@ -40,11 +40,6 @@ class FaceBlendshapesResultAdapter :
             for (i in 0 until min) {
                 categories[i] = sortedCategories[i]
             }
-        } else {
-            Log.v(
-                "FaceBlendshapesResultAdapter",
-                "FaceLandmarkerResult is null or faceBlendshapes has no value is present for this frame"
-            )
         }
     }
 
