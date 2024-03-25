@@ -49,7 +49,7 @@ class PoseLandmarkerService: NSObject {
   private var minPosePresenceConfidence: Float
   private var minTrackingConfidence: Float
   private var modelPath: String
-  private var delegate: Delegate
+  private var delegate: PoseLandmarkerDelegate
 
   // MARK: - Custom Initializer
   private init?(modelPath: String?,
@@ -58,7 +58,7 @@ class PoseLandmarkerService: NSObject {
                 minPoseDetectionConfidence: Float,
                 minPosePresenceConfidence: Float,
                 minTrackingConfidence: Float,
-                delegate: Delegate) {
+                delegate: PoseLandmarkerDelegate) {
     guard let modelPath = modelPath else { return nil }
     self.modelPath = modelPath
     self.runningMode = runningMode
@@ -80,7 +80,7 @@ class PoseLandmarkerService: NSObject {
     poseLandmarkerOptions.minPosePresenceConfidence = minPosePresenceConfidence
     poseLandmarkerOptions.minTrackingConfidence = minTrackingConfidence
     poseLandmarkerOptions.baseOptions.modelAssetPath = modelPath
-    poseLandmarkerOptions.baseOptions.delegate = delegate
+    poseLandmarkerOptions.baseOptions.delegate = delegate.delegate
     if runningMode == .liveStream {
       poseLandmarkerOptions.poseLandmarkerLiveStreamDelegate = self
     }
@@ -100,7 +100,7 @@ class PoseLandmarkerService: NSObject {
     minPosePresenceConfidence: Float,
     minTrackingConfidence: Float,
     videoDelegate: PoseLandmarkerServiceVideoDelegate?,
-    delegate: Delegate) -> PoseLandmarkerService? {
+    delegate: PoseLandmarkerDelegate) -> PoseLandmarkerService? {
     let poseLandmarkerService = PoseLandmarkerService(
       modelPath: modelPath,
       runningMode: .video,
@@ -120,7 +120,7 @@ class PoseLandmarkerService: NSObject {
     minPosePresenceConfidence: Float,
     minTrackingConfidence: Float,
     liveStreamDelegate: PoseLandmarkerServiceLiveStreamDelegate?,
-    delegate: Delegate) -> PoseLandmarkerService? {
+    delegate: PoseLandmarkerDelegate) -> PoseLandmarkerService? {
     let poseLandmarkerService = PoseLandmarkerService(
       modelPath: modelPath,
       runningMode: .liveStream,
@@ -140,7 +140,7 @@ class PoseLandmarkerService: NSObject {
     minPoseDetectionConfidence: Float,
     minPosePresenceConfidence: Float,
     minTrackingConfidence: Float,
-    delegate: Delegate) -> PoseLandmarkerService? {
+    delegate: PoseLandmarkerDelegate) -> PoseLandmarkerService? {
     let poseLandmarkerService = PoseLandmarkerService(
       modelPath: modelPath,
       runningMode: .image,

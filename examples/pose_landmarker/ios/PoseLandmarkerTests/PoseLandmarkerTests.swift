@@ -27,6 +27,7 @@ final class PoseLandmarkerTests: XCTestCase {
   static let minPoseDetectionConfidence: Float = 0.3
   static let minPosePresenceConfidence: Float = 0.3
   static let minTrackingConfidence: Float = 0.3
+  static let delegate: PoseLandmarkerDelegate = .CPU
 
   static let testImage = UIImage(
     named: "test_image.jpg",
@@ -151,7 +152,8 @@ final class PoseLandmarkerTests: XCTestCase {
         numPoses: 1,
         minPoseDetectionConfidence: PoseLandmarkerTests.minPoseDetectionConfidence,
         minPosePresenceConfidence: PoseLandmarkerTests.minPosePresenceConfidence,
-        minTrackingConfidence: PoseLandmarkerTests.minTrackingConfidence)!
+        minTrackingConfidence: PoseLandmarkerTests.minTrackingConfidence,
+        delegate: PoseLandmarkerTests.delegate)!
     return poseLandmarkerService
   }
 
@@ -161,7 +163,7 @@ final class PoseLandmarkerTests: XCTestCase {
     XCTAssertEqual(poseLandmarkerResult.landmarks.count, 1)
   }
 
-  func assertLandmarkAreEqual(
+  func assertLandmarksAreEqual(
     landmark: NormalizedLandmark,
     expectedLandmark: NormalizedLandmark,
     indexInLandmarkList: Int
@@ -210,7 +212,7 @@ final class PoseLandmarkerTests: XCTestCase {
         XCTAssertEqual(
           landmarks.count,
           expectedLandmarks.count)
-        assertLandmarkAreEqual(
+        assertLandmarksAreEqual(
           landmark: landmark, expectedLandmark: expectedLandmark, indexInLandmarkList: index)
       }
     }

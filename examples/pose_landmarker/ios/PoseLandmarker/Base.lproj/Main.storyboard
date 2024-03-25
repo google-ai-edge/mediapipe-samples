@@ -2,7 +2,6 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="52l-qN-uG0">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22684"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -376,8 +375,8 @@
                     </view>
                     <navigationItem key="navigationItem" id="BIS-1q-gQH"/>
                     <connections>
-                        <outlet property="choseModelButton" destination="yOt-Ia-U4X" id="53S-Qz-XRG"/>
-                        <outlet property="delegateButton" destination="IE7-vD-hCX" id="lLK-gk-Qhl"/>
+                        <outlet property="chooseDelegateButton" destination="IE7-vD-hCX" id="lLK-gk-Qhl"/>
+                        <outlet property="chooseModelButton" destination="yOt-Ia-U4X" id="53S-Qz-XRG"/>
                         <outlet property="inferenceTimeLabel" destination="cRO-ho-FXh" id="E3e-km-74r"/>
                         <outlet property="inferenceTimeNameLabel" destination="d2C-9O-82c" id="O7p-Pr-lsE"/>
                         <outlet property="minPoseDetectionConfidenceStepper" destination="0nH-Zx-p69" id="UPk-Tc-SO0"/>

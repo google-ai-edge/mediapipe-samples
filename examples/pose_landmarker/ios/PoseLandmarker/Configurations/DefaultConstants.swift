@@ -31,7 +31,7 @@ struct DefaultConstants {
   static var minPosePresenceConfidence: Float = 0.5
   static var minTrackingConfidence: Float = 0.5
   static let model: Model = .pose_landmarker_lite
-  static let delegate: Delegate = .CPU
+  static let delegate: PoseLandmarkerDelegate = .CPU
 }
 
 // MARK: Model
@@ -77,6 +77,39 @@ enum Model: Int, CaseIterable {
       return nil
     }
   }
-
 }
 
+// MARK: PoseLandmarkerDelegate
+enum PoseLandmarkerDelegate: CaseIterable {
+  case GPU
+  case CPU
+
+  var name: String {
+    switch self {
+    case .GPU:
+      return "GPU"
+    case .CPU:
+      return "CPU"
+    }
+  }
+
+  var delegate: Delegate {
+    switch self {
+    case .GPU:
+      return .GPU
+    case .CPU:
+      return .CPU
+    }
+  }
+
+  init?(name: String) {
+    switch name {
+    case PoseLandmarkerDelegate.CPU.name:
+      self = PoseLandmarkerDelegate.CPU
+    case PoseLandmarkerDelegate.GPU.name:
+      self = PoseLandmarkerDelegate.GPU
+    default:
+      return nil
+    }
+  }
+}

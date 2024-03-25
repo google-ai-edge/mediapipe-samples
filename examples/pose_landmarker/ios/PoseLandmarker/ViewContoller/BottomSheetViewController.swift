@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import UIKit
-import MediaPipeTasksVision
 
 protocol BottomSheetViewControllerDelegate: AnyObject {
   /**
@@ -43,10 +42,10 @@ class BottomSheetViewController: UIViewController {
   @IBOutlet weak var minPosePresenceConfidenceValueLabel: UILabel!
   @IBOutlet weak var minTrackingConfidenceStepper: UIStepper!
   @IBOutlet weak var minTrackingConfidenceValueLabel: UILabel!
-  @IBOutlet weak var choseModelButton: UIButton!
+  @IBOutlet weak var chooseModelButton: UIButton!
 
   @IBOutlet weak var toggleBottomSheetButton: UIButton!
-  @IBOutlet weak var delegateButton: UIButton!
+  @IBOutlet weak var chooseDelegateButton: UIButton!
 
   // MARK: Instance Variables
   var isUIEnabled: Bool = false {
@@ -93,25 +92,24 @@ class BottomSheetViewController: UIViewController {
         handler: selectedModelAction
       )
     }
-    choseModelButton.menu = UIMenu(children: actions)
-    choseModelButton.showsMenuAsPrimaryAction = true
-    choseModelButton.changesSelectionAsPrimaryAction = true
+    chooseModelButton.menu = UIMenu(children: actions)
+    chooseModelButton.showsMenuAsPrimaryAction = true
+    chooseModelButton.changesSelectionAsPrimaryAction = true
 
     let selectedDelegateAction = {(action: UIAction) in
       self.updateDelegate(title: action.title)
     }
-    let delegates: [Delegate] = [.CPU, .GPU]
-    let delegateActions: [UIAction] = delegates.compactMap { delegate in
+    let delegateActions: [UIAction] = PoseLandmarkerDelegate.allCases.compactMap { delegate in
       return UIAction(
-        title: delegate == .CPU ? "CPU" : "GPU",
+        title: delegate.name,
         state: (InferenceConfigurationManager.sharedInstance.delegate == delegate) ? .on : .off,
         handler: selectedDelegateAction
       )
     }
 
-    delegateButton.menu = UIMenu(children: delegateActions)
-    delegateButton.showsMenuAsPrimaryAction = true
-    delegateButton.changesSelectionAsPrimaryAction = true
+    chooseDelegateButton.menu = UIMenu(children: delegateActions)
+    chooseDelegateButton.showsMenuAsPrimaryAction = true
+    chooseDelegateButton.changesSelectionAsPrimaryAction = true
   }
   
   private func enableOrDisableClicks() {
@@ -122,16 +120,14 @@ class BottomSheetViewController: UIViewController {
   }
 
   private func updateModel(modelTitle: String) {
-    guard let model = Model(name: modelTitle) else {
-      return
-    }
+    guard let model = Model(name: modelTitle) else { return }
     InferenceConfigurationManager.sharedInstance.model = model
   }
 
   private func updateDelegate(title: String) {
-    InferenceConfigurationManager.sharedInstance.delegate = title == "GPU" ? .GPU : .CPU
+    guard let delegate = PoseLandmarkerDelegate(name: title) else { return }
+    InferenceConfigurationManager.sharedInstance.delegate = delegate
   }
-
 
   // MARK: IBAction
   @IBAction func expandButtonTouchUpInside(_ sender: UIButton) {

@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import Foundation
-import MediaPipeTasksVision
 
 /**
  * Singleton storing the configs needed to initialize an MediaPipe Tasks object and run inference.
@@ -26,7 +25,7 @@ class InferenceConfigurationManager: NSObject {
     didSet { postConfigChangedNotification() }
   }
 
-  var delegate: Delegate = DefaultConstants.delegate {
+  var delegate: PoseLandmarkerDelegate = DefaultConstants.delegate {
     didSet { postConfigChangedNotification() }
   }
 
