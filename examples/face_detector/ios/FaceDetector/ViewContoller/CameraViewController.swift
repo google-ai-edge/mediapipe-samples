@@ -150,10 +150,11 @@ class CameraViewController: UIViewController {
     faceDetectorService = nil
       faceDetectorService = FaceDetectorService
         .liveStreamDetectorService(
-          modelPath: InferenceConfigManager.sharedInstance.modelPath,
-          minDetectionConfidence: InferenceConfigManager.sharedInstance.minDetectionConfidence,
-          minSuppressionThreshold: InferenceConfigManager.sharedInstance.minSuppressionThreshold,
-          liveStreamDelegate: self)
+          modelPath: InferenceConfigurationManager.sharedInstance.modelPath,
+          minDetectionConfidence: InferenceConfigurationManager.sharedInstance.minDetectionConfidence,
+          minSuppressionThreshold: InferenceConfigurationManager.sharedInstance.minSuppressionThreshold,
+          liveStreamDelegate: self,
+          delegate: InferenceConfigurationManager.sharedInstance.delegate)
   }
   
   private func clearFaceDetectorServiceOnSessionInterruption() {
@@ -165,7 +166,7 @@ class CameraViewController: UIViewController {
     NotificationCenter.default
       .addObserver(self,
                    selector: #selector(clearAndInitializeFaceDetectorService),
-                   name: InferenceConfigManager.notificationName,
+                   name: InferenceConfigurationManager.notificationName,
                    object: nil)
     isObserving = true
   }
@@ -174,7 +175,7 @@ class CameraViewController: UIViewController {
     if isObserving {
       NotificationCenter.default
         .removeObserver(self,
-                        name:InferenceConfigManager.notificationName,
+                        name:InferenceConfigurationManager.notificationName,
                         object: nil)
     }
     isObserving = false

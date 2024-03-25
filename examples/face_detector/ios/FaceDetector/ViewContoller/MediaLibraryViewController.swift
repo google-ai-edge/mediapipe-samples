@@ -295,17 +295,18 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
       case .image:
         faceDetectorService = FaceDetectorService
           .stillImageDetectorService(
-            modelPath: InferenceConfigManager.sharedInstance.modelPath,
-            minDetectionConfidence: InferenceConfigManager.sharedInstance.minDetectionConfidence,
-            minSuppressionThreshold: InferenceConfigManager.sharedInstance.minSuppressionThreshold
-            )
+            modelPath: InferenceConfigurationManager.sharedInstance.modelPath,
+            minDetectionConfidence: InferenceConfigurationManager.sharedInstance.minDetectionConfidence,
+            minSuppressionThreshold: InferenceConfigurationManager.sharedInstance.minSuppressionThreshold,
+            delegate: InferenceConfigurationManager.sharedInstance.delegate)
       case .video:
         faceDetectorService = FaceDetectorService
           .videoFaceDetectorService(
-            modelPath: InferenceConfigManager.sharedInstance.modelPath,
-            minDetectionConfidence: InferenceConfigManager.sharedInstance.minDetectionConfidence,
-            minSuppressionThreshold: InferenceConfigManager.sharedInstance.minSuppressionThreshold,
-            videoDelegate: self)
+            modelPath: InferenceConfigurationManager.sharedInstance.modelPath,
+            minDetectionConfidence: InferenceConfigurationManager.sharedInstance.minDetectionConfidence,
+            minSuppressionThreshold: InferenceConfigurationManager.sharedInstance.minSuppressionThreshold,
+            videoDelegate: self,
+            delegate: InferenceConfigurationManager.sharedInstance.delegate)
       default:
         break;
     }
