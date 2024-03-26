@@ -261,13 +261,13 @@ class HandLandmarkerHelper(
                     handLandmarker?.detectForVideo(mpImage, timestampMs)
                         ?.let { detectionResult ->
                             resultList.add(detectionResult)
-                        } ?: {
-                        didErrorOccurred = true
-                        handLandmarkerHelperListener?.onError(
-                            "ResultBundle could not be returned" +
-                                    " in detectVideoFile"
-                        )
-                    }
+                        } ?: run{
+                            didErrorOccurred = true
+                            handLandmarkerHelperListener?.onError(
+                                "ResultBundle could not be returned" +
+                                        " in detectVideoFile"
+                            )
+                        }
                 }
                 ?: run {
                     didErrorOccurred = true

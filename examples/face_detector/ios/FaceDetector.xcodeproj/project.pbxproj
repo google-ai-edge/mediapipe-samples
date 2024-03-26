@@ -11,7 +11,7 @@
 		7F7641A72A74865000DDCE4E /* testImg.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = BFCF187A2A43E0F200D64FA6 /* testImg.jpeg */; };
 		A62955674D0B99A7D0E9C379 /* libPods-FaceDetectorTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CD418693247CFB204F2604A /* libPods-FaceDetectorTests.a */; };
 		BFCDADF02A9DD64200EC4371 /* DefaultConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADE22A9DD64200EC4371 /* DefaultConstants.swift */; };
-		BFCDADF12A9DD64200EC4371 /* InferenceConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADE32A9DD64200EC4371 /* InferenceConfigManager.swift */; };
+		BFCDADF12A9DD64200EC4371 /* InferenceConfigurationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADE32A9DD64200EC4371 /* InferenceConfigurationManager.swift */; };
 		BFCDADF22A9DD64200EC4371 /* CameraFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADE52A9DD64200EC4371 /* CameraFeedService.swift */; };
 		BFCDADF32A9DD64200EC4371 /* FaceDetectorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADE62A9DD64200EC4371 /* FaceDetectorService.swift */; };
 		BFCDADF52A9DD64200EC4371 /* MediaLibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADE92A9DD64200EC4371 /* MediaLibraryViewController.swift */; };
@@ -44,7 +44,7 @@
 		7F7641A92A74869900DDCE4E /* download_models.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = download_models.sh; sourceTree = "<group>"; };
 		BB9395FBA7FB71903009034C /* Pods-FaceDetectorTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FaceDetectorTests.debug.xcconfig"; path = "Target Support Files/Pods-FaceDetectorTests/Pods-FaceDetectorTests.debug.xcconfig"; sourceTree = "<group>"; };
 		BFCDADE22A9DD64200EC4371 /* DefaultConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultConstants.swift; sourceTree = "<group>"; };
-		BFCDADE32A9DD64200EC4371 /* InferenceConfigManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceConfigManager.swift; sourceTree = "<group>"; };
+		BFCDADE32A9DD64200EC4371 /* InferenceConfigurationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceConfigurationManager.swift; sourceTree = "<group>"; };
 		BFCDADE52A9DD64200EC4371 /* CameraFeedService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedService.swift; sourceTree = "<group>"; };
 		BFCDADE62A9DD64200EC4371 /* FaceDetectorService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FaceDetectorService.swift; sourceTree = "<group>"; };
 		BFCDADE92A9DD64200EC4371 /* MediaLibraryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MediaLibraryViewController.swift; sourceTree = "<group>"; };
@@ -120,7 +120,7 @@
 			isa = PBXGroup;
 			children = (
 				BFCDADE22A9DD64200EC4371 /* DefaultConstants.swift */,
-				BFCDADE32A9DD64200EC4371 /* InferenceConfigManager.swift */,
+				BFCDADE32A9DD64200EC4371 /* InferenceConfigurationManager.swift */,
 			);
 			path = Configs;
 			sourceTree = "<group>";
@@ -379,7 +379,7 @@
 				BFCDADF32A9DD64200EC4371 /* FaceDetectorService.swift in Sources */,
 				BFCDADF82A9DD64200EC4371 /* CameraViewController.swift in Sources */,
 				BFCF18342A415B9300D64FA6 /* SceneDelegate.swift in Sources */,
-				BFCDADF12A9DD64200EC4371 /* InferenceConfigManager.swift in Sources */,
+				BFCDADF12A9DD64200EC4371 /* InferenceConfigurationManager.swift in Sources */,
 				BFCDADFA2A9DD64200EC4371 /* OverlayView.swift in Sources */,
 				BFCDADF22A9DD64200EC4371 /* CameraFeedService.swift in Sources */,
 				BFCDADF52A9DD64200EC4371 /* MediaLibraryViewController.swift in Sources */,

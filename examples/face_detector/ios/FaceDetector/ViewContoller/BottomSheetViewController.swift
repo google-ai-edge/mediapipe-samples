@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import UIKit
+import MediaPipeTasksVision
 
 protocol BottomSheetViewControllerDelegate: AnyObject {
   /**
@@ -45,6 +46,7 @@ class BottomSheetViewController: UIViewController {
   @IBOutlet weak var minSuppressionThresholdStepper: UIStepper!
   @IBOutlet weak var minSuppressionThresholdValueLabel: UILabel!
   @IBOutlet weak var toggleBottomSheetButton: UIButton!
+  @IBOutlet weak var delegateButton: UIButton!
 
   
   // MARK: Instance Variables
@@ -68,10 +70,31 @@ class BottomSheetViewController: UIViewController {
   // MARK: - Private function
   private func setupUI() {
 
-    minDetectionConfidenceStepper.value = Double(InferenceConfigManager.sharedInstance.minDetectionConfidence)
-    minDetectionConfidenceValueLabel.text = "\(InferenceConfigManager.sharedInstance.minDetectionConfidence)"
+    minDetectionConfidenceStepper.value = Double(InferenceConfigurationManager.sharedInstance.minDetectionConfidence)
+    minDetectionConfidenceValueLabel.text = "\(InferenceConfigurationManager.sharedInstance.minDetectionConfidence)"
+
+    let selectedDelegateAction = {(action: UIAction) in
+      self.updateDelegate(title: action.title)
+    }
+
+    let delegates: [Delegate] = [.CPU, .GPU]
+    let delegateActions: [UIAction] = delegates.compactMap { delegate in
+      return UIAction(
+        title: delegate == .CPU ? "CPU" : "GPU",
+        state: (InferenceConfigurationManager.sharedInstance.delegate == delegate) ? .on : .off,
+        handler: selectedDelegateAction
+      )
+    }
+
+    delegateButton.menu = UIMenu(children: delegateActions)
+    delegateButton.showsMenuAsPrimaryAction = true
+    delegateButton.changesSelectionAsPrimaryAction = true
   }
-  
+
+  private func updateDelegate(title: String) {
+    InferenceConfigurationManager.sharedInstance.delegate = title == "GPU" ? .GPU : .CPU
+  }
+
   private func enableOrDisableClicks() {
     minDetectionConfidenceStepper.isEnabled = isUIEnabled
   }
@@ -86,13 +109,13 @@ class BottomSheetViewController: UIViewController {
 
   @IBAction func minDetectionConfidenceStepperValueChanged(_ sender: UIStepper) {
     let minDetectionConfidence = Float(sender.value)
-    InferenceConfigManager.sharedInstance.minDetectionConfidence = minDetectionConfidence
+    InferenceConfigurationManager.sharedInstance.minDetectionConfidence = minDetectionConfidence
     minDetectionConfidenceValueLabel.text = "\(minDetectionConfidence)"
   }
 
   @IBAction func minSuppressionThresholdStepperValueChanged(_ sender: UIStepper) {
     let minSuppressionThreshold = Float(sender.value)
-    InferenceConfigManager.sharedInstance.minSuppressionThreshold = minSuppressionThreshold
+    InferenceConfigurationManager.sharedInstance.minSuppressionThreshold = minSuppressionThreshold
     minSuppressionThresholdValueLabel.text = "\(minSuppressionThreshold)"
   }
 }
