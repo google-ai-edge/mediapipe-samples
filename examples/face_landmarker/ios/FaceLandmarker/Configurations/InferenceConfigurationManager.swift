@@ -38,6 +38,10 @@ class InferenceConfigurationManager: NSObject {
     didSet { postConfigChangedNotification() }
   }
 
+  var delegate: FaceLandmarkerDelegate = DefaultConstants.delegate {
+    didSet { postConfigChangedNotification() }
+  }
+
   static let sharedInstance = InferenceConfigurationManager()
   
   static let notificationName = Notification.Name.init(rawValue: "com.google.mediapipe.inferenceConfigChanged")
@@ -46,5 +50,4 @@ class InferenceConfigurationManager: NSObject {
     NotificationCenter.default
       .post(name: InferenceConfigurationManager.notificationName, object: nil)
   }
-
 }

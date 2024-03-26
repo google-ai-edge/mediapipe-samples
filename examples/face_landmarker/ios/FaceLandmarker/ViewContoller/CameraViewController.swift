@@ -155,7 +155,8 @@ class CameraViewController: UIViewController {
         minFaceDetectionConfidence: InferenceConfigurationManager.sharedInstance.minFaceDetectionConfidence,
         minFacePresenceConfidence: InferenceConfigurationManager.sharedInstance.minFacePresenceConfidence,
         minTrackingConfidence: InferenceConfigurationManager.sharedInstance.minTrackingConfidence,
-        liveStreamDelegate: self)
+        liveStreamDelegate: self,
+        delegate: InferenceConfigurationManager.sharedInstance.delegate)
   }
   
   private func clearFaceLandmarkerServiceOnSessionInterruption() {

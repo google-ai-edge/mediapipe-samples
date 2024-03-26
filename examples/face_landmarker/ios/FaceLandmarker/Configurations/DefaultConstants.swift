@@ -14,6 +14,7 @@
 
 import Foundation
 import UIKit
+import MediaPipeTasksVision
 
 // MARK: Define default constants
 struct DefaultConstants {
@@ -35,4 +36,41 @@ struct DefaultConstants {
   static var minFacePresenceConfidence: Float = 0.5
   static var minTrackingConfidence: Float = 0.5
   static let modelPath: String? = Bundle.main.path(forResource: "face_landmarker", ofType: "task")
+  static let delegate: FaceLandmarkerDelegate = .CPU
 }
+
+// MARK: FaceLandmarkerDelegate
+enum FaceLandmarkerDelegate: CaseIterable {
+  case GPU
+  case CPU
+
+  var name: String {
+    switch self {
+    case .GPU:
+      return "GPU"
+    case .CPU:
+      return "CPU"
+    }
+  }
+
+  var delegate: Delegate {
+    switch self {
+    case .GPU:
+      return .GPU
+    case .CPU:
+      return .CPU
+    }
+  }
+
+  init?(name: String) {
+    switch name {
+    case FaceLandmarkerDelegate.CPU.name:
+      self = FaceLandmarkerDelegate.CPU
+    case FaceLandmarkerDelegate.GPU.name:
+      self = FaceLandmarkerDelegate.GPU
+    default:
+      return nil
+    }
+  }
+}
+

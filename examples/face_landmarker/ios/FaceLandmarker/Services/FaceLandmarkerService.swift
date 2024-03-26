@@ -48,7 +48,9 @@ class FaceLandmarkerService: NSObject {
   private var minFaceDetectionConfidence: Float
   private var minFacePresenceConfidence: Float
   private var minTrackingConfidence: Float
-  var modelPath: String
+  private var modelPath: String
+  private var delegate: FaceLandmarkerDelegate
+
 
   // MARK: - Custom Initializer
   private init?(modelPath: String?,
@@ -56,7 +58,8 @@ class FaceLandmarkerService: NSObject {
                 numFaces: Int,
                 minFaceDetectionConfidence: Float,
                 minFacePresenceConfidence: Float,
-                minTrackingConfidence: Float) {
+                minTrackingConfidence: Float,
+                delegate: FaceLandmarkerDelegate) {
     guard let modelPath = modelPath else { return nil }
     self.modelPath = modelPath
     self.runningMode = runningMode
@@ -64,6 +67,7 @@ class FaceLandmarkerService: NSObject {
     self.minFaceDetectionConfidence = minFaceDetectionConfidence
     self.minFacePresenceConfidence = minFacePresenceConfidence
     self.minTrackingConfidence = minTrackingConfidence
+    self.delegate = delegate
     super.init()
 
     createFaceLandmarker()
@@ -77,6 +81,7 @@ class FaceLandmarkerService: NSObject {
     faceLandmarkerOptions.minFacePresenceConfidence = minFacePresenceConfidence
     faceLandmarkerOptions.minTrackingConfidence = minTrackingConfidence
     faceLandmarkerOptions.baseOptions.modelAssetPath = modelPath
+    faceLandmarkerOptions.baseOptions.delegate = delegate.delegate
     if runningMode == .liveStream {
       faceLandmarkerOptions.faceLandmarkerLiveStreamDelegate = self
     }
@@ -95,14 +100,16 @@ class FaceLandmarkerService: NSObject {
     minFaceDetectionConfidence: Float,
     minFacePresenceConfidence: Float,
     minTrackingConfidence: Float,
-    videoDelegate: FaceLandmarkerServiceVideoDelegate?) -> FaceLandmarkerService? {
+    videoDelegate: FaceLandmarkerServiceVideoDelegate?,
+    delegate: FaceLandmarkerDelegate) -> FaceLandmarkerService? {
     let faceLandmarkerService = FaceLandmarkerService(
       modelPath: modelPath,
       runningMode: .video,
       numFaces: numFaces,
       minFaceDetectionConfidence: minFaceDetectionConfidence,
       minFacePresenceConfidence: minFacePresenceConfidence,
-      minTrackingConfidence: minTrackingConfidence)
+      minTrackingConfidence: minTrackingConfidence,
+      delegate: delegate)
     faceLandmarkerService?.videoDelegate = videoDelegate
     return faceLandmarkerService
   }
@@ -113,14 +120,16 @@ class FaceLandmarkerService: NSObject {
     minFaceDetectionConfidence: Float,
     minFacePresenceConfidence: Float,
     minTrackingConfidence: Float,
-    liveStreamDelegate: FaceLandmarkerServiceLiveStreamDelegate?) -> FaceLandmarkerService? {
+    liveStreamDelegate: FaceLandmarkerServiceLiveStreamDelegate?,
+    delegate: FaceLandmarkerDelegate) -> FaceLandmarkerService? {
     let faceLandmarkerService = FaceLandmarkerService(
       modelPath: modelPath,
       runningMode: .liveStream,
       numFaces: numFaces,
       minFaceDetectionConfidence: minFaceDetectionConfidence,
       minFacePresenceConfidence: minFacePresenceConfidence,
-      minTrackingConfidence: minTrackingConfidence)
+      minTrackingConfidence: minTrackingConfidence,
+      delegate: delegate)
     faceLandmarkerService?.liveStreamDelegate = liveStreamDelegate
 
     return faceLandmarkerService
@@ -131,14 +140,16 @@ class FaceLandmarkerService: NSObject {
     numFaces: Int,
     minFaceDetectionConfidence: Float,
     minFacePresenceConfidence: Float,
-    minTrackingConfidence: Float) -> FaceLandmarkerService? {
+    minTrackingConfidence: Float,
+    delegate: FaceLandmarkerDelegate) -> FaceLandmarkerService? {
     let faceLandmarkerService = FaceLandmarkerService(
       modelPath: modelPath,
       runningMode: .image,
       numFaces: numFaces,
       minFaceDetectionConfidence: minFaceDetectionConfidence,
       minFacePresenceConfidence: minFacePresenceConfidence,
-      minTrackingConfidence: minTrackingConfidence)
+      minTrackingConfidence: minTrackingConfidence,
+      delegate: delegate)
 
     return faceLandmarkerService
   }

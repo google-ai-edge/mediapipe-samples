@@ -300,7 +300,8 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
         numFaces: InferenceConfigurationManager.sharedInstance.numFaces,
         minFaceDetectionConfidence: InferenceConfigurationManager.sharedInstance.minFaceDetectionConfidence,
         minFacePresenceConfidence: InferenceConfigurationManager.sharedInstance.minFacePresenceConfidence,
-        minTrackingConfidence: InferenceConfigurationManager.sharedInstance.minTrackingConfidence)
+        minTrackingConfidence: InferenceConfigurationManager.sharedInstance.minTrackingConfidence,
+        delegate: InferenceConfigurationManager.sharedInstance.delegate)
       case .video:
       faceLandmarkerService = FaceLandmarkerService.videoFaceLandmarkerService(
         modelPath: InferenceConfigurationManager.sharedInstance.modelPath,
@@ -308,7 +309,8 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
         minFaceDetectionConfidence: InferenceConfigurationManager.sharedInstance.minFaceDetectionConfidence,
         minFacePresenceConfidence: InferenceConfigurationManager.sharedInstance.minFacePresenceConfidence,
         minTrackingConfidence: InferenceConfigurationManager.sharedInstance.minTrackingConfidence,
-        videoDelegate: self)
+        videoDelegate: self,
+        delegate: InferenceConfigurationManager.sharedInstance.delegate)
       default:
         break;
     }
