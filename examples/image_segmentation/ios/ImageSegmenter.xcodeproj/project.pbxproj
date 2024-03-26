@@ -1,0 +1,859 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		05F80D26699F307C3C6E05AB /* Pods_ImageSegmenterTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A89C5A44F11923E2CD6086BB /* Pods_ImageSegmenterTests.framework */; };
+		1FB4DB731718CFD48F6CCA1F /* Pods_ImageSegmenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB81BA1A32936BF6829D8CD6 /* Pods_ImageSegmenter.framework */; };
+		BF2D8E652B830C7B0050C3B6 /* deeplab_v3.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF2D8E642B830C7A0050C3B6 /* deeplab_v3.tflite */; };
+		BF6EBB4F2B1EB5BE00CD13FB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB4E2B1EB5BE00CD13FB /* AppDelegate.swift */; };
+		BF6EBB512B1EB5BE00CD13FB /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB502B1EB5BE00CD13FB /* SceneDelegate.swift */; };
+		BF6EBB562B1EB5BE00CD13FB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BF6EBB542B1EB5BE00CD13FB /* Main.storyboard */; };
+		BF6EBB582B1EB5BF00CD13FB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF6EBB572B1EB5BF00CD13FB /* Assets.xcassets */; };
+		BF6EBB5B2B1EB5BF00CD13FB /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BF6EBB592B1EB5BF00CD13FB /* LaunchScreen.storyboard */; };
+		BF6EBB662B1EB5BF00CD13FB /* ImageSegmenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB652B1EB5BF00CD13FB /* ImageSegmenterTests.swift */; };
+		BF6EBB702B1EB5BF00CD13FB /* ImageSegmenterUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB6F2B1EB5BF00CD13FB /* ImageSegmenterUITests.swift */; };
+		BF6EBB722B1EB5BF00CD13FB /* ImageSegmenterUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB712B1EB5BF00CD13FB /* ImageSegmenterUITestsLaunchTests.swift */; };
+		BF6EBB912B1EB75B00CD13FB /* ImageSegmenterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB822B1EB75B00CD13FB /* ImageSegmenterService.swift */; };
+		BF6EBB922B1EB75B00CD13FB /* CameraFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB832B1EB75B00CD13FB /* CameraFeedService.swift */; };
+		BF6EBB932B1EB75B00CD13FB /* MergeColorShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB842B1EB75B00CD13FB /* MergeColorShaders.metal */; };
+		BF6EBB952B1EB75B00CD13FB /* InferenceConfigurationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB882B1EB75B00CD13FB /* InferenceConfigurationManager.swift */; };
+		BF6EBB962B1EB75B00CD13FB /* DefaultConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB892B1EB75B00CD13FB /* DefaultConstants.swift */; };
+		BF6EBB972B1EB75B00CD13FB /* MediaLibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB8B2B1EB75B00CD13FB /* MediaLibraryViewController.swift */; };
+		BF6EBB982B1EB75B00CD13FB /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB8C2B1EB75B00CD13FB /* RootViewController.swift */; };
+		BF6EBB992B1EB75B00CD13FB /* BottomSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB8D2B1EB75B00CD13FB /* BottomSheetViewController.swift */; };
+		BF6EBB9A2B1EB75B00CD13FB /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB8E2B1EB75B00CD13FB /* CameraViewController.swift */; };
+		BF6EBB9C2B200D9400CD13FB /* PreviewMetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB9B2B200D9400CD13FB /* PreviewMetalView.swift */; };
+		BF6EBBA22B20531800CD13FB /* SegmentedImageRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBBA12B20531800CD13FB /* SegmentedImageRenderer.swift */; };
+		BF6EBBA62B2070F000CD13FB /* RenderToMtlViewShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBBA52B2070F000CD13FB /* RenderToMtlViewShaders.metal */; };
+		BF6EBBA82B20712600CD13FB /* selfie_segmenter.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF6EBBA72B20712600CD13FB /* selfie_segmenter.tflite */; };
+		FBCBDD23FAD8125B5F819751 /* libPods-ImageSegmenterUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D95B4C9DB808B140005D1F61 /* libPods-ImageSegmenterUITests.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		BF6EBB622B1EB5BF00CD13FB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BF6EBB432B1EB5BE00CD13FB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BF6EBB4A2B1EB5BE00CD13FB;
+			remoteInfo = ImageSegmenter;
+		};
+		BF6EBB6C2B1EB5BF00CD13FB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BF6EBB432B1EB5BE00CD13FB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BF6EBB4A2B1EB5BE00CD13FB;
+			remoteInfo = ImageSegmenter;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		00FE4AC67A3BC7929C07F88A /* Pods-ImageSegmenterUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageSegmenterUITests.release.xcconfig"; path = "Target Support Files/Pods-ImageSegmenterUITests/Pods-ImageSegmenterUITests.release.xcconfig"; sourceTree = "<group>"; };
+		082C9F953835AD674CDB4C7F /* Pods-ImageSegmenterUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageSegmenterUITests.debug.xcconfig"; path = "Target Support Files/Pods-ImageSegmenterUITests/Pods-ImageSegmenterUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		1F44B4095124C60C8C521374 /* Pods-ImageSegmenter.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageSegmenter.release.xcconfig"; path = "Target Support Files/Pods-ImageSegmenter/Pods-ImageSegmenter.release.xcconfig"; sourceTree = "<group>"; };
+		3DD5C13A41F6755F985364BD /* Pods-ImageSegmenter.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageSegmenter.debug.xcconfig"; path = "Target Support Files/Pods-ImageSegmenter/Pods-ImageSegmenter.debug.xcconfig"; sourceTree = "<group>"; };
+		718FBD8F849AF3A5F7CD51A4 /* Pods-ImageSegmenter-ImageSegmenterUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageSegmenter-ImageSegmenterUITests.debug.xcconfig"; path = "Target Support Files/Pods-ImageSegmenter-ImageSegmenterUITests/Pods-ImageSegmenter-ImageSegmenterUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		7FEBF7670100412F1C68BD87 /* Pods-ImageSegmenterTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageSegmenterTests.debug.xcconfig"; path = "Target Support Files/Pods-ImageSegmenterTests/Pods-ImageSegmenterTests.debug.xcconfig"; sourceTree = "<group>"; };
+		98B7F48961448745D60EAF71 /* Pods-ImageSegmenter-ImageSegmenterUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageSegmenter-ImageSegmenterUITests.release.xcconfig"; path = "Target Support Files/Pods-ImageSegmenter-ImageSegmenterUITests/Pods-ImageSegmenter-ImageSegmenterUITests.release.xcconfig"; sourceTree = "<group>"; };
+		A89C5A44F11923E2CD6086BB /* Pods_ImageSegmenterTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ImageSegmenterTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		BF2D8E642B830C7A0050C3B6 /* deeplab_v3.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = deeplab_v3.tflite; sourceTree = "<group>"; };
+		BF6EBB4B2B1EB5BE00CD13FB /* ImageSegmenter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImageSegmenter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BF6EBB4E2B1EB5BE00CD13FB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		BF6EBB502B1EB5BE00CD13FB /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		BF6EBB552B1EB5BE00CD13FB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		BF6EBB572B1EB5BF00CD13FB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		BF6EBB5A2B1EB5BF00CD13FB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		BF6EBB5C2B1EB5BF00CD13FB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BF6EBB612B1EB5BF00CD13FB /* ImageSegmenterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ImageSegmenterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BF6EBB652B1EB5BF00CD13FB /* ImageSegmenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSegmenterTests.swift; sourceTree = "<group>"; };
+		BF6EBB6B2B1EB5BF00CD13FB /* ImageSegmenterUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ImageSegmenterUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BF6EBB6F2B1EB5BF00CD13FB /* ImageSegmenterUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSegmenterUITests.swift; sourceTree = "<group>"; };
+		BF6EBB712B1EB5BF00CD13FB /* ImageSegmenterUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSegmenterUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		BF6EBB822B1EB75B00CD13FB /* ImageSegmenterService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageSegmenterService.swift; sourceTree = "<group>"; };
+		BF6EBB832B1EB75B00CD13FB /* CameraFeedService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedService.swift; sourceTree = "<group>"; };
+		BF6EBB842B1EB75B00CD13FB /* MergeColorShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = MergeColorShaders.metal; sourceTree = "<group>"; };
+		BF6EBB882B1EB75B00CD13FB /* InferenceConfigurationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceConfigurationManager.swift; sourceTree = "<group>"; };
+		BF6EBB892B1EB75B00CD13FB /* DefaultConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultConstants.swift; sourceTree = "<group>"; };
+		BF6EBB8B2B1EB75B00CD13FB /* MediaLibraryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MediaLibraryViewController.swift; sourceTree = "<group>"; };
+		BF6EBB8C2B1EB75B00CD13FB /* RootViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
+		BF6EBB8D2B1EB75B00CD13FB /* BottomSheetViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BottomSheetViewController.swift; sourceTree = "<group>"; };
+		BF6EBB8E2B1EB75B00CD13FB /* CameraViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
+		BF6EBB9B2B200D9400CD13FB /* PreviewMetalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewMetalView.swift; sourceTree = "<group>"; };
+		BF6EBBA12B20531800CD13FB /* SegmentedImageRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentedImageRenderer.swift; sourceTree = "<group>"; };
+		BF6EBBA52B2070F000CD13FB /* RenderToMtlViewShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = RenderToMtlViewShaders.metal; sourceTree = "<group>"; };
+		BF6EBBA72B20712600CD13FB /* selfie_segmenter.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = selfie_segmenter.tflite; sourceTree = "<group>"; };
+		CB81BA1A32936BF6829D8CD6 /* Pods_ImageSegmenter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ImageSegmenter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D95B4C9DB808B140005D1F61 /* libPods-ImageSegmenterUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ImageSegmenterUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E17D861DD2F87160038B0515 /* Pods-ImageSegmenterTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageSegmenterTests.release.xcconfig"; path = "Target Support Files/Pods-ImageSegmenterTests/Pods-ImageSegmenterTests.release.xcconfig"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BF6EBB482B1EB5BE00CD13FB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1FB4DB731718CFD48F6CCA1F /* Pods_ImageSegmenter.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF6EBB5E2B1EB5BF00CD13FB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				05F80D26699F307C3C6E05AB /* Pods_ImageSegmenterTests.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF6EBB682B1EB5BF00CD13FB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FBCBDD23FAD8125B5F819751 /* libPods-ImageSegmenterUITests.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		429F4DEBB7DA7662C280952A /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				3DD5C13A41F6755F985364BD /* Pods-ImageSegmenter.debug.xcconfig */,
+				1F44B4095124C60C8C521374 /* Pods-ImageSegmenter.release.xcconfig */,
+				718FBD8F849AF3A5F7CD51A4 /* Pods-ImageSegmenter-ImageSegmenterUITests.debug.xcconfig */,
+				98B7F48961448745D60EAF71 /* Pods-ImageSegmenter-ImageSegmenterUITests.release.xcconfig */,
+				7FEBF7670100412F1C68BD87 /* Pods-ImageSegmenterTests.debug.xcconfig */,
+				E17D861DD2F87160038B0515 /* Pods-ImageSegmenterTests.release.xcconfig */,
+				082C9F953835AD674CDB4C7F /* Pods-ImageSegmenterUITests.debug.xcconfig */,
+				00FE4AC67A3BC7929C07F88A /* Pods-ImageSegmenterUITests.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		BF6EBB422B1EB5BE00CD13FB = {
+			isa = PBXGroup;
+			children = (
+				BF6EBB4D2B1EB5BE00CD13FB /* ImageSegmenter */,
+				BF6EBB642B1EB5BF00CD13FB /* ImageSegmenterTests */,
+				BF6EBB6E2B1EB5BF00CD13FB /* ImageSegmenterUITests */,
+				BF6EBB4C2B1EB5BE00CD13FB /* Products */,
+				429F4DEBB7DA7662C280952A /* Pods */,
+				CA201CA7C3CA7FC43CD98251 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		BF6EBB4C2B1EB5BE00CD13FB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BF6EBB4B2B1EB5BE00CD13FB /* ImageSegmenter.app */,
+				BF6EBB612B1EB5BF00CD13FB /* ImageSegmenterTests.xctest */,
+				BF6EBB6B2B1EB5BF00CD13FB /* ImageSegmenterUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BF6EBB4D2B1EB5BE00CD13FB /* ImageSegmenter */ = {
+			isa = PBXGroup;
+			children = (
+				BF6EBB872B1EB75B00CD13FB /* Configurations */,
+				BF6EBB812B1EB75B00CD13FB /* Services */,
+				BF6EBB852B1EB75B00CD13FB /* Units */,
+				BF6EBB8A2B1EB75B00CD13FB /* ViewContoller */,
+				BF6EBB7E2B1EB75B00CD13FB /* Views */,
+				BF6EBB4E2B1EB5BE00CD13FB /* AppDelegate.swift */,
+				BF6EBB502B1EB5BE00CD13FB /* SceneDelegate.swift */,
+				BF6EBB542B1EB5BE00CD13FB /* Main.storyboard */,
+				BF6EBBA72B20712600CD13FB /* selfie_segmenter.tflite */,
+				BF2D8E642B830C7A0050C3B6 /* deeplab_v3.tflite */,
+				BF6EBB572B1EB5BF00CD13FB /* Assets.xcassets */,
+				BF6EBB592B1EB5BF00CD13FB /* LaunchScreen.storyboard */,
+				BF6EBB5C2B1EB5BF00CD13FB /* Info.plist */,
+			);
+			path = ImageSegmenter;
+			sourceTree = "<group>";
+		};
+		BF6EBB642B1EB5BF00CD13FB /* ImageSegmenterTests */ = {
+			isa = PBXGroup;
+			children = (
+				BF6EBB652B1EB5BF00CD13FB /* ImageSegmenterTests.swift */,
+			);
+			path = ImageSegmenterTests;
+			sourceTree = "<group>";
+		};
+		BF6EBB6E2B1EB5BF00CD13FB /* ImageSegmenterUITests */ = {
+			isa = PBXGroup;
+			children = (
+				BF6EBB6F2B1EB5BF00CD13FB /* ImageSegmenterUITests.swift */,
+				BF6EBB712B1EB5BF00CD13FB /* ImageSegmenterUITestsLaunchTests.swift */,
+			);
+			path = ImageSegmenterUITests;
+			sourceTree = "<group>";
+		};
+		BF6EBB7E2B1EB75B00CD13FB /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				BF6EBB9B2B200D9400CD13FB /* PreviewMetalView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		BF6EBB812B1EB75B00CD13FB /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				BF6EBB822B1EB75B00CD13FB /* ImageSegmenterService.swift */,
+				BF6EBB832B1EB75B00CD13FB /* CameraFeedService.swift */,
+				BF6EBBA12B20531800CD13FB /* SegmentedImageRenderer.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		BF6EBB852B1EB75B00CD13FB /* Units */ = {
+			isa = PBXGroup;
+			children = (
+				BF6EBB842B1EB75B00CD13FB /* MergeColorShaders.metal */,
+				BF6EBBA52B2070F000CD13FB /* RenderToMtlViewShaders.metal */,
+			);
+			path = Units;
+			sourceTree = "<group>";
+		};
+		BF6EBB872B1EB75B00CD13FB /* Configurations */ = {
+			isa = PBXGroup;
+			children = (
+				BF6EBB882B1EB75B00CD13FB /* InferenceConfigurationManager.swift */,
+				BF6EBB892B1EB75B00CD13FB /* DefaultConstants.swift */,
+			);
+			path = Configurations;
+			sourceTree = "<group>";
+		};
+		BF6EBB8A2B1EB75B00CD13FB /* ViewContoller */ = {
+			isa = PBXGroup;
+			children = (
+				BF6EBB8B2B1EB75B00CD13FB /* MediaLibraryViewController.swift */,
+				BF6EBB8C2B1EB75B00CD13FB /* RootViewController.swift */,
+				BF6EBB8D2B1EB75B00CD13FB /* BottomSheetViewController.swift */,
+				BF6EBB8E2B1EB75B00CD13FB /* CameraViewController.swift */,
+			);
+			path = ViewContoller;
+			sourceTree = "<group>";
+		};
+		CA201CA7C3CA7FC43CD98251 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				CB81BA1A32936BF6829D8CD6 /* Pods_ImageSegmenter.framework */,
+				A89C5A44F11923E2CD6086BB /* Pods_ImageSegmenterTests.framework */,
+				D95B4C9DB808B140005D1F61 /* libPods-ImageSegmenterUITests.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BF6EBB4A2B1EB5BE00CD13FB /* ImageSegmenter */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BF6EBB752B1EB5BF00CD13FB /* Build configuration list for PBXNativeTarget "ImageSegmenter" */;
+			buildPhases = (
+				16CD3DB75953570593C92185 /* [CP] Check Pods Manifest.lock */,
+				BF6EBBAB2B20749E00CD13FB /* Download model */,
+				BF6EBB472B1EB5BE00CD13FB /* Sources */,
+				BF6EBB482B1EB5BE00CD13FB /* Frameworks */,
+				BF6EBB492B1EB5BE00CD13FB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ImageSegmenter;
+			productName = ImageSegmenter;
+			productReference = BF6EBB4B2B1EB5BE00CD13FB /* ImageSegmenter.app */;
+			productType = "com.apple.product-type.application";
+		};
+		BF6EBB602B1EB5BF00CD13FB /* ImageSegmenterTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BF6EBB782B1EB5BF00CD13FB /* Build configuration list for PBXNativeTarget "ImageSegmenterTests" */;
+			buildPhases = (
+				78AF909D807F31032449F052 /* [CP] Check Pods Manifest.lock */,
+				BF6EBB5D2B1EB5BF00CD13FB /* Sources */,
+				BF6EBB5E2B1EB5BF00CD13FB /* Frameworks */,
+				BF6EBB5F2B1EB5BF00CD13FB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BF6EBB632B1EB5BF00CD13FB /* PBXTargetDependency */,
+			);
+			name = ImageSegmenterTests;
+			productName = ImageSegmenterTests;
+			productReference = BF6EBB612B1EB5BF00CD13FB /* ImageSegmenterTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		BF6EBB6A2B1EB5BF00CD13FB /* ImageSegmenterUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BF6EBB7B2B1EB5BF00CD13FB /* Build configuration list for PBXNativeTarget "ImageSegmenterUITests" */;
+			buildPhases = (
+				16FC60A11FF43663A314A8A9 /* [CP] Check Pods Manifest.lock */,
+				BF6EBB672B1EB5BF00CD13FB /* Sources */,
+				BF6EBB682B1EB5BF00CD13FB /* Frameworks */,
+				BF6EBB692B1EB5BF00CD13FB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BF6EBB6D2B1EB5BF00CD13FB /* PBXTargetDependency */,
+			);
+			name = ImageSegmenterUITests;
+			productName = ImageSegmenterUITests;
+			productReference = BF6EBB6B2B1EB5BF00CD13FB /* ImageSegmenterUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BF6EBB432B1EB5BE00CD13FB /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					BF6EBB4A2B1EB5BE00CD13FB = {
+						CreatedOnToolsVersion = 15.0;
+					};
+					BF6EBB602B1EB5BF00CD13FB = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = BF6EBB4A2B1EB5BE00CD13FB;
+					};
+					BF6EBB6A2B1EB5BF00CD13FB = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = BF6EBB4A2B1EB5BE00CD13FB;
+					};
+				};
+			};
+			buildConfigurationList = BF6EBB462B1EB5BE00CD13FB /* Build configuration list for PBXProject "ImageSegmenter" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = BF6EBB422B1EB5BE00CD13FB;
+			productRefGroup = BF6EBB4C2B1EB5BE00CD13FB /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BF6EBB4A2B1EB5BE00CD13FB /* ImageSegmenter */,
+				BF6EBB602B1EB5BF00CD13FB /* ImageSegmenterTests */,
+				BF6EBB6A2B1EB5BF00CD13FB /* ImageSegmenterUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BF6EBB492B1EB5BE00CD13FB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF6EBB5B2B1EB5BF00CD13FB /* LaunchScreen.storyboard in Resources */,
+				BF6EBB582B1EB5BF00CD13FB /* Assets.xcassets in Resources */,
+				BF2D8E652B830C7B0050C3B6 /* deeplab_v3.tflite in Resources */,
+				BF6EBBA82B20712600CD13FB /* selfie_segmenter.tflite in Resources */,
+				BF6EBB562B1EB5BE00CD13FB /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF6EBB5F2B1EB5BF00CD13FB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF6EBB692B1EB5BF00CD13FB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		16CD3DB75953570593C92185 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-ImageSegmenter-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		16FC60A11FF43663A314A8A9 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-ImageSegmenterUITests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		78AF909D807F31032449F052 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-ImageSegmenterTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		BF6EBBAB2B20749E00CD13FB /* Download model */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download model";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/RunScripts/download_models.sh\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BF6EBB472B1EB5BE00CD13FB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF6EBB982B1EB75B00CD13FB /* RootViewController.swift in Sources */,
+				BF6EBBA62B2070F000CD13FB /* RenderToMtlViewShaders.metal in Sources */,
+				BF6EBBA22B20531800CD13FB /* SegmentedImageRenderer.swift in Sources */,
+				BF6EBB912B1EB75B00CD13FB /* ImageSegmenterService.swift in Sources */,
+				BF6EBB4F2B1EB5BE00CD13FB /* AppDelegate.swift in Sources */,
+				BF6EBB922B1EB75B00CD13FB /* CameraFeedService.swift in Sources */,
+				BF6EBB952B1EB75B00CD13FB /* InferenceConfigurationManager.swift in Sources */,
+				BF6EBB972B1EB75B00CD13FB /* MediaLibraryViewController.swift in Sources */,
+				BF6EBB962B1EB75B00CD13FB /* DefaultConstants.swift in Sources */,
+				BF6EBB9C2B200D9400CD13FB /* PreviewMetalView.swift in Sources */,
+				BF6EBB512B1EB5BE00CD13FB /* SceneDelegate.swift in Sources */,
+				BF6EBB9A2B1EB75B00CD13FB /* CameraViewController.swift in Sources */,
+				BF6EBB932B1EB75B00CD13FB /* MergeColorShaders.metal in Sources */,
+				BF6EBB992B1EB75B00CD13FB /* BottomSheetViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF6EBB5D2B1EB5BF00CD13FB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF6EBB662B1EB5BF00CD13FB /* ImageSegmenterTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF6EBB672B1EB5BF00CD13FB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF6EBB702B1EB5BF00CD13FB /* ImageSegmenterUITests.swift in Sources */,
+				BF6EBB722B1EB5BF00CD13FB /* ImageSegmenterUITestsLaunchTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BF6EBB632B1EB5BF00CD13FB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BF6EBB4A2B1EB5BE00CD13FB /* ImageSegmenter */;
+			targetProxy = BF6EBB622B1EB5BF00CD13FB /* PBXContainerItemProxy */;
+		};
+		BF6EBB6D2B1EB5BF00CD13FB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BF6EBB4A2B1EB5BE00CD13FB /* ImageSegmenter */;
+			targetProxy = BF6EBB6C2B1EB5BF00CD13FB /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		BF6EBB542B1EB5BE00CD13FB /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BF6EBB552B1EB5BE00CD13FB /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		BF6EBB592B1EB5BF00CD13FB /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BF6EBB5A2B1EB5BF00CD13FB /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		BF6EBB732B1EB5BF00CD13FB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BF6EBB742B1EB5BF00CD13FB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		BF6EBB762B1EB5BF00CD13FB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3DD5C13A41F6755F985364BD /* Pods-ImageSegmenter.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ImageSegmenter/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "AVCamFilter uses the camera to take photos and video.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "AVCamFilter saves captured photos and videos to your photo library.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.imagesegmenter.ImageSegmenter;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BF6EBB772B1EB5BF00CD13FB /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1F44B4095124C60C8C521374 /* Pods-ImageSegmenter.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ImageSegmenter/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "AVCamFilter uses the camera to take photos and video.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "AVCamFilter saves captured photos and videos to your photo library.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.imagesegmenter.ImageSegmenter;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		BF6EBB792B1EB5BF00CD13FB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7FEBF7670100412F1C68BD87 /* Pods-ImageSegmenterTests.debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H83UK2M7VU;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.imagesegmenter.ImageSegmenterTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ImageSegmenter.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ImageSegmenter";
+			};
+			name = Debug;
+		};
+		BF6EBB7A2B1EB5BF00CD13FB /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = E17D861DD2F87160038B0515 /* Pods-ImageSegmenterTests.release.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H83UK2M7VU;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.imagesegmenter.ImageSegmenterTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ImageSegmenter.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ImageSegmenter";
+			};
+			name = Release;
+		};
+		BF6EBB7C2B1EB5BF00CD13FB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 082C9F953835AD674CDB4C7F /* Pods-ImageSegmenterUITests.debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H83UK2M7VU;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.imagesegmenter.ImageSegmenterUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ImageSegmenter;
+			};
+			name = Debug;
+		};
+		BF6EBB7D2B1EB5BF00CD13FB /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 00FE4AC67A3BC7929C07F88A /* Pods-ImageSegmenterUITests.release.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H83UK2M7VU;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.imagesegmenter.ImageSegmenterUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ImageSegmenter;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BF6EBB462B1EB5BE00CD13FB /* Build configuration list for PBXProject "ImageSegmenter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF6EBB732B1EB5BF00CD13FB /* Debug */,
+				BF6EBB742B1EB5BF00CD13FB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BF6EBB752B1EB5BF00CD13FB /* Build configuration list for PBXNativeTarget "ImageSegmenter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF6EBB762B1EB5BF00CD13FB /* Debug */,
+				BF6EBB772B1EB5BF00CD13FB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BF6EBB782B1EB5BF00CD13FB /* Build configuration list for PBXNativeTarget "ImageSegmenterTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF6EBB792B1EB5BF00CD13FB /* Debug */,
+				BF6EBB7A2B1EB5BF00CD13FB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BF6EBB7B2B1EB5BF00CD13FB /* Build configuration list for PBXNativeTarget "ImageSegmenterUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF6EBB7C2B1EB5BF00CD13FB /* Debug */,
+				BF6EBB7D2B1EB5BF00CD13FB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BF6EBB432B1EB5BE00CD13FB /* Project object */;
+}
