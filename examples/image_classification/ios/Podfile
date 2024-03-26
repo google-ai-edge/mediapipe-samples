@@ -3,7 +3,7 @@ platform :ios, '15.0'
 target 'ImageClassifier' do
   # Comment the next line if you don't want to use dynamic frameworks
   use_frameworks!
-  pod 'MediaPipeTasksVision', '0.10.5'
+  pod 'MediaPipeTasksVision', '0.10.12'
 end
 
 target 'ImageClassifierTests' do

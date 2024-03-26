@@ -20,7 +20,7 @@
 		BF2B2D192A31719F00589A11 /* efficientnet_lite2.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2D182A31719F00589A11 /* efficientnet_lite2.tflite */; };
 		BF97417C2A5B9F1800701718 /* efficientnet_lite0.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF97417B2A5B9F1800701718 /* efficientnet_lite0.tflite */; };
 		BFCDAE0C2AA03BC300EC4371 /* DefaultConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADFC2AA03BC300EC4371 /* DefaultConstants.swift */; };
-		BFCDAE0D2AA03BC300EC4371 /* InferenceConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADFD2AA03BC300EC4371 /* InferenceConfigManager.swift */; };
+		BFCDAE0D2AA03BC300EC4371 /* InferenceConfigurationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDADFD2AA03BC300EC4371 /* InferenceConfigurationManager.swift */; };
 		BFCDAE0F2AA03BC300EC4371 /* CameraFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE012AA03BC300EC4371 /* CameraFeedService.swift */; };
 		BFCDAE102AA03BC300EC4371 /* ImageClassifierService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE022AA03BC300EC4371 /* ImageClassifierService.swift */; };
 		BFCDAE132AA03BC300EC4371 /* MediaLibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE072AA03BC300EC4371 /* MediaLibraryViewController.swift */; };
@@ -58,7 +58,7 @@
 		BF2B2D1A2A3BFC1100589A11 /* cup.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cup.png; sourceTree = "<group>"; };
 		BF97417B2A5B9F1800701718 /* efficientnet_lite0.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = efficientnet_lite0.tflite; sourceTree = "<group>"; };
 		BFCDADFC2AA03BC300EC4371 /* DefaultConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultConstants.swift; sourceTree = "<group>"; };
-		BFCDADFD2AA03BC300EC4371 /* InferenceConfigManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceConfigManager.swift; sourceTree = "<group>"; };
+		BFCDADFD2AA03BC300EC4371 /* InferenceConfigurationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceConfigurationManager.swift; sourceTree = "<group>"; };
 		BFCDAE012AA03BC300EC4371 /* CameraFeedService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedService.swift; sourceTree = "<group>"; };
 		BFCDAE022AA03BC300EC4371 /* ImageClassifierService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageClassifierService.swift; sourceTree = "<group>"; };
 		BFCDAE072AA03BC300EC4371 /* MediaLibraryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MediaLibraryViewController.swift; sourceTree = "<group>"; };
@@ -149,7 +149,7 @@
 			isa = PBXGroup;
 			children = (
 				BFCDADFC2AA03BC300EC4371 /* DefaultConstants.swift */,
-				BFCDADFD2AA03BC300EC4371 /* InferenceConfigManager.swift */,
+				BFCDADFD2AA03BC300EC4371 /* InferenceConfigurationManager.swift */,
 			);
 			path = Configs;
 			sourceTree = "<group>";
@@ -377,7 +377,7 @@
 				BF2B2CDD2A316CB000589A11 /* SceneDelegate.swift in Sources */,
 				BFCDAE162AA03BC300EC4371 /* CameraViewController.swift in Sources */,
 				BFCDAE152AA03BC300EC4371 /* BottomSheetViewController.swift in Sources */,
-				BFCDAE0D2AA03BC300EC4371 /* InferenceConfigManager.swift in Sources */,
+				BFCDAE0D2AA03BC300EC4371 /* InferenceConfigurationManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

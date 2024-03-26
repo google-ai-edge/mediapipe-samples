@@ -47,14 +47,20 @@ class ImageClassifierService: NSObject {
   private var scoreThreshold: Float
   private var maxResult: Int
   private var modelPath: String
+  private var delegate: ImageClassifierDelegate
 
   // MARK: - Custom Initializer
-  private init?(model: Model, scoreThreshold: Float, maxResult: Int, runningMode:RunningMode) {
+  private init?(model: Model,
+                scoreThreshold: Float,
+                maxResult: Int,
+                runningMode:RunningMode,
+                delegate: ImageClassifierDelegate) {
     guard let modelPath = model.modelPath else { return nil }
     self.modelPath = modelPath
     self.scoreThreshold = scoreThreshold
     self.runningMode = runningMode
     self.maxResult = maxResult
+    self.delegate = delegate
     super.init()
 
     createImageClassifier()
@@ -66,6 +72,7 @@ class ImageClassifierService: NSObject {
     imageClassifierOptions.scoreThreshold = scoreThreshold
     imageClassifierOptions.maxResults = maxResult
     imageClassifierOptions.baseOptions.modelAssetPath = modelPath
+    imageClassifierOptions.baseOptions.delegate = delegate.delegate
     if runningMode == .liveStream {
       imageClassifierOptions.imageClassifierLiveStreamDelegate = self
     }
@@ -82,12 +89,14 @@ class ImageClassifierService: NSObject {
     model: Model,
     scoreThreshold: Float,
     maxResult: Int,
-    videoDelegate: ImageClassifierServiceVideoDelegate?) -> ImageClassifierService? {
+    videoDelegate: ImageClassifierServiceVideoDelegate?,
+    delegate: ImageClassifierDelegate) -> ImageClassifierService? {
     let imageClassifierService = ImageClassifierService(
       model: model,
       scoreThreshold: scoreThreshold,
       maxResult: maxResult,
-      runningMode: .video)
+      runningMode: .video,
+      delegate: delegate)
     imageClassifierService?.videoDelegate = videoDelegate
 
     return imageClassifierService
@@ -97,12 +106,14 @@ class ImageClassifierService: NSObject {
     model: Model,
     scoreThreshold: Float,
     maxResult: Int,
-    liveStreamDelegate: ImageClassifierServiceLiveStreamDelegate?) -> ImageClassifierService? {
+    liveStreamDelegate: ImageClassifierServiceLiveStreamDelegate?,
+    delegate: ImageClassifierDelegate) -> ImageClassifierService? {
     let imageClassifierService = ImageClassifierService(
       model: model,
       scoreThreshold: scoreThreshold,
       maxResult: maxResult,
-      runningMode: .liveStream)
+      runningMode: .liveStream,
+      delegate: delegate)
     imageClassifierService?.liveStreamDelegate = liveStreamDelegate
 
     return imageClassifierService
@@ -111,12 +122,14 @@ class ImageClassifierService: NSObject {
   static func stillImageClassifierService(
     model: Model,
     scoreThreshold: Float,
-    maxResult: Int) -> ImageClassifierService? {
+    maxResult: Int,
+    delegate: ImageClassifierDelegate) -> ImageClassifierService? {
       let imageClassifierService = ImageClassifierService(
         model: model,
         scoreThreshold: scoreThreshold,
         maxResult: maxResult,
-        runningMode: .image)
+        runningMode: .image,
+        delegate: delegate)
 
       return imageClassifierService
   }

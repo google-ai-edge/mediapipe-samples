@@ -43,8 +43,8 @@ class BottomSheetViewController: UIViewController {
   @IBOutlet weak var maxResultLabel: UILabel!
 
   @IBOutlet weak var toggleBottomSheetButton: UIButton!
-
   @IBOutlet weak var choseModelButton: UIButton!
+  @IBOutlet weak var chooseDelegateButton: UIButton!
 
   @IBOutlet weak var tableView: UITableView!
 
@@ -54,7 +54,7 @@ class BottomSheetViewController: UIViewController {
 
   // MARK: Computed properties
   var collapsedHeight: CGFloat {
-    return normalCellHeight * CGFloat(InferenceConfigManager.sharedInstance.maxResults)
+    return normalCellHeight * CGFloat(InferenceConfigurationManager.sharedInstance.maxResults)
   }
   var isUIEnabled: Bool = false {
     didSet {
@@ -78,11 +78,11 @@ class BottomSheetViewController: UIViewController {
   // MARK: - Private function
   private func setupUI() {
 
-    maxResultStepper.value = Double(InferenceConfigManager.sharedInstance.maxResults)
-    maxResultLabel.text = "\(InferenceConfigManager.sharedInstance.maxResults)"
+    maxResultStepper.value = Double(InferenceConfigurationManager.sharedInstance.maxResults)
+    maxResultLabel.text = "\(InferenceConfigurationManager.sharedInstance.maxResults)"
 
-    thresholdStepper.value = Double(InferenceConfigManager.sharedInstance.scoreThreshold)
-    thresholdValueLabel.text = "\(InferenceConfigManager.sharedInstance.scoreThreshold)"
+    thresholdStepper.value = Double(InferenceConfigurationManager.sharedInstance.scoreThreshold)
+    thresholdValueLabel.text = "\(InferenceConfigurationManager.sharedInstance.scoreThreshold)"
 
     // Chose model option
     let choseModel = {(action: UIAction) in
@@ -90,7 +90,7 @@ class BottomSheetViewController: UIViewController {
     }
     let actions: [UIAction] = Model.allCases.compactMap { model in
       let action = UIAction(title: model.rawValue, handler: choseModel)
-      if model == InferenceConfigManager.sharedInstance.model {
+      if model == InferenceConfigurationManager.sharedInstance.model {
         action.state = .on
       }
       return action
@@ -99,15 +99,36 @@ class BottomSheetViewController: UIViewController {
     choseModelButton.showsMenuAsPrimaryAction = true
     choseModelButton.changesSelectionAsPrimaryAction = true
 
+    // Chose delegate option
+    let selectedDelegateAction = {(action: UIAction) in
+      self.updateDelegate(title: action.title)
+    }
+    let delegateActions: [UIAction] = ImageClassifierDelegate.allCases.compactMap { delegate in
+      return UIAction(
+        title: delegate.name,
+        state: (InferenceConfigurationManager.sharedInstance.delegate == delegate) ? .on : .off,
+        handler: selectedDelegateAction
+      )
+    }
+
+    chooseDelegateButton.menu = UIMenu(children: delegateActions)
+    chooseDelegateButton.showsMenuAsPrimaryAction = true
+    chooseDelegateButton.changesSelectionAsPrimaryAction = true
+
     // Setup table view cell height
     tableView.rowHeight = normalCellHeight
   }
 
   private func updateModel(modelTitle: String) {
     guard let model = Model(rawValue: modelTitle) else { return }
-    InferenceConfigManager.sharedInstance.model = model
+    InferenceConfigurationManager.sharedInstance.model = model
   }
-  
+
+  private func updateDelegate(title: String) {
+    guard let delegate = ImageClassifierDelegate(name: title) else { return }
+    InferenceConfigurationManager.sharedInstance.delegate = delegate
+  }
+
   private func enableOrDisableClicks() {
     thresholdStepper.isEnabled = isUIEnabled
   }
@@ -122,20 +143,20 @@ class BottomSheetViewController: UIViewController {
 
   @IBAction func thresholdStepperValueChanged(_ sender: UIStepper) {
     let scoreThreshold = Float(sender.value)
-    InferenceConfigManager.sharedInstance.scoreThreshold = scoreThreshold
+    InferenceConfigurationManager.sharedInstance.scoreThreshold = scoreThreshold
     thresholdValueLabel.text = "\(scoreThreshold)"
   }
 
   @IBAction func maxResultStepperValueChanged(_ sender: UIStepper) {
     let maxResults = Int(sender.value)
-    InferenceConfigManager.sharedInstance.maxResults = maxResults
+    InferenceConfigurationManager.sharedInstance.maxResults = maxResults
     maxResultLabel.text = "\(maxResults)"
   }
 }
 
 extension BottomSheetViewController: UITableViewDataSource {
   func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    return InferenceConfigManager.sharedInstance.maxResults
+    return InferenceConfigurationManager.sharedInstance.maxResults
   }
 
   func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

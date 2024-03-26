@@ -14,6 +14,7 @@
 
 import Foundation
 import UIKit
+import MediaPipeTasksVision
 
 // MARK: Define default constants
 struct DefaultConstants {
@@ -34,6 +35,7 @@ struct DefaultConstants {
   static let ovelayColor = UIColor(red: 0, green: 127/255.0, blue: 139/255.0, alpha: 1)
   static let displayFont = UIFont.systemFont(ofSize: 14.0, weight: .medium)
   static let model: Model = .efficientnetLite0
+  static let delegate: ImageClassifierDelegate = .CPU
 }
 
 // MARK: Tflite Model
@@ -51,4 +53,39 @@ enum Model: String, CaseIterable {
                 forResource: "efficientnet_lite2", ofType: "tflite")
         }
     }
+}
+
+// MARK: ImageClassifierDelegate
+enum ImageClassifierDelegate: CaseIterable {
+  case GPU
+  case CPU
+
+  var name: String {
+    switch self {
+    case .GPU:
+      return "GPU"
+    case .CPU:
+      return "CPU"
+    }
+  }
+
+  var delegate: Delegate {
+    switch self {
+    case .GPU:
+      return .GPU
+    case .CPU:
+      return .CPU
+    }
+  }
+
+  init?(name: String) {
+    switch name {
+    case ImageClassifierDelegate.CPU.name:
+      self = ImageClassifierDelegate.CPU
+    case ImageClassifierDelegate.GPU.name:
+      self = ImageClassifierDelegate.GPU
+    default:
+      return nil
+    }
+  }
 }
