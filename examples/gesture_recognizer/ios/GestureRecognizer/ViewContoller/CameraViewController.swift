@@ -154,7 +154,8 @@ class CameraViewController: UIViewController {
         minHandDetectionConfidence: InferenceConfigurationManager.sharedInstance.minHandDetectionConfidence,
         minHandPresenceConfidence: InferenceConfigurationManager.sharedInstance.minHandPresenceConfidence,
         minTrackingConfidence: InferenceConfigurationManager.sharedInstance.minTrackingConfidence,
-        liveStreamDelegate: self)
+        liveStreamDelegate: self,
+        delegate: InferenceConfigurationManager.sharedInstance.delegate)
   }
   
   private func clearGestureRecognizerServiceOnSessionInterruption() {

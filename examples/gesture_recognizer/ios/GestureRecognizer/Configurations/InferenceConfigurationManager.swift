@@ -34,6 +34,10 @@ class InferenceConfigurationManager: NSObject {
     didSet { postConfigChangedNotification() }
   }
 
+  var delegate: GestureRecognizerDelegate = DefaultConstants.delegate {
+    didSet { postConfigChangedNotification() }
+  }
+
   static let sharedInstance = InferenceConfigurationManager()
   
   static let notificationName = Notification.Name.init(rawValue: "com.google.mediapipe.inferenceConfigChanged")
