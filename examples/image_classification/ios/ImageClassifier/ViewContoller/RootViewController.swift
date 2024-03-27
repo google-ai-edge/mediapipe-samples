@@ -38,7 +38,7 @@ class RootViewController: UIViewController {
   private struct Constants {
     static let inferenceBottomHeight = 284.0
     static let expandButtonHeight = 41.0
-    static let expandButtonTopSpace = 10.0
+    static let expandButtonTopSpace = 20.0
     static let mediaLibraryViewControllerStoryBoardId = "MEDIA_LIBRARY_VIEW_CONTROLLER"
     static let cameraViewControllerStoryBoardId = "CAMERA_VIEW_CONTROLLER"
     static let storyBoardName = "Main"
