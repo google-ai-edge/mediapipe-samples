@@ -300,7 +300,8 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
         numHands: InferenceConfigurationManager.sharedInstance.numHands,
         minHandDetectionConfidence: InferenceConfigurationManager.sharedInstance.minHandDetectionConfidence,
         minHandPresenceConfidence: InferenceConfigurationManager.sharedInstance.minHandPresenceConfidence,
-        minTrackingConfidence: InferenceConfigurationManager.sharedInstance.minTrackingConfidence)
+        minTrackingConfidence: InferenceConfigurationManager.sharedInstance.minTrackingConfidence,
+        delegate: InferenceConfigurationManager.sharedInstance.delegate)
       case .video:
       handLandmarkerService = HandLandmarkerService.videoHandLandmarkerService(
         modelPath: InferenceConfigurationManager.sharedInstance.modelPath,
@@ -308,7 +309,8 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
         minHandDetectionConfidence: InferenceConfigurationManager.sharedInstance.minHandDetectionConfidence,
         minHandPresenceConfidence: InferenceConfigurationManager.sharedInstance.minHandPresenceConfidence,
         minTrackingConfidence: InferenceConfigurationManager.sharedInstance.minTrackingConfidence,
-        videoDelegate: self)
+        videoDelegate: self,
+        delegate: InferenceConfigurationManager.sharedInstance.delegate)
       default:
         break;
     }

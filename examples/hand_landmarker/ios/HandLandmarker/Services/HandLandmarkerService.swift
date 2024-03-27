@@ -49,6 +49,7 @@ class HandLandmarkerService: NSObject {
   private var minHandPresenceConfidence: Float
   private var minTrackingConfidence: Float
   var modelPath: String
+  private var delegate: HandLandmarkerDelegate
 
   // MARK: - Custom Initializer
   private init?(modelPath: String?,
@@ -56,7 +57,8 @@ class HandLandmarkerService: NSObject {
                 numHands: Int,
                 minHandDetectionConfidence: Float,
                 minHandPresenceConfidence: Float,
-                minTrackingConfidence: Float) {
+                minTrackingConfidence: Float,
+                delegate: HandLandmarkerDelegate) {
     guard let modelPath = modelPath else { return nil }
     self.modelPath = modelPath
     self.runningMode = runningMode
@@ -64,6 +66,7 @@ class HandLandmarkerService: NSObject {
     self.minHandDetectionConfidence = minHandDetectionConfidence
     self.minHandPresenceConfidence = minHandPresenceConfidence
     self.minTrackingConfidence = minTrackingConfidence
+    self.delegate = delegate
     super.init()
 
     createHandLandmarker()
@@ -77,6 +80,7 @@ class HandLandmarkerService: NSObject {
     handLandmarkerOptions.minHandPresenceConfidence = minHandPresenceConfidence
     handLandmarkerOptions.minTrackingConfidence = minTrackingConfidence
     handLandmarkerOptions.baseOptions.modelAssetPath = modelPath
+    handLandmarkerOptions.baseOptions.delegate = delegate.delegate
     if runningMode == .liveStream {
       handLandmarkerOptions.handLandmarkerLiveStreamDelegate = self
     }
@@ -95,14 +99,16 @@ class HandLandmarkerService: NSObject {
     minHandDetectionConfidence: Float,
     minHandPresenceConfidence: Float,
     minTrackingConfidence: Float,
-    videoDelegate: HandLandmarkerServiceVideoDelegate?) -> HandLandmarkerService? {
+    videoDelegate: HandLandmarkerServiceVideoDelegate?,
+    delegate: HandLandmarkerDelegate) -> HandLandmarkerService? {
     let handLandmarkerService = HandLandmarkerService(
       modelPath: modelPath,
       runningMode: .video,
       numHands: numHands,
       minHandDetectionConfidence: minHandDetectionConfidence,
       minHandPresenceConfidence: minHandPresenceConfidence,
-      minTrackingConfidence: minTrackingConfidence)
+      minTrackingConfidence: minTrackingConfidence,
+      delegate: delegate)
     handLandmarkerService?.videoDelegate = videoDelegate
     return handLandmarkerService
   }
@@ -113,14 +119,16 @@ class HandLandmarkerService: NSObject {
     minHandDetectionConfidence: Float,
     minHandPresenceConfidence: Float,
     minTrackingConfidence: Float,
-    liveStreamDelegate: HandLandmarkerServiceLiveStreamDelegate?) -> HandLandmarkerService? {
+    liveStreamDelegate: HandLandmarkerServiceLiveStreamDelegate?,
+    delegate: HandLandmarkerDelegate) -> HandLandmarkerService? {
     let handLandmarkerService = HandLandmarkerService(
       modelPath: modelPath,
       runningMode: .liveStream,
       numHands: numHands,
       minHandDetectionConfidence: minHandDetectionConfidence,
       minHandPresenceConfidence: minHandPresenceConfidence,
-      minTrackingConfidence: minTrackingConfidence)
+      minTrackingConfidence: minTrackingConfidence,
+      delegate: delegate)
     handLandmarkerService?.liveStreamDelegate = liveStreamDelegate
 
     return handLandmarkerService
@@ -131,14 +139,16 @@ class HandLandmarkerService: NSObject {
     numHands: Int,
     minHandDetectionConfidence: Float,
     minHandPresenceConfidence: Float,
-    minTrackingConfidence: Float) -> HandLandmarkerService? {
+    minTrackingConfidence: Float,
+    delegate: HandLandmarkerDelegate) -> HandLandmarkerService? {
     let handLandmarkerService = HandLandmarkerService(
       modelPath: modelPath,
       runningMode: .image,
       numHands: numHands,
       minHandDetectionConfidence: minHandDetectionConfidence,
       minHandPresenceConfidence: minHandPresenceConfidence,
-      minTrackingConfidence: minTrackingConfidence)
+      minTrackingConfidence: minTrackingConfidence,
+      delegate: delegate)
 
     return handLandmarkerService
   }
