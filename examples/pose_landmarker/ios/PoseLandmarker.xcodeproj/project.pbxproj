@@ -1,0 +1,694 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		35A24A324986D563A8483F9D /* Pods_PoseLandmarker.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A70819727B1AFD6C7312E5E7 /* Pods_PoseLandmarker.framework */; };
+		BF49F8F12BA81E6E0075959B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF49F8F02BA81E6E0075959B /* AppDelegate.swift */; };
+		BF49F8F82BA81E6E0075959B /* Base in Resources */ = {isa = PBXBuildFile; fileRef = BF49F8F72BA81E6E0075959B /* Base */; };
+		BF49F8FA2BA81E6F0075959B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF49F8F92BA81E6F0075959B /* Assets.xcassets */; };
+		BF49F8FD2BA81E6F0075959B /* Base in Resources */ = {isa = PBXBuildFile; fileRef = BF49F8FC2BA81E6F0075959B /* Base */; };
+		BF49F9082BA81E700075959B /* PoseLandmarkerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF49F9072BA81E700075959B /* PoseLandmarkerTests.swift */; };
+		BF49F9212BA81F730075959B /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF49F9202BA81F730075959B /* SceneDelegate.swift */; };
+		BF49F92F2BA821B80075959B /* DefaultConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF49F9222BA821B80075959B /* DefaultConstants.swift */; };
+		BF49F9302BA821B80075959B /* InferenceConfigurationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF49F9232BA821B80075959B /* InferenceConfigurationManager.swift */; };
+		BF49F9312BA821B80075959B /* BottomSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF49F9252BA821B80075959B /* BottomSheetViewController.swift */; };
+		BF49F9322BA821B80075959B /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF49F9262BA821B80075959B /* CameraViewController.swift */; };
+		BF49F9332BA821B80075959B /* MediaLibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF49F9272BA821B80075959B /* MediaLibraryViewController.swift */; };
+		BF49F9342BA821B80075959B /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF49F9282BA821B80075959B /* RootViewController.swift */; };
+		BF49F9352BA821B80075959B /* CameraFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF49F92A2BA821B80075959B /* CameraFeedService.swift */; };
+		BF49F9362BA821B80075959B /* PoseLandmarkerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF49F92B2BA821B80075959B /* PoseLandmarkerService.swift */; };
+		BF49F9372BA821B80075959B /* PoseOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF49F92D2BA821B80075959B /* PoseOverlay.swift */; };
+		BF49F9392BA824CC0075959B /* pose_landmarker_lite.task in Resources */ = {isa = PBXBuildFile; fileRef = BF49F9382BA824CC0075959B /* pose_landmarker_lite.task */; };
+		BF49F93C2BA834D50075959B /* pose_landmarker_heavy.task in Resources */ = {isa = PBXBuildFile; fileRef = BF49F93A2BA834D50075959B /* pose_landmarker_heavy.task */; };
+		BF49F93D2BA834D50075959B /* pose_landmarker_full.task in Resources */ = {isa = PBXBuildFile; fileRef = BF49F93B2BA834D50075959B /* pose_landmarker_full.task */; };
+		BFE134132BA930040092BF4E /* test_image.jpg in Resources */ = {isa = PBXBuildFile; fileRef = BFE134122BA930040092BF4E /* test_image.jpg */; };
+		FA59FA5268D0C1CD91481592 /* libPods-PoseLandmarkerTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9AA2A96F11E3A326401F36F2 /* libPods-PoseLandmarkerTests.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		BF49F9042BA81E700075959B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BF49F8E52BA81E6E0075959B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BF49F8EC2BA81E6E0075959B;
+			remoteInfo = PoseLandmarker;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		61DA9B9B143F9041F5EBF658 /* Pods-PoseLandmarker.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PoseLandmarker.debug.xcconfig"; path = "Target Support Files/Pods-PoseLandmarker/Pods-PoseLandmarker.debug.xcconfig"; sourceTree = "<group>"; };
+		69E7C22BC4E120CAF1F43A65 /* Pods-PoseLandmarkerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PoseLandmarkerTests.release.xcconfig"; path = "Target Support Files/Pods-PoseLandmarkerTests/Pods-PoseLandmarkerTests.release.xcconfig"; sourceTree = "<group>"; };
+		7B1F143B63E1903E1398857D /* Pods-PoseLandmarkerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PoseLandmarkerTests.debug.xcconfig"; path = "Target Support Files/Pods-PoseLandmarkerTests/Pods-PoseLandmarkerTests.debug.xcconfig"; sourceTree = "<group>"; };
+		9AA2A96F11E3A326401F36F2 /* libPods-PoseLandmarkerTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-PoseLandmarkerTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A70819727B1AFD6C7312E5E7 /* Pods_PoseLandmarker.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PoseLandmarker.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B88D37123CF1372789AE8286 /* Pods-PoseLandmarker.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PoseLandmarker.release.xcconfig"; path = "Target Support Files/Pods-PoseLandmarker/Pods-PoseLandmarker.release.xcconfig"; sourceTree = "<group>"; };
+		BF49F8ED2BA81E6E0075959B /* PoseLandmarker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PoseLandmarker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BF49F8F02BA81E6E0075959B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		BF49F8F72BA81E6E0075959B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		BF49F8F92BA81E6F0075959B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		BF49F8FC2BA81E6F0075959B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		BF49F8FE2BA81E6F0075959B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BF49F9032BA81E700075959B /* PoseLandmarkerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PoseLandmarkerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BF49F9072BA81E700075959B /* PoseLandmarkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseLandmarkerTests.swift; sourceTree = "<group>"; };
+		BF49F9202BA81F730075959B /* SceneDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		BF49F9222BA821B80075959B /* DefaultConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultConstants.swift; sourceTree = "<group>"; };
+		BF49F9232BA821B80075959B /* InferenceConfigurationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceConfigurationManager.swift; sourceTree = "<group>"; };
+		BF49F9252BA821B80075959B /* BottomSheetViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BottomSheetViewController.swift; sourceTree = "<group>"; };
+		BF49F9262BA821B80075959B /* CameraViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
+		BF49F9272BA821B80075959B /* MediaLibraryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MediaLibraryViewController.swift; sourceTree = "<group>"; };
+		BF49F9282BA821B80075959B /* RootViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
+		BF49F92A2BA821B80075959B /* CameraFeedService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedService.swift; sourceTree = "<group>"; };
+		BF49F92B2BA821B80075959B /* PoseLandmarkerService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PoseLandmarkerService.swift; sourceTree = "<group>"; };
+		BF49F92D2BA821B80075959B /* PoseOverlay.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PoseOverlay.swift; sourceTree = "<group>"; };
+		BF49F9382BA824CC0075959B /* pose_landmarker_lite.task */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_landmarker_lite.task; sourceTree = "<group>"; };
+		BF49F93A2BA834D50075959B /* pose_landmarker_heavy.task */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_landmarker_heavy.task; sourceTree = "<group>"; };
+		BF49F93B2BA834D50075959B /* pose_landmarker_full.task */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_landmarker_full.task; sourceTree = "<group>"; };
+		BFE134122BA930040092BF4E /* test_image.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = test_image.jpg; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BF49F8EA2BA81E6E0075959B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				35A24A324986D563A8483F9D /* Pods_PoseLandmarker.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF49F9002BA81E700075959B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FA59FA5268D0C1CD91481592 /* libPods-PoseLandmarkerTests.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		024AE8DDCB5455B073BDCB6E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A70819727B1AFD6C7312E5E7 /* Pods_PoseLandmarker.framework */,
+				9AA2A96F11E3A326401F36F2 /* libPods-PoseLandmarkerTests.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		96E5B5D2B03BA2484C9C6B99 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				61DA9B9B143F9041F5EBF658 /* Pods-PoseLandmarker.debug.xcconfig */,
+				B88D37123CF1372789AE8286 /* Pods-PoseLandmarker.release.xcconfig */,
+				7B1F143B63E1903E1398857D /* Pods-PoseLandmarkerTests.debug.xcconfig */,
+				69E7C22BC4E120CAF1F43A65 /* Pods-PoseLandmarkerTests.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		BF49F8E42BA81E6E0075959B = {
+			isa = PBXGroup;
+			children = (
+				BF49F8EF2BA81E6E0075959B /* PoseLandmarker */,
+				BF49F9062BA81E700075959B /* PoseLandmarkerTests */,
+				BF49F8EE2BA81E6E0075959B /* Products */,
+				96E5B5D2B03BA2484C9C6B99 /* Pods */,
+				024AE8DDCB5455B073BDCB6E /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		BF49F8EE2BA81E6E0075959B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BF49F8ED2BA81E6E0075959B /* PoseLandmarker.app */,
+				BF49F9032BA81E700075959B /* PoseLandmarkerTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BF49F8EF2BA81E6E0075959B /* PoseLandmarker */ = {
+			isa = PBXGroup;
+			children = (
+				BF49F9382BA824CC0075959B /* pose_landmarker_lite.task */,
+				BF49F93B2BA834D50075959B /* pose_landmarker_full.task */,
+				BF49F93A2BA834D50075959B /* pose_landmarker_heavy.task */,
+				BF49F9242BA821B80075959B /* Configurations */,
+				BF49F92C2BA821B80075959B /* Services */,
+				BF49F9292BA821B80075959B /* ViewContoller */,
+				BF49F92E2BA821B80075959B /* Views */,
+				BF49F8F02BA81E6E0075959B /* AppDelegate.swift */,
+				BF49F9202BA81F730075959B /* SceneDelegate.swift */,
+				BF49F8F62BA81E6E0075959B /* Main.storyboard */,
+				BF49F8F92BA81E6F0075959B /* Assets.xcassets */,
+				BF49F8FB2BA81E6F0075959B /* LaunchScreen.storyboard */,
+				BF49F8FE2BA81E6F0075959B /* Info.plist */,
+			);
+			path = PoseLandmarker;
+			sourceTree = "<group>";
+		};
+		BF49F9062BA81E700075959B /* PoseLandmarkerTests */ = {
+			isa = PBXGroup;
+			children = (
+				BFE134122BA930040092BF4E /* test_image.jpg */,
+				BF49F9072BA81E700075959B /* PoseLandmarkerTests.swift */,
+			);
+			path = PoseLandmarkerTests;
+			sourceTree = "<group>";
+		};
+		BF49F9242BA821B80075959B /* Configurations */ = {
+			isa = PBXGroup;
+			children = (
+				BF49F9222BA821B80075959B /* DefaultConstants.swift */,
+				BF49F9232BA821B80075959B /* InferenceConfigurationManager.swift */,
+			);
+			path = Configurations;
+			sourceTree = "<group>";
+		};
+		BF49F9292BA821B80075959B /* ViewContoller */ = {
+			isa = PBXGroup;
+			children = (
+				BF49F9252BA821B80075959B /* BottomSheetViewController.swift */,
+				BF49F9262BA821B80075959B /* CameraViewController.swift */,
+				BF49F9272BA821B80075959B /* MediaLibraryViewController.swift */,
+				BF49F9282BA821B80075959B /* RootViewController.swift */,
+			);
+			path = ViewContoller;
+			sourceTree = "<group>";
+		};
+		BF49F92C2BA821B80075959B /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				BF49F92A2BA821B80075959B /* CameraFeedService.swift */,
+				BF49F92B2BA821B80075959B /* PoseLandmarkerService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		BF49F92E2BA821B80075959B /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				BF49F92D2BA821B80075959B /* PoseOverlay.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BF49F8EC2BA81E6E0075959B /* PoseLandmarker */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BF49F9172BA81E700075959B /* Build configuration list for PBXNativeTarget "PoseLandmarker" */;
+			buildPhases = (
+				E287F09DD63ACAD418F5F3CD /* [CP] Check Pods Manifest.lock */,
+				BF49F93E2BA83A910075959B /* Download models */,
+				BF49F8E92BA81E6E0075959B /* Sources */,
+				BF49F8EA2BA81E6E0075959B /* Frameworks */,
+				BF49F8EB2BA81E6E0075959B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PoseLandmarker;
+			productName = PoseLandmarker;
+			productReference = BF49F8ED2BA81E6E0075959B /* PoseLandmarker.app */;
+			productType = "com.apple.product-type.application";
+		};
+		BF49F9022BA81E700075959B /* PoseLandmarkerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BF49F91A2BA81E700075959B /* Build configuration list for PBXNativeTarget "PoseLandmarkerTests" */;
+			buildPhases = (
+				88746BBACE513A1A750EFB1B /* [CP] Check Pods Manifest.lock */,
+				BF49F8FF2BA81E700075959B /* Sources */,
+				BF49F9002BA81E700075959B /* Frameworks */,
+				BF49F9012BA81E700075959B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BF49F9052BA81E700075959B /* PBXTargetDependency */,
+			);
+			name = PoseLandmarkerTests;
+			productName = PoseLandmarkerTests;
+			productReference = BF49F9032BA81E700075959B /* PoseLandmarkerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BF49F8E52BA81E6E0075959B /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1530;
+				LastUpgradeCheck = 1530;
+				TargetAttributes = {
+					BF49F8EC2BA81E6E0075959B = {
+						CreatedOnToolsVersion = 15.3;
+					};
+					BF49F9022BA81E700075959B = {
+						CreatedOnToolsVersion = 15.3;
+						TestTargetID = BF49F8EC2BA81E6E0075959B;
+					};
+				};
+			};
+			buildConfigurationList = BF49F8E82BA81E6E0075959B /* Build configuration list for PBXProject "PoseLandmarker" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = BF49F8E42BA81E6E0075959B;
+			productRefGroup = BF49F8EE2BA81E6E0075959B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BF49F8EC2BA81E6E0075959B /* PoseLandmarker */,
+				BF49F9022BA81E700075959B /* PoseLandmarkerTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BF49F8EB2BA81E6E0075959B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF49F93C2BA834D50075959B /* pose_landmarker_heavy.task in Resources */,
+				BF49F93D2BA834D50075959B /* pose_landmarker_full.task in Resources */,
+				BF49F8FA2BA81E6F0075959B /* Assets.xcassets in Resources */,
+				BF49F8FD2BA81E6F0075959B /* Base in Resources */,
+				BF49F9392BA824CC0075959B /* pose_landmarker_lite.task in Resources */,
+				BF49F8F82BA81E6E0075959B /* Base in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF49F9012BA81E700075959B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BFE134132BA930040092BF4E /* test_image.jpg in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		88746BBACE513A1A750EFB1B /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-PoseLandmarkerTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		BF49F93E2BA83A910075959B /* Download models */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download models";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/RunScripts/download_models.sh\"\n";
+		};
+		E287F09DD63ACAD418F5F3CD /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-PoseLandmarker-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BF49F8E92BA81E6E0075959B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF49F9312BA821B80075959B /* BottomSheetViewController.swift in Sources */,
+				BF49F9342BA821B80075959B /* RootViewController.swift in Sources */,
+				BF49F9212BA81F730075959B /* SceneDelegate.swift in Sources */,
+				BF49F9352BA821B80075959B /* CameraFeedService.swift in Sources */,
+				BF49F9302BA821B80075959B /* InferenceConfigurationManager.swift in Sources */,
+				BF49F9322BA821B80075959B /* CameraViewController.swift in Sources */,
+				BF49F8F12BA81E6E0075959B /* AppDelegate.swift in Sources */,
+				BF49F9332BA821B80075959B /* MediaLibraryViewController.swift in Sources */,
+				BF49F9372BA821B80075959B /* PoseOverlay.swift in Sources */,
+				BF49F92F2BA821B80075959B /* DefaultConstants.swift in Sources */,
+				BF49F9362BA821B80075959B /* PoseLandmarkerService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF49F8FF2BA81E700075959B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF49F9082BA81E700075959B /* PoseLandmarkerTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BF49F9052BA81E700075959B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BF49F8EC2BA81E6E0075959B /* PoseLandmarker */;
+			targetProxy = BF49F9042BA81E700075959B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		BF49F8F62BA81E6E0075959B /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BF49F8F72BA81E6E0075959B /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		BF49F8FB2BA81E6F0075959B /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BF49F8FC2BA81E6F0075959B /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		BF49F9152BA81E700075959B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BF49F9162BA81E700075959B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		BF49F9182BA81E700075959B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61DA9B9B143F9041F5EBF658 /* Pods-PoseLandmarker.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PoseLandmarker/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to get pose landmarks that appear in the camera feed.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.poselandmarker.PoseLandmarker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BF49F9192BA81E700075959B /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = B88D37123CF1372789AE8286 /* Pods-PoseLandmarker.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PoseLandmarker/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to get pose landmarks that appear in the camera feed.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.poselandmarker.PoseLandmarker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		BF49F91B2BA81E700075959B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7B1F143B63E1903E1398857D /* Pods-PoseLandmarkerTests.debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.poselandmarker.PoseLandmarkerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PoseLandmarker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PoseLandmarker";
+			};
+			name = Debug;
+		};
+		BF49F91C2BA81E700075959B /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 69E7C22BC4E120CAF1F43A65 /* Pods-PoseLandmarkerTests.release.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.poselandmarker.PoseLandmarkerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PoseLandmarker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PoseLandmarker";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BF49F8E82BA81E6E0075959B /* Build configuration list for PBXProject "PoseLandmarker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF49F9152BA81E700075959B /* Debug */,
+				BF49F9162BA81E700075959B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BF49F9172BA81E700075959B /* Build configuration list for PBXNativeTarget "PoseLandmarker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF49F9182BA81E700075959B /* Debug */,
+				BF49F9192BA81E700075959B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BF49F91A2BA81E700075959B /* Build configuration list for PBXNativeTarget "PoseLandmarkerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF49F91B2BA81E700075959B /* Debug */,
+				BF49F91C2BA81E700075959B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BF49F8E52BA81E6E0075959B /* Project object */;
+}
