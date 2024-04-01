@@ -382,7 +382,7 @@ class CameraFragment : Fragment(),
                     resultBundle.inputImageWidth,
                     RunningMode.LIVE_STREAM
                 )
-                // Force a redraw
+                // Redraw LandMarker with every new result that get from listener
                 fragmentCameraBinding.overlay.invalidate()
             }
         }

@@ -29,7 +29,7 @@ class FaceBlendshapesResultAdapter :
         private const val NO_VALUE = "--"
     }
 
-    private var categories: MutableList<Category?> = MutableList(52) { null }
+    private var categories: MutableList<Category?> = MutableList(3) { null }
 
     fun updateResults(faceLandmarkerResult: HolisticLandmarkerResult? = null) {
         categories = MutableList(3) { null }
@@ -37,6 +37,7 @@ class FaceBlendshapesResultAdapter :
             val sortedCategories =
                 faceLandmarkerResult.faceBlendshapes().get()
                     .sortedBy { -it.score() }
+            // min value is use to make sure that result list will be in an acceptable range
             val min =
                 kotlin.math.min(sortedCategories.size, categories.size)
             for (i in 0 until min) {

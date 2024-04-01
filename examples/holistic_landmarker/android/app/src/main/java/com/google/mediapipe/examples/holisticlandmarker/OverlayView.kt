@@ -56,6 +56,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
         initPaints()
     }
 
+    //Set up properties for each Paint object
     private fun initPaints() {
         facePaint.color =
             ContextCompat.getColor(context!!, R.color.mp_color_primary)
@@ -130,7 +131,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
             }
         }
 
-        // draw hand landmarks
+        // draw left hand landmarks
         results?.leftHandLandmarks()?.let { leftHandLandmarkerResult ->
             if (leftHandLandmarkerResult.isEmpty()) return@let
             HandLandmarker.HAND_CONNECTIONS.forEach {
@@ -148,6 +149,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
             }
         }
 
+        // draw right hand landmarks
         results?.rightHandLandmarks()?.let { rightHandLandmarkerResult ->
             if (rightHandLandmarkerResult.isEmpty()) return@let
 
@@ -166,6 +168,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
             }
         }
 
+        // draw face landmarks
         results?.faceLandmarks()?.let { faceLandmarkerResult ->
             if (faceLandmarkerResult.isEmpty()) return@let
 

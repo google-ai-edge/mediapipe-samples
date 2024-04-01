@@ -307,7 +307,7 @@ class HolisticLandmarkerHelper(
     ) {
         val finishTimeMs = SystemClock.uptimeMillis()
         val inferenceTime = finishTimeMs - result.timestampMs()
-
+        // Update result to LandMarkerHelper
         landmarkerHelperListener?.onResults(
             ResultBundle(
                 result,
