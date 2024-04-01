@@ -23,13 +23,14 @@ class MainViewModel : ViewModel() {
     val helperState: MutableLiveData<HelperState> = MutableLiveData(
         HelperState()
     )
-
+    // Update minFacePresenceThreshold in helperState to change optionBuilder setting
     fun setMinFaceLandmarkConfidence(confidence: Float) {
         helperState.value = helperState.value?.copy(
             minFacePresenceThreshold = confidence
         )
     }
 
+    // Update minHandLandmarkThreshold in helperState to change optionBuilder setting
     fun setMinHandLandmarkConfidence(confidence: Float) {
         helperState.value =
             helperState.value?.copy(
@@ -37,6 +38,7 @@ class MainViewModel : ViewModel() {
             )
     }
 
+    // Update minPosePresenceThreshold in helperState to change optionBuilder setting
     fun setMinPoseLandmarkConfidence(confidence: Float) {
         helperState.value =
             helperState.value?.copy(
@@ -44,6 +46,7 @@ class MainViewModel : ViewModel() {
             )
     }
 
+    // Update minFaceDetectionThreshold in helperState to change optionBuilder setting
     fun setMinFaceDetectionConfidence(confidence: Float) {
         helperState.value =
             helperState.value?.copy(
@@ -51,6 +54,7 @@ class MainViewModel : ViewModel() {
             )
     }
 
+    // Update minPoseDetectionThreshold in helperState to change optionBuilder setting
     fun setMinPoseDetectionConfidence(confidence: Float) {
         helperState.value =
             helperState.value?.copy(
@@ -58,6 +62,7 @@ class MainViewModel : ViewModel() {
             )
     }
 
+    // Update minPoseSuppressionThreshold in helperState to change optionBuilder setting
     fun setMinPoseSuppressionConfidence(confidence: Float) {
         helperState.value =
             helperState.value?.copy(
@@ -65,6 +70,7 @@ class MainViewModel : ViewModel() {
             )
     }
 
+    // Update minFaceSuppressionThreshold in helperState to change optionBuilder setting
     fun setMinFaceSuppressionConfidence(confidence: Float) {
         helperState.value =
             helperState.value?.copy(
@@ -72,16 +78,19 @@ class MainViewModel : ViewModel() {
             )
     }
 
+    // Update isFaceBlendMode in helperState to change optionBuilder setting
     fun setFaceBlendMode(faceBlendMode: Boolean) {
         helperState.value =
             helperState.value?.copy(isFaceBlendMode = faceBlendMode)
     }
 
+    // Update isPoseSegmentationMarks in helperState to change optionBuilder setting
     fun setPoseSegmentationMarks(poseSegmentationMarks: Boolean) {
         helperState.value =
             helperState.value?.copy(isPoseSegmentationMarks = poseSegmentationMarks)
     }
 
+    // Update delegate in helperState to change optionBuilder setting
     fun setDelegate(delegate: Int) {
         helperState.value = helperState.value?.copy(delegate = delegate)
     }
