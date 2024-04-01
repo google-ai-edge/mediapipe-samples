@@ -31,6 +31,8 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -44,6 +46,7 @@ import com.google.mediapipe.tasks.vision.core.RunningMode
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
+
 
 class GalleryFragment : Fragment(),
     HolisticLandmarkerHelper.LandmarkerListener {
@@ -103,8 +106,10 @@ class GalleryFragment : Fragment(),
             clearView()
         }
         setUpListener()
-        viewModel.helperState.observe(viewLifecycleOwner) {
-            updateBottomSheetControlsUi(it)
+        viewModel.helperState.observe(viewLifecycleOwner) { helperState ->
+            // Update Face Blend result
+            updateFaceBlendResults(helperState.isFaceBlendMode)
+            updateBottomSheetControlsUi(helperState)
         }
     }
 
@@ -220,6 +225,23 @@ class GalleryFragment : Fragment(),
                 helperState.delegate == HolisticLandmarkerHelper.DELEGATE_CPU
         }
         clearView()
+    }
+
+    private fun updateFaceBlendResults(isFaceBlendMode: Boolean) {
+        // Hide Face Blend results if Face Blend mode is disable
+        fragmentGalleryBinding.recyclerviewResults.isVisible = isFaceBlendMode
+        // Change position of Floating Action Button base on Face Blend results visibility
+        val fabGetContentParams =
+            fragmentGalleryBinding.fabGetContent.layoutParams as CoordinatorLayout.LayoutParams
+        if (isFaceBlendMode) {
+            // Anchor Floating Action Button to Face Blend results if it's visible
+            fabGetContentParams.anchorId = fragmentGalleryBinding.recyclerviewResults.id
+        } else {
+            // Anchor Floating Action Button to Setting Bottom sheet if Face Blend results is hidden
+            fabGetContentParams.anchorId =
+                fragmentGalleryBinding.bottomSheetLayout.bottomSheetLayout.id
+        }
+        fragmentGalleryBinding.fabGetContent.layoutParams = fabGetContentParams
     }
 
     // Load and display the image.

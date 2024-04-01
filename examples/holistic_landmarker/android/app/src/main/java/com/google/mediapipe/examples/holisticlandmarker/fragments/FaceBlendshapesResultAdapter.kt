@@ -32,7 +32,7 @@ class FaceBlendshapesResultAdapter :
     private var categories: MutableList<Category?> = MutableList(52) { null }
 
     fun updateResults(faceLandmarkerResult: HolisticLandmarkerResult? = null) {
-        categories = MutableList(52) { null }
+        categories = MutableList(3) { null }
         if (faceLandmarkerResult?.faceBlendshapes()?.isPresent == true) {
             val sortedCategories =
                 faceLandmarkerResult.faceBlendshapes().get()
