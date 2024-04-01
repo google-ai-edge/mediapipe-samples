@@ -25,84 +25,50 @@ class MainViewModel : ViewModel() {
     )
 
     fun setMinFaceLandmarkConfidence(confidence: Float) {
-        val currentLandmarkConfidence =
-            helperState.value?.minFacePresenceThreshold ?: 0f
         helperState.value = helperState.value?.copy(
-            minFacePresenceThreshold = ((currentLandmarkConfidence.toBigDecimal() + confidence.toBigDecimal()).toFloat()).coerceIn(
-                0f,
-                1f
-            )
+            minFacePresenceThreshold = confidence
         )
     }
 
     fun setMinHandLandmarkConfidence(confidence: Float) {
-        val currentLandmarkConfidence =
-            helperState.value?.minHandLandmarkThreshold ?: 0f
         helperState.value =
             helperState.value?.copy(
-                minHandLandmarkThreshold = ((currentLandmarkConfidence.toBigDecimal() + confidence.toBigDecimal()).toFloat()).coerceIn(
-                    0f,
-                    1f
-                )
+                minHandLandmarkThreshold = confidence
             )
     }
 
     fun setMinPoseLandmarkConfidence(confidence: Float) {
-        val currentLandmarkConfidence =
-            helperState.value?.minPosePresenceThreshold ?: 0f
         helperState.value =
             helperState.value?.copy(
-                minPosePresenceThreshold = ((currentLandmarkConfidence.toBigDecimal() + confidence.toBigDecimal()).toFloat()).coerceIn(
-                    0f, 1f
-                )
+                minPosePresenceThreshold = confidence
             )
     }
 
     fun setMinFaceDetectionConfidence(confidence: Float) {
-        val currentDetectionConfidence =
-            helperState.value?.minFaceDetectionThreshold ?: 0f
         helperState.value =
             helperState.value?.copy(
-                minFaceDetectionThreshold = ((currentDetectionConfidence.toBigDecimal() + confidence.toBigDecimal()).toFloat()).coerceIn(
-                    0f,
-                    1f
-                )
+                minFaceDetectionThreshold = confidence
             )
     }
 
     fun setMinPoseDetectionConfidence(confidence: Float) {
-        val currentDetectionConfidence =
-            helperState.value?.minPoseDetectionThreshold ?: 0f
         helperState.value =
             helperState.value?.copy(
-                minPoseDetectionThreshold = ((currentDetectionConfidence.toBigDecimal() + confidence.toBigDecimal()).toFloat()).coerceIn(
-                    0f,
-                    1f
-                )
+                minPoseDetectionThreshold = confidence
             )
     }
 
     fun setMinPoseSuppressionConfidence(confidence: Float) {
-        val currentSuppressionConfidence =
-            helperState.value?.minPoseSuppressionThreshold ?: 0f
         helperState.value =
             helperState.value?.copy(
-                minPoseSuppressionThreshold = ((currentSuppressionConfidence.toBigDecimal() + confidence.toBigDecimal()).toFloat()).coerceIn(
-                    0f,
-                    1f
-                )
+                minPoseSuppressionThreshold = confidence
             )
     }
 
     fun setMinFaceSuppressionConfidence(confidence: Float) {
-        val currentSuppressionConfidence =
-            helperState.value?.minFaceSuppressionThreshold ?: 0f
         helperState.value =
             helperState.value?.copy(
-                minFaceSuppressionThreshold = ((currentSuppressionConfidence.toBigDecimal() + confidence.toBigDecimal()).toFloat()).coerceIn(
-                    0f,
-                    1f
-                )
+                minFaceSuppressionThreshold = confidence
             )
     }
 

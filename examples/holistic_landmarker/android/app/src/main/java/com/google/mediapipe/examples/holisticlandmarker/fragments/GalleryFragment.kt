@@ -121,46 +121,102 @@ class GalleryFragment : Fragment(),
     private fun setUpListener() {
         with(fragmentGalleryBinding.bottomSheetLayout) {
             facePresenceThresholdMinus.setOnClickListener {
-                viewModel.setMinFaceLandmarkConfidence(-0.1f)
+                val currentLandmarkConfidence =
+                    viewModel.helperState.value?.minFacePresenceThreshold ?: 0.3f
+                if (currentLandmarkConfidence > 0.3f) {
+                    viewModel.setMinFaceLandmarkConfidence(currentLandmarkConfidence - 0.1f)
+                }
             }
             facePresenceThresholdPlus.setOnClickListener {
-                viewModel.setMinFaceLandmarkConfidence(0.1f)
+                val currentLandmarkConfidence =
+                    viewModel.helperState.value?.minFacePresenceThreshold ?: 0f
+                if (currentLandmarkConfidence < 0.9f) {
+                    viewModel.setMinFaceLandmarkConfidence(currentLandmarkConfidence + 0.1f)
+                }
             }
             posePresenceThresholdMinus.setOnClickListener {
-                viewModel.setMinPoseLandmarkConfidence(-0.1f)
+                val currentLandmarkConfidence =
+                    viewModel.helperState.value?.minPosePresenceThreshold ?: 0f
+                if (currentLandmarkConfidence > 0.3f) {
+                    viewModel.setMinPoseLandmarkConfidence(currentLandmarkConfidence - 0.1f)
+                }
             }
             posePresenceThresholdPlus.setOnClickListener {
-                viewModel.setMinPoseLandmarkConfidence(0.1f)
+                val currentLandmarkConfidence =
+                    viewModel.helperState.value?.minPosePresenceThreshold ?: 0f
+                if (currentLandmarkConfidence < 0.9f) {
+                    viewModel.setMinPoseLandmarkConfidence(currentLandmarkConfidence + 0.1f)
+                }
             }
             handLandmarksThresholdMinus.setOnClickListener {
-                viewModel.setMinHandLandmarkConfidence(-0.1f)
+                val currentLandmarkConfidence =
+                    viewModel.helperState.value?.minHandLandmarkThreshold ?: 0f
+                if (currentLandmarkConfidence > 0.3f) {
+                    viewModel.setMinHandLandmarkConfidence(currentLandmarkConfidence - 0.1f)
+                }
             }
             handLandmarksThresholdPlus.setOnClickListener {
-                viewModel.setMinHandLandmarkConfidence(0.1f)
+                val currentLandmarkConfidence =
+                    viewModel.helperState.value?.minHandLandmarkThreshold ?: 0f
+                if (currentLandmarkConfidence < 0.9f) {
+                    viewModel.setMinHandLandmarkConfidence(currentLandmarkConfidence + 0.1f)
+                }
             }
             faceDetectionThresholdMinus.setOnClickListener {
-                viewModel.setMinFaceDetectionConfidence(-0.1f)
+                val currentDetectionConfidence =
+                    viewModel.helperState.value?.minFaceDetectionThreshold ?: 0f
+                if (currentDetectionConfidence > 0.3f) {
+                    viewModel.setMinFaceDetectionConfidence(currentDetectionConfidence - 0.1f)
+                }
             }
             faceDetectionThresholdPlus.setOnClickListener {
-                viewModel.setMinFaceDetectionConfidence(0.1f)
+                val currentDetectionConfidence =
+                    viewModel.helperState.value?.minFaceDetectionThreshold ?: 0f
+                if (currentDetectionConfidence < 0.9f) {
+                    viewModel.setMinFaceDetectionConfidence(currentDetectionConfidence + 0.1f)
+                }
             }
             poseDetectionThresholdMinus.setOnClickListener {
-                viewModel.setMinPoseDetectionConfidence(-0.1f)
+                val currentDetectionConfidence =
+                    viewModel.helperState.value?.minPoseDetectionThreshold ?: 0f
+                if (currentDetectionConfidence > 0.3f) {
+                    viewModel.setMinPoseDetectionConfidence(currentDetectionConfidence - 0.1f)
+                }
             }
             poseDetectionThresholdPlus.setOnClickListener {
-                viewModel.setMinPoseDetectionConfidence(0.1f)
+                val currentDetectionConfidence =
+                    viewModel.helperState.value?.minPoseDetectionThreshold ?: 0f
+                if (currentDetectionConfidence < 0.9f) {
+                    viewModel.setMinPoseDetectionConfidence(currentDetectionConfidence + 0.1f)
+                }
             }
             faceSuppressionMinus.setOnClickListener {
-                viewModel.setMinFaceSuppressionConfidence(-0.1f)
+                val currentSuppressionConfidence =
+                    viewModel.helperState.value?.minFaceSuppressionThreshold ?: 0f
+                if (currentSuppressionConfidence > 0.3f) {
+                    viewModel.setMinFaceSuppressionConfidence(currentSuppressionConfidence - 0.1f)
+                }
             }
             faceSuppressionPlus.setOnClickListener {
-                viewModel.setMinFaceSuppressionConfidence(0.1f)
+                val currentSuppressionConfidence =
+                    viewModel.helperState.value?.minFaceSuppressionThreshold ?: 0f
+                if (currentSuppressionConfidence < 0.9f) {
+                    viewModel.setMinFaceSuppressionConfidence(currentSuppressionConfidence + 0.1f)
+                }
             }
             poseSuppressionMinus.setOnClickListener {
-                viewModel.setMinPoseSuppressionConfidence(-0.1f)
+                val currentSuppressionConfidence =
+                    viewModel.helperState.value?.minPoseSuppressionThreshold ?: 0f
+                if (currentSuppressionConfidence > 0.3f) {
+                    viewModel.setMinPoseSuppressionConfidence(currentSuppressionConfidence - 0.1f)
+                }
             }
             poseSuppressionPlus.setOnClickListener {
-                viewModel.setMinPoseSuppressionConfidence(0.1f)
+                val currentSuppressionConfidence =
+                    viewModel.helperState.value?.minPoseSuppressionThreshold ?: 0f
+                if (currentSuppressionConfidence < 0.9f) {
+                    viewModel.setMinPoseSuppressionConfidence(currentSuppressionConfidence + 0.1f)
+                }
             }
             switchFaceBlendShapes.setOnCheckedChangeListener { _, isChecked ->
                 viewModel.setFaceBlendMode(isChecked)
