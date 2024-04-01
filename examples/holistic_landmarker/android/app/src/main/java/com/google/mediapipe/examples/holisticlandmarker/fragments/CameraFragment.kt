@@ -52,6 +52,7 @@ class CameraFragment : Fragment(),
     HolisticLandmarkerHelper.LandmarkerListener {
     companion object {
         private const val TAG = "Holistic Landmarker"
+        private const val FORMAT_STRING = "%.1f"
     }
 
     private var _fragmentCameraBinding: FragmentCameraBinding? = null
@@ -168,84 +169,84 @@ class CameraFragment : Fragment(),
             }
             posePresenceThresholdMinus.setOnClickListener {
                 val currentLandmarkConfidence =
-                    viewModel.helperState.value?.minPosePresenceThreshold ?: 0f
+                    viewModel.helperState.value?.minPosePresenceThreshold ?: 0.3f
                 if (currentLandmarkConfidence > 0.3f) {
                     viewModel.setMinPoseLandmarkConfidence(currentLandmarkConfidence - 0.1f)
                 }
             }
             posePresenceThresholdPlus.setOnClickListener {
                 val currentLandmarkConfidence =
-                    viewModel.helperState.value?.minPosePresenceThreshold ?: 0f
+                    viewModel.helperState.value?.minPosePresenceThreshold ?: 0.3f
                 if (currentLandmarkConfidence < 0.9f) {
                     viewModel.setMinPoseLandmarkConfidence(currentLandmarkConfidence + 0.1f)
                 }
             }
             handLandmarksThresholdMinus.setOnClickListener {
                 val currentLandmarkConfidence =
-                    viewModel.helperState.value?.minHandLandmarkThreshold ?: 0f
+                    viewModel.helperState.value?.minHandLandmarkThreshold ?: 0.3f
                 if (currentLandmarkConfidence > 0.3f) {
                     viewModel.setMinHandLandmarkConfidence(currentLandmarkConfidence - 0.1f)
                 }
             }
             handLandmarksThresholdPlus.setOnClickListener {
                 val currentLandmarkConfidence =
-                    viewModel.helperState.value?.minHandLandmarkThreshold ?: 0f
+                    viewModel.helperState.value?.minHandLandmarkThreshold ?: 0.3f
                 if (currentLandmarkConfidence < 0.9f) {
                     viewModel.setMinHandLandmarkConfidence(currentLandmarkConfidence + 0.1f)
                 }
             }
             faceDetectionThresholdMinus.setOnClickListener {
                 val currentDetectionConfidence =
-                    viewModel.helperState.value?.minFaceDetectionThreshold ?: 0f
+                    viewModel.helperState.value?.minFaceDetectionThreshold ?: 0.3f
                 if (currentDetectionConfidence > 0.3f) {
                     viewModel.setMinFaceDetectionConfidence(currentDetectionConfidence - 0.1f)
                 }
             }
             faceDetectionThresholdPlus.setOnClickListener {
                 val currentDetectionConfidence =
-                    viewModel.helperState.value?.minFaceDetectionThreshold ?: 0f
+                    viewModel.helperState.value?.minFaceDetectionThreshold ?: 0.3f
                 if (currentDetectionConfidence < 0.9f) {
                     viewModel.setMinFaceDetectionConfidence(currentDetectionConfidence + 0.1f)
                 }
             }
             poseDetectionThresholdMinus.setOnClickListener {
                 val currentDetectionConfidence =
-                    viewModel.helperState.value?.minPoseDetectionThreshold ?: 0f
+                    viewModel.helperState.value?.minPoseDetectionThreshold ?: 0.3f
                 if (currentDetectionConfidence > 0.3f) {
                     viewModel.setMinPoseDetectionConfidence(currentDetectionConfidence - 0.1f)
                 }
             }
             poseDetectionThresholdPlus.setOnClickListener {
                 val currentDetectionConfidence =
-                    viewModel.helperState.value?.minPoseDetectionThreshold ?: 0f
+                    viewModel.helperState.value?.minPoseDetectionThreshold ?: 0.3f
                 if (currentDetectionConfidence < 0.9f) {
                     viewModel.setMinPoseDetectionConfidence(currentDetectionConfidence + 0.1f)
                 }
             }
             faceSuppressionMinus.setOnClickListener {
                 val currentSuppressionConfidence =
-                    viewModel.helperState.value?.minFaceSuppressionThreshold ?: 0f
+                    viewModel.helperState.value?.minFaceSuppressionThreshold ?: 0.3f
                 if (currentSuppressionConfidence > 0.3f) {
                     viewModel.setMinFaceSuppressionConfidence(currentSuppressionConfidence - 0.1f)
                 }
             }
             faceSuppressionPlus.setOnClickListener {
                 val currentSuppressionConfidence =
-                    viewModel.helperState.value?.minFaceSuppressionThreshold ?: 0f
+                    viewModel.helperState.value?.minFaceSuppressionThreshold ?: 0.3f
                 if (currentSuppressionConfidence < 0.9f) {
                     viewModel.setMinFaceSuppressionConfidence(currentSuppressionConfidence + 0.1f)
                 }
             }
             poseSuppressionMinus.setOnClickListener {
                 val currentSuppressionConfidence =
-                    viewModel.helperState.value?.minPoseSuppressionThreshold ?: 0f
+                    viewModel.helperState.value?.minPoseSuppressionThreshold ?: 0.3f
                 if (currentSuppressionConfidence > 0.3f) {
                     viewModel.setMinPoseSuppressionConfidence(currentSuppressionConfidence - 0.1f)
                 }
             }
             poseSuppressionPlus.setOnClickListener {
                 val currentSuppressionConfidence =
-                    viewModel.helperState.value?.minPoseSuppressionThreshold ?: 0f
+                    viewModel.helperState.value?.minPoseSuppressionThreshold ?: 0.3f
                 if (currentSuppressionConfidence < 0.9f) {
                     viewModel.setMinPoseSuppressionConfidence(currentSuppressionConfidence + 0.1f)
                 }
@@ -287,19 +288,19 @@ class CameraFragment : Fragment(),
         // update bottom sheet settings
         with(fragmentCameraBinding.bottomSheetLayout) {
             facePresenceThresholdValue.text =
-                helperState.minFacePresenceThreshold.toString()
+                FORMAT_STRING.format(helperState.minFacePresenceThreshold)
             posePresenceThresholdValue.text =
-                helperState.minPosePresenceThreshold.toString()
+                FORMAT_STRING.format(helperState.minPosePresenceThreshold)
             handLandmarksThresholdValue.text =
-                helperState.minHandLandmarkThreshold.toString()
+                FORMAT_STRING.format(helperState.minHandLandmarkThreshold)
             faceDetectionThresholdValue.text =
-                helperState.minFaceDetectionThreshold.toString()
+                FORMAT_STRING.format(helperState.minFaceDetectionThreshold)
             poseDetectionThresholdValue.text =
-                helperState.minPoseDetectionThreshold.toString()
+                FORMAT_STRING.format(helperState.minPoseDetectionThreshold)
             faceSuppressionValue.text =
-                helperState.minFaceSuppressionThreshold.toString()
+                FORMAT_STRING.format(helperState.minFaceSuppressionThreshold)
             poseSuppressionValue.text =
-                helperState.minPoseSuppressionThreshold.toString()
+                FORMAT_STRING.format(helperState.minPoseSuppressionThreshold)
             // enable with CPU delegate
             switchFaceBlendShapes.isChecked = isFaceBlendShapes
             switchPoseSegmentationMarks.isChecked = isPoseSegmentationMarks

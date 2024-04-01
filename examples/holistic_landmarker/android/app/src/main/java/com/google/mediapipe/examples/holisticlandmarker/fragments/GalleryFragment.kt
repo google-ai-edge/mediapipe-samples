@@ -259,19 +259,19 @@ class GalleryFragment : Fragment(),
         // init bottom sheet settings
         with(fragmentGalleryBinding.bottomSheetLayout) {
             facePresenceThresholdValue.text =
-                helperState.minFacePresenceThreshold.toString()
+                FORMAT_STRING.format(helperState.minFacePresenceThreshold)
             posePresenceThresholdValue.text =
-                helperState.minPosePresenceThreshold.toString()
+                FORMAT_STRING.format(helperState.minPosePresenceThreshold)
             handLandmarksThresholdValue.text =
-                helperState.minHandLandmarkThreshold.toString()
+                FORMAT_STRING.format(helperState.minHandLandmarkThreshold)
             faceDetectionThresholdValue.text =
-                helperState.minFaceDetectionThreshold.toString()
+                FORMAT_STRING.format(helperState.minFaceDetectionThreshold)
             poseDetectionThresholdValue.text =
-                helperState.minPoseDetectionThreshold.toString()
+                FORMAT_STRING.format(helperState.minPoseDetectionThreshold)
             faceSuppressionValue.text =
-                helperState.minFaceSuppressionThreshold.toString()
+                FORMAT_STRING.format(helperState.minFaceSuppressionThreshold)
             poseSuppressionValue.text =
-                helperState.minPoseSuppressionThreshold.toString()
+                FORMAT_STRING.format(helperState.minPoseSuppressionThreshold)
             // enable with CPU delegate
             switchFaceBlendShapes.isChecked = isFaceBlendShapes
             switchPoseSegmentationMarks.isChecked = isPoseSegmentationMarks
@@ -559,7 +559,7 @@ class GalleryFragment : Fragment(),
 
     companion object {
         private const val TAG = "GalleryFragment"
-
+        private const val FORMAT_STRING = "%.1f"
         // Value used to get frames at specific intervals for inference (e.g. every 300ms)
         private const val VIDEO_INTERVAL_MS = 300L
     }
