@@ -358,7 +358,7 @@ class CameraFragment : Fragment(),
         }
     }
 
-    // Update UI after face have been detected. Extracts original
+    // Update UI after holistic landmark have been detected. Extracts original
     // image height/width to scale and place the landmarks properly through
     // OverlayView
     @SuppressLint("NotifyDataSetChanged")
