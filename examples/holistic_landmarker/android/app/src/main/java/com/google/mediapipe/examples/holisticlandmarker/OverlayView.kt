@@ -37,7 +37,8 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     View(context, attrs) {
     private var results: HolisticLandmarkerResult? = null
     private var facePaint = Paint()
-    private var handPaint = Paint()
+    private var rightHandPaint = Paint()
+    private var leftHandPaint = Paint()
     private var posePaint = Paint()
 
     private var scaleFactor: Float = 1f
@@ -61,10 +62,15 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
         facePaint.strokeWidth = LANDMARK_STROKE_WIDTH
         facePaint.style = Paint.Style.STROKE
 
-        handPaint.color =
+        rightHandPaint.color =
             ContextCompat.getColor(context!!, R.color.color_right_hand)
-        handPaint.strokeWidth = LANDMARK_STROKE_WIDTH
-        handPaint.style = Paint.Style.STROKE
+        rightHandPaint.strokeWidth = LANDMARK_STROKE_WIDTH
+        rightHandPaint.style = Paint.Style.STROKE
+
+        leftHandPaint.color =
+            ContextCompat.getColor(context!!, R.color.color_left_hand)
+        leftHandPaint.strokeWidth = LANDMARK_STROKE_WIDTH
+        leftHandPaint.style = Paint.Style.STROKE
 
         posePaint.color =
             ContextCompat.getColor(context!!, R.color.color_pose)
@@ -137,7 +143,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                         .x() * imageWidth * scaleFactor,
                     leftHandLandmarkerResult[it.end()]
                         .y() * imageHeight * scaleFactor,
-                    handPaint
+                    leftHandPaint
                 )
             }
         }
@@ -155,7 +161,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                         .x() * imageWidth * scaleFactor,
                     rightHandLandmarkerResult[it.end()]
                         .y() * imageHeight * scaleFactor,
-                    handPaint
+                    rightHandPaint
                 )
             }
         }
