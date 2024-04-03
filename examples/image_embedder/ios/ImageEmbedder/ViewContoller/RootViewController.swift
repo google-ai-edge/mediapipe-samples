@@ -67,7 +67,6 @@ class RootViewController: UIViewController {
     runningModeTabbar.delegate = self
     instantiateCameraViewController()
     switchTo(childViewController: cameraViewController, fromViewController: nil)
-    startObserveMaxResultsChanges()
   }
   
   override func viewWillLayoutSubviews() {
@@ -99,10 +98,6 @@ class RootViewController: UIViewController {
     }
   }
 
-  deinit {
-    stopObserveMaxResultsChanges()
-  }
-
   // MARK: Private Methods
   private func instantiateCameraViewController() {
     guard cameraViewController == nil else {
@@ -119,29 +114,6 @@ class RootViewController: UIViewController {
     viewController.inferenceResultDeliveryDelegate = self
     
     cameraViewController = viewController
-  }
-
-  private func startObserveMaxResultsChanges() {
-    NotificationCenter.default
-      .addObserver(self,
-                   selector: #selector(changebottomViewHeightConstraint),
-                   name: InferenceConfigurationManager.maxResultChangeNotificationName,
-                   object: nil)
-    isObserving = true
-  }
-
-  private func stopObserveMaxResultsChanges() {
-    if isObserving {
-      NotificationCenter.default
-        .removeObserver(self,
-                        name: InferenceConfigurationManager.maxResultChangeNotificationName,
-                        object: nil)
-    }
-    isObserving = false
-  }
-
-  @objc private func changebottomViewHeightConstraint() {
-    bottomViewHeightConstraint.constant = Constants.inferenceBottomHeight
   }
   
   private func instantiateMediaLibraryViewController() {

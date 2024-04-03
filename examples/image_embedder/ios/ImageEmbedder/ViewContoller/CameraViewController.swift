@@ -165,8 +165,6 @@ class CameraViewController: UIViewController {
     imageEmbedderService = ImageEmbedderService
         .liveStreamEmbedderService(
           model: InferenceConfigurationManager.sharedInstance.model,
-          scoreThreshold: InferenceConfigurationManager.sharedInstance.scoreThreshold,
-          maxResult: InferenceConfigurationManager.sharedInstance.maxResults,
           liveStreamDelegate: self,
           delegate: InferenceConfigurationManager.sharedInstance.delegate)
     if let compareImage =  compareImgeView.image {

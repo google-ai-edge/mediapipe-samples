@@ -20,20 +20,7 @@ import MediaPipeTasksVision
 struct DefaultConstants {
   static let maxResults: Int = 3
   static let scoreThreshold: Float = 0.2
-  static let labelColors = [
-    UIColor.red,
-    UIColor(displayP3Red: 90.0/255.0, green: 200.0/255.0, blue: 250.0/255.0, alpha: 1.0),
-    UIColor.green,
-    UIColor.orange,
-    UIColor.blue,
-    UIColor.purple,
-    UIColor.magenta,
-    UIColor.yellow,
-    UIColor.cyan,
-    UIColor.brown
-  ]
-  static let ovelayColor = UIColor(red: 0, green: 127/255.0, blue: 139/255.0, alpha: 1)
-  static let displayFont = UIFont.systemFont(ofSize: 14.0, weight: .medium)
+
   static let model: Model = .mobilenet_v3_small
   static let delegate: ImageEmbedderDelegate = .CPU
 }

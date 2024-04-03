@@ -92,8 +92,6 @@ class ImageEmbedderService: NSObject {
 
   static func liveStreamEmbedderService(
     model: Model,
-    scoreThreshold: Float,
-    maxResult: Int,
     liveStreamDelegate: ImageEmbedderServiceLiveStreamDelegate?,
     delegate: ImageEmbedderDelegate) -> ImageEmbedderService? {
     let imageEmbedderService = ImageEmbedderService(

@@ -22,17 +22,6 @@ class InferenceConfigurationManager: NSObject {
   var model: Model = DefaultConstants.model {
     didSet { postConfigChangedNotification() }
   }
-  
-  var scoreThreshold: Float = DefaultConstants.scoreThreshold {
-    didSet { postConfigChangedNotification() }
-  }
-  
-  var maxResults: Int = DefaultConstants.maxResults {
-    didSet {
-      postConfigChangedNotification()
-      postMaxResultChangedNotification()
-    }
-  }
 
   var delegate: ImageEmbedderDelegate = DefaultConstants.delegate {
     didSet { postConfigChangedNotification() }
@@ -41,16 +30,9 @@ class InferenceConfigurationManager: NSObject {
   static let sharedInstance = InferenceConfigurationManager()
   
   static let notificationName = Notification.Name.init(rawValue: "com.google.mediapipe.inferenceConfigChanged")
-  static let maxResultChangeNotificationName = Notification.Name.init(rawValue: "com.google.mediapipe.inferenceMaxResultsChanged")
   
   private func postConfigChangedNotification() {
     NotificationCenter.default
       .post(name: InferenceConfigurationManager.notificationName, object: nil)
   }
-
-  private func postMaxResultChangedNotification() {
-    NotificationCenter.default
-      .post(name: InferenceConfigurationManager.maxResultChangeNotificationName, object: nil)
-  }
-
 }
