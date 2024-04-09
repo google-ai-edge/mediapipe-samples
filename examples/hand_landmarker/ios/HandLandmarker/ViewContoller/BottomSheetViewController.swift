@@ -44,6 +44,7 @@ class BottomSheetViewController: UIViewController {
   @IBOutlet weak var minTrackingConfidenceValueLabel: UILabel!
 
   @IBOutlet weak var toggleBottomSheetButton: UIButton!
+  @IBOutlet weak var chooseDelegateButton: UIButton!
 
   // MARK: Instance Variables
   var isUIEnabled: Bool = false {
@@ -77,8 +78,29 @@ class BottomSheetViewController: UIViewController {
 
     minTrackingConfidenceStepper.value = Double(InferenceConfigurationManager.sharedInstance.minTrackingConfidence)
     minTrackingConfidenceValueLabel.text = "\(InferenceConfigurationManager.sharedInstance.minTrackingConfidence)"
+
+    // Chose delegate option
+    let selectedDelegateAction = {(action: UIAction) in
+      self.updateDelegate(title: action.title)
+    }
+    let delegateActions: [UIAction] = HandLandmarkerDelegate.allCases.compactMap { delegate in
+      return UIAction(
+        title: delegate.name,
+        state: (InferenceConfigurationManager.sharedInstance.delegate == delegate) ? .on : .off,
+        handler: selectedDelegateAction
+      )
+    }
+
+    chooseDelegateButton.menu = UIMenu(children: delegateActions)
+    chooseDelegateButton.showsMenuAsPrimaryAction = true
+    chooseDelegateButton.changesSelectionAsPrimaryAction = true
   }
-  
+
+  private func updateDelegate(title: String) {
+    guard let delegate = HandLandmarkerDelegate(name: title) else { return }
+    InferenceConfigurationManager.sharedInstance.delegate = delegate
+  }
+
   private func enableOrDisableClicks() {
     numHandsStepper.isEnabled = isUIEnabled
     minHandDetectionConfidenceStepper.isEnabled = isUIEnabled
