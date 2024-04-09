@@ -14,6 +14,7 @@
 
 import Foundation
 import UIKit
+import MediaPipeTasksVision
 
 // MARK: Define default constants
 struct DefaultConstants {
@@ -28,4 +29,41 @@ struct DefaultConstants {
   static var minHandPresenceConfidence: Float = 0.5
   static var minTrackingConfidence: Float = 0.5
   static let modelPath: String? = Bundle.main.path(forResource: "gesture_recognizer", ofType: "task")
+  static let delegate: GestureRecognizerDelegate = .CPU
 }
+
+// MARK: GestureRecognizerDelegate
+enum GestureRecognizerDelegate: CaseIterable {
+  case GPU
+  case CPU
+
+  var name: String {
+    switch self {
+    case .GPU:
+      return "GPU"
+    case .CPU:
+      return "CPU"
+    }
+  }
+
+  var delegate: Delegate {
+    switch self {
+    case .GPU:
+      return .GPU
+    case .CPU:
+      return .CPU
+    }
+  }
+
+  init?(name: String) {
+    switch name {
+    case GestureRecognizerDelegate.CPU.name:
+      self = GestureRecognizerDelegate.CPU
+    case GestureRecognizerDelegate.GPU.name:
+      self = GestureRecognizerDelegate.GPU
+    default:
+      return nil
+    }
+  }
+}
+

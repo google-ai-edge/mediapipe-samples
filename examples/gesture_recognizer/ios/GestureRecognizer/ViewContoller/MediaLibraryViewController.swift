@@ -295,14 +295,16 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
         modelPath: InferenceConfigurationManager.sharedInstance.modelPath,
         minHandDetectionConfidence: InferenceConfigurationManager.sharedInstance.minHandDetectionConfidence,
         minHandPresenceConfidence: InferenceConfigurationManager.sharedInstance.minHandPresenceConfidence,
-        minTrackingConfidence: InferenceConfigurationManager.sharedInstance.minTrackingConfidence)
+        minTrackingConfidence: InferenceConfigurationManager.sharedInstance.minTrackingConfidence,
+        delegate: InferenceConfigurationManager.sharedInstance.delegate)
       case .video:
       gestureRecognizerService = GestureRecognizerService.videoGestureRecognizerService(
         modelPath: InferenceConfigurationManager.sharedInstance.modelPath,
         minHandDetectionConfidence: InferenceConfigurationManager.sharedInstance.minHandDetectionConfidence,
         minHandPresenceConfidence: InferenceConfigurationManager.sharedInstance.minHandPresenceConfidence,
         minTrackingConfidence: InferenceConfigurationManager.sharedInstance.minTrackingConfidence,
-        videoDelegate: self)
+        videoDelegate: self,
+        delegate: InferenceConfigurationManager.sharedInstance.delegate)
       default:
         break;
     }

@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="52l-qN-uG0">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="52l-qN-uG0">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22684"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="UIMenu" message="Requires Xcode 11 or later." minToolsVersion="11.0" requiredIntegratedClassName="UICommandDiff"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -249,6 +251,44 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fgk-z0-sQx">
+                                        <rect key="frame" x="0.0" y="260.66666666666669" width="393" height="32"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Delegate" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TNG-Dk-wET">
+                                                <rect key="frame" x="16" y="7.3333333333333144" width="58" height="17"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <button opaque="NO" contentMode="scaleToFill" showsMenuAsPrimaryAction="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="x9b-Ci-rCW">
+                                                <rect key="frame" x="353" y="0.0" width="24" height="32"/>
+                                                <color key="backgroundColor" red="0.0" green="0.49803921569999998" blue="0.5450980392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="32" id="sau-Pd-USw"/>
+                                                </constraints>
+                                                <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <menu key="menu" id="SdK-eK-Nhx">
+                                                    <children>
+                                                        <command title="item1" id="b0i-9c-mLB"/>
+                                                        <command title="item2" id="ntB-AP-8ya"/>
+                                                    </children>
+                                                </menu>
+                                                <buttonConfiguration key="configuration" style="plain"/>
+                                                <userDefinedRuntimeAttributes>
+                                                    <userDefinedRuntimeAttribute type="string" keyPath="layer.cornerRadius" value="8"/>
+                                                </userDefinedRuntimeAttributes>
+                                            </button>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="trailing" secondItem="x9b-Ci-rCW" secondAttribute="trailing" constant="16" id="DVn-Pc-edT"/>
+                                            <constraint firstItem="x9b-Ci-rCW" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="TNG-Dk-wET" secondAttribute="trailing" id="ERc-I4-E6H"/>
+                                            <constraint firstItem="x9b-Ci-rCW" firstAttribute="top" secondItem="fgk-z0-sQx" secondAttribute="top" id="ezx-no-hD7"/>
+                                            <constraint firstItem="TNG-Dk-wET" firstAttribute="centerY" secondItem="x9b-Ci-rCW" secondAttribute="centerY" id="qoh-Kf-ld9"/>
+                                            <constraint firstItem="TNG-Dk-wET" firstAttribute="leading" secondItem="fgk-z0-sQx" secondAttribute="leading" constant="16" id="uLn-pZ-Mts"/>
+                                            <constraint firstAttribute="bottom" secondItem="x9b-Ci-rCW" secondAttribute="bottom" id="zS7-bl-2he"/>
+                                        </constraints>
+                                    </view>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
@@ -259,6 +299,7 @@
                                     <constraint firstItem="Qtr-pk-C18" firstAttribute="leading" secondItem="AOI-Gh-SLK" secondAttribute="leading" constant="16" id="Ksg-br-xkV"/>
                                     <constraint firstItem="DDi-33-JAf" firstAttribute="centerY" secondItem="dzb-pb-2Oi" secondAttribute="centerY" id="LXu-LA-2Pg"/>
                                     <constraint firstItem="cRO-ho-FXh" firstAttribute="centerY" secondItem="d2C-9O-82c" secondAttribute="centerY" id="MKa-V2-38z"/>
+                                    <constraint firstItem="fgk-z0-sQx" firstAttribute="top" secondItem="DDi-33-JAf" secondAttribute="bottom" constant="12" id="MZL-tz-NBh"/>
                                     <constraint firstItem="0Hl-aV-l7w" firstAttribute="leading" secondItem="AOI-Gh-SLK" secondAttribute="leading" id="OQf-RZ-3g1"/>
                                     <constraint firstItem="DDi-33-JAf" firstAttribute="leading" secondItem="uaN-jh-dWj" secondAttribute="trailing" constant="4" id="PWf-dd-rcZ"/>
                                     <constraint firstItem="0nH-Zx-p69" firstAttribute="trailing" secondItem="cRO-ho-FXh" secondAttribute="trailing" id="S6M-bn-pkr"/>
@@ -275,6 +316,7 @@
                                     <constraint firstItem="iaZ-s2-My0" firstAttribute="leading" secondItem="d2C-9O-82c" secondAttribute="leading" id="b2T-co-cnQ"/>
                                     <constraint firstItem="uaN-jh-dWj" firstAttribute="centerY" secondItem="DDi-33-JAf" secondAttribute="centerY" id="ba6-Wn-7xR"/>
                                     <constraint firstItem="DDi-33-JAf" firstAttribute="trailing" secondItem="0nH-Zx-p69" secondAttribute="trailing" id="bxj-V0-YXj"/>
+                                    <constraint firstItem="fgk-z0-sQx" firstAttribute="leading" secondItem="AOI-Gh-SLK" secondAttribute="leading" id="cTu-S5-Nv7"/>
                                     <constraint firstItem="s05-yK-gXh" firstAttribute="centerY" secondItem="0nH-Zx-p69" secondAttribute="centerY" id="i6B-0T-nRV"/>
                                     <constraint firstAttribute="trailing" secondItem="FxL-6D-DHm" secondAttribute="trailing" constant="16" id="iU5-ao-Gzr"/>
                                     <constraint firstItem="uaN-jh-dWj" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="dzb-pb-2Oi" secondAttribute="trailing" id="jih-9M-0it"/>
@@ -282,6 +324,7 @@
                                     <constraint firstItem="1fr-hY-4II" firstAttribute="leading" secondItem="J1Y-43-5yW" secondAttribute="trailing" constant="4" id="mLH-o1-c1c"/>
                                     <constraint firstItem="d2C-9O-82c" firstAttribute="top" secondItem="0Hl-aV-l7w" secondAttribute="bottom" constant="12" id="mcI-24-pk6"/>
                                     <constraint firstItem="iaZ-s2-My0" firstAttribute="centerY" secondItem="0nH-Zx-p69" secondAttribute="centerY" id="o81-hG-imF"/>
+                                    <constraint firstAttribute="trailing" secondItem="fgk-z0-sQx" secondAttribute="trailing" id="oft-ik-CMA"/>
                                     <constraint firstItem="iaZ-s2-My0" firstAttribute="top" secondItem="d2C-9O-82c" secondAttribute="bottom" constant="26" id="pPe-bR-0qO"/>
                                     <constraint firstItem="0Hl-aV-l7w" firstAttribute="top" secondItem="AOI-Gh-SLK" secondAttribute="top" constant="40" id="rl8-eu-Q06"/>
                                     <constraint firstItem="dzb-pb-2Oi" firstAttribute="leading" secondItem="iaZ-s2-My0" secondAttribute="leading" id="uPl-xe-HGE"/>
@@ -302,6 +345,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="BIS-1q-gQH"/>
                     <connections>
+                        <outlet property="chooseDelegateButton" destination="x9b-Ci-rCW" id="Vwe-zu-dIU"/>
                         <outlet property="inferenceTimeLabel" destination="cRO-ho-FXh" id="E3e-km-74r"/>
                         <outlet property="inferenceTimeNameLabel" destination="d2C-9O-82c" id="O7p-Pr-lsE"/>
                         <outlet property="minHandDetectionConfidenceStepper" destination="0nH-Zx-p69" id="UPk-Tc-SO0"/>

@@ -6,7 +6,7 @@ target 'GestureRecognizer' do
   use_frameworks!
 
   # Pods for GestureRecognizer
-  pod 'MediaPipeTasksVision', '0.10.5'
+  pod 'MediaPipeTasksVision', '0.10.12'
 
 end
 

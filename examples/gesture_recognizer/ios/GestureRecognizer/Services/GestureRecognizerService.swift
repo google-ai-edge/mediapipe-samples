@@ -47,20 +47,24 @@ class GestureRecognizerService: NSObject {
   private var minHandDetectionConfidence: Float
   private var minHandPresenceConfidence: Float
   private var minTrackingConfidence: Float
-  var modelPath: String
+  private var modelPath: String
+  private var delegate: GestureRecognizerDelegate
+
 
   // MARK: - Custom Initializer
   private init?(modelPath: String?,
                 runningMode:RunningMode,
                 minHandDetectionConfidence: Float,
                 minHandPresenceConfidence: Float,
-                minTrackingConfidence: Float) {
+                minTrackingConfidence: Float,
+                delegate: GestureRecognizerDelegate) {
     guard let modelPath = modelPath else { return nil }
     self.modelPath = modelPath
     self.runningMode = runningMode
     self.minHandDetectionConfidence = minHandDetectionConfidence
     self.minHandPresenceConfidence = minHandPresenceConfidence
     self.minTrackingConfidence = minTrackingConfidence
+    self.delegate = delegate
     super.init()
 
     createGestureRecognizer()
@@ -73,6 +77,7 @@ class GestureRecognizerService: NSObject {
     gestureRecognizerOptions.minHandPresenceConfidence = minHandPresenceConfidence
     gestureRecognizerOptions.minTrackingConfidence = minTrackingConfidence
     gestureRecognizerOptions.baseOptions.modelAssetPath = modelPath
+    gestureRecognizerOptions.baseOptions.delegate = delegate.delegate
     if runningMode == .liveStream {
       gestureRecognizerOptions.gestureRecognizerLiveStreamDelegate = self
     }
@@ -90,13 +95,15 @@ class GestureRecognizerService: NSObject {
     minHandDetectionConfidence: Float,
     minHandPresenceConfidence: Float,
     minTrackingConfidence: Float,
-    videoDelegate: GestureRecognizerServiceVideoDelegate?) -> GestureRecognizerService? {
+    videoDelegate: GestureRecognizerServiceVideoDelegate?,
+    delegate: GestureRecognizerDelegate) -> GestureRecognizerService? {
       let gestureRecognizerService = GestureRecognizerService(
         modelPath: modelPath,
         runningMode: .video,
         minHandDetectionConfidence: minHandDetectionConfidence,
         minHandPresenceConfidence: minHandPresenceConfidence,
-        minTrackingConfidence: minTrackingConfidence)
+        minTrackingConfidence: minTrackingConfidence,
+        delegate: delegate)
       gestureRecognizerService?.videoDelegate = videoDelegate
       return gestureRecognizerService
     }
@@ -106,13 +113,15 @@ class GestureRecognizerService: NSObject {
     minHandDetectionConfidence: Float,
     minHandPresenceConfidence: Float,
     minTrackingConfidence: Float,
-    liveStreamDelegate: GestureRecognizerServiceLiveStreamDelegate?) -> GestureRecognizerService? {
+    liveStreamDelegate: GestureRecognizerServiceLiveStreamDelegate?,
+    delegate: GestureRecognizerDelegate) -> GestureRecognizerService? {
       let gestureRecognizerService = GestureRecognizerService(
         modelPath: modelPath,
         runningMode: .liveStream,
         minHandDetectionConfidence: minHandDetectionConfidence,
         minHandPresenceConfidence: minHandPresenceConfidence,
-        minTrackingConfidence: minTrackingConfidence)
+        minTrackingConfidence: minTrackingConfidence,
+        delegate: delegate)
       gestureRecognizerService?.liveStreamDelegate = liveStreamDelegate
 
       return gestureRecognizerService
@@ -122,13 +131,15 @@ class GestureRecognizerService: NSObject {
     modelPath: String?,
     minHandDetectionConfidence: Float,
     minHandPresenceConfidence: Float,
-    minTrackingConfidence: Float) -> GestureRecognizerService? {
+    minTrackingConfidence: Float,
+    delegate: GestureRecognizerDelegate) -> GestureRecognizerService? {
       let gestureRecognizerService = GestureRecognizerService(
         modelPath: modelPath,
         runningMode: .image,
         minHandDetectionConfidence: minHandDetectionConfidence,
         minHandPresenceConfidence: minHandPresenceConfidence,
-        minTrackingConfidence: minTrackingConfidence)
+        minTrackingConfidence: minTrackingConfidence,
+        delegate: delegate)
 
       return gestureRecognizerService
     }
