@@ -36,9 +36,9 @@ class RootViewController: UIViewController {
   
   // MARK: Constants
   private struct Constants {
-    static let inferenceBottomHeight = 240.0
+    static let inferenceBottomHeight = 284.0
     static let expandButtonHeight = 41.0
-    static let expandButtonTopSpace = 10.0
+    static let expandButtonTopSpace = 20.0
     static let mediaLibraryViewControllerStoryBoardId = "MEDIA_LIBRARY_VIEW_CONTROLLER"
     static let cameraViewControllerStoryBoardId = "CAMERA_VIEW_CONTROLLER"
     static let storyBoardName = "Main"
@@ -72,6 +72,7 @@ class RootViewController: UIViewController {
     runningModeTabbar.delegate = self
     instantiateCameraViewController()
     switchTo(childViewController: cameraViewController, fromViewController: nil)
+    startObserveMaxResultsChanges()
   }
   
   override func viewWillLayoutSubviews() {
@@ -102,7 +103,11 @@ class RootViewController: UIViewController {
       view.layoutSubviews()
     }
   }
-  
+
+  deinit {
+    stopObserveMaxResultsChanges()
+  }
+
   // MARK: Private Methods
   private func instantiateCameraViewController() {
     guard cameraViewController == nil else {
@@ -126,7 +131,7 @@ class RootViewController: UIViewController {
     NotificationCenter.default
       .addObserver(self,
                    selector: #selector(changebottomViewHeightConstraint),
-                   name: InferenceConfigManager.maxResultChangeNotificationName,
+                   name: InferenceConfigurationManager.maxResultChangeNotificationName,
                    object: nil)
     isObserving = true
   }
@@ -135,7 +140,7 @@ class RootViewController: UIViewController {
     if isObserving {
       NotificationCenter.default
         .removeObserver(self,
-                        name:InferenceConfigManager.maxResultChangeNotificationName,
+                        name: InferenceConfigurationManager.maxResultChangeNotificationName,
                         object: nil)
     }
     isObserving = false

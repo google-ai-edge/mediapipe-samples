@@ -149,10 +149,11 @@ class CameraViewController: UIViewController {
     imageClassifierService = nil
     imageClassifierService = ImageClassifierService
         .liveStreamClassifierService(
-          model: InferenceConfigManager.sharedInstance.model,
-          scoreThreshold: InferenceConfigManager.sharedInstance.scoreThreshold,
-          maxResult: InferenceConfigManager.sharedInstance.maxResults,
-          liveStreamDelegate: self)
+          model: InferenceConfigurationManager.sharedInstance.model,
+          scoreThreshold: InferenceConfigurationManager.sharedInstance.scoreThreshold,
+          maxResult: InferenceConfigurationManager.sharedInstance.maxResults,
+          liveStreamDelegate: self,
+          delegate: InferenceConfigurationManager.sharedInstance.delegate)
   }
   
   private func clearImageClassifierServiceOnSessionInterruption() {
@@ -164,7 +165,7 @@ class CameraViewController: UIViewController {
     NotificationCenter.default
       .addObserver(self,
                    selector: #selector(clearAndInitializeImageClassifierService),
-                   name: InferenceConfigManager.notificationName,
+                   name: InferenceConfigurationManager.notificationName,
                    object: nil)
     isObserving = true
   }
@@ -173,7 +174,7 @@ class CameraViewController: UIViewController {
     if isObserving {
       NotificationCenter.default
         .removeObserver(self,
-                        name:InferenceConfigManager.notificationName,
+                        name: InferenceConfigurationManager.notificationName,
                         object: nil)
     }
     isObserving = false
