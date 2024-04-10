@@ -1,4 +1,4 @@
-// Copyright 2023 The MediaPipe Authors.
+// Copyright 2024 The MediaPipe Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,112 +16,64 @@ import AVKit
 import MediaPipeTasksVision
 import UIKit
 
+// MARK: Constants
+fileprivate struct Constants {
+  static let edgeOffset: CGFloat = 2.0
+  static let inferenceTimeIntervalInMilliseconds = 300.0
+  static let milliSeconds = 1000.0
+  static let savedPhotosNotAvailableText = "Saved photos album is not available."
+  static let mediaEmptyText =
+  "Click + to add an image to begin running the embedding."
+  static let pickFromGalleryButtonInset: CGFloat = 10.0
+}
+
 /**
- * The view controller is responsible for performing embedding on videos or images selected by the user from the device media library and
+ * The view controller is responsible for performing embedding on images selected by the user from the device media library and
  * presenting the frames with the class of the embedded objects to the user.
  */
 class MediaLibraryViewController: UIViewController {
-
-  // MARK: Constants
-  private struct Constants {
-    static let edgeOffset: CGFloat = 2.0
-    static let inferenceTimeIntervalInMilliseconds = 300.0
-    static let milliSeconds = 1000.0
-    static let savedPhotosNotAvailableText = "Saved photos album is not available."
-    static let mediaEmptyText =
-    "Click + to add an image or a video to begin running the embedding."
-    static let pickFromGalleryButtonInset: CGFloat = 10.0
-  }
 
   weak var inferenceResultDeliveryDelegate: InferenceResultDeliveryDelegate?
 
   // MARK: Controllers that manage functionality
   private lazy var pickerController = UIImagePickerController()
-  private var playerViewController: AVPlayerViewController?
 
   // MARK: Image Embedder Service
   private var imageEmbedderService: ImageEmbedderService?
+  private var image1EmbedResult: ResultBundle?
+  private var image2EmbedResult: ResultBundle?
 
   // MARK: Private properties
   private var playerTimeObserverToken : Any?
+  private var viewChoosed: ImageEmbedderView?
 
   // MARK: Storyboards Connections
-  @IBOutlet weak var pickFromGalleryButton: UIButton!
-  @IBOutlet weak var progressView: UIProgressView!
-  @IBOutlet weak var imageEmptyLabel: UILabel!
-  @IBOutlet weak var pickedImageView: UIImageView!
   @IBOutlet weak var pickFromGalleryButtonBottomSpace: NSLayoutConstraint!
+  @IBOutlet weak var imageEmbedderView1: ImageEmbedderView!
+  @IBOutlet weak var imageEmbedderView2: ImageEmbedderView!
+  @IBOutlet weak var imageViewBottomSpace: NSLayoutConstraint!
+
 
   override func viewDidLoad() {
     super.viewDidLoad()
+    imageEmbedderView1.delegate = self
+    imageEmbedderView2.delegate = self
   }
 
   override func viewWillLayoutSubviews() {
     super.viewWillLayoutSubviews()
-    redrawBoundingBoxesForCurrentDeviceOrientation()
-  }
-
-  override func viewWillAppear(_ animated: Bool) {
-    super.viewWillAppear(animated)
-
-    guard UIImagePickerController.isSourceTypeAvailable(.savedPhotosAlbum) else {
-      pickFromGalleryButton.isEnabled = false
-      self.imageEmptyLabel.text = Constants.savedPhotosNotAvailableText
-      return
-    }
-    pickFromGalleryButton.isEnabled = true
-    self.imageEmptyLabel.text = Constants.mediaEmptyText
   }
 
   override func viewWillDisappear(_ animated: Bool) {
     super.viewWillDisappear(animated)
-    clearPlayerView()
     imageEmbedderService = nil
-  }
-
-  @IBAction func onClickPickFromGallery(_ sender: Any) {
-    configurePickerController()
-    present(pickerController, animated: true)
   }
 
   private func configurePickerController() {
     pickerController.delegate = self
     pickerController.sourceType = .savedPhotosAlbum
-    pickerController.mediaTypes = [UTType.image.identifier, UTType.movie.identifier]
+    pickerController.mediaTypes = [UTType.image.identifier]
     pickerController.allowsEditing = false
-  }
-
-  private func addPlayerViewControllerAsChild() {
-    guard let playerViewController = playerViewController else {
-      return
-    }
-    playerViewController.view.translatesAutoresizingMaskIntoConstraints = false
-
-    self.addChild(playerViewController)
-    self.view.addSubview(playerViewController.view)
-    self.view.bringSubviewToFront(self.pickFromGalleryButton)
-    NSLayoutConstraint.activate([
-      playerViewController.view.leadingAnchor.constraint(
-        equalTo: view.leadingAnchor, constant: 0.0),
-      playerViewController.view.trailingAnchor.constraint(
-        equalTo: view.trailingAnchor, constant: 0.0),
-      playerViewController.view.topAnchor.constraint(
-        equalTo: view.topAnchor, constant: 0.0),
-      playerViewController.view.bottomAnchor.constraint(
-        equalTo: view.bottomAnchor, constant: 0.0)
-    ])
-    playerViewController.didMove(toParent: self)
-  }
-
-  private func removePlayerViewController() {
-    defer {
-      playerViewController?.view.removeFromSuperview()
-      playerViewController?.willMove(toParent: nil)
-      playerViewController?.removeFromParent()
-    }
-    removeObservers(player: playerViewController?.player)
-    playerViewController?.player?.pause()
-    playerViewController?.player = nil
   }
 
   private func removeObservers(player: AVPlayer?) {
@@ -141,45 +93,10 @@ class MediaLibraryViewController: UIViewController {
     present(pickerController, animated: true)
   }
 
-  private func clearPlayerView() {
-    imageEmptyLabel.isHidden = false
-    removePlayerViewController()
-  }
-
-  private func showProgressView() {
-    guard let progressSuperview = progressView.superview?.superview else {
-      return
-    }
-    progressSuperview.isHidden = false
-    progressView.progress = 0.0
-    progressView.observedProgress = nil
-    self.view.bringSubviewToFront(progressSuperview)
-  }
-
-  private func hideProgressView() {
-    guard let progressSuperview = progressView.superview?.superview else {
-      return
-    }
-    self.view.sendSubviewToBack(progressSuperview)
-    self.progressView.superview?.superview?.isHidden = true
-  }
-
   func layoutUIElements(withInferenceViewHeight height: CGFloat) {
-    pickFromGalleryButtonBottomSpace.constant =
+    imageViewBottomSpace.constant =
     height + Constants.pickFromGalleryButtonInset
     view.layoutSubviews()
-  }
-
-  func redrawBoundingBoxesForCurrentDeviceOrientation() {
-    guard let imageEmbedderService = imageEmbedderService,
-          imageEmbedderService.runningMode == .image ||
-            self.playerViewController?.player?.timeControlStatus == .paused else {
-      return
-    }
-  }
-
-  deinit {
-    playerViewController?.player?.removeTimeObserver(self)
   }
 }
 
@@ -193,8 +110,6 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
   func imagePickerController(
     _ picker: UIImagePickerController,
     didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-      clearPlayerView()
-      pickedImageView.image = nil
 
       picker.dismiss(animated: true)
 
@@ -205,29 +120,29 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
       switch mediaType {
       case UTType.image.identifier:
         guard let image = info[.originalImage] as? UIImage else {
-          imageEmptyLabel.isHidden = false
           break
         }
-        pickedImageView.image = image
-        imageEmptyLabel.isHidden = true
-
-        showProgressView()
-
+        viewChoosed?.setImage(image: image)
         clearAndInitializeImageEmbedderService(runningMode: .image)
 
         DispatchQueue.global(qos: .userInteractive).async { [weak self] in
-          guard let weakSelf = self,
-                let imageEmbedderResult = weakSelf
-            .imageEmbedderService?
-            .embed(image: image) else {
-            DispatchQueue.main.async {
-              self?.hideProgressView()
-            }
+          guard let weakself = self else { return }
+          guard let resultBundle = weakself.imageEmbedderService?
+            .embed(image: image),
+                let imageEmbedderResult = resultBundle.imageEmbedderResults.first,
+                let embedding = imageEmbedderResult?.embeddingResult.embeddings.first else {
+            weakself.viewChoosed?.setResult(floatEmbedding: nil)
             return
           }
-
-          DispatchQueue.main.async {
-            weakSelf.hideProgressView()
+          weakself.viewChoosed?.setResult(floatEmbedding: embedding.floatEmbedding)
+          switch weakself.viewChoosed {
+          case weakself.imageEmbedderView1:
+            weakself.image1EmbedResult = resultBundle
+          default:
+            weakself.image2EmbedResult = resultBundle
+          }
+          if weakself.image1EmbedResult != nil && weakself.image2EmbedResult != nil {
+            weakself.inferenceResultDeliveryDelegate?.didPerformInference(result1: weakself.image1EmbedResult, result2: weakself.image2EmbedResult)
           }
         }
       default:
@@ -244,27 +159,68 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
           model: InferenceConfigurationManager.sharedInstance.model,
           delegate: InferenceConfigurationManager.sharedInstance.delegate
         )
-    case .video:
-      imageEmbedderService = ImageEmbedderService
-        .videoImageEmbedderService(
-          model: InferenceConfigurationManager.sharedInstance.model,
-          videoDelegate: self,
-          delegate: InferenceConfigurationManager.sharedInstance.delegate)
     default:
       break;
     }
   }
 }
 
-// MARK: ImageEmbedderServiceVideoDelegate
-extension MediaLibraryViewController: ImageEmbedderServiceVideoDelegate {
-  func imageEmbedderService(_ imageEmbedderService: ImageEmbedderService, didFinishEmbeddingOnVideoFrame index: Int) {
-    progressView.observedProgress?.completedUnitCount = Int64(index + 1)
-  }
-  
-  func imageEmbedderService(_ imageEmbedderService: ImageEmbedderService, willBeginEmbedding totalframeCount: Int) {
-    progressView.observedProgress = Progress(totalUnitCount: Int64(totalframeCount))
+extension MediaLibraryViewController: ImageEmbedderViewDelegate {
+  func clickPickImageFrom(_ imageEmbedderView: ImageEmbedderView) {
+    viewChoosed = imageEmbedderView
+    openMediaLibrary()
   }
 }
 
+protocol ImageEmbedderViewDelegate: AnyObject {
+  func clickPickImageFrom(_ imageEmbedderView: ImageEmbedderView)
+}
+
+class ImageEmbedderView: UIView {
+
+  @IBOutlet weak var pickFromGalleryButton: UIButton!
+  @IBOutlet weak var imageEmptyLabel: UILabel!
+  @IBOutlet private weak var pickedImageView: UIImageView!
+  @IBOutlet private weak var resultLabel: UILabel!
+  @IBOutlet weak var imageHeigth: NSLayoutConstraint!
+
+  weak var delegate: ImageEmbedderViewDelegate?
+
+  private var imageWidth = UIScreen.main.bounds.width - 16
+
+  override init(frame: CGRect) {
+    super.init(frame: frame)
+    guard UIImagePickerController.isSourceTypeAvailable(.savedPhotosAlbum) else {
+      pickFromGalleryButton.isEnabled = false
+      self.imageEmptyLabel.text = Constants.savedPhotosNotAvailableText
+      return
+    }
+    pickFromGalleryButton.isEnabled = true
+    self.imageEmptyLabel.text = Constants.mediaEmptyText
+  }
+
+  func setImage(image: UIImage) {
+    pickedImageView.image = image
+    imageHeigth.constant = image.size.height / image.size.width * imageWidth
+    layoutIfNeeded()
+  }
+
+  func setResult(floatEmbedding: [NSNumber]?) {
+    DispatchQueue.main.async {
+      guard let floatEmbedding = floatEmbedding else {
+        self.resultLabel.text = ""
+        return
+      }
+      self.resultLabel.text = "Float embed: \(floatEmbedding)"
+    }
+  }
+
+  @IBAction func onClickPickFromGallery(_ sender: Any) {
+    delegate?.clickPickImageFrom(self)
+  }
+
+  required init?(coder: NSCoder) {
+    super.init(coder: coder)
+  }
+}
 

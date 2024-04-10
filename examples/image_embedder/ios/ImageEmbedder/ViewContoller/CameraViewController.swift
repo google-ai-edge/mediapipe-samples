@@ -1,4 +1,4 @@
-// Copyright 2023 The MediaPipe Authors.
+// Copyright 2024 The MediaPipe Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -248,10 +248,7 @@ extension CameraViewController: CameraFeedServiceDelegate {
 // MARK: ImageEmbedderServiceLiveStreamDelegate
 extension CameraViewController: ImageEmbedderServiceLiveStreamDelegate {
   func imageEmbedderService(_ imageEmbedderService: ImageEmbedderService, didFinishEmbedding result: ResultBundle?, error: (any Error)?) {
-    DispatchQueue.main.async { [weak self] in
-      guard let self else { return }
-      inferenceResultDeliveryDelegate?.didPerformInference(result1: result, result2: compareImageEmbedderResult)
-    }
+    inferenceResultDeliveryDelegate?.didPerformInference(result1: result, result2: compareImageEmbedderResult)
   }
 }
 
@@ -283,20 +280,3 @@ extension CameraViewController: UIImagePickerControllerDelegate, UINavigationCon
       }
     }
 }
-
-// MARK: - AVLayerVideoGravity Extension
-extension AVLayerVideoGravity {
-  var contentMode: UIView.ContentMode {
-    switch self {
-      case .resizeAspectFill:
-        return .scaleAspectFill
-      case .resizeAspect:
-        return .scaleAspectFit
-      case .resize:
-        return .scaleToFill
-      default:
-        return .scaleAspectFill
-    }
-  }
-}
-

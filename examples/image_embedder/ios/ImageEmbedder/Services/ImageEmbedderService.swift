@@ -1,4 +1,4 @@
-// Copyright 2023 The MediaPipe Authors.
+// Copyright 2024 The MediaPipe Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,22 +25,10 @@ protocol ImageEmbedderServiceLiveStreamDelegate: AnyObject {
                              error: Error?)
 }
 
-/**
- This protocol must be adopted by any class that wants to take appropriate actions during  different stages of image embedding on videos.
- */
-protocol ImageEmbedderServiceVideoDelegate: AnyObject {
- func imageEmbedderService(_ imageEmbedderService: ImageEmbedderService,
-                                  didFinishEmbeddingOnVideoFrame index: Int)
- func imageEmbedderService(_ imageEmbedderService: ImageEmbedderService,
-                             willBeginEmbedding totalframeCount: Int)
-}
-
-
 // Initializes and calls the MediaPipe APIs for embedding.
 class ImageEmbedderService: NSObject {
 
   weak var liveStreamDelegate: ImageEmbedderServiceLiveStreamDelegate?
-  weak var videoDelegate: ImageEmbedderServiceVideoDelegate?
 
   var imageEmbedder: ImageEmbedder?
   private(set) var runningMode: RunningMode
@@ -79,13 +67,11 @@ class ImageEmbedderService: NSObject {
   // MARK: - Static Initializers
   static func videoImageEmbedderService(
     model: Model,
-    videoDelegate: ImageEmbedderServiceVideoDelegate?,
     delegate: ImageEmbedderDelegate) -> ImageEmbedderService? {
     let imageEmbedderService = ImageEmbedderService(
       model: model,
       runningMode: .video,
       delegate: delegate)
-    imageEmbedderService?.videoDelegate = videoDelegate
 
     return imageEmbedderService
   }
@@ -148,28 +134,6 @@ class ImageEmbedderService: NSObject {
     }
   }
 
-  func embed(
-    videoAsset: AVAsset,
-    durationInMilliseconds: Double,
-    inferenceIntervalInMilliseconds: Double) async -> ResultBundle? {
-    let startDate = Date()
-    let assetGenerator = imageGenerator(with: videoAsset)
-
-    let frameCount = Int(durationInMilliseconds / inferenceIntervalInMilliseconds)
-    Task { @MainActor in
-      videoDelegate?.imageEmbedderService(self, willBeginEmbedding: frameCount)
-    }
-
-    let imageEmbedderResultTuple = embedObjectsInFramesGenerated(
-      by: assetGenerator,
-      totalFrameCount: frameCount,
-      atIntervalsOf: inferenceIntervalInMilliseconds)
-
-    return ResultBundle(
-      inferenceTime: Date().timeIntervalSince(startDate) / Double(frameCount) * 1000,
-      imageEmbedderResults: imageEmbedderResultTuple.imageEmbedderResults,
-      size: imageEmbedderResultTuple.videoSize)
-  }
 
   private func imageGenerator(with videoAsset: AVAsset) -> AVAssetImageGenerator {
     let generator = AVAssetImageGenerator(asset: videoAsset)
@@ -208,9 +172,6 @@ class ImageEmbedderService: NSObject {
           videoFrame: MPImage(uiImage: uiImage),
           timestampInMilliseconds: timestampMs)
           imageEmbedderResults.append(result)
-        Task { @MainActor in
-          videoDelegate?.imageEmbedderService(self, didFinishEmbeddingOnVideoFrame: i)
-        }
         } catch {
           print(error)
         }

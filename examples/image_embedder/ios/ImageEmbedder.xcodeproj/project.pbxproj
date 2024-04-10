@@ -105,6 +105,13 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		BF5A2AE22BC3944700A0ABAC /* View */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
 		BF931EA62BBCF3AD00844805 = {
 			isa = PBXGroup;
 			children = (
@@ -128,6 +135,7 @@
 		BF931EB12BBCF3AD00844805 /* ImageEmbedder */ = {
 			isa = PBXGroup;
 			children = (
+				BF5A2AE22BC3944700A0ABAC /* View */,
 				BF931EEC2BBCF70000844805 /* Configs */,
 				BF931EE42BBCF6FF00844805 /* Services */,
 				BF931EE92BBCF70000844805 /* ViewContoller */,

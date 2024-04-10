@@ -1,4 +1,4 @@
-// Copyright 2023 The MediaPipe Authors.
+// Copyright 2024 The MediaPipe Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -220,7 +220,9 @@ extension RootViewController: InferenceResultDeliveryDelegate {
        let embedding2 = imageEmbedderResults2?.embeddingResult.embeddings.first {
       similarity = try? ImageEmbedder.cosineSimilarity(embedding1: embedding1, embedding2: embedding2).floatValue
     }
-    bottomSheetViewController?.update(inferenceTimeString: inferenceTimeString, similarity: similarity)
+    DispatchQueue.main.async {
+      self.bottomSheetViewController?.update(inferenceTimeString: inferenceTimeString, similarity: similarity)
+    }
   }
 }
 
