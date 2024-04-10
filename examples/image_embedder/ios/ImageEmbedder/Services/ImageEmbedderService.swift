@@ -14,7 +14,6 @@
 
 import UIKit
 import MediaPipeTasksVision
-import AVFoundation
 
 /**
  This protocol must be adopted by any class that wants to get the embedding results of the image embedder in live stream mode.
@@ -65,16 +64,6 @@ class ImageEmbedderService: NSObject {
   }
 
   // MARK: - Static Initializers
-  static func videoImageEmbedderService(
-    model: Model,
-    delegate: ImageEmbedderDelegate) -> ImageEmbedderService? {
-    let imageEmbedderService = ImageEmbedderService(
-      model: model,
-      runningMode: .video,
-      delegate: delegate)
-
-    return imageEmbedderService
-  }
 
   static func liveStreamEmbedderService(
     model: Model,
@@ -132,52 +121,6 @@ class ImageEmbedderService: NSObject {
     } catch {
       print(error)
     }
-  }
-
-
-  private func imageGenerator(with videoAsset: AVAsset) -> AVAssetImageGenerator {
-    let generator = AVAssetImageGenerator(asset: videoAsset)
-    generator.requestedTimeToleranceBefore = CMTimeMake(value: 1, timescale: 25)
-    generator.requestedTimeToleranceAfter = CMTimeMake(value: 1, timescale: 25)
-    generator.appliesPreferredTrackTransform = true
-
-    return generator
-  }
-
-  private func embedObjectsInFramesGenerated(
-    by assetGenerator: AVAssetImageGenerator,
-    totalFrameCount frameCount: Int,
-    atIntervalsOf inferenceIntervalMs: Double)
-  -> (imageEmbedderResults: [ImageEmbedderResult?], videoSize: CGSize)  {
-    var imageEmbedderResults: [ImageEmbedderResult?] = []
-    var videoSize = CGSize.zero
-
-    for i in 0..<frameCount {
-      let timestampMs = Int(inferenceIntervalMs) * i // ms
-      let image: CGImage
-      do {
-        let time = CMTime(value: Int64(timestampMs), timescale: 1000)
-          //        CMTime(seconds: Double(timestampMs) / 1000, preferredTimescale: 1000)
-        image = try assetGenerator.copyCGImage(at: time, actualTime: nil)
-      } catch {
-        print(error)
-        return (imageEmbedderResults, videoSize)
-      }
-
-      let uiImage = UIImage(cgImage:image)
-      videoSize = uiImage.size
-
-      do {
-        let result = try imageEmbedder?.embed(
-          videoFrame: MPImage(uiImage: uiImage),
-          timestampInMilliseconds: timestampMs)
-          imageEmbedderResults.append(result)
-        } catch {
-          print(error)
-        }
-      }
-
-    return (imageEmbedderResults, videoSize)
   }
 }
 
