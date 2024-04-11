@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		313CA3A7B111358E783E27D2 /* Pods_ImageEmbedder.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50DC27A8968DC39C97F4E60C /* Pods_ImageEmbedder.framework */; };
 		AC3EC0E104D6F58BFCB7319E /* libPods-ImageEmbedderTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E59E4894C117BEE0F41129CA /* libPods-ImageEmbedderTests.a */; };
+		BF7F3D7A2BC77AB100219CCC /* cup.png in Resources */ = {isa = PBXBuildFile; fileRef = BF7F3D792BC77AB100219CCC /* cup.png */; };
 		BF931EB32BBCF3AD00844805 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF931EB22BBCF3AD00844805 /* AppDelegate.swift */; };
 		BF931EB52BBCF3AD00844805 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF931EB42BBCF3AD00844805 /* SceneDelegate.swift */; };
 		BF931EBA2BBCF3AD00844805 /* Base in Resources */ = {isa = PBXBuildFile; fileRef = BF931EB92BBCF3AD00844805 /* Base */; };
@@ -40,6 +41,7 @@
 /* Begin PBXFileReference section */
 		50DC27A8968DC39C97F4E60C /* Pods_ImageEmbedder.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ImageEmbedder.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB19C02B995F755000C36837 /* Pods-ImageEmbedderTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageEmbedderTests.debug.xcconfig"; path = "Target Support Files/Pods-ImageEmbedderTests/Pods-ImageEmbedderTests.debug.xcconfig"; sourceTree = "<group>"; };
+		BF7F3D792BC77AB100219CCC /* cup.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = cup.png; path = ImageEmbedder/cup.png; sourceTree = SOURCE_ROOT; };
 		BF931EAF2BBCF3AD00844805 /* ImageEmbedder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImageEmbedder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF931EB22BBCF3AD00844805 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BF931EB42BBCF3AD00844805 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -105,13 +107,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		BF5A2AE22BC3944700A0ABAC /* View */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = View;
-			sourceTree = "<group>";
-		};
 		BF931EA62BBCF3AD00844805 = {
 			isa = PBXGroup;
 			children = (
@@ -135,7 +130,6 @@
 		BF931EB12BBCF3AD00844805 /* ImageEmbedder */ = {
 			isa = PBXGroup;
 			children = (
-				BF5A2AE22BC3944700A0ABAC /* View */,
 				BF931EEC2BBCF70000844805 /* Configs */,
 				BF931EE42BBCF6FF00844805 /* Services */,
 				BF931EE92BBCF70000844805 /* ViewContoller */,
@@ -155,6 +149,7 @@
 			isa = PBXGroup;
 			children = (
 				BF931EC92BBCF3B400844805 /* ImageEmbedderTests.swift */,
+				BF7F3D792BC77AB100219CCC /* cup.png */,
 			);
 			path = ImageEmbedderTests;
 			sourceTree = "<group>";
@@ -283,6 +278,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF7F3D7A2BC77AB100219CCC /* cup.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -580,14 +576,16 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = H83UK2M7VU;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.imageembedder.ImageEmbedderTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -601,14 +599,16 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = H83UK2M7VU;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.imageembedder.ImageEmbedderTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
