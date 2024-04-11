@@ -35,7 +35,7 @@ for opening locally stored files.
   Android Studio project.
 
 * From the Open File or Project window that appears, navigate to and select
-  the mediapipe/examples/image_segmentation/android directory. Click OK. You may
+  the mediapipe/examples/image_segmentation/android/category_mask directory. Click OK. You may
   be asked if you trust the project. Select Trust.
 
 * If it asks you to do a Gradle Sync, click OK.
