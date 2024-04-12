@@ -1,0 +1,652 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		313CA3A7B111358E783E27D2 /* Pods_ImageEmbedder.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50DC27A8968DC39C97F4E60C /* Pods_ImageEmbedder.framework */; };
+		AC3EC0E104D6F58BFCB7319E /* libPods-ImageEmbedderTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E59E4894C117BEE0F41129CA /* libPods-ImageEmbedderTests.a */; };
+		BF7F3D7A2BC77AB100219CCC /* cup.png in Resources */ = {isa = PBXBuildFile; fileRef = BF7F3D792BC77AB100219CCC /* cup.png */; };
+		BF931EB32BBCF3AD00844805 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF931EB22BBCF3AD00844805 /* AppDelegate.swift */; };
+		BF931EB52BBCF3AD00844805 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF931EB42BBCF3AD00844805 /* SceneDelegate.swift */; };
+		BF931EBA2BBCF3AD00844805 /* Base in Resources */ = {isa = PBXBuildFile; fileRef = BF931EB92BBCF3AD00844805 /* Base */; };
+		BF931EBC2BBCF3B400844805 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF931EBB2BBCF3B400844805 /* Assets.xcassets */; };
+		BF931EBF2BBCF3B400844805 /* Base in Resources */ = {isa = PBXBuildFile; fileRef = BF931EBE2BBCF3B400844805 /* Base */; };
+		BF931ECA2BBCF3B400844805 /* ImageEmbedderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF931EC92BBCF3B400844805 /* ImageEmbedderTests.swift */; };
+		BF931EED2BBCF70000844805 /* CameraFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF931EE22BBCF6FF00844805 /* CameraFeedService.swift */; };
+		BF931EEE2BBCF70000844805 /* ImageEmbedderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF931EE32BBCF6FF00844805 /* ImageEmbedderService.swift */; };
+		BF931EEF2BBCF70000844805 /* BottomSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF931EE52BBCF70000844805 /* BottomSheetViewController.swift */; };
+		BF931EF02BBCF70000844805 /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF931EE62BBCF70000844805 /* CameraViewController.swift */; };
+		BF931EF12BBCF70000844805 /* MediaLibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF931EE72BBCF70000844805 /* MediaLibraryViewController.swift */; };
+		BF931EF22BBCF70000844805 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF931EE82BBCF70000844805 /* RootViewController.swift */; };
+		BF931EF32BBCF70000844805 /* DefaultConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF931EEA2BBCF70000844805 /* DefaultConstants.swift */; };
+		BF931EF42BBCF70000844805 /* InferenceConfigurationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF931EEB2BBCF70000844805 /* InferenceConfigurationManager.swift */; };
+		BF931EF72BBCFE1500844805 /* mobilenet_v3_large.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF931EF52BBCFE1400844805 /* mobilenet_v3_large.tflite */; };
+		BF931EF82BBCFE1500844805 /* mobilenet_v3_small.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF931EF62BBCFE1500844805 /* mobilenet_v3_small.tflite */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		BF931EC62BBCF3B400844805 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BF931EA72BBCF3AD00844805 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BF931EAE2BBCF3AD00844805;
+			remoteInfo = ImageEmbedder;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		50DC27A8968DC39C97F4E60C /* Pods_ImageEmbedder.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ImageEmbedder.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB19C02B995F755000C36837 /* Pods-ImageEmbedderTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageEmbedderTests.debug.xcconfig"; path = "Target Support Files/Pods-ImageEmbedderTests/Pods-ImageEmbedderTests.debug.xcconfig"; sourceTree = "<group>"; };
+		BF7F3D792BC77AB100219CCC /* cup.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = cup.png; path = ImageEmbedder/cup.png; sourceTree = SOURCE_ROOT; };
+		BF931EAF2BBCF3AD00844805 /* ImageEmbedder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImageEmbedder.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BF931EB22BBCF3AD00844805 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		BF931EB42BBCF3AD00844805 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		BF931EB92BBCF3AD00844805 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		BF931EBB2BBCF3B400844805 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		BF931EBE2BBCF3B400844805 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		BF931EC02BBCF3B400844805 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BF931EC52BBCF3B400844805 /* ImageEmbedderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ImageEmbedderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BF931EC92BBCF3B400844805 /* ImageEmbedderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEmbedderTests.swift; sourceTree = "<group>"; };
+		BF931EE22BBCF6FF00844805 /* CameraFeedService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedService.swift; sourceTree = "<group>"; };
+		BF931EE32BBCF6FF00844805 /* ImageEmbedderService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageEmbedderService.swift; sourceTree = "<group>"; };
+		BF931EE52BBCF70000844805 /* BottomSheetViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BottomSheetViewController.swift; sourceTree = "<group>"; };
+		BF931EE62BBCF70000844805 /* CameraViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
+		BF931EE72BBCF70000844805 /* MediaLibraryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MediaLibraryViewController.swift; sourceTree = "<group>"; };
+		BF931EE82BBCF70000844805 /* RootViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
+		BF931EEA2BBCF70000844805 /* DefaultConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultConstants.swift; sourceTree = "<group>"; };
+		BF931EEB2BBCF70000844805 /* InferenceConfigurationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceConfigurationManager.swift; sourceTree = "<group>"; };
+		BF931EF52BBCFE1400844805 /* mobilenet_v3_large.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = mobilenet_v3_large.tflite; sourceTree = "<group>"; };
+		BF931EF62BBCFE1500844805 /* mobilenet_v3_small.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = mobilenet_v3_small.tflite; sourceTree = "<group>"; };
+		D35C624D34EE11FB3787CD10 /* Pods-ImageEmbedder.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageEmbedder.release.xcconfig"; path = "Target Support Files/Pods-ImageEmbedder/Pods-ImageEmbedder.release.xcconfig"; sourceTree = "<group>"; };
+		DEDF78ED42C5787D3C49BF2B /* Pods-ImageEmbedder.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageEmbedder.debug.xcconfig"; path = "Target Support Files/Pods-ImageEmbedder/Pods-ImageEmbedder.debug.xcconfig"; sourceTree = "<group>"; };
+		E59E4894C117BEE0F41129CA /* libPods-ImageEmbedderTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ImageEmbedderTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F73A0B7F70AD0A57773302CD /* Pods-ImageEmbedderTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageEmbedderTests.release.xcconfig"; path = "Target Support Files/Pods-ImageEmbedderTests/Pods-ImageEmbedderTests.release.xcconfig"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BF931EAC2BBCF3AD00844805 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				313CA3A7B111358E783E27D2 /* Pods_ImageEmbedder.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF931EC22BBCF3B400844805 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AC3EC0E104D6F58BFCB7319E /* libPods-ImageEmbedderTests.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7C4DBA3ED860CDCBE01EB2DD /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				DEDF78ED42C5787D3C49BF2B /* Pods-ImageEmbedder.debug.xcconfig */,
+				D35C624D34EE11FB3787CD10 /* Pods-ImageEmbedder.release.xcconfig */,
+				AB19C02B995F755000C36837 /* Pods-ImageEmbedderTests.debug.xcconfig */,
+				F73A0B7F70AD0A57773302CD /* Pods-ImageEmbedderTests.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		9E804B829A42015274A96A3C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				50DC27A8968DC39C97F4E60C /* Pods_ImageEmbedder.framework */,
+				E59E4894C117BEE0F41129CA /* libPods-ImageEmbedderTests.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		BF931EA62BBCF3AD00844805 = {
+			isa = PBXGroup;
+			children = (
+				BF931EB12BBCF3AD00844805 /* ImageEmbedder */,
+				BF931EC82BBCF3B400844805 /* ImageEmbedderTests */,
+				BF931EB02BBCF3AD00844805 /* Products */,
+				7C4DBA3ED860CDCBE01EB2DD /* Pods */,
+				9E804B829A42015274A96A3C /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		BF931EB02BBCF3AD00844805 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BF931EAF2BBCF3AD00844805 /* ImageEmbedder.app */,
+				BF931EC52BBCF3B400844805 /* ImageEmbedderTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BF931EB12BBCF3AD00844805 /* ImageEmbedder */ = {
+			isa = PBXGroup;
+			children = (
+				BF931EEC2BBCF70000844805 /* Configs */,
+				BF931EE42BBCF6FF00844805 /* Services */,
+				BF931EE92BBCF70000844805 /* ViewContoller */,
+				BF931EB22BBCF3AD00844805 /* AppDelegate.swift */,
+				BF931EB42BBCF3AD00844805 /* SceneDelegate.swift */,
+				BF931EB82BBCF3AD00844805 /* Main.storyboard */,
+				BF931EBB2BBCF3B400844805 /* Assets.xcassets */,
+				BF931EBD2BBCF3B400844805 /* LaunchScreen.storyboard */,
+				BF931EC02BBCF3B400844805 /* Info.plist */,
+				BF931EF52BBCFE1400844805 /* mobilenet_v3_large.tflite */,
+				BF931EF62BBCFE1500844805 /* mobilenet_v3_small.tflite */,
+			);
+			path = ImageEmbedder;
+			sourceTree = "<group>";
+		};
+		BF931EC82BBCF3B400844805 /* ImageEmbedderTests */ = {
+			isa = PBXGroup;
+			children = (
+				BF931EC92BBCF3B400844805 /* ImageEmbedderTests.swift */,
+				BF7F3D792BC77AB100219CCC /* cup.png */,
+			);
+			path = ImageEmbedderTests;
+			sourceTree = "<group>";
+		};
+		BF931EE42BBCF6FF00844805 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				BF931EE22BBCF6FF00844805 /* CameraFeedService.swift */,
+				BF931EE32BBCF6FF00844805 /* ImageEmbedderService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		BF931EE92BBCF70000844805 /* ViewContoller */ = {
+			isa = PBXGroup;
+			children = (
+				BF931EE52BBCF70000844805 /* BottomSheetViewController.swift */,
+				BF931EE62BBCF70000844805 /* CameraViewController.swift */,
+				BF931EE72BBCF70000844805 /* MediaLibraryViewController.swift */,
+				BF931EE82BBCF70000844805 /* RootViewController.swift */,
+			);
+			path = ViewContoller;
+			sourceTree = "<group>";
+		};
+		BF931EEC2BBCF70000844805 /* Configs */ = {
+			isa = PBXGroup;
+			children = (
+				BF931EEA2BBCF70000844805 /* DefaultConstants.swift */,
+				BF931EEB2BBCF70000844805 /* InferenceConfigurationManager.swift */,
+			);
+			path = Configs;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BF931EAE2BBCF3AD00844805 /* ImageEmbedder */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BF931ED92BBCF3B400844805 /* Build configuration list for PBXNativeTarget "ImageEmbedder" */;
+			buildPhases = (
+				BEA7EF50C3B28FA50E4DE890 /* [CP] Check Pods Manifest.lock */,
+				BF931EAB2BBCF3AD00844805 /* Sources */,
+				BF931EAC2BBCF3AD00844805 /* Frameworks */,
+				BF931EAD2BBCF3AD00844805 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ImageEmbedder;
+			productName = ImageEmbedder;
+			productReference = BF931EAF2BBCF3AD00844805 /* ImageEmbedder.app */;
+			productType = "com.apple.product-type.application";
+		};
+		BF931EC42BBCF3B400844805 /* ImageEmbedderTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BF931EDC2BBCF3B400844805 /* Build configuration list for PBXNativeTarget "ImageEmbedderTests" */;
+			buildPhases = (
+				C01FF026ECA085CCFF46964D /* [CP] Check Pods Manifest.lock */,
+				BF931EC12BBCF3B400844805 /* Sources */,
+				BF931EC22BBCF3B400844805 /* Frameworks */,
+				BF931EC32BBCF3B400844805 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BF931EC72BBCF3B400844805 /* PBXTargetDependency */,
+			);
+			name = ImageEmbedderTests;
+			productName = ImageEmbedderTests;
+			productReference = BF931EC52BBCF3B400844805 /* ImageEmbedderTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BF931EA72BBCF3AD00844805 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1530;
+				LastUpgradeCheck = 1530;
+				TargetAttributes = {
+					BF931EAE2BBCF3AD00844805 = {
+						CreatedOnToolsVersion = 15.3;
+					};
+					BF931EC42BBCF3B400844805 = {
+						CreatedOnToolsVersion = 15.3;
+						TestTargetID = BF931EAE2BBCF3AD00844805;
+					};
+				};
+			};
+			buildConfigurationList = BF931EAA2BBCF3AD00844805 /* Build configuration list for PBXProject "ImageEmbedder" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = BF931EA62BBCF3AD00844805;
+			productRefGroup = BF931EB02BBCF3AD00844805 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BF931EAE2BBCF3AD00844805 /* ImageEmbedder */,
+				BF931EC42BBCF3B400844805 /* ImageEmbedderTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BF931EAD2BBCF3AD00844805 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF931EF72BBCFE1500844805 /* mobilenet_v3_large.tflite in Resources */,
+				BF931EBC2BBCF3B400844805 /* Assets.xcassets in Resources */,
+				BF931EBF2BBCF3B400844805 /* Base in Resources */,
+				BF931EBA2BBCF3AD00844805 /* Base in Resources */,
+				BF931EF82BBCFE1500844805 /* mobilenet_v3_small.tflite in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF931EC32BBCF3B400844805 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF7F3D7A2BC77AB100219CCC /* cup.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		BEA7EF50C3B28FA50E4DE890 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-ImageEmbedder-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C01FF026ECA085CCFF46964D /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-ImageEmbedderTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BF931EAB2BBCF3AD00844805 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF931EEE2BBCF70000844805 /* ImageEmbedderService.swift in Sources */,
+				BF931EEF2BBCF70000844805 /* BottomSheetViewController.swift in Sources */,
+				BF931EF22BBCF70000844805 /* RootViewController.swift in Sources */,
+				BF931EED2BBCF70000844805 /* CameraFeedService.swift in Sources */,
+				BF931EF02BBCF70000844805 /* CameraViewController.swift in Sources */,
+				BF931EB32BBCF3AD00844805 /* AppDelegate.swift in Sources */,
+				BF931EF32BBCF70000844805 /* DefaultConstants.swift in Sources */,
+				BF931EF12BBCF70000844805 /* MediaLibraryViewController.swift in Sources */,
+				BF931EF42BBCF70000844805 /* InferenceConfigurationManager.swift in Sources */,
+				BF931EB52BBCF3AD00844805 /* SceneDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF931EC12BBCF3B400844805 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF931ECA2BBCF3B400844805 /* ImageEmbedderTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BF931EC72BBCF3B400844805 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BF931EAE2BBCF3AD00844805 /* ImageEmbedder */;
+			targetProxy = BF931EC62BBCF3B400844805 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		BF931EB82BBCF3AD00844805 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BF931EB92BBCF3AD00844805 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		BF931EBD2BBCF3B400844805 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BF931EBE2BBCF3B400844805 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		BF931ED72BBCF3B400844805 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BF931ED82BBCF3B400844805 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		BF931EDA2BBCF3B400844805 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = DEDF78ED42C5787D3C49BF2B /* Pods-ImageEmbedder.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ImageEmbedder/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to embedding the objects that appear in the camera feed.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.imageembedder.ImageEmbedder;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BF931EDB2BBCF3B400844805 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = D35C624D34EE11FB3787CD10 /* Pods-ImageEmbedder.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ImageEmbedder/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to embedding the objects that appear in the camera feed.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.imageembedder.ImageEmbedder;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		BF931EDD2BBCF3B400844805 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AB19C02B995F755000C36837 /* Pods-ImageEmbedderTests.debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.imageembedder.ImageEmbedderTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ImageEmbedder.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ImageEmbedder";
+			};
+			name = Debug;
+		};
+		BF931EDE2BBCF3B400844805 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = F73A0B7F70AD0A57773302CD /* Pods-ImageEmbedderTests.release.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.imageembedder.ImageEmbedderTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ImageEmbedder.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ImageEmbedder";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BF931EAA2BBCF3AD00844805 /* Build configuration list for PBXProject "ImageEmbedder" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF931ED72BBCF3B400844805 /* Debug */,
+				BF931ED82BBCF3B400844805 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BF931ED92BBCF3B400844805 /* Build configuration list for PBXNativeTarget "ImageEmbedder" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF931EDA2BBCF3B400844805 /* Debug */,
+				BF931EDB2BBCF3B400844805 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BF931EDC2BBCF3B400844805 /* Build configuration list for PBXNativeTarget "ImageEmbedderTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF931EDD2BBCF3B400844805 /* Debug */,
+				BF931EDE2BBCF3B400844805 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BF931EA72BBCF3AD00844805 /* Project object */;
+}
