@@ -37,7 +37,7 @@ This application must be run on a physical Android device to take advantage of t
 You can download one of the [compatible models](https://developers.google.com/mediapipe/solutions/genai/llm_inference#models).
 
 Once you download it, place it under the path defined as MODEL_PATH in InferenceModel on the Android device
- (eg. /data/local/tmp/llm/model.tflite).
+ (eg. /data/local/tmp/llm/model.bin).
 
 The easiest way to do that would be to use Android Studio's [Device Explorer](https://developer.android.com/studio/debug/device-file-explorer).
 
