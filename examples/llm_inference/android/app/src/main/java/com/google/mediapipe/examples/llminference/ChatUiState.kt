@@ -48,7 +48,7 @@ class ChatUiState(
     }
     
     fun appendFirstMessage(id: String, text: String) {
-        appendMessage(id, text, false)
+        appendMessage(id, text, false) 
     }
     
     override fun appendMessage(id: String, text: String, done: Boolean) {
