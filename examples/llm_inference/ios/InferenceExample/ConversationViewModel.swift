@@ -89,7 +89,12 @@ class ConversationViewModel: ObservableObject {
       messages.append(systemMessage)
 
       do {
-        let response = try await chat.sendMessage(text)
+        let response = try await chat.sendMessage(text, progress : { [weak self] partialResult in
+          guard let self = self else { return }
+          DispatchQueue.main.async {
+            self.messages[self.messages.count - 1].message = partialResult
+          }
+        })
 
         // replace pending message with model response
         messages[messages.count - 1].message = response

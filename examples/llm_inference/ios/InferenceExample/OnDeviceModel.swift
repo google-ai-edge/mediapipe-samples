@@ -17,14 +17,27 @@ import MediaPipeTasksGenAI
 
 final class OnDeviceModel {
 
-  private var inference: LlmInference! = {
-    let path = Bundle.main.path(forResource: "gemma-2b-it-cpu-int4", ofType: "bin")!
-    let llmOptions = LlmInference.Options(modelPath: path)
-    return LlmInference(options: llmOptions)
-  }()
 
-  func generateResponse(prompt: String) async throws -> String {
+  private var cachedInference: LlmInference?
+
+  private var inference: LlmInference
+  {
+    get throws {
+      if let cached = cachedInference {
+         return cached
+      } else {
+        let path = Bundle.main.path(forResource: "gemma-1.1-2b-it-gpu-int4", ofType: "bin")!
+        let llmOptions = LlmInference.Options(modelPath: path)
+        cachedInference = try LlmInference(options: llmOptions)
+        return cachedInference!
+      }
+    }
+  }
+
+  func generateResponse(prompt: String, progress: @escaping (String) -> Void) async throws -> String {
     var partialResult = ""
+
+    let inference = try inference
     return try await withCheckedThrowingContinuation { continuation in
       do {
         try inference.generateResponseAsync(inputText: prompt) { partialResponse, error in
@@ -34,6 +47,7 @@ final class OnDeviceModel {
           }
           if let partial = partialResponse {
             partialResult += partial
+            progress(partialResult.trimmingCharacters(in: .whitespacesAndNewlines))
           }
         } completion: {
           let aggregate = partialResult.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -62,16 +76,24 @@ final class Chat {
     self.model = model
   }
 
+  private func composeUserTurn(_ newMessage: String) -> String {
+    return "<start_of_turn>user\n\(newMessage)<end_of_turn>\n"
+  }
+
+  private func composeModelTurn(_ newMessage: String) -> String {
+    return "<start_of_turn>model\n\(newMessage)<end_of_turn>\n"
+  }
+
   private func compositePrompt(newMessage: String) -> String {
     return history.joined(separator: "\n") + "\n" + newMessage
   }
 
-  func sendMessage(_ text: String) async throws -> String {
-    let prompt = compositePrompt(newMessage: text)
-    let reply = try await model.generateResponse(prompt: prompt)
 
-    history.append(text)
-    history.append(reply)
+  func sendMessage(_ text: String, progress: @escaping (String) -> Void) async throws -> String {
+    let prompt = compositePrompt(newMessage: composeUserTurn(text))
+    let reply = try await model.generateResponse(prompt: prompt, progress: progress)
+
+    history = [prompt, composeModelTurn(reply)]
 
     print("Prompt: \(prompt)")
     print("Reply: \(reply)")
