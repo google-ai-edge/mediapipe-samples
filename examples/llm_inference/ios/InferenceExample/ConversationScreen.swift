@@ -114,6 +114,7 @@ struct MessageView: View {
       }
       Text(message.message)
         .padding(10)
+        .foregroundStyle(Color(red: 0.0, green: 0.0, blue: 0.0))
         .background(message.participant == .system
                     ? Color(white: 0.9231)
           : Color(red: 0.8627, green: 0.9725, blue: 0.7764))
