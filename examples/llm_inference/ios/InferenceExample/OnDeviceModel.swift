@@ -42,6 +42,7 @@ final class OnDeviceModel {
       do {
         try inference.generateResponseAsync(inputText: prompt) { partialResponse, error in
           if let error = error {
+            print("Error 1: \(error)")
             continuation.resume(throwing: error)
             return
           }
@@ -55,6 +56,7 @@ final class OnDeviceModel {
           partialResult = ""
         }
       } catch let error {
+        print("Error 2: \(error)")
         continuation.resume(throwing: error)
       }
     }
@@ -84,19 +86,19 @@ final class Chat {
     return "<start_of_turn>model\n\(newMessage)<end_of_turn>\n"
   }
 
-  private func compositePrompt(newMessage: String) -> String {
-    return history.joined(separator: "\n") + "\n" + newMessage
+  private func compositePrompt() -> String {
+      return history.suffix(2).joined(separator: "\n")
   }
 
-
   func sendMessage(_ text: String, progress: @escaping (String) -> Void) async throws -> String {
-    let prompt = compositePrompt(newMessage: composeUserTurn(text))
-    let reply = try await model.generateResponse(prompt: prompt, progress: progress)
-
-    history = [prompt, composeModelTurn(reply)]
-
+    history.append(composeUserTurn(text))
+    let prompt = compositePrompt()
     print("Prompt: \(prompt)")
+
+    let reply = try await model.generateResponse(prompt: prompt, progress: progress)
     print("Reply: \(reply)")
+    history.append(composeModelTurn(reply))
+
     return reply
   }
 
