@@ -20,8 +20,6 @@ class SegmentedImageRenderer {
 
   private var computePipelineState: MTLComputePipelineState?
 
-  var inputTexture2: MTLTexture?
-
   private var textureCache: CVMetalTextureCache!
   let context: CIContext
 
@@ -144,7 +142,6 @@ class SegmentedImageRenderer {
     let threadgroupsPerGrid = MTLSize(width: (inputTexture.width + width - 1) / width,
                                       height: (inputTexture.height + height - 1) / height,
                                       depth: 1)
-    print(threadgroupsPerGrid)
     commandEncoder.dispatchThreadgroups(threadgroupsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
 
     commandEncoder.endEncoding()
@@ -159,10 +156,10 @@ class SegmentedImageRenderer {
   /**
    This method merge frame of video with backgroud image using segment data and return an pixel buffer
    **/
-  func render(ciImage: CIImage, segmentDatas: UnsafePointer<Float32>?) -> CVPixelBuffer? {
+  func render(ciImage: CIImage, categoryMasks: UnsafePointer<UInt8>?) -> CVPixelBuffer? {
 
-    guard let segmentDatas = segmentDatas, isPrepared else {
-      print("segmentDatas not found")
+    guard let categoryMasks = categoryMasks else {
+      print("confidenceMasks not found")
       return nil
     }
 
@@ -189,8 +186,6 @@ class SegmentedImageRenderer {
     textureDescriptor.usage = .unknown
     let inputScaleTexture = metalDevice.makeTexture(descriptor: textureDescriptor)
 
-    resizeTexture(sourceTexture: inputTexture2!, desTexture: inputScaleTexture!, targetSize: MTLSize(width: inputTexture.width, height: inputTexture.height, depth: 3), resizeMode: .scaleToFill)
-
     // Set up command queue, buffer, and encoder.
     guard let commandQueue = commandQueue,
           let commandBuffer = commandQueue.makeCommandBuffer(),
@@ -203,9 +198,8 @@ class SegmentedImageRenderer {
     commandEncoder.label = "Demo Metal"
     commandEncoder.setComputePipelineState(computePipelineState!)
     commandEncoder.setTexture(inputTexture, index: 0)
-    commandEncoder.setTexture(inputScaleTexture, index: 1)
-    commandEncoder.setTexture(outputTexture, index: 2)
-    let buffer = metalDevice.makeBuffer(bytes: segmentDatas, length: inputTexture.width * inputTexture.height * MemoryLayout<Float32>.size)!
+    commandEncoder.setTexture(outputTexture, index: 1)
+    let buffer = metalDevice.makeBuffer(bytes: categoryMasks, length: inputTexture.width * inputTexture.height * MemoryLayout<UInt8>.size)!
     commandEncoder.setBuffer(buffer, offset: 0, index: 0)
     var imageWidth: Int = Int(inputTexture.width)
     commandEncoder.setBytes(&imageWidth, length: MemoryLayout<Int>.size, index: 1)

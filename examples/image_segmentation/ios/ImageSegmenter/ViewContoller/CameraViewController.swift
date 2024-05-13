@@ -228,8 +228,6 @@ extension CameraViewController: ImageSegmenterServiceLiveStreamDelegate {
     guard let imageSegmenterResult = result?.imageSegmenterResults.first as? ImageSegmenterResult,
       let confidenceMasks = imageSegmenterResult.categoryMask else { return }
     let confidenceMask = confidenceMasks.uint8Data
-//    let bytesArray = UnsafeBufferPointer(start: confidenceMask, count: confidenceMasks.width * confidenceMasks.height).map{$0}
-//    print(bytesArray[0], bytesArray[1])
 
     if !render.isPrepared {
       render.prepare(with: formatDescription, outputRetainedBufferCountHint: 3)
