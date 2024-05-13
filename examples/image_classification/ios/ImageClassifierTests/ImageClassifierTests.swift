@@ -73,7 +73,8 @@ final class ImageClassifierTests: XCTestCase {
     let imageClassifierService = ImageClassifierService.stillImageClassifierService(
       model: model,
       scoreThreshold: scoreThreshold,
-      maxResult: maxResult)
+      maxResult: maxResult,
+      delegate: .CPU)
     return imageClassifierService!
   }
 
