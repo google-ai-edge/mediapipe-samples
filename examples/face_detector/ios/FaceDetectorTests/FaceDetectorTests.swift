@@ -33,8 +33,8 @@ final class FaceDetectorTests: XCTestCase {
       boundingBox: CGRect(x: 126.0, y: 100.0, width: 464.0, height: 464.0),
       keypoints: nil),
     Detection(
-      categories: [ResultCategory(index: 0, score: 0.9263101, categoryName: nil, displayName: nil)],
-      boundingBox: CGRect(x: 616.0, y: 193, width: 430.0, height: 430.0),
+      categories: [ResultCategory(index: 0, score: 0.92513907, categoryName: nil, displayName: nil)],
+      boundingBox: CGRect(x: 616.0, y: 192, width: 430.0, height: 430.0),
       keypoints: nil)
   ]
 
@@ -45,7 +45,8 @@ final class FaceDetectorTests: XCTestCase {
       let FaceDetectorService = FaceDetectorService.stillImageDetectorService(
         modelPath: modelPath,
         minDetectionConfidence: minDetectionConfidence,
-      minSuppressionThreshold: minSuppressionThreshold)
+      minSuppressionThreshold: minSuppressionThreshold,
+        delegate: .CPU)
     return FaceDetectorService!
   }
 
