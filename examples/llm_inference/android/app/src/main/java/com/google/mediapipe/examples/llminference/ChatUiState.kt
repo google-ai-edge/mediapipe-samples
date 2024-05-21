@@ -46,7 +46,11 @@ class ChatUiState(
         _messages.add(chatMessage)
         return chatMessage.id
     }
-
+    
+    fun appendFirstMessage(id: String, text: String) {
+        appendMessage(id, text, false) 
+    }
+    
     override fun appendMessage(id: String, text: String, done: Boolean) {
         val index = _messages.indexOfFirst { it.id == id }
         if (index != -1) {
