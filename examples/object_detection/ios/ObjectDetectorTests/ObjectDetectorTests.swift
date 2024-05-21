@@ -26,31 +26,31 @@ final class ObjectDetectorTests: XCTestCase {
 
   static let efficientnetLite0Results: [Detection] = [
     Detection(
-      categories: [ResultCategory(index: -1, score: 0.9396609, categoryName: "person", displayName: nil)],
-      boundingBox: CGRect(x: 214.0, y: 11.0, width: 120.0, height: 262.0),
+      categories: [ResultCategory(index: -1, score: 0.941339, categoryName: "person", displayName: nil)],
+      boundingBox: CGRect(x: 213.0, y: 11.0, width: 120.0, height: 261.0),
       keypoints: nil),
     Detection(
-      categories: [ResultCategory(index: -1, score: 0.77432173, categoryName: "dog", displayName: nil)],
-      boundingBox: CGRect(x: 66.0, y: 254.0, width: 57.0, height: 77.0),
+      categories: [ResultCategory(index: -1, score: 0.77810854, categoryName: "dog", displayName: nil)],
+      boundingBox: CGRect(x: 67.0, y: 254.0, width: 56.0, height: 76.0),
       keypoints: nil),
     Detection(
-      categories: [ResultCategory(index: -1, score: 0.6645179, categoryName: "person", displayName: nil)],
-      boundingBox: CGRect(x: 144.0, y: 18.0, width: 82.0, height: 243.0),
+      categories: [ResultCategory(index: -1, score: 0.6601211, categoryName: "person", displayName: nil)],
+      boundingBox: CGRect(x: 144.0, y: 18.0, width: 82.0, height: 242.0),
       keypoints: nil)
   ]
 
   static let efficientnetLite2Results: [Detection] = [
     Detection(
-      categories: [ResultCategory(index: -1, score: 0.917458951, categoryName: "dog", displayName: nil)],
-      boundingBox: CGRect(x: 71.0, y: 254.0, width: 53.0, height: 74.0),
+      categories: [ResultCategory(index: -1, score: 0.92731416, categoryName: "dog", displayName: nil)],
+      boundingBox: CGRect(x: 71.0, y: 254.0, width: 52.0, height: 74.0),
       keypoints: nil),
     Detection(
-      categories: [ResultCategory(index: -1, score: 0.90494984, categoryName: "person", displayName: nil)],
-      boundingBox: CGRect(x: 207.0, y: 8.0, width: 126.0, height: 263.0),
+      categories: [ResultCategory(index: -1, score: 0.9009373, categoryName: "person", displayName: nil)],
+      boundingBox: CGRect(x: 207.0, y: 7.0, width: 126.0, height: 264.0),
       keypoints: nil),
     Detection(
-      categories: [ResultCategory(index: -1, score: 0.810646474, categoryName: "person", displayName: nil)],
-      boundingBox: CGRect(x: 147.0, y: 13.0, width: 81.0, height: 254.0),
+      categories: [ResultCategory(index: -1, score: 0.8202129, categoryName: "person", displayName: nil)],
+      boundingBox: CGRect(x: 147.0, y: 13.0, width: 81.0, height: 255.0),
       keypoints: nil)
   ]
 
@@ -60,7 +60,8 @@ final class ObjectDetectorTests: XCTestCase {
     let objectDetectorHelper = ObjectDetectorService.stillImageDetectorService(
       model: model,
       maxResults: 3,
-      scoreThreshold: 0
+      scoreThreshold: 0,
+      delegate: .CPU
     )
     return try XCTUnwrap(objectDetectorHelper)
   }

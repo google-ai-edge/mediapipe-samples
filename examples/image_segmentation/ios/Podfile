@@ -5,16 +5,6 @@ target 'ImageSegmenter' do
   # Comment the next line if you don't want to use dynamic frameworks
   use_frameworks!
 
-  pod 'MediaPipeTasksVision'
+  pod 'MediaPipeTasksVision', '0.10.14'
 
-  target 'ImageSegmenterTests' do
-    inherit! :search_paths
-    # Pods for testing
-  end
 end
-
-target 'ImageSegmenterUITests' do
-  inherit! :search_paths
-  # Pods for testing
-end
-

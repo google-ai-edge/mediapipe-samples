@@ -205,7 +205,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     addPlayerViewControllerAsChild()
     guard let player = playerViewController?.player, let playerItem = player.currentItem else { return }
     let timeRange = CMTimeRange(start: .zero, duration: asset.duration)
-    var datas: [UnsafePointer<Float32>] = []
+//    var datas: [UnsafePointer<Float32>] = []
     let videoComposition = AVMutableVideoComposition(asset: asset) { [weak self] request in
       guard let self = self else { return }
       backgroundQueue.async {
@@ -221,11 +221,9 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
         }
         self.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
         guard let result = resultBundle.imageSegmenterResults.first, let result = result else { return }
-        let marks = result.confidenceMasks
-        let _mark = marks![0]
-        let float32Data = _mark.float32Data
-        datas.append(float32Data)
-        guard let outputPixelBuffer = self.render.render(ciImage: sourceImage, segmentDatas: datas.removeFirst()) else {
+        let mark = result.categoryMask
+        let uint8Data = mark?.uint8Data
+        guard let outputPixelBuffer = self.render.render(ciImage: sourceImage, categoryMasks: uint8Data) else {
           request.finish(with: sourceImage, context: nil)
           return
         }

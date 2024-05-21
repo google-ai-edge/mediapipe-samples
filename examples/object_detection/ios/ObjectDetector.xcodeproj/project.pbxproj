@@ -59,8 +59,6 @@
 		BF2B2D3C2A3C09E300589A11 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BF2B2D412A3C09E300589A11 /* ObjectDetectorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ObjectDetectorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF2B2D452A3C09E300589A11 /* ObjectDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectDetectorTests.swift; sourceTree = "<group>"; };
-		BF2B2D4F2A3C09E300589A11 /* ObjectDetectorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectDetectorUITests.swift; sourceTree = "<group>"; };
-		BF2B2D512A3C09E300589A11 /* ObjectDetectorUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectDetectorUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		BF2B2D602A3C0C2900589A11 /* CameraFeedService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedService.swift; sourceTree = "<group>"; };
 		BF2B2D692A3C0C3F00589A11 /* BottomSheetViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BottomSheetViewController.swift; sourceTree = "<group>"; };
 		BF2B2D6C2A3C0EF900589A11 /* ObjectDetectorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectDetectorService.swift; sourceTree = "<group>"; };
@@ -156,7 +154,6 @@
 			children = (
 				BF2B2D2D2A3C09E200589A11 /* ObjectDetector */,
 				BF2B2D442A3C09E300589A11 /* ObjectDetectorTests */,
-				BF2B2D4E2A3C09E300589A11 /* ObjectDetectorUITests */,
 				BF2B2D2C2A3C09E200589A11 /* Products */,
 				A5DDC8DF7C2365A6B2C04BE4 /* Pods */,
 				56B60B47FC83404E96CF4A2B /* Frameworks */,
@@ -199,15 +196,6 @@
 				BF2B2D452A3C09E300589A11 /* ObjectDetectorTests.swift */,
 			);
 			path = ObjectDetectorTests;
-			sourceTree = "<group>";
-		};
-		BF2B2D4E2A3C09E300589A11 /* ObjectDetectorUITests */ = {
-			isa = PBXGroup;
-			children = (
-				BF2B2D4F2A3C09E300589A11 /* ObjectDetectorUITests.swift */,
-				BF2B2D512A3C09E300589A11 /* ObjectDetectorUITestsLaunchTests.swift */,
-			);
-			path = ObjectDetectorUITests;
 			sourceTree = "<group>";
 		};
 		BF2B2D672A3C0C3F00589A11 /* ViewControllers */ = {
@@ -570,7 +558,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = H83UK2M7VU;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ObjectDetector/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to detection the objects that appear in the camera feed.";
@@ -603,7 +591,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = H83UK2M7VU;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ObjectDetector/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to detection the objects that appear in the camera feed.";

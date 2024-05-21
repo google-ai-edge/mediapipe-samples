@@ -30,27 +30,27 @@ final class HandLandmarkerTests: XCTestCase {
     compatibleWith: nil)!
 
   static let results: [[NormalizedLandmark]] = [[
-    NormalizedLandmark(x: 0.6146113, y: 0.71075666, z: -4.1557226e-07, visibility: nil, presence: nil),
-    NormalizedLandmark(x: 0.6142792, y: 0.57649153, z: -0.040831544, visibility: nil, presence: nil),
-    NormalizedLandmark(x: 0.5836266, y: 0.4429407, z: -0.059525516, visibility: nil, presence: nil),
-    NormalizedLandmark(x: 0.5389037, y: 0.33637148, z: -0.07342299, visibility: nil, presence: nil),
-    NormalizedLandmark(x: 0.536148, y: 0.25158498, z: -0.07771388, visibility: nil, presence: nil),
-    NormalizedLandmark(x: 0.4898765, y: 0.4913109, z: -0.030454714, visibility: nil, presence: nil),
-    NormalizedLandmark(x: 0.4276508, y: 0.50301707, z: -0.06859867, visibility: nil, presence: nil),
-    NormalizedLandmark(x: 0.49330515, y: 0.52595127, z: -0.0773961, visibility: nil, presence: nil),
-    NormalizedLandmark(x: 0.52693504, y: 0.5121813, z: -0.07744958, visibility: nil, presence: nil),
-    NormalizedLandmark(x: 0.4763346, y: 0.5743718, z: -0.023844246, visibility: nil, presence: nil),
-    NormalizedLandmark(x: 0.42159313, y: 0.58094376, z: -0.06347593, visibility: nil, presence: nil),
-    NormalizedLandmark(x: 0.50296295, y: 0.60153985, z: -0.057907313, visibility: nil, presence: nil),
-    NormalizedLandmark(x: 0.52059495, y: 0.57536906, z: -0.046426427, visibility: nil, presence: nil),
-    NormalizedLandmark(x: 0.47042432, y: 0.6498483, z: -0.025004275, visibility: nil, presence: nil),
-    NormalizedLandmark(x: 0.42147171, y: 0.65280235, z: -0.069050804, visibility: nil, presence: nil),
-    NormalizedLandmark(x: 0.49437872, y: 0.66357565, z: -0.046906527, visibility: nil, presence: nil),
-    NormalizedLandmark(x: 0.5176527, y: 0.6408466, z: -0.022207312, visibility: nil, presence: nil),
-    NormalizedLandmark(x: 0.4691668, y: 0.7234682, z: -0.029635455, visibility: nil, presence: nil),
-    NormalizedLandmark(x: 0.43116334, y: 0.7330426, z: -0.056126874, visibility: nil, presence: nil),
-    NormalizedLandmark(x: 0.48526073, y: 0.7278307, z: -0.041881826, visibility: nil, presence: nil),
-    NormalizedLandmark(x: 0.5117951, y: 0.70887417, z: -0.024859443, visibility: nil, presence: nil)
+    NormalizedLandmark(x: 0.6129676, y: 0.70157504, z: -4.5833377e-07, visibility: nil, presence: nil),
+    NormalizedLandmark(x: 0.6159242, y: 0.5730554, z: -0.04404007, visibility: nil, presence: nil),
+    NormalizedLandmark(x: 0.58462656, y: 0.45141116, z: -0.066422015, visibility: nil, presence: nil),
+    NormalizedLandmark(x: 0.54258853, y: 0.3550938, z: -0.08355088, visibility: nil, presence: nil),
+    NormalizedLandmark(x: 0.5299578, y: 0.27741316, z: -0.09152996, visibility: nil, presence: nil),
+    NormalizedLandmark(x: 0.4884828, y: 0.48931584, z: -0.03891499, visibility: nil, presence: nil),
+    NormalizedLandmark(x: 0.42707062, y: 0.5070781, z: -0.082204446, visibility: nil, presence: nil),
+    NormalizedLandmark(x: 0.48659548, y: 0.52944756, z: -0.09566363, visibility: nil, presence: nil),
+    NormalizedLandmark(x: 0.5170652, y: 0.5180234, z: -0.097826585, visibility: nil, presence: nil),
+    NormalizedLandmark(x: 0.47752064, y: 0.5746913, z: -0.030233975, visibility: nil, presence: nil),
+    NormalizedLandmark(x: 0.42322388, y: 0.58384126, z: -0.06978146, visibility: nil, presence: nil),
+    NormalizedLandmark(x: 0.5008309, y: 0.6011655, z: -0.062682286, visibility: nil, presence: nil),
+    NormalizedLandmark(x: 0.5144273, y: 0.57651, z: -0.048970204, visibility: nil, presence: nil),
+    NormalizedLandmark(x: 0.47189528, y: 0.65008116, z: -0.029931678, visibility: nil, presence: nil),
+    NormalizedLandmark(x: 0.4212282, y: 0.6498341, z: -0.071003094, visibility: nil, presence: nil),
+    NormalizedLandmark(x: 0.49262476, y: 0.65974927, z: -0.04700193, visibility: nil, presence: nil),
+    NormalizedLandmark(x: 0.5128528, y: 0.63937056, z: -0.020825379, visibility: nil, presence: nil),
+    NormalizedLandmark(x: 0.47315174, y: 0.721069, z: -0.033766963, visibility: nil, presence: nil),
+    NormalizedLandmark(x: 0.4348337, y: 0.7294104, z: -0.058631197, visibility: nil, presence: nil),
+    NormalizedLandmark(x: 0.48701334, y: 0.7236482, z: -0.04348786, visibility: nil, presence: nil),
+    NormalizedLandmark(x: 0.5102773, y: 0.7046261, z: -0.02522209, visibility: nil, presence: nil)
   ]]
 
   func handLandmarkerWithModelPath(
@@ -63,7 +63,8 @@ final class HandLandmarkerTests: XCTestCase {
         numHands: 1,
         minHandDetectionConfidence: HandLandmarkerTests.minHandDetectionConfidence,
         minHandPresenceConfidence: HandLandmarkerTests.minHandPresenceConfidence,
-        minTrackingConfidence: HandLandmarkerTests.minTrackingConfidence)!
+        minTrackingConfidence: HandLandmarkerTests.minTrackingConfidence,
+        delegate: .CPU)!
     return handLandmarkerService
   }
 
