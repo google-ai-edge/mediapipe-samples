@@ -29,6 +29,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.google.mediapipe.examples.facestylizer.databinding.ActivityMainBinding
 import com.google.mediapipe.framework.image.ByteBufferExtractor
+import kotlin.jvm.optionals.getOrNull
 
 
 class MainActivity : AppCompatActivity(),
@@ -112,8 +113,9 @@ class MainActivity : AppCompatActivity(),
         Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     private fun onResult(result: FaceStylizationHelper.ResultBundle) {
-        if (result.stylizedFace == null) {
+        if (result.stylizedFace == null || result.stylizedFace.stylizedImage().getOrNull() == null) {
             onError("Failed to stylize image")
             return
         }
