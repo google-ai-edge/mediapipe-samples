@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
 
 class MainViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(UiState())
@@ -59,10 +60,18 @@ class MainViewModel : ViewModel() {
                 return
             }
 
-            _uiState.update { it.copy(isInitializing = true) }
             val mainLooper = Looper.getMainLooper()
             GlobalScope.launch {
+                if (!File(MODEL_PATH).exists()) {
+                    _uiState.update {
+                        it.copy(
+                            error = "Can't find ML model",
+                        )
+                    }
+                    return@launch
+                }
                 val startTime = System.currentTimeMillis()
+                _uiState.update { it.copy(isInitializing = true) }
                 helper?.initializeImageGenerator(MODEL_PATH)
                 Handler(mainLooper).post {
                     _uiState.update {
@@ -74,7 +83,6 @@ class MainViewModel : ViewModel() {
                     }
                 }
             }
-
         } catch (e: Exception) {
             _uiState.update {
                 it.copy(
