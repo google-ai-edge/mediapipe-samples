@@ -232,7 +232,7 @@ class CameraFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
                     p3: Long
                 ) {
                     try {
-                        objectDetectorHelper.currentDelegate = p2
+                        objectDetectorHelper.currentModel = p2
                         updateControlsUi()
                     } catch(e: UninitializedPropertyAccessException) {
                         Log.e(TAG, "ObjectDetectorHelper has not been initialized yet.")
