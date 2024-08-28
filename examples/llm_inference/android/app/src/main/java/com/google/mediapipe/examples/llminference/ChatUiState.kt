@@ -77,17 +77,21 @@ class GemmaUiState(
 ) : UiState {
     private val START_TURN = "<start_of_turn>"
     private val END_TURN = "<end_of_turn>"
+    private val lock = Any()
 
     private val _messages: MutableList<ChatMessage> = messages.toMutableStateList()
     override val messages: List<ChatMessage>
-        get() = _messages
-            .map {
-                // Remove the prefix and suffix before showing a message in the UI
-                it.copy(
-                    message = it.message.replace(START_TURN + it.author + "\n", "")
-                        .replace(END_TURN, "")
-                )
-            }.reversed()
+        get() = synchronized(lock) {
+            _messages. apply{
+                for (i in indices) {
+                    this[i] = this[i].copy(
+                            message = this[i].message.replace(START_TURN + this[i].author + "\n", "")
+                                    .replace(END_TURN, "")
+                    )
+                }
+           }.asReversed()
+
+        }
 
     // Only using the last 4 messages to keep input + output short
     override val fullPrompt: String
