@@ -41,6 +41,8 @@ class InferenceModel private constructor(context: Context) {
     }
 
     companion object {
+        // NB: Make sure the filename is *unique* per model you use!
+        // Weight caching is currently based on filename alone.
         private const val MODEL_PATH = "/data/local/tmp/llm/model.bin"
         private var instance: InferenceModel? = null
 
