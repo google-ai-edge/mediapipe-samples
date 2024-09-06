@@ -15,46 +15,40 @@
 import SwiftUI
 
 struct ConversationScreen: View {
+  private struct Constants {
+    static let scrollDelayInSeconds = 0.05
+    static let messageFieldPlaceHolder = "Message..."
+    static let newChatSystemSymbolName = "square.and.pencil"
+    static let navigationTitle = "Chat with your LLM here"
+  }
+  
   @EnvironmentObject
   var viewModel: ConversationViewModel
 
   @State
-  private var userPrompt = ""
+  private var currentUserPrompt = ""
 
-  enum FocusedField: Hashable {
+  private enum FocusedField: Hashable {
     case message
   }
 
   @FocusState
-  var focusedField: FocusedField?
+  private var focusedField: FocusedField?
 
   var body: some View {
-    VStack {
-      ScrollViewReader { scrollViewProxy in
-        List {
-          ForEach(viewModel.messages) { message in
-            MessageView(message: message)
-          }
-          if let error = viewModel.error {
-            ErrorView(error: error)
-              .tag("errorView")
-          }
-        }
-        .listStyle(.plain)
-        .onChange(of: viewModel.messages) { _, newValue in
-          if viewModel.hasError {
-            // wait for a short moment to make sure we can actually scroll to the bottom
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-              withAnimation {
-                scrollViewProxy.scrollTo("errorView", anchor: .bottom)
-              }
-              focusedField = .message
+    NavigationView {
+      VStack {
+        ScrollViewReader { scrollViewProxy in
+          List {
+            ForEach(viewModel.messages) { message in
+              MessageView(message: message)
             }
-          } else {
-            guard let lastMessage = viewModel.messages.last else { return }
-
-            // wait for a short moment to make sure we can actually scroll to the bottom
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+          }
+          .listStyle(.plain)
+          .onChange(of: viewModel.messages) { _, newValue in
+            Task { @MainActor in
+              guard let lastMessage = viewModel.messages.last else { return }
+              try await Task.sleep(for: .seconds(Constants.scrollDelayInSeconds))
               withAnimation {
                 scrollViewProxy.scrollTo(lastMessage.id, anchor: .bottom)
               }
@@ -62,49 +56,48 @@ struct ConversationScreen: View {
             }
           }
         }
-      }
-      TextField("Message...", text: $userPrompt)
-        .focused($focusedField, equals: .message)
-        .onSubmit { sendOrStop() }
-        .submitLabel(.send)
-        .disabled(viewModel.busy)
-        .padding()
-    }
-    .toolbar {
-      ToolbarItem(placement: .primaryAction) {
-        Button(action: newChat) {
-          Image(systemName: "square.and.pencil")
+        TextField(Constants.messageFieldPlaceHolder, text: $currentUserPrompt)
+          .focused($focusedField, equals: .message)
+          .onSubmit {
+            sendMessage()
+          }
+          .submitLabel(.send)
+          .disabled(viewModel.busy)
+          .padding()
+      }.toolbar {
+        ToolbarItem(placement: .primaryAction) {
+          Button(action: viewModel.startNewChat) {
+            Image(systemName: Constants.newChatSystemSymbolName)
+          }.disabled(viewModel.busy)
         }
-      }
-    }
-    .navigationTitle("Chat sample")
-    .onAppear {
-      focusedField = .message
+      }.alert(error: $viewModel.error)
+        .navigationTitle(Constants.navigationTitle)
+        .onAppear {
+          focusedField = .message
+        }
     }
   }
 
   private func sendMessage() {
-    Task {
-      let prompt = userPrompt
-      userPrompt = ""
-      await viewModel.sendMessage(prompt)
+    guard !currentUserPrompt.isEmpty else {
+      return
     }
-  }
-
-  private func sendOrStop() {
-    if viewModel.busy {
-      viewModel.stop()
-    } else {
-      sendMessage()
-    }
-  }
-
-  private func newChat() {
-    viewModel.startNewChat()
+    let prompt = currentUserPrompt
+    currentUserPrompt = ""
+    viewModel.sendMessage(prompt)
   }
 }
 
+/// View that displays a message.
 struct MessageView: View {
+  private struct Constants {
+    static let textMessagePadding: CGFloat = 10.0
+    static let foregroundColor = Color(red: 0.0, green: 0.0, blue: 0.0)
+    static let systemMessageBackgroundColor = Color(white: 0.9231)
+    static let userMessageBackgroundColor = Color(red: 0.8627, green: 0.9725, blue: 0.7764)
+    static let messageBackgroundCornerRadius: CGFloat = 16.0
+  }
+  /// Message to be displayed.
   var message: ChatMessage
 
   var body: some View {
@@ -112,13 +105,15 @@ struct MessageView: View {
       if message.participant == .user {
         Spacer()
       }
-      Text(message.message)
-        .padding(10)
-        .foregroundStyle(Color(red: 0.0, green: 0.0, blue: 0.0))
-        .background(message.participant == .system
-                    ? Color(white: 0.9231)
-          : Color(red: 0.8627, green: 0.9725, blue: 0.7764))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+      Text(message.text)
+        .padding(Constants.textMessagePadding)
+        .foregroundStyle(Constants.foregroundColor)
+        .background(
+          message.participant == .system
+          ? Constants.systemMessageBackgroundColor
+          : Constants.userMessageBackgroundColor
+        )
+        .clipShape(RoundedRectangle(cornerRadius: Constants.messageBackgroundCornerRadius))
       if message.participant == .system {
         Spacer()
       }
@@ -127,14 +122,19 @@ struct MessageView: View {
   }
 }
 
-struct ErrorView: View {
-  var error: Error
-
-  var body: some View {
-    HStack {
-      Text("An error occurred: \(error.localizedDescription)")
+extension View {
+  /// Displays error alert based on the value of the binding error. This function is invoked when the value of the binding error changes.
+  /// - Parameters:
+  ///   - error: Binding error based on which the alert is displayed.
+  /// - Returns: The error alert.
+  func alert(error: Binding<InferenceError?>, buttonTitle: String = "OK") -> some View {
+    let inferenceError = error.wrappedValue
+    return alert(isPresented: .constant(inferenceError != nil), error: inferenceError) { _ in
+      Button(buttonTitle) {
+        error.wrappedValue = nil
+      }
+    } message: { error in
+      Text(error.failureReason)
     }
-    .frame(maxWidth: .infinity, alignment: .center)
-    .listRowSeparator(.hidden)
   }
 }

@@ -14,92 +14,42 @@
 
 import Foundation
 import MediaPipeTasksGenAI
+import MediaPipeTasksGenAIC
 
-final class OnDeviceModel {
+/// Represents the LLM that will be used for inference.  It manages a MediaPipe `LlmInference` under the hood.
+struct OnDeviceModel {
+  /// MediaPipe LlmInference.
+  private (set) var inference: LlmInference
 
-
-  private var cachedInference: LlmInference?
-
-  private var inference: LlmInference
-  {
-    get throws {
-      if let cached = cachedInference {
-         return cached
-      } else {
-        let path = Bundle.main.path(forResource: "gemma-1.1-2b-it-gpu-int4", ofType: "bin")!
-        let llmOptions = LlmInference.Options(modelPath: path)
-        cachedInference = try LlmInference(options: llmOptions)
-        return cachedInference!
-      }
-    }
+  init(model: Model) throws {
+    inference = try LlmInference(modelPath: try model.modelPath)
   }
-
-  func generateResponse(prompt: String, progress: @escaping (String) -> Void) async throws -> String {
-    var partialResult = ""
-
-    let inference = try inference
-    return try await withCheckedThrowingContinuation { continuation in
-      do {
-        try inference.generateResponseAsync(inputText: prompt) { partialResponse, error in
-          if let error = error {
-            print("Error 1: \(error)")
-            continuation.resume(throwing: error)
-            return
-          }
-          if let partial = partialResponse {
-            partialResult += partial
-            progress(partialResult.trimmingCharacters(in: .whitespacesAndNewlines))
-          }
-        } completion: {
-          let aggregate = partialResult.trimmingCharacters(in: .whitespacesAndNewlines)
-          continuation.resume(returning: aggregate)
-          partialResult = ""
-        }
-      } catch let error {
-        print("Error 2: \(error)")
-        continuation.resume(throwing: error)
-      }
-    }
-  }
-
-  func startChat() -> Chat {
-    return Chat(model: self)
-  }
-
 }
 
+/// Represents a chat session using an instance of `OnDeviceModel`.  It manages a MediaPipe 
+/// `LlmInference.Session` under the hood and passes all response generation queries to the session.
 final class Chat {
-
+  /// The on device model using which this chat session was created.
   private let model: OnDeviceModel
-
-  private var history = [String]()
-
-  init(model: OnDeviceModel) {
+    
+  /// MediaPipe session managed by the current instance.
+  private var session: LlmInference.Session
+  
+  init(model: OnDeviceModel) throws {
     self.model = model
+    session = try LlmInference.Session(llmInference: model.inference)
   }
-
-  private func composeUserTurn(_ newMessage: String) -> String {
-    return "<start_of_turn>user\n\(newMessage)<end_of_turn>\n"
+  
+  /// Sends a streaming response generation query to the underlying MediaPipe 
+  /// `LlmInference.Session`.
+  /// - Parameters:
+  ///   - text: Query to the underlying LLM.
+  /// - Returns: An async throwing stream that contains the partial responses from the LLM.
+  /// - Throws: A MediaPipe `GenAiInferenceError` if the query cannot be added to the current 
+  /// session.
+  func sendMessage(_ text: String) async throws -> AsyncThrowingStream<String, any Error> {
+    try session.addQueryChunk(inputText: text)
+    let resultStream = session.generateResponseAsync()
+    return resultStream
   }
-
-  private func composeModelTurn(_ newMessage: String) -> String {
-    return "<start_of_turn>model\n\(newMessage)<end_of_turn>\n"
-  }
-
-  private func compositePrompt() -> String {
-      return history.suffix(2).joined(separator: "\n")
-  }
-
-  func sendMessage(_ text: String, progress: @escaping (String) -> Void) async throws -> String {
-    history.append(composeUserTurn(text))
-    let prompt = compositePrompt()
-    print("Prompt: \(prompt)")
-
-    let reply = try await model.generateResponse(prompt: prompt, progress: progress)
-    print("Reply: \(reply)")
-    history.append(composeModelTurn(reply))
-
-    return reply
-  }
-
 }
