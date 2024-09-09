@@ -173,51 +173,62 @@ def main():
         '--model',
         help='Name of the hand landmarker model bundle.',
         required=False,
+        type=str,
         default='hand_landmarker.task')
     parser.add_argument(
         '--numHands',
         help='Max number of hands that can be detected by the landmarker.',
         required=False,
+        type=int,
         default=1)
     parser.add_argument(
         '--minHandDetectionConfidence',
         help='The minimum confidence score for hand detection to be considered '
              'successful.',
         required=False,
+        type=float,
         default=0.5)
     parser.add_argument(
         '--minHandPresenceConfidence',
         help='The minimum confidence score of hand presence score in the hand '
              'landmark detection.',
         required=False,
+        type=float,
         default=0.5)
     parser.add_argument(
         '--minTrackingConfidence',
         help='The minimum confidence score for the hand tracking to be '
              'considered successful.',
         required=False,
+        type=float,
         default=0.5)
     # Finding the camera ID can be very reliant on platform-dependent methods.
     # One common approach is to use the fact that camera IDs are usually indexed sequentially by the OS, starting from 0.
     # Here, we use OpenCV and create a VideoCapture object for each potential ID with 'cap = cv2.VideoCapture(i)'.
     # If 'cap' is None or not 'cap.isOpened()', it indicates the camera ID is not available.
     parser.add_argument(
-        '--cameraId', help='Id of camera.', required=False, default=0)
+        '--cameraId',
+        help='Id of camera.',
+        required=False,
+        type=int,
+        default=0)
     parser.add_argument(
         '--frameWidth',
         help='Width of frame to capture from camera.',
         required=False,
+        type=int,
         default=1280)
     parser.add_argument(
         '--frameHeight',
         help='Height of frame to capture from camera.',
         required=False,
+        type=int,
         default=960)
     args = parser.parse_args()
 
-    run(args.model, int(args.numHands), args.minHandDetectionConfidence,
+    run(args.model, args.numHands, args.minHandDetectionConfidence,
         args.minHandPresenceConfidence, args.minTrackingConfidence,
-        int(args.cameraId), args.frameWidth, args.frameHeight)
+        args.cameraId, args.frameWidth, args.frameHeight)
 
 
 if __name__ == '__main__':
