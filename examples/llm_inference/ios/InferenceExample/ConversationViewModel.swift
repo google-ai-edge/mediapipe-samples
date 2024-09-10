@@ -14,199 +14,96 @@
 
 import Foundation
 
-/// Represents a single message in the chat.
+enum Participant {
+  case system
+  case user
+}
+
 struct ChatMessage: Identifiable, Equatable {
-
-  /// Represents the type of message.
-  enum Participant {
-    case system
-    case user
-  }
-
-  /// Unique identifier for the message.
   let id = UUID().uuidString
-  /// Text contained in the message.
-  var text: String
-  /// Indicates if user or system (LLM) has sent the message.
+  var message: String
   let participant: Participant
+  var pending = false
 
-  init(text: String = "", participant: Participant) {
-    self.text = text
-    self.participant = participant
-  }
-
-}
-
-/// Represents any error thrown by this application.
-enum InferenceError: LocalizedError {
-  /// Wraps an error thrown by MediaPipe.
-  case mediaPipeTasksError(error: Error)
-  case modelFileNotFound(modelName: String)
-  case onDeviceModelNotInitialized
-
-  public var errorDescription: String? {
-    switch self {
-    case .mediaPipeTasksError:
-      return "Internal error"
-    case .modelFileNotFound:
-      return "Model not found"
-    case .onDeviceModelNotInitialized:
-      return "Model Unitialized"
-    }
-  }
-
-  public var failureReason: String {
-    switch self {
-    case .mediaPipeTasksError(let error):
-      return error.localizedDescription
-    case .modelFileNotFound(let modelName):
-      return "Model with name \(modelName) not found in your app."
-    case .onDeviceModelNotInitialized:
-      return "A valid on device model has not been initalized."
-    }
-  }
-
-}
-
-/// Holds the names of the models names that can be  used.
-enum Model: CaseIterable {
-  case gemma
-
-  private var path: (name: String, extension: String) {
-    switch self {
-    case .gemma:
-      return ("gemma-2b-it-cpu-int4", "bin")
-    }
-  }
-
-  var modelPath: String {
-    get throws {
-      guard
-        let path = Bundle.main.path(
-          forResource: path.name, ofType: path.extension)
-      else {
-        throw InferenceError.modelFileNotFound(modelName: "\(path.name).\(path.extension)")
-      }
-      return path
-    }
+  static func pending(participant: Participant) -> ChatMessage {
+    self.init(message: "", participant: participant, pending: true)
   }
 }
 
 @MainActor
 class ConversationViewModel: ObservableObject {
-  /// This array holds both the user's and the system's chat messages.
+  /// This array holds both the user's and the system's chat messages
   @Published var messages = [ChatMessage]()
 
-  /// Indicates if we're waiting for the model to be initialized or finish generating a response.  
-  /// Based on this value `ConversationScreen` disables or enables messaging.
-  @Published var busy = true
+  /// Indicates we're waiting for the model to finish
+  @Published var busy = false
 
-  /// Indicates if we're waiting for the model to be initialized or finish generating a response.  
-  /// Based on this value `ConversationScreen` disables or enables messaging.
-  @Published var error: InferenceError?
+  @Published var error: Error?
+  var hasError: Bool {
+    return error != nil
+  }
 
-  /// Model used for inference. Wraps around a MediaPipe `LlmInference`.
-  private var model: OnDeviceModel?
+  private var model: OnDeviceModel
+  private var chat: Chat
+  private var stopGenerating = false
 
-  /// Current conversation with the LLM that preserves history. Wraps around a MediaPipe 
-  /// `LlmInference.Session`. 
-  private var chat: Chat?
+  private var chatTask: Task<Void, Never>?
 
   init() {
-    defer {
-      busy = false
-    }
-    do {
-      let model = try OnDeviceModel(model: Model.gemma)
-      self.model = model
-      chat = try Chat(model: model)
-    } catch let error as InferenceError {
-      self.error = error
-    } catch {
-      self.error = InferenceError.mediaPipeTasksError(error: error)
-    }
+    model = OnDeviceModel()
+    chat = model.startChat()
   }
 
-  /// Queries the LLM session with the given text prompt asynchronously. If the prompt completes 
-  /// successfully, it updates the published `messages` with the new partial response 
-  /// continuously until the response generation completes. In case of an error, sets the 
-  /// published `error.
-  /// - Parameters:
-  ///   - text: Prompt to be sent to the model.
-  func sendMessage(_ text: String) {
-    busy = true
-    Task {
-      await internalSendMessage(text)
-      busy = false
-    }
+  func sendMessage(_ text: String) async {
+    error = nil
+    await internalSendMessage(text)
   }
 
-  /// Clears the current conversation and stats a new chat.
   func startNewChat() {
-    /// Setting busy to `true` to indicate no UI updates must be made until this method returns.
-    busy = true
-    defer {
-      busy = false
-    }
-
-    guard let model else {
-      error = InferenceError.onDeviceModelNotInitialized
-      return
-    }
-    do {
-      chat = try Chat(model: model)
-      messages.removeAll()
-    } catch {
-      self.error = InferenceError.mediaPipeTasksError(error: error)
-    }
+    stop()
+    error = nil
+    chat = model.startChat()
+    messages.removeAll()
   }
 
-   /// Sends the message to the currently active instance of `Chat` which in turn queries the
-   /// underlying MediaPipe LlmInference.Session to asynchronously stream the response to the 
-   /// prompt. The method adds the new message from  the user to the published `messages` and 
-   /// ontinuously updates the streamed response. In case of an error the published `error` is set.
-   /// - Parameters: 
-   ///   - text: Prompt to be sent to the underlying MediaPipe session.
+  func stop() {
+    chatTask?.cancel()
+    error = nil
+  }
+
   private func internalSendMessage(_ text: String) async {
-    guard let chat else {
-      error = InferenceError.onDeviceModelNotInitialized
-      return
-    }
-    ///Add the user's message to the chat .
-    let userMessage = ChatMessage(text: text, participant: .user)
-    messages.append(userMessage)
+    chatTask?.cancel()
 
-    do {
-      /// Send the message to the chat session to query the model.
-      let responseStream = try await chat.sendMessage(text)
-
-      /// Await for the partial responses from the model. */
-      for try await partialResult in responseStream {
-        /// For the sake of optional unwrapping. Will never happen. An error need not be thrown.
-        guard let lastMessage = self.messages.last else {
-          break
-        }
-
-        /// If this is the first partial response, add a new LLM message to the chat, otherwise 
-        /// append to the existing last message. Currently messaging is blocked while a response 
-        /// is being generated, so if this is not the first partial response, the last message is 
-        /// guarenteed to be the current message being generated by the LLM.
-        if lastMessage.participant == .user {
-          messages.append(ChatMessage(participant: .system))
-        }
-        let systemMessageText = messages[messages.count - 1].text
-
-        /// Trim any leading characters in whole message. Note: can safely access the index 
-        /// `messages.count - 1` since the presence of a last message has already been guaranteed 
-        /// by the previous code snippet.
-        messages[messages.count - 1].text = String(
-          (systemMessageText + partialResult).drop(while: { $0.isWhitespace || $0.isNewline }))
+    chatTask = Task {
+      busy = true
+      defer {
+        busy = false
       }
-    } catch {
-      /// `chat.sendMessage(text)` throws only MediaPipeTask errors. Hence all errors thrown from 
-      /// can be assumed.
-      self.error = InferenceError.mediaPipeTasksError(error: error)
-      messages.removeLast()
+
+      // first, add the user's message to the chat
+      let userMessage = ChatMessage(message: text, participant: .user)
+      messages.append(userMessage)
+
+      // add a pending message while we're waiting for a response from the backend
+      let systemMessage = ChatMessage.pending(participant: .system)
+      messages.append(systemMessage)
+
+      do {
+        let response = try await chat.sendMessage(text, progress : { [weak self] partialResult in
+          guard let self = self else { return }
+          DispatchQueue.main.async {
+            self.messages[self.messages.count - 1].message = partialResult
+          }
+        })
+
+        // replace pending message with model response
+        messages[messages.count - 1].message = response
+        messages[messages.count - 1].pending = false
+      } catch {
+        self.error = error
+        print(error.localizedDescription)
+        messages.removeLast()
+      }
     }
   }
 }
