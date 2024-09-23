@@ -119,7 +119,7 @@ class ConversationViewModel: ObservableObject {
     do {
       let model = try OnDeviceModel(model: Model.gemma)
       self.model = model
-      chat = try Chat(model: model)
+      chat = try Chat(inference: model.inference)
     } catch let error as InferenceError {
       self.error = error
     } catch {
@@ -154,7 +154,7 @@ class ConversationViewModel: ObservableObject {
       return
     }
     do {
-      chat = try Chat(model: model)
+      chat = try Chat(inference: model.inference)
       messages.removeAll()
     } catch {
       self.error = InferenceError.mediaPipeTasksError(error: error)

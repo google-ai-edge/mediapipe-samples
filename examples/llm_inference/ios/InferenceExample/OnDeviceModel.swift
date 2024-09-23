@@ -29,15 +29,11 @@ struct OnDeviceModel {
 /// Represents a chat session using an instance of `OnDeviceModel`.  It manages a MediaPipe 
 /// `LlmInference.Session` under the hood and passes all response generation queries to the session.
 final class Chat {
-  /// The on device model using which this chat session was created.
-  private let model: OnDeviceModel
-    
-  /// MediaPipe session managed by the current instance.
-  private var session: LlmInference.Session
-  
-  init(model: OnDeviceModel) throws {
-    self.model = model
-    session = try LlmInference.Session(llmInference: model.inference)
+  /// The on device inference engine for this chat session
+  private let inference: LlmInference
+
+  init(inference: LlmInference) throws {
+    self.inference = inference
   }
   
   /// Sends a streaming response generation query to the underlying MediaPipe 
@@ -48,8 +44,7 @@ final class Chat {
   /// - Throws: A MediaPipe `GenAiInferenceError` if the query cannot be added to the current 
   /// session.
   func sendMessage(_ text: String) async throws -> AsyncThrowingStream<String, any Error> {
-    try session.addQueryChunk(inputText: text)
-    let resultStream = session.generateResponseAsync()
+    let resultStream = inference.generateResponseAsync(inputText: text)
     return resultStream
   }
 }
