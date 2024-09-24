@@ -37,7 +37,9 @@ class InferenceModel private constructor(context: Context) {
     }
 
     fun generateResponseAsync(prompt: String) {
-        llmInference.generateResponseAsync(prompt)
+        // Add the gemma prompt prefix to trigger the response.
+        val gemmaPrompt = prompt + "<start_of_turn>model\n"
+        llmInference.generateResponseAsync(gemmaPrompt)
     }
 
     companion object {
