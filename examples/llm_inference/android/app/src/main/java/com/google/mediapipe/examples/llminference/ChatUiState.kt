@@ -39,7 +39,7 @@ class ChatUiState(
 
     // Prompt the model with the current chat history
     override val fullPrompt: String
-        get() = _messages.joinToString(separator = "\n") { it.message }
+        get() = _messages.joinToString(separator = "\n") { it.rawMessage }
 
     override fun createLoadingMessage(): String {
         val chatMessage = ChatMessage(author = MODEL_PREFIX, isLoading = true)
@@ -54,14 +54,14 @@ class ChatUiState(
     override fun appendMessage(id: String, text: String, done: Boolean) {
         val index = _messages.indexOfFirst { it.id == id }
         if (index != -1) {
-            val newText = _messages[index].message + text
-            _messages[index] = _messages[index].copy(message = newText, isLoading = false)
+            val newText = _messages[index].rawMessage + text
+            _messages[index] = _messages[index].copy(rawMessage = newText, isLoading = false)
         }
     }
 
     override fun addMessage(text: String, author: String): String {
         val chatMessage = ChatMessage(
-            message = text,
+            rawMessage = text,
             author = author
         )
         _messages.add(chatMessage)
@@ -85,7 +85,7 @@ class GemmaUiState(
             _messages. apply{
                 for (i in indices) {
                     this[i] = this[i].copy(
-                            message = this[i].message.replace(START_TURN + this[i].author + "\n", "")
+                        rawMessage = this[i].rawMessage.replace(START_TURN + this[i].author + "\n", "")
                                     .replace(END_TURN, "")
                     )
                 }
@@ -95,7 +95,7 @@ class GemmaUiState(
 
     // Only using the last 4 messages to keep input + output short
     override val fullPrompt: String
-        get() = _messages.takeLast(4).joinToString(separator = "\n") { it.message }
+        get() = _messages.takeLast(4).joinToString(separator = "\n") { it.rawMessage }
 
     override fun createLoadingMessage(): String {
         val chatMessage = ChatMessage(author = MODEL_PREFIX, isLoading = true)
@@ -112,18 +112,18 @@ class GemmaUiState(
         if (index != -1) {
             val newText = if (done) {
                 // Append the Suffix when model is done generating the response
-                _messages[index].message + text + END_TURN
+                _messages[index].rawMessage + text + END_TURN
             } else {
                 // Append the text
-                _messages[index].message + text
+                _messages[index].rawMessage + text
             }
-            _messages[index] = _messages[index].copy(message = newText, isLoading = false)
+            _messages[index] = _messages[index].copy(rawMessage = newText, isLoading = false)
         }
     }
 
     override fun addMessage(text: String, author: String): String {
         val chatMessage = ChatMessage(
-            message = "$START_TURN$author\n$text$END_TURN",
+            rawMessage = "$START_TURN$author\n$text$END_TURN",
             author = author
         )
         _messages.add(chatMessage)
