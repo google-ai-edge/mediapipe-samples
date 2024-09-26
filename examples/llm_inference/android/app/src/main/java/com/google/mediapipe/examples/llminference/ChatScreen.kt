@@ -28,7 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.variable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -37,6 +37,9 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+
+import com.halilibo.richtext.markdown.Markdown
+import com.halilibo.richtext.ui.material3.Material3RichText
 
 @Composable
 internal fun ChatRoute(
@@ -178,10 +181,13 @@ fun ChatItem(
                             modifier = Modifier.padding(16.dp)
                         )
                     } else {
-                        Text(
-                            text = chatMessage.message,
+                        Material3RichText(
                             modifier = Modifier.padding(16.dp)
-                        )
+                        ) {
+                            Markdown(
+                                content = chatMessage.message
+                            )
+                        }
                     }
                 }
             }

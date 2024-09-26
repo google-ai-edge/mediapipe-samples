@@ -65,6 +65,7 @@ dependencies {
     implementation("androidx.compose.material3:material3")
 
     implementation ("com.google.mediapipe:tasks-genai:0.10.16")
+    implementation "com.github.jeziellago:compose-markdown:0.3.6"
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
