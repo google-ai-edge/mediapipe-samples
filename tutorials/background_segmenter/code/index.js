@@ -1,5 +1,5 @@
 // we start by importing mediapipe tasks vision module
-import vision from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision";
+import * as vision from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision";
 
 // we then import the camera class and the utils functions
 import Camera from "./camera.js";
