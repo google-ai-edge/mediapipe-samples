@@ -27,6 +27,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -37,6 +38,11 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+
+import com.halilibo.richtext.commonmark.CommonmarkAstNodeParser
+import com.halilibo.richtext.commonmark.MarkdownParseOptions
+import com.halilibo.richtext.markdown.BasicMarkdown
+import com.halilibo.richtext.ui.material3.RichText
 
 @Composable
 internal fun ChatRoute(
@@ -132,6 +138,9 @@ fun ChatScreen(
 fun ChatItem(
     chatMessage: ChatMessage
 ) {
+    val markdownParseOptions by remember { mutableStateOf(MarkdownParseOptions.Default) }
+    val parser = remember(markdownParseOptions) { CommonmarkAstNodeParser(markdownParseOptions) }
+
     val backgroundColor = if (chatMessage.isFromUser) {
         MaterialTheme.colorScheme.tertiaryContainer
     } else {
@@ -178,10 +187,11 @@ fun ChatItem(
                             modifier = Modifier.padding(16.dp)
                         )
                     } else {
-                        Text(
-                            text = chatMessage.message,
+                        RichText(
                             modifier = Modifier.padding(16.dp)
-                        )
+                        ) {
+                            BasicMarkdown(parser.parse(chatMessage.message))
+                        }
                     }
                 }
             }
