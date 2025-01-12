@@ -110,7 +110,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     }
 
     /**
-     * Draws all connectors between landmarks for a single face on the canvas.
+     * Draws all the connectors between landmarks for a single face on the canvas.
      */
     private fun drawFaceConnectors(
         canvas: Canvas,
