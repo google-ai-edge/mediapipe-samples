@@ -22,6 +22,7 @@ import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
+import com.google.mediapipe.tasks.components.containers.NormalizedLandmark
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.facelandmarker.FaceLandmarker
 import com.google.mediapipe.tasks.vision.facelandmarker.FaceLandmarkerResult
@@ -64,26 +65,70 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
-        if(results == null || results!!.faceLandmarks().isEmpty()) {
+
+        // Clear previous drawings if results exist but have no face landmarks
+        if (results?.faceLandmarks().isNullOrEmpty()) {
             clear()
             return
         }
 
         results?.let { faceLandmarkerResult ->
 
-            for(landmark in faceLandmarkerResult.faceLandmarks()) {
-                for(normalizedLandmark in landmark) {
-                    canvas.drawPoint(normalizedLandmark.x() * imageWidth * scaleFactor, normalizedLandmark.y() * imageHeight * scaleFactor, pointPaint)
-                }
-            }
+            // Calculate scaled image dimensions
+            val scaledImageWidth = imageWidth * scaleFactor
+            val scaledImageHeight = imageHeight * scaleFactor
 
-            FaceLandmarker.FACE_LANDMARKS_CONNECTORS.forEach {
-                canvas.drawLine(
-                    faceLandmarkerResult.faceLandmarks().get(0).get(it!!.start()).x() * imageWidth * scaleFactor,
-                    faceLandmarkerResult.faceLandmarks().get(0).get(it.start()).y() * imageHeight * scaleFactor,
-                    faceLandmarkerResult.faceLandmarks().get(0).get(it.end()).x() * imageWidth * scaleFactor,
-                    faceLandmarkerResult.faceLandmarks().get(0).get(it.end()).y() * imageHeight * scaleFactor,
-                    linePaint)
+            // Calculate offsets to center the image on the canvas
+            val offsetX = (width - scaledImageWidth) / 2f
+            val offsetY = (height - scaledImageHeight) / 2f
+
+            // Iterate through each detected face
+            faceLandmarkerResult.faceLandmarks().forEach { faceLandmarks ->
+                // Draw all landmarks for the current face
+                drawFaceLandmarks(canvas, faceLandmarks, offsetX, offsetY)
+
+                // Draw all connectors for the current face
+                drawFaceConnectors(canvas, faceLandmarks, offsetX, offsetY)
+            }
+        }
+    }
+
+    /**
+     * Draws all landmarks for a single face on the canvas.
+     */
+    private fun drawFaceLandmarks(
+        canvas: Canvas,
+        faceLandmarks: List<NormalizedLandmark>,
+        offsetX: Float,
+        offsetY: Float
+    ) {
+        faceLandmarks.forEach { landmark ->
+            val x = landmark.x() * imageWidth * scaleFactor + offsetX
+            val y = landmark.y() * imageHeight * scaleFactor + offsetY
+            canvas.drawPoint(x, y, pointPaint)
+        }
+    }
+
+    /**
+     * Draws all the connectors between landmarks for a single face on the canvas.
+     */
+    private fun drawFaceConnectors(
+        canvas: Canvas,
+        faceLandmarks: List<NormalizedLandmark>,
+        offsetX: Float,
+        offsetY: Float
+    ) {
+        FaceLandmarker.FACE_LANDMARKS_CONNECTORS.filterNotNull().forEach { connector ->
+            val startLandmark = faceLandmarks.getOrNull(connector.start())
+            val endLandmark = faceLandmarks.getOrNull(connector.end())
+
+            if (startLandmark != null && endLandmark != null) {
+                val startX = startLandmark.x() * imageWidth * scaleFactor + offsetX
+                val startY = startLandmark.y() * imageHeight * scaleFactor + offsetY
+                val endX = endLandmark.x() * imageWidth * scaleFactor + offsetX
+                val endY = endLandmark.y() * imageHeight * scaleFactor + offsetY
+
+                canvas.drawLine(startX, startY, endX, endY, linePaint)
             }
         }
     }
