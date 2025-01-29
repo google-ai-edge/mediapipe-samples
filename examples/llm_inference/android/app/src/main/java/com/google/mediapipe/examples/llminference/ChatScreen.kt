@@ -134,6 +134,8 @@ fun ChatItem(
 ) {
     val backgroundColor = if (chatMessage.isFromUser) {
         MaterialTheme.colorScheme.tertiaryContainer
+    } else if (chatMessage.isThinking) {
+        MaterialTheme.colorScheme.primaryContainer
     } else {
         MaterialTheme.colorScheme.secondaryContainer
     }
@@ -158,7 +160,9 @@ fun ChatItem(
     ) {
         val author = if (chatMessage.isFromUser) {
             stringResource(R.string.user_label)
-        } else {
+        } else if (chatMessage.isThinking) {
+            stringResource(R.string.thinking_label)
+        } else  {
             stringResource(R.string.model_label)
         }
         Text(
