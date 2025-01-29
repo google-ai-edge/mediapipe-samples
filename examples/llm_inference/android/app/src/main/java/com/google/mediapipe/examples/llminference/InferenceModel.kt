@@ -12,7 +12,7 @@ class InferenceModel private constructor(context: Context) {
     private var llmInference: LlmInference
 
     private val modelExists: Boolean
-        get() = File(MODEL_PATH).exists()
+        get() = File(model.path).exists()
 
     private val _partialResults = MutableSharedFlow<Pair<String, Boolean>>(
         extraBufferCapacity = 1,
@@ -22,11 +22,11 @@ class InferenceModel private constructor(context: Context) {
 
     init {
         if (!modelExists) {
-            throw IllegalArgumentException("Model not found at path: $MODEL_PATH")
+            throw IllegalArgumentException("Model not found at path: ${model.path}")
         }
 
         val options = LlmInference.LlmInferenceOptions.builder()
-            .setModelPath(MODEL_PATH)
+            .setModelPath(model.path)
             .setMaxTokens(1024)
             .setResultListener { partialResult, done ->
                 _partialResults.tryEmit(partialResult to done)
@@ -43,9 +43,7 @@ class InferenceModel private constructor(context: Context) {
     }
 
     companion object {
-        // NB: Make sure the filename is *unique* per model you use!
-        // Weight caching is currently based on filename alone.
-        private const val MODEL_PATH = "/data/local/tmp/llm/model.bin"
+        var model: Model = Model.GEMMA_CPU
         private var instance: InferenceModel? = null
 
         fun getInstance(context: Context): InferenceModel {
