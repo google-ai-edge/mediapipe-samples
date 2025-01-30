@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import SwiftUI
-import Foundation
 
 struct ConversationScreen: View {
   private struct Constants {
