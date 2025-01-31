@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import SwiftUI
+import LaTeXSwiftUI
 
 struct ConversationScreen: View {
   private struct Constants {
@@ -105,28 +106,63 @@ struct MessageView: View {
       if message.participant == .user {
         Spacer()
       }
-        let aString: AttributedString = {
-            do {
-                return try AttributedString(markdown: message.text, options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace))
-            } catch {
-                return AttributedString(message.text)
+      VStack(alignment: .leading, spacing: 0.0) {
+        if message.participant == .system {
+          ForEach(splitText(message.text), id: \.id) { item in
+            if item.isMath {
+              LaTeX(item.content).parsingMode(.onlyEquations)
+            } else {
+              let aString: AttributedString = self.getAString(item.content)
+              Text(aString)
             }
-        }()
-        Text(aString)
-        .padding(Constants.textMessagePadding)
-        .foregroundStyle(Constants.foregroundColor)
-        .background(
-          message.participant == .system
-          ? Constants.systemMessageBackgroundColor
-          : Constants.userMessageBackgroundColor
-        )
-        .clipShape(RoundedRectangle(cornerRadius: Constants.messageBackgroundCornerRadius))
+          }
+        } else {
+          Text(message.text)
+        }
+      }
+      .padding(Constants.textMessagePadding)
+      .foregroundStyle(Constants.foregroundColor)
+      .background(
+        message.participant == .system
+        ? Constants.systemMessageBackgroundColor
+        : Constants.userMessageBackgroundColor
+      )
+      .clipShape(RoundedRectangle(cornerRadius: Constants.messageBackgroundCornerRadius))
       if message.participant == .system {
         Spacer()
       }
     }
     .listRowSeparator(.hidden)
   }
+    
+  private func getAString(_ text: String) -> AttributedString {
+    do {
+      return try AttributedString(markdown: text, options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace))
+    } catch {
+      return AttributedString(text)
+    }
+  }
+
+  private func splitText(_ text: String) -> [TextOrMath] {
+    var parts: [TextOrMath] = []
+    var components = text.components(separatedBy: "$$")
+    while !components.isEmpty {
+      let textPart = components.removeFirst()
+      parts.append(TextOrMath(content: textPart, isMath: false)) // Text part
+
+      if !components.isEmpty { // Check if there's a math part
+        let mathPart = components.removeFirst()
+        parts.append(TextOrMath(content: "$$" + mathPart + "$$", isMath: true)) // Math part with $$
+      }
+    }
+    return parts
+  }
+}
+
+struct TextOrMath: Identifiable {
+  let id = UUID()
+  let content: String
+  let isMath: Bool
 }
 
 extension View {
