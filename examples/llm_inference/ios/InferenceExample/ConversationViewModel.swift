@@ -122,25 +122,7 @@ class ConversationViewModel: ObservableObject {
   /// `LlmInference.Session`.
   private var chat: Chat?
 
-  init() {
-    defer {
-      busy = false
-    }
-    do {
-      let model = try OnDeviceModel(model: Model.gemmaCPU)
-      self.model = model
-      chat = try Chat(inference: model.inference)
-    } catch let error as InferenceError {
-      self.error = error
-    } catch {
-      self.error = InferenceError.mediaPipeTasksError(error: error)
-    }
-  }
-
-  func onModelChange(_ m: Model) {
-    print("Chenge model!")
-
-    busy = true
+  init(model m: Model = Model.gemmaCPU) {
     defer {
       busy = false
     }
@@ -148,7 +130,6 @@ class ConversationViewModel: ObservableObject {
       let model = try OnDeviceModel(model: m)
       self.model = model
       chat = try Chat(inference: model.inference)
-      messages.removeAll()
     } catch let error as InferenceError {
       self.error = error
     } catch {

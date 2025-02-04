@@ -1,4 +1,4 @@
-// Copyright 2024 The MediaPipe Authors.
+// Copyright 2024 The Mediapipe Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,11 +14,17 @@
 
 import SwiftUI
 
-@main
-struct InferenceExampleApp: App {
-  var body: some Scene {
-    WindowGroup {
-      ModelSelectionScreen()
+struct ModelSelectionScreen: View {
+  var body: some View {
+    NavigationStack {
+      List(Model.allCases, id: \.self) { model in
+        NavigationLink(model.name, value: model)
+      }
+      .navigationTitle("Models")
+      .navigationDestination(for: Model.self) { model in
+        ConversationScreen(model: model)
+          .environmentObject(ConversationViewModel(model: model))
+      }
     }
   }
 }
