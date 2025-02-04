@@ -128,7 +128,14 @@ struct MessageView: View {
       if message.participant == .user {
         Spacer()
       }
-      Text(message.text)
+        let aString: AttributedString = {
+            do {
+                return try AttributedString(markdown: message.text, options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace))
+            } catch {
+                return AttributedString(message.text)
+            }
+        }()
+        Text(aString)
         .padding(Constants.textMessagePadding)
         .foregroundStyle(Constants.foregroundColor)
         .background(
