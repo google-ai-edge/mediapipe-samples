@@ -21,9 +21,13 @@ struct ConversationScreen: View {
     static let newChatSystemSymbolName = "square.and.pencil"
     static let navigationTitle = "Chat with your LLM here"
   }
-  
+
+  let model: Model
+
   @EnvironmentObject
   var viewModel: ConversationViewModel
+
+  @Environment(\.dismiss) private var dismiss
 
   @State
   private var currentUserPrompt = ""
@@ -36,45 +40,63 @@ struct ConversationScreen: View {
   private var focusedField: FocusedField?
 
   var body: some View {
-    NavigationView {
-      VStack {
-        ScrollViewReader { scrollViewProxy in
-          List {
-            ForEach(viewModel.messages) { message in
-              MessageView(message: message)
+    VStack {
+      ScrollViewReader { scrollViewProxy in
+        List {
+          ForEach(viewModel.messages) { message in
+            MessageView(message: message)
+          }
+        }
+        .listStyle(.plain)
+        .onChange(of: viewModel.messages) { _, newValue in
+          Task { @MainActor in
+            guard let lastMessage = viewModel.messages.last
+            else { return }
+            try await Task.sleep(
+              for: .seconds(Constants.scrollDelayInSeconds))
+            withAnimation {
+              scrollViewProxy.scrollTo(
+                lastMessage.id, anchor: .bottom)
             }
-          }
-          .listStyle(.plain)
-          .onChange(of: viewModel.messages) { _, newValue in
-            Task { @MainActor in
-              guard let lastMessage = viewModel.messages.last else { return }
-              try await Task.sleep(for: .seconds(Constants.scrollDelayInSeconds))
-              withAnimation {
-                scrollViewProxy.scrollTo(lastMessage.id, anchor: .bottom)
-              }
-              focusedField = .message
-            }
+            focusedField = .message
           }
         }
-        TextField(Constants.messageFieldPlaceHolder, text: $currentUserPrompt)
-          .focused($focusedField, equals: .message)
-          .onSubmit {
-            sendMessage()
+      }
+      TextField(
+        Constants.messageFieldPlaceHolder, text: $currentUserPrompt
+      )
+      .focused($focusedField, equals: .message)
+      .onSubmit {
+        sendMessage()
+      }
+      .submitLabel(.send)
+      .disabled(viewModel.busy)
+      .padding()
+    }
+    .toolbar {
+      ToolbarItem(placement: .navigation) {
+        Button(action: { dismiss() }) {
+          HStack {
+            Image(systemName: "chevron.backward")
+            Text(model.name)
           }
-          .submitLabel(.send)
-          .disabled(viewModel.busy)
-          .padding()
-      }.toolbar {
-        ToolbarItem(placement: .primaryAction) {
-          Button(action: viewModel.startNewChat) {
-            Image(systemName: Constants.newChatSystemSymbolName)
-          }.disabled(viewModel.busy)
         }
-      }.alert(error: $viewModel.error)
-        .navigationTitle(Constants.navigationTitle)
-        .onAppear {
-          focusedField = .message
-        }
+      }
+      ToolbarItem(placement: .primaryAction) {
+        Button(action: viewModel.startNewChat) {
+          Image(systemName: Constants.newChatSystemSymbolName)
+        }.disabled(viewModel.busy)
+      }
+    }
+    .alert(error: $viewModel.error)
+    .navigationTitle(Constants.navigationTitle)
+    .navigationBarTitleDisplayMode(.large)
+    .navigationBarBackButtonHidden()
+    .onAppear {
+      viewModel.startNewChat()
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        focusedField = .message
+      }
     }
   }
 
@@ -94,7 +116,8 @@ struct MessageView: View {
     static let textMessagePadding: CGFloat = 10.0
     static let foregroundColor = Color(red: 0.0, green: 0.0, blue: 0.0)
     static let systemMessageBackgroundColor = Color(white: 0.9231)
-    static let userMessageBackgroundColor = Color(red: 0.8627, green: 0.9725, blue: 0.7764)
+    static let userMessageBackgroundColor = Color(
+      red: 0.8627, green: 0.9725, blue: 0.7764)
     static let messageBackgroundCornerRadius: CGFloat = 16.0
   }
   /// Message to be displayed.
@@ -110,10 +133,12 @@ struct MessageView: View {
         .foregroundStyle(Constants.foregroundColor)
         .background(
           message.participant == .system
-          ? Constants.systemMessageBackgroundColor
-          : Constants.userMessageBackgroundColor
+            ? Constants.systemMessageBackgroundColor
+            : Constants.userMessageBackgroundColor
         )
-        .clipShape(RoundedRectangle(cornerRadius: Constants.messageBackgroundCornerRadius))
+        .clipShape(
+          RoundedRectangle(
+            cornerRadius: Constants.messageBackgroundCornerRadius))
       if message.participant == .system {
         Spacer()
       }
@@ -127,9 +152,13 @@ extension View {
   /// - Parameters:
   ///   - error: Binding error based on which the alert is displayed.
   /// - Returns: The error alert.
-  func alert(error: Binding<InferenceError?>, buttonTitle: String = "OK") -> some View {
+  func alert(error: Binding<InferenceError?>, buttonTitle: String = "OK")
+    -> some View
+  {
     let inferenceError = error.wrappedValue
-    return alert(isPresented: .constant(inferenceError != nil), error: inferenceError) { _ in
+    return alert(
+      isPresented: .constant(inferenceError != nil), error: inferenceError
+    ) { _ in
       Button(buttonTitle) {
         error.wrappedValue = nil
       }
