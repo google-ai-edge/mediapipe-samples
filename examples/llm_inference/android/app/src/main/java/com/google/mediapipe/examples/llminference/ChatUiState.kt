@@ -114,7 +114,7 @@ class GemmaUiState(
 
 
 /** An implementation of [UiState] to be used with the DeepSeek model. */
-class DeepSeeUiState(
+class DeepSeekUiState(
     messages: List<ChatMessage> = emptyList()
 ) : UiState {
     private var START_TOKEN = "<｜begin▁of▁sentence｜>"
