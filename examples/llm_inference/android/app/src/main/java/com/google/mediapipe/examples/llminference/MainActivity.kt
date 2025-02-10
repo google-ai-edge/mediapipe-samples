@@ -27,6 +27,7 @@ import androidx.navigation.compose.rememberNavController
 import com.google.mediapipe.examples.llminference.ui.theme.LLMInferenceTheme
 
 const val START_SCREEN = "start_screen"
+const val LOAD_SCREEN = "load_screen"
 const val CHAT_SCREEN = "chat_screen"
 
 class MainActivity : ComponentActivity() {
@@ -51,10 +52,21 @@ class MainActivity : ComponentActivity() {
                             startDestination = START_SCREEN
                         ) {
                             composable(START_SCREEN) {
+                                SelectionRoute(
+                                    onModelSelected = {
+                                        navController.navigate(LOAD_SCREEN) {
+                                            popUpTo(START_SCREEN) { inclusive = true }
+                                            launchSingleTop = true
+                                        }
+                                    }
+                                )
+                            }
+
+                            composable(LOAD_SCREEN) {
                                 LoadingRoute(
                                     onModelLoaded = {
                                         navController.navigate(CHAT_SCREEN) {
-                                            popUpTo(START_SCREEN) { inclusive = true }
+                                            popUpTo(LOAD_SCREEN) { inclusive = true }
                                             launchSingleTop = true
                                         }
                                     }

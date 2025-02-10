@@ -9,7 +9,9 @@
 /* Begin PBXBuildFile section */
 		0B6641881CDD8AB5E5F6C3FE /* Pods_InferenceExample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F02369998C59A0B7AAC3A1D5 /* Pods_InferenceExample.framework */; };
 		1A358AE82D4CD50A00823C19 /* LaTeXSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 1A358AE72D4CD50A00823C19 /* LaTeXSwiftUI */; };
-		1AA4D8452D4BB410008386FE /* gemma-2b-it-cpu-int4.bin in Resources */ = {isa = PBXBuildFile; fileRef = 1AA4D8442D4BB410008386FE /* gemma-2b-it-cpu-int4.bin */; };
+		1DFBA93E2D521190005B8371 /* gemma-2b-it-gpu-int4.bin in Resources */ = {isa = PBXBuildFile; fileRef = 1DFBA93D2D521190005B8371 /* gemma-2b-it-gpu-int4.bin */; };
+		1DFBA93F2D521190005B8371 /* gemma-2b-it-cpu-int4.bin in Resources */ = {isa = PBXBuildFile; fileRef = 1DFBA93C2D521190005B8371 /* gemma-2b-it-cpu-int4.bin */; };
+		1DFBA9412D5216D5005B8371 /* ModelSelectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DFBA9402D5216CE005B8371 /* ModelSelectionScreen.swift */; };
 		8DCF4C452B99289E00427D77 /* InferenceExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DCF4C442B99289E00427D77 /* InferenceExampleApp.swift */; };
 		8DCF4C472B99289E00427D77 /* ConversationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DCF4C462B99289E00427D77 /* ConversationScreen.swift */; };
 		8DCF4C492B99289E00427D77 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8DCF4C482B99289E00427D77 /* Assets.xcassets */; };
@@ -19,7 +21,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		1AA4D8442D4BB410008386FE /* gemma-2b-it-cpu-int4.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "gemma-2b-it-cpu-int4.bin"; sourceTree = "<group>"; };
+		1DFBA93C2D521190005B8371 /* gemma-2b-it-cpu-int4.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "gemma-2b-it-cpu-int4.bin"; sourceTree = "<group>"; };
+		1DFBA93D2D521190005B8371 /* gemma-2b-it-gpu-int4.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = "gemma-2b-it-gpu-int4.bin"; sourceTree = "<group>"; };
+		1DFBA9402D5216CE005B8371 /* ModelSelectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSelectionScreen.swift; sourceTree = "<group>"; };
 		84EC0509CA2D0A791FE6A50D /* Pods-InferenceExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InferenceExample.release.xcconfig"; path = "Target Support Files/Pods-InferenceExample/Pods-InferenceExample.release.xcconfig"; sourceTree = "<group>"; };
 		8DCF4C412B99289E00427D77 /* InferenceExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = InferenceExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DCF4C442B99289E00427D77 /* InferenceExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InferenceExampleApp.swift; sourceTree = "<group>"; };
@@ -66,7 +70,8 @@
 		8DCF4C382B99289D00427D77 = {
 			isa = PBXGroup;
 			children = (
-				1AA4D8442D4BB410008386FE /* gemma-2b-it-cpu-int4.bin */,
+				1DFBA93C2D521190005B8371 /* gemma-2b-it-cpu-int4.bin */,
+				1DFBA93D2D521190005B8371 /* gemma-2b-it-gpu-int4.bin */,
 				8DCF4C432B99289E00427D77 /* InferenceExample */,
 				8DCF4C422B99289E00427D77 /* Products */,
 				540B7F154909C4C9EF376B57 /* Pods */,
@@ -85,6 +90,7 @@
 		8DCF4C432B99289E00427D77 /* InferenceExample */ = {
 			isa = PBXGroup;
 			children = (
+				1DFBA9402D5216CE005B8371 /* ModelSelectionScreen.swift */,
 				8DCF4C572B992B9C00427D77 /* ConversationViewModel.swift */,
 				8DCF4C462B99289E00427D77 /* ConversationScreen.swift */,
 				8DCF4C442B99289E00427D77 /* InferenceExampleApp.swift */,
@@ -166,7 +172,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1AA4D8452D4BB410008386FE /* gemma-2b-it-cpu-int4.bin in Resources */,
+				1DFBA93E2D521190005B8371 /* gemma-2b-it-gpu-int4.bin in Resources */,
+				1DFBA93F2D521190005B8371 /* gemma-2b-it-cpu-int4.bin in Resources */,
 				8DCF4C4D2B99289E00427D77 /* Preview Assets.xcassets in Resources */,
 				8DCF4C492B99289E00427D77 /* Assets.xcassets in Resources */,
 			);
@@ -208,6 +215,7 @@
 				8DCF4C472B99289E00427D77 /* ConversationScreen.swift in Sources */,
 				8DCF4C582B992B9C00427D77 /* ConversationViewModel.swift in Sources */,
 				8DCF4C452B99289E00427D77 /* InferenceExampleApp.swift in Sources */,
+				1DFBA9412D5216D5005B8371 /* ModelSelectionScreen.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

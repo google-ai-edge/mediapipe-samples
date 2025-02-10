@@ -70,24 +70,34 @@ enum InferenceError: LocalizedError {
 
 /// Holds the names of the models names that can be  used.
 enum Model: CaseIterable {
-  case gemma
+  case gemmaCPU
+  case gemmaGPU
 
   private var path: (name: String, extension: String) {
     switch self {
-    case .gemma:
+    case .gemmaCPU:
       return ("gemma-2b-it-cpu-int4", "bin")
+    case .gemmaGPU:
+      return ("gemma-2b-it-gpu-int4", "bin")
     }
   }
 
   var modelPath: String {
     get throws {
-      guard
-        let path = Bundle.main.path(
-          forResource: path.name, ofType: path.extension)
+      guard let path = Bundle.main.path(forResource: path.name, ofType: path.extension)
       else {
         throw InferenceError.modelFileNotFound(modelName: "\(path.name).\(path.extension)")
       }
       return path
+    }
+  }
+
+  var name: String {
+    switch self {
+    case .gemmaCPU:
+      return "Gemma CPU"
+    case .gemmaGPU:
+      return "Gemma GPU"
     }
   }
 }
@@ -97,27 +107,27 @@ class ConversationViewModel: ObservableObject {
   /// This array holds both the user's and the system's chat messages.
   @Published var messages = [ChatMessage]()
 
-  /// Indicates if we're waiting for the model to be initialized or finish generating a response.  
+  /// Indicates if we're waiting for the model to be initialized or finish generating a response.
   /// Based on this value `ConversationScreen` disables or enables messaging.
   @Published var busy = true
 
-  /// Indicates if we're waiting for the model to be initialized or finish generating a response.  
+  /// Indicates if we're waiting for the model to be initialized or finish generating a response.
   /// Based on this value `ConversationScreen` disables or enables messaging.
   @Published var error: InferenceError?
 
   /// Model used for inference. Wraps around a MediaPipe `LlmInference`.
   private var model: OnDeviceModel?
 
-  /// Current conversation with the LLM that preserves history. Wraps around a MediaPipe 
-  /// `LlmInference.Session`. 
+  /// Current conversation with the LLM that preserves history. Wraps around a MediaPipe
+  /// `LlmInference.Session`.
   private var chat: Chat?
 
-  init() {
+  init(model m: Model = Model.gemmaCPU) {
     defer {
       busy = false
     }
     do {
-      let model = try OnDeviceModel(model: Model.gemma)
+      let model = try OnDeviceModel(model: m)
       self.model = model
       chat = try Chat(inference: model.inference)
     } catch let error as InferenceError {
@@ -127,9 +137,9 @@ class ConversationViewModel: ObservableObject {
     }
   }
 
-  /// Queries the LLM session with the given text prompt asynchronously. If the prompt completes 
-  /// successfully, it updates the published `messages` with the new partial response 
-  /// continuously until the response generation completes. In case of an error, sets the 
+  /// Queries the LLM session with the given text prompt asynchronously. If the prompt completes
+  /// successfully, it updates the published `messages` with the new partial response
+  /// continuously until the response generation completes. In case of an error, sets the
   /// published `error.
   /// - Parameters:
   ///   - text: Prompt to be sent to the model.
@@ -161,12 +171,12 @@ class ConversationViewModel: ObservableObject {
     }
   }
 
-   /// Sends the message to the currently active instance of `Chat` which in turn queries the
-   /// underlying MediaPipe LlmInference.Session to asynchronously stream the response to the 
-   /// prompt. The method adds the new message from  the user to the published `messages` and 
-   /// ontinuously updates the streamed response. In case of an error the published `error` is set.
-   /// - Parameters: 
-   ///   - text: Prompt to be sent to the underlying MediaPipe session.
+  /// Sends the message to the currently active instance of `Chat` which in turn queries the
+  /// underlying MediaPipe LlmInference.Session to asynchronously stream the response to the
+  /// prompt. The method adds the new message from  the user to the published `messages` and
+  /// ontinuously updates the streamed response. In case of an error the published `error` is set.
+  /// - Parameters:
+  ///   - text: Prompt to be sent to the underlying MediaPipe session.
   private func internalSendMessage(_ text: String) async {
     guard let chat else {
       error = InferenceError.onDeviceModelNotInitialized
@@ -187,23 +197,25 @@ class ConversationViewModel: ObservableObject {
           break
         }
 
-        /// If this is the first partial response, add a new LLM message to the chat, otherwise 
-        /// append to the existing last message. Currently messaging is blocked while a response 
-        /// is being generated, so if this is not the first partial response, the last message is 
+        /// If this is the first partial response, add a new LLM message to the chat, otherwise
+        /// append to the existing last message. Currently messaging is blocked while a response
+        /// is being generated, so if this is not the first partial response, the last message is
         /// guarenteed to be the current message being generated by the LLM.
         if lastMessage.participant == .user {
           messages.append(ChatMessage(participant: .system))
         }
         let systemMessageText = messages[messages.count - 1].text
 
-        /// Trim any leading characters in whole message. Note: can safely access the index 
-        /// `messages.count - 1` since the presence of a last message has already been guaranteed 
+        /// Trim any leading characters in whole message. Note: can safely access the index
+        /// `messages.count - 1` since the presence of a last message has already been guaranteed
         /// by the previous code snippet.
         messages[messages.count - 1].text = String(
-          (systemMessageText + partialResult).drop(while: { $0.isWhitespace || $0.isNewline }))
+          (systemMessageText + partialResult).drop(while: {
+            $0.isWhitespace || $0.isNewline
+          }))
       }
     } catch {
-      /// `chat.sendMessage(text)` throws only MediaPipeTask errors. Hence all errors thrown from 
+      /// `chat.sendMessage(text)` throws only MediaPipeTask errors. Hence all errors thrown from
       /// can be assumed.
       self.error = InferenceError.mediaPipeTasksError(error: error)
       messages.removeLast()
