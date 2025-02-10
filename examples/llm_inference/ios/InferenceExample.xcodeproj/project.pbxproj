@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0B6641881CDD8AB5E5F6C3FE /* Pods_InferenceExample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F02369998C59A0B7AAC3A1D5 /* Pods_InferenceExample.framework */; };
+		1A358AE82D4CD50A00823C19 /* LaTeXSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 1A358AE72D4CD50A00823C19 /* LaTeXSwiftUI */; };
 		1DFBA93E2D521190005B8371 /* gemma-2b-it-gpu-int4.bin in Resources */ = {isa = PBXBuildFile; fileRef = 1DFBA93D2D521190005B8371 /* gemma-2b-it-gpu-int4.bin */; };
 		1DFBA93F2D521190005B8371 /* gemma-2b-it-cpu-int4.bin in Resources */ = {isa = PBXBuildFile; fileRef = 1DFBA93C2D521190005B8371 /* gemma-2b-it-cpu-int4.bin */; };
 		1DFBA9412D5216D5005B8371 /* ModelSelectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DFBA9402D5216CE005B8371 /* ModelSelectionScreen.swift */; };
@@ -42,6 +43,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0B6641881CDD8AB5E5F6C3FE /* Pods_InferenceExample.framework in Frameworks */,
+				1A358AE82D4CD50A00823C19 /* LaTeXSwiftUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -137,7 +139,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1520;
-				LastUpgradeCheck = 1520;
+				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					8DCF4C402B99289E00427D77 = {
 						CreatedOnToolsVersion = 15.2;
@@ -153,6 +155,9 @@
 				Base,
 			);
 			mainGroup = 8DCF4C382B99289D00427D77;
+			packageReferences = (
+				1A358AE62D4CD50A00823C19 /* XCRemoteSwiftPackageReference "LaTeXSwiftUI" */,
+			);
 			productRefGroup = 8DCF4C422B99289E00427D77 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -251,6 +256,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -312,6 +318,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -340,6 +347,7 @@
 				CODE_SIGN_ENTITLEMENTS = InferenceExample/InferenceExample.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"InferenceExample/Preview Content\"";
 				DEVELOPMENT_TEAM = 98N43B5Q6H;
 				ENABLE_PREVIEWS = YES;
@@ -378,6 +386,7 @@
 				CODE_SIGN_ENTITLEMENTS = InferenceExample/InferenceExample.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"InferenceExample/Preview Content\"";
 				DEVELOPMENT_TEAM = 98N43B5Q6H;
 				ENABLE_PREVIEWS = YES;
@@ -429,6 +438,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		1A358AE62D4CD50A00823C19 /* XCRemoteSwiftPackageReference "LaTeXSwiftUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/colinc86/LaTeXSwiftUI";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		1A358AE72D4CD50A00823C19 /* LaTeXSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1A358AE62D4CD50A00823C19 /* XCRemoteSwiftPackageReference "LaTeXSwiftUI" */;
+			productName = LaTeXSwiftUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 8DCF4C392B99289D00427D77 /* Project object */;
 }
