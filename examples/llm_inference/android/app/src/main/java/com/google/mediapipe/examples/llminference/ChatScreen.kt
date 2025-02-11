@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -36,29 +37,37 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStore
 
 @Composable
 internal fun ChatRoute(
-    chatViewModel: ChatViewModel = viewModel(
-        factory = ChatViewModel.getFactory(LocalContext.current.applicationContext)
-    )
+    onClose: () -> Unit
 ) {
+    val context = LocalContext.current.applicationContext
+    val chatViewModel = ViewModelProvider(
+        ViewModelStore(),
+        ChatViewModel.getFactory(context)
+    ).get(ChatViewModel::class.java)
+
     val uiState by chatViewModel.uiState.collectAsStateWithLifecycle()
     val textInputEnabled by chatViewModel.isTextInputEnabled.collectAsStateWithLifecycle()
     ChatScreen(
         uiState,
-        textInputEnabled
-    ) { message ->
-        chatViewModel.sendMessage(message)
-    }
+        textInputEnabled,
+        onSendMessage = { message ->
+            chatViewModel.sendMessage(message)
+        },
+        onClose = onClose
+    )
 }
 
 @Composable
 fun ChatScreen(
     uiState: UiState,
     textInputEnabled: Boolean = true,
-    onSendMessage: (String) -> Unit
+    onSendMessage: (String) -> Unit,
+    onClose: () -> Unit
 ) {
     var userMessage by rememberSaveable { mutableStateOf("") }
 
@@ -67,6 +76,23 @@ fun ChatScreen(
             .fillMaxSize(),
         verticalArrangement = Arrangement.Bottom
     ) {
+        // Top bar with close button
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = InferenceModel.model.toString(),
+                style = MaterialTheme.typography.titleSmall
+            )
+            IconButton(onClick = onClose) {
+                Icon(Icons.Default.Close, contentDescription = "Close Chat")
+            }
+        }
+
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
