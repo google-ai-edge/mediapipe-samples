@@ -79,7 +79,7 @@ class InferenceModel private constructor(context: Context) {
         }
 
         fun modelExists(context: Context): Boolean {
-            return modelPath(context) != ""
+            return !modelPath(context).isEmpty()
         }
     }
 }
