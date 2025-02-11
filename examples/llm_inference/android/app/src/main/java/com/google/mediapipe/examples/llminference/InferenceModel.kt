@@ -69,7 +69,7 @@ class InferenceModel private constructor(context: Context) {
 
         fun modelPath(context: Context): String {
             val modelFile = File(model.path)
-            val contextFile = File(context.filesDir, model.path)
+            val contextFile = File(context.filesDir, modelFile.name)
 
             return when {
                 modelFile.exists() -> model.path

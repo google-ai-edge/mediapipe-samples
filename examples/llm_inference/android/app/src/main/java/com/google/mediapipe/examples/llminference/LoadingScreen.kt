@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.google.mediapipe.examples.llminference.InferenceModel.Companion
 import com.google.mediapipe.examples.llminference.InferenceModel.Companion.model
 import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
@@ -42,6 +43,10 @@ internal fun LoadingRoute(
             job?.cancel()
             errorMessage = "Download Cancelled"
             isDownloading = false
+            val outputFile = File(context.filesDir, File(InferenceModel.model.path).name)
+            if (outputFile.exists()) {
+                outputFile.delete()
+            }
             CoroutineScope(Dispatchers.Main).launch {
                 delay(1000)
                 onModelNotLoaded()
@@ -80,7 +85,7 @@ internal fun LoadingRoute(
 }
 
 private fun downloadModel(context: Context, model: Model, client: OkHttpClient, onProgressUpdate: (Int) -> Unit) {
-    val outputFile = File(context.filesDir, model.path)
+    val outputFile = File(context.filesDir, File(InferenceModel.model.path).name)
     val request = Request.Builder().url(model.url).build()
     val response = client.newCall(request).execute()
     if (!response.isSuccessful) throw Exception("Download failed: ${response.code}")
