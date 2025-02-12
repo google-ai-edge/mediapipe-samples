@@ -29,6 +29,9 @@ interface UiState {
      */
     fun addMessage(text: String, author: String): String
 
+    /** Clear all messages. */
+    fun clearMessages()
+
     /** Formats a messages from the user into the prompt format of the model. */
     fun formatPrompt(text:String) : String
 }
@@ -64,6 +67,10 @@ class ChatUiState(
         )
         _messages.add(chatMessage)
         return chatMessage.id
+    }
+
+    override fun clearMessages() {
+        _messages.clear()
     }
 
     override fun formatPrompt(text: String): String {
@@ -105,6 +112,10 @@ class GemmaUiState(
         )
         _messages.add(chatMessage)
         return chatMessage.id
+    }
+
+    override fun clearMessages() {
+        _messages.clear()
     }
 
     override fun formatPrompt(text: String): String {
@@ -191,6 +202,10 @@ class DeepSeeUiState(
         )
         _messages.add(chatMessage)
         return chatMessage.id
+    }
+
+    override fun clearMessages() {
+        _messages.clear()
     }
 
     override fun formatPrompt(text: String): String {

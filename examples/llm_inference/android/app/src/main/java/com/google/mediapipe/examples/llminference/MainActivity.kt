@@ -69,12 +69,24 @@ class MainActivity : ComponentActivity() {
                                             popUpTo(LOAD_SCREEN) { inclusive = true }
                                             launchSingleTop = true
                                         }
+                                    },
+                                    onGoBack = {
+                                        navController.navigate(START_SCREEN) {
+                                            popUpTo(LOAD_SCREEN) { inclusive = true }
+                                            launchSingleTop = true
+                                        }
                                     }
                                 )
                             }
 
                             composable(CHAT_SCREEN) {
-                                ChatRoute()
+                                ChatRoute(
+                                    onClose = {
+                                        navController.navigate(START_SCREEN) {
+                                            popUpTo(LOAD_SCREEN) { inclusive = true }
+                                            launchSingleTop = true
+                                        }
+                                    })
                             }
                         }
                     }
