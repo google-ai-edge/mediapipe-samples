@@ -51,6 +51,11 @@ class InferenceModel private constructor(context: Context) {
         llmInferenceSession.generateResponseAsync()
     }
 
+    fun close() {
+        llmInferenceSession.close()
+        llmInference.close()
+    }
+
     companion object {
         var model: Model = Model.GEMMA_CPU
         private var instance: InferenceModel? = null

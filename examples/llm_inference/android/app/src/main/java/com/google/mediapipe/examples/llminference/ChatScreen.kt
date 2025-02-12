@@ -1,5 +1,6 @@
 package com.google.mediapipe.examples.llminference
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -53,6 +54,7 @@ internal fun ChatRoute(
     val uiState by chatViewModel.uiState.collectAsStateWithLifecycle()
     val textInputEnabled by chatViewModel.isTextInputEnabled.collectAsStateWithLifecycle()
     ChatScreen(
+        context,
         uiState,
         textInputEnabled,
         onSendMessage = { message ->
@@ -64,6 +66,7 @@ internal fun ChatRoute(
 
 @Composable
 fun ChatScreen(
+    context: Context,
     uiState: UiState,
     textInputEnabled: Boolean = true,
     onSendMessage: (String) -> Unit,
@@ -88,7 +91,11 @@ fun ChatScreen(
                 text = InferenceModel.model.toString(),
                 style = MaterialTheme.typography.titleSmall
             )
-            IconButton(onClick = onClose) {
+            IconButton(onClick = {
+                InferenceModel.getInstance(context).close()
+                uiState.clearMessages()
+                onClose()
+            }) {
                 Icon(Icons.Default.Close, contentDescription = "Close Chat")
             }
         }

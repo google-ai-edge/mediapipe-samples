@@ -10,8 +10,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.google.mediapipe.examples.llminference.InferenceModel.Companion
-import com.google.mediapipe.examples.llminference.InferenceModel.Companion.model
 import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -21,7 +19,7 @@ import java.io.FileOutputStream
 @Composable
 internal fun LoadingRoute(
     onModelLoaded: () -> Unit = { },
-    onModelNotLoaded: () -> Unit = {}
+    onGoBack: () -> Unit = {}
 ) {
     val context = LocalContext.current.applicationContext
     var errorMessage by remember { mutableStateOf("") }
@@ -32,25 +30,17 @@ internal fun LoadingRoute(
     val client = remember { OkHttpClient() }
 
     if (errorMessage != "") {
-        ErrorMessage(errorMessage)
-        CoroutineScope(Dispatchers.Main).launch {
-            delay(3000)
-            onModelNotLoaded()
-            errorMessage = ""
-        }
+        ErrorMessage(errorMessage, onGoBack)
     } else if (isDownloading) {
         DownloadIndicator(progress) {
             job?.cancel()
-            errorMessage = "Download Cancelled"
             isDownloading = false
-            val outputFile = File(context.filesDir, File(InferenceModel.model.path).name)
-            if (outputFile.exists()) {
-                outputFile.delete()
-            }
-            CoroutineScope(Dispatchers.Main).launch {
-                delay(1000)
-                onModelNotLoaded()
-                errorMessage = ""
+
+            CoroutineScope(Dispatchers.IO).launch {
+                deleteDownloadedFile(context)
+                withContext(Dispatchers.Main) {
+                    errorMessage = "Download Cancelled"
+                }
             }
         }
     } else {
@@ -78,7 +68,7 @@ internal fun LoadingRoute(
                 }
             } catch (e: Exception) {
                 val error = e.localizedMessage ?: "Unknown Error"
-                errorMessage = "${error}, please copy the model directly to ${InferenceModel.model.path}"
+                errorMessage = "${error}, please copy the model manually to ${InferenceModel.model.path}"
             }
         }
     }
@@ -108,6 +98,15 @@ private fun downloadModel(context: Context, model: Model, client: OkHttpClient, 
                 onProgressUpdate(progress)
             }
             outputStream.flush()
+        }
+    }
+}
+
+private suspend fun deleteDownloadedFile(context: Context) {
+    withContext(Dispatchers.IO) {
+        val outputFile = File(context.filesDir, File(InferenceModel.model.path).name)
+        if (outputFile.exists()) {
+            outputFile.delete()
         }
     }
 }
@@ -148,15 +147,23 @@ fun LoadingIndicator() {
 
 @Composable
 fun ErrorMessage(
-    errorMessage: String
+    errorMessage: String,
+    onGoBack: () -> Unit
 ) {
-    Box(
-        contentAlignment = Alignment.Center
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxSize()
     ) {
         Text(
             text = errorMessage,
             color = MaterialTheme.colorScheme.error,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(16.dp)
         )
+        Button(onClick = onGoBack, modifier = Modifier.padding(top = 16.dp)) {
+            Text("Go Back")
+        }
     }
 }
+

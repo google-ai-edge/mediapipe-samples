@@ -70,7 +70,7 @@ class MainActivity : ComponentActivity() {
                                             launchSingleTop = true
                                         }
                                     },
-                                    onModelNotLoaded = {
+                                    onGoBack = {
                                         navController.navigate(START_SCREEN) {
                                             popUpTo(LOAD_SCREEN) { inclusive = true }
                                             launchSingleTop = true
