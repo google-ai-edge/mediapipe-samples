@@ -16,6 +16,9 @@ import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
 
+private class MissingAccessTokenException :
+    Exception("Download failed due to missing access token, please add access token in local.properties")
+
 @Composable
 internal fun LoadingRoute(
     onModelLoaded: () -> Unit = { },
@@ -66,7 +69,10 @@ internal fun LoadingRoute(
                 withContext(Dispatchers.Main) {
                     onModelLoaded()
                 }
-            } catch (e: Exception) {
+            } catch (e: MissingAccessTokenException) {
+                errorMessage = e.localizedMessage ?: "Unknown Error"
+            }
+            catch (e: Exception) {
                 val error = e.localizedMessage ?: "Unknown Error"
                 errorMessage = "${error}, please copy the model manually to ${InferenceModel.model.path}"
             }
@@ -78,9 +84,13 @@ private fun downloadModel(context: Context, model: Model, client: OkHttpClient, 
     val outputFile = File(context.filesDir, File(InferenceModel.model.path).name)
     val requestBuilder = Request.Builder().url(model.url)
 
-    val hfAccessToken = BuildConfig.HF_ACCESS_TOKEN
-    if (model.url.startsWith("https://huggingface.co/") && !hfAccessToken.isEmpty()) {
-        requestBuilder.addHeader("Authorization", "Bearer $hfAccessToken")
+    if (model.needAuth && model.url.startsWith("https://huggingface.co/")) {
+        val hfAccessToken = BuildConfig.HF_ACCESS_TOKEN
+        if (hfAccessToken.isEmpty()) {
+            throw MissingAccessTokenException()
+        } else {
+            requestBuilder.addHeader("Authorization", "Bearer $hfAccessToken")
+        }
     }
 
     val response = client.newCall(requestBuilder.build()).execute()
