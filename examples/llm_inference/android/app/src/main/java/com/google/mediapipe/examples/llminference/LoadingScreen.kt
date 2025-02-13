@@ -71,8 +71,7 @@ internal fun LoadingRoute(
                 }
             } catch (e: MissingAccessTokenException) {
                 errorMessage = e.localizedMessage ?: "Unknown Error"
-            }
-            catch (e: Exception) {
+            } catch (e: Exception) {
                 val error = e.localizedMessage ?: "Unknown Error"
                 errorMessage = "${error}, please copy the model manually to ${InferenceModel.model.path}"
             }
