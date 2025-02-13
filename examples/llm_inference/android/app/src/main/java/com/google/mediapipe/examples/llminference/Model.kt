@@ -5,7 +5,7 @@ package com.google.mediapipe.examples.llminference
 enum class Model(
     val path: String,
     val url: String,
-    val needAuth: Boolean,
+    val needsAuth: Boolean,
     val uiState: UiState,
     val temperature: Float,
     val topK: Int,
@@ -14,7 +14,7 @@ enum class Model(
     GEMMA_CPU(
         path = "/data/local/tmp/llm/gemma-2b-it-cpu-int4.bin",
         url = "",
-        needAuth = false,
+        needsAuth = true,
         GemmaUiState(),
         temperature = 0.8f,
         topK = 40,
@@ -23,7 +23,7 @@ enum class Model(
     GEMMA_GPU(
         path = "/data/local/tmp/llm/gemma-2b-it-gpu-int4.bin",
         url = "",
-        needAuth = false,
+        needsAuth = true,
         GemmaUiState(),
         temperature = 0.8f,
         topK = 40,
@@ -32,7 +32,7 @@ enum class Model(
     DEEPSEEK_CPU(
         path = "/data/local/tmp/llm/deepseek3k_q8_ekv1280.task",
         url = "",
-        needAuth = false,
+        needsAuth = false,
         DeepSeeUiState(),
         temperature = 0.6f,
         topK = 40,

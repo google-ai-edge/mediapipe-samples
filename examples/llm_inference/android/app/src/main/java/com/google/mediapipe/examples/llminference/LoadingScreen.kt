@@ -83,7 +83,7 @@ private fun downloadModel(context: Context, model: Model, client: OkHttpClient, 
     val outputFile = File(context.filesDir, File(InferenceModel.model.path).name)
     val requestBuilder = Request.Builder().url(model.url)
 
-    if (model.needAuth && model.url.startsWith("https://huggingface.co/")) {
+    if (model.needsAuth && model.url.startsWith("https://huggingface.co/")) {
         val hfAccessToken = BuildConfig.HF_ACCESS_TOKEN
         if (hfAccessToken.isEmpty()) {
             throw MissingAccessTokenException()
