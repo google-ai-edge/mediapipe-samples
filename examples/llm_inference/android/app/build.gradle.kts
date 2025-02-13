@@ -14,9 +14,9 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        manifestPlaceholders["auth0Domain"] = "llminference"
-        manifestPlaceholders["auth0Scheme"] = "oauth-callback"
-        manifestPlaceholders["appAuthRedirectScheme"] = "llminference"
+        manifestPlaceholders["auth0Domain"] = "com.google.mediapipe.examples.llminference"
+        manifestPlaceholders["auth0Scheme"] = "oauth2callback"
+        manifestPlaceholders["appAuthRedirectScheme"] = "com.google.mediapipe.examples.llminference"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
