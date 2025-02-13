@@ -24,6 +24,15 @@
             </intent-filter>
         </activity>
 
+        <activity android:name="com.google.mediapipe.examples.llminference.OAuthCallbackActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="llminference" android:host="oauth-callback"/>
+            </intent-filter>
+        </activity>
+
         <!-- Required to initialize the LlmInference -->
         <uses-native-library
             android:name="libOpenCL.so"

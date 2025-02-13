@@ -67,6 +67,7 @@ dependencies {
     implementation ("com.google.mediapipe:tasks-genai:0.10.21")
 
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation("com.auth0.android:auth0:2.5.0") // Library for OAuth authentication
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
