@@ -76,8 +76,14 @@ internal fun LoadingRoute(
 
 private fun downloadModel(context: Context, model: Model, client: OkHttpClient, onProgressUpdate: (Int) -> Unit) {
     val outputFile = File(context.filesDir, File(InferenceModel.model.path).name)
-    val request = Request.Builder().url(model.url).build()
-    val response = client.newCall(request).execute()
+    val requestBuilder = Request.Builder().url(model.url)
+
+    val hfAccessToken = BuildConfig.HF_ACCESS_TOKEN
+    if (model.url.startsWith("https://huggingface.co/") && !hfAccessToken.isEmpty()) {
+        requestBuilder.addHeader("Authorization", "Bearer $hfAccessToken")
+    }
+
+    val response = client.newCall(requestBuilder.build()).execute()
     if (!response.isSuccessful) throw Exception("Download failed: ${response.code}")
 
     response.body?.byteStream()?.use { inputStream ->
