@@ -12,6 +12,22 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LLMInference"
         tools:targetApi="31">
+
+        <activity android:name="com.google.mediapipe.examples.llminference.OAuthCallbackActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="com.google.mediapipe.examples.llminference" android:host="oauth2callback"/>
+            </intent-filter>
+        </activity>
+
+        <activity android:name="com.google.mediapipe.examples.llminference.LoginActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.Light">
+        </activity>
+
         <activity
             android:name="com.google.mediapipe.examples.llminference.MainActivity"
             android:exported="true"
@@ -21,15 +37,6 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
-        <activity android:name="com.google.mediapipe.examples.llminference.OAuthCallbackActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="llminference" android:host="oauth-callback"/>
             </intent-filter>
         </activity>
 

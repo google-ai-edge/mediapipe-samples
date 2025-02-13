@@ -1,6 +1,7 @@
 package com.google.mediapipe.examples.llminference
 
 import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -75,8 +76,23 @@ internal fun LoadingRoute(
 }
 
 private fun downloadModel(context: Context, model: Model, client: OkHttpClient, onProgressUpdate: (Int) -> Unit) {
+    val accessToken = SecureStorage.getToken(context)
+    if (accessToken.isNullOrEmpty()) {
+        // Trigger LoginActivity if no access token is found
+        val intent = Intent(context, LoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        context.startActivity(intent)
+
+        // Exit the function to prevent download from starting
+        return
+    } else {
+        System.out.println("--------------> accessToken: $accessToken")
+    }
+
     val outputFile = File(context.filesDir, File(InferenceModel.model.path).name)
-    val request = Request.Builder().url(model.url).build()
+    val request = Request.Builder().url(model.url)
+        .addHeader("Authorization", "Bearer $accessToken").build()
     val response = client.newCall(request).execute()
     if (!response.isSuccessful) throw Exception("Download failed: ${response.code}")
 

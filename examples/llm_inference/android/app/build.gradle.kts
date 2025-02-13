@@ -14,6 +14,10 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        manifestPlaceholders["auth0Domain"] = "llminference"
+        manifestPlaceholders["auth0Scheme"] = "oauth-callback"
+        manifestPlaceholders["appAuthRedirectScheme"] = "llminference"
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -68,6 +72,8 @@ dependencies {
 
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
     implementation("com.auth0.android:auth0:2.5.0") // Library for OAuth authentication
+    implementation("net.openid:appauth:0.11.1") // Add AppAuth for OAuth support
+    implementation("androidx.security:security-crypto:1.0.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
