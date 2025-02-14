@@ -18,18 +18,13 @@ class OAuthCallbackActivity : Activity() {
     super.onCreate(savedInstanceState)
     authService = AuthorizationService(this)
 
-    Log.d(TAG,"onCreate()")
     val data: Uri? = intent.data
     if (data != null) {
-      Log.d(TAG,"Received URI: $data")
-
       // Manually extract the authorization code
       val authCode = data.getQueryParameter("code")
       // val authState = data.getQueryParameter("state")
 
       if (authCode != null) {
-        Log.d(TAG,"Authorization Code: $authCode")
-
         // Retrieve the code verifier that was used in the initial request
         val codeVerifier = SecureStorage.getCodeVerifier(applicationContext)
 
@@ -51,8 +46,6 @@ class OAuthCallbackActivity : Activity() {
               applicationContext,
               accessToken ?: ""
             )
-            Log.d(TAG,"Access Token Received: $accessToken")
-
             Toast.makeText(this, "Login succeeded, please try again", Toast.LENGTH_LONG).show()
 
             // Go back to the main app

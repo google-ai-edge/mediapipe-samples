@@ -4,11 +4,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Base64
 import android.util.Log
-import android.widget.Button
+import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import net.openid.appauth.AuthorizationRequest
 import net.openid.appauth.AuthorizationService
-import net.openid.appauth.AuthorizationServiceConfiguration
 import net.openid.appauth.ResponseTypeValues
 import java.security.MessageDigest
 import java.security.SecureRandom
@@ -17,7 +16,6 @@ class LoginActivity : AppCompatActivity() {
   private lateinit var authService: AuthorizationService
   private lateinit var codeVerifier: String
   private lateinit var codeChallenge: String
-  private val TAG = LoginActivity::class.qualifiedName
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -25,7 +23,7 @@ class LoginActivity : AppCompatActivity() {
 
     authService = AuthorizationService(this)
 
-    val loginButton: Button = findViewById(R.id.btnLogin)
+    val loginButton: ImageButton = findViewById(R.id.btnLogin)
     loginButton.setOnClickListener {
       loginWithHuggingFace() // Start OAuth login when button is clicked
     }
@@ -50,7 +48,6 @@ class LoginActivity : AppCompatActivity() {
 
     val authIntent = authService.getAuthorizationRequestIntent(authRequest)
     startActivity(authIntent) // Launch OAuth login page
-    Log.d(TAG, "startActivity()")
   }
 
   private fun generateCodeVerifier(): String {

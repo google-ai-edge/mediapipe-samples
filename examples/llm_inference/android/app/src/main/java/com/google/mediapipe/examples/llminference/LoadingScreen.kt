@@ -95,7 +95,6 @@ private fun downloadModel(context: Context, model: Model, client: OkHttpClient, 
 
             throw MissingAccessTokenException()
         } else {
-            Log.d("downloadModel", "accessToken: $accessToken")
             requestBuilder.addHeader("Authorization", "Bearer $accessToken")
         }
     }
