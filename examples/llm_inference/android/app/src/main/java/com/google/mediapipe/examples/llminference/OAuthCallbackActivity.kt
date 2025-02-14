@@ -4,30 +4,30 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import net.openid.appauth.AuthorizationService
-import net.openid.appauth.TokenRequest
 import net.openid.appauth.GrantTypeValues
-import java.security.SecureRandom
-import java.util.Base64
+import net.openid.appauth.TokenRequest
 
 class OAuthCallbackActivity : Activity() {
   private lateinit var authService: AuthorizationService
+  private val TAG = OAuthCallbackActivity::class.qualifiedName
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     authService = AuthorizationService(this)
 
-    System.out.println("--------------> OAuthCallbackActivity.onCreate()")
+    Log.d(TAG,"onCreate()")
     val data: Uri? = intent.data
     if (data != null) {
-      println("---------------> Received URI: $data")  // Log the URI
+      Log.d(TAG,"Received URI: $data")
 
       // Manually extract the authorization code
       val authCode = data.getQueryParameter("code")
       // val authState = data.getQueryParameter("state")
 
       if (authCode != null) {
-        println("-------> Authorization Code: $authCode")
+        Log.d(TAG,"Authorization Code: $authCode")
 
         // Retrieve the code verifier that was used in the initial request
         val codeVerifier = SecureStorage.getCodeVerifier(applicationContext)
@@ -50,21 +50,21 @@ class OAuthCallbackActivity : Activity() {
               applicationContext,
               accessToken ?: ""
             )
-            println("-------> Access Token Received: $accessToken")
+            Log.d(TAG,"Access Token Received: $accessToken")
 
             // Go back to the main app
             startActivity(Intent(this, MainActivity::class.java))
           } else {
-            println("-------> OAuth Error: ${ex?.message}")
+            Log.e(TAG,"OAuth Error: ${ex?.message}")
           }
           finish()
         }
       } else {
-        println("-------------> No Authorization Code Found")
+        Log.e(TAG,"No Authorization Code Found")
         finish()
       }
     } else {
-      println("-------------> OAuth Failed: No Data in Intent")
+      Log.e(TAG,"OAuth Failed: No Data in Intent")
       finish()
     }
   }

@@ -11,6 +11,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import android.util.Log
 import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -87,7 +88,7 @@ private fun downloadModel(context: Context, model: Model, client: OkHttpClient, 
         // Exit the function to prevent download from starting
         return
     } else {
-        System.out.println("--------------> accessToken: $accessToken")
+        Log.d("downloadModel", "accessToken: $accessToken")
     }
 
     val outputFile = File(context.filesDir, File(InferenceModel.model.path).name)

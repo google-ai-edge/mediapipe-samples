@@ -3,6 +3,7 @@ package com.google.mediapipe.examples.llminference
 import android.net.Uri
 import android.os.Bundle
 import android.util.Base64
+import android.util.Log
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import net.openid.appauth.AuthorizationRequest
@@ -16,6 +17,7 @@ class LoginActivity : AppCompatActivity() {
   private lateinit var authService: AuthorizationService
   private lateinit var codeVerifier: String
   private lateinit var codeChallenge: String
+  private val TAG = LoginActivity::class.qualifiedName
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -48,7 +50,7 @@ class LoginActivity : AppCompatActivity() {
 
     val authIntent = authService.getAuthorizationRequestIntent(authRequest)
     startActivity(authIntent) // Launch OAuth login page
-    System.out.println("--------------> startActivityForResult()")
+    Log.d(TAG, "startActivityForResult()")
   }
 
   private fun generateCodeVerifier(): String {
