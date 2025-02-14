@@ -68,4 +68,10 @@ class OAuthCallbackActivity : Activity() {
       finish()
     }
   }
+
+  override fun onDestroy() {
+    super.onDestroy()
+
+    authService.dispose()
+  }
 }

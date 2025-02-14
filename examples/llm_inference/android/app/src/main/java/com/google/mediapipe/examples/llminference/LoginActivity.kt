@@ -47,7 +47,6 @@ class LoginActivity : AppCompatActivity() {
       .build()
 
     val authIntent = authService.getAuthorizationRequestIntent(authRequest)
-    //startActivityForResult(authIntent, 1001) // Start OAuth flow
     startActivity(authIntent) // Launch OAuth login page
     System.out.println("--------------> startActivityForResult()")
   }
