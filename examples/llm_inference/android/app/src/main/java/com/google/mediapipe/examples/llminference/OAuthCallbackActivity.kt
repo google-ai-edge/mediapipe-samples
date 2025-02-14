@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import net.openid.appauth.AuthorizationService
 import net.openid.appauth.GrantTypeValues
 import net.openid.appauth.TokenRequest
@@ -52,8 +53,13 @@ class OAuthCallbackActivity : Activity() {
             )
             Log.d(TAG,"Access Token Received: $accessToken")
 
+            Toast.makeText(this, "Login succeeded, please try again", Toast.LENGTH_LONG).show()
+
             // Go back to the main app
-            startActivity(Intent(this, MainActivity::class.java))
+            val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
           } else {
             Log.e(TAG,"OAuth Error: ${ex?.message}")
           }

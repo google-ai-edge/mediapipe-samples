@@ -50,7 +50,7 @@ class LoginActivity : AppCompatActivity() {
 
     val authIntent = authService.getAuthorizationRequestIntent(authRequest)
     startActivity(authIntent) // Launch OAuth login page
-    Log.d(TAG, "startActivityForResult()")
+    Log.d(TAG, "startActivity()")
   }
 
   private fun generateCodeVerifier(): String {
