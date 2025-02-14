@@ -18,6 +18,9 @@ import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
 
+private class MissingAccessTokenException :
+    Exception("Please try again after login")
+
 @Composable
 internal fun LoadingRoute(
     onModelLoaded: () -> Unit = { },
@@ -68,6 +71,8 @@ internal fun LoadingRoute(
                 withContext(Dispatchers.Main) {
                     onModelLoaded()
                 }
+            } catch (e: MissingAccessTokenException) {
+                errorMessage = e.localizedMessage ?: "Unknown Error"
             } catch (e: Exception) {
                 val error = e.localizedMessage ?: "Unknown Error"
                 errorMessage = "${error}, please copy the model manually to ${InferenceModel.model.path}"
@@ -77,24 +82,26 @@ internal fun LoadingRoute(
 }
 
 private fun downloadModel(context: Context, model: Model, client: OkHttpClient, onProgressUpdate: (Int) -> Unit) {
-    val accessToken = SecureStorage.getToken(context)
-    if (accessToken.isNullOrEmpty()) {
-        // Trigger LoginActivity if no access token is found
-        val intent = Intent(context, LoginActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        context.startActivity(intent)
+    val requestBuilder = Request.Builder().url(model.url)
 
-        // Exit the function to prevent download from starting
-        return
-    } else {
-        Log.d("downloadModel", "accessToken: $accessToken")
+    if (model.needsAuth) {
+        val accessToken = SecureStorage.getToken(context)
+        if (accessToken.isNullOrEmpty()) {
+            // Trigger LoginActivity if no access token is found
+            val intent = Intent(context, LoginActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(intent)
+
+            throw MissingAccessTokenException()
+        } else {
+            Log.d("downloadModel", "accessToken: $accessToken")
+            requestBuilder.addHeader("Authorization", "Bearer $accessToken")
+        }
     }
 
     val outputFile = File(context.filesDir, File(InferenceModel.model.path).name)
-    val request = Request.Builder().url(model.url)
-        .addHeader("Authorization", "Bearer $accessToken").build()
-    val response = client.newCall(request).execute()
+    val response = client.newCall(requestBuilder.build()).execute()
     if (!response.isSuccessful) throw Exception("Download failed: ${response.code}")
 
     response.body?.byteStream()?.use { inputStream ->
