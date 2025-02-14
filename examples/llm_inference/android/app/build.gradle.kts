@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -20,6 +22,19 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        // Define the BuildConfig field
+        val properties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.inputStream().use { properties.load(it) }
+        }
+        val hfAccessToken = properties.getProperty("HF_ACCESS_TOKEN", "")
+        buildConfigField("String", "HF_ACCESS_TOKEN", "\"$hfAccessToken\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
