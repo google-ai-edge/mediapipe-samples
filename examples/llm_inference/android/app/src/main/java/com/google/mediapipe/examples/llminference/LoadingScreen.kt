@@ -19,7 +19,7 @@ import java.io.File
 import java.io.FileOutputStream
 
 private class MissingAccessTokenException :
-    Exception("Please try again after login")
+    Exception("Please try again after sign in")
 
 @Composable
 internal fun LoadingRoute(
