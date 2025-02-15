@@ -51,7 +51,7 @@ class InferenceModel private constructor(context: Context) {
             llmInferenceSession =
                 LlmInferenceSession.createFromOptions(llmInference, sessionOptions)
         } catch (e: Exception) {
-            Log.e(TAG, "Load model error: $e")
+            Log.e(TAG, "Load model error: ${e.message}", e)
             throw ModelLoadFailException()
         }
     }
