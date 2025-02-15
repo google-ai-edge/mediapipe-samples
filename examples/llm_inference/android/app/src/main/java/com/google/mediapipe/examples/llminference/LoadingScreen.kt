@@ -41,7 +41,7 @@ internal fun LoadingRoute(
             job?.cancel()
             isDownloading = false
 
-            CoroutineScope(Dispatchers.IO).launch {
+            CoroutineScope(Dispatchers.Main).launch {
                 deleteDownloadedFile(context)
                 withContext(Dispatchers.Main) {
                     errorMessage = "Download Cancelled"
@@ -73,6 +73,12 @@ internal fun LoadingRoute(
                 }
             } catch (e: MissingAccessTokenException) {
                 errorMessage = e.localizedMessage ?: "Unknown Error"
+            } catch (e: ModelLoadFailException) {
+                errorMessage = e.localizedMessage ?: "Unknown Error"
+                // Remove invalid model file
+                CoroutineScope(Dispatchers.Main).launch {
+                    deleteDownloadedFile(context)
+                }
             } catch (e: Exception) {
                 val error = e.localizedMessage ?: "Unknown Error"
                 errorMessage = "${error}, please copy the model manually to ${InferenceModel.model.path}"
