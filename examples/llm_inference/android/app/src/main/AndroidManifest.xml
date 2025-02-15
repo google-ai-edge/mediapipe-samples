@@ -22,7 +22,7 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data
-                    android:scheme="com.google.mediapipe.examples.llminference.oauth"
+                    android:scheme="com.google.mediapipe.examples.llminference"
                     android:host="oauth2callback"/>
             </intent-filter>
         </activity>
