@@ -16,6 +16,11 @@ import SwiftUI
 
 @main
 struct InferenceExampleApp: App {
+//  init() {
+////    UILabel.appearance(whenContainedInInstancesOf: [UINavigationBar.self])
+////      .adjustsFontSizeToFitWidth = true
+//  }
+
   var body: some Scene {
     WindowGroup {
       ModelSelectionScreen()

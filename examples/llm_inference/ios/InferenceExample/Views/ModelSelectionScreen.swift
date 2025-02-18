@@ -21,9 +21,9 @@ struct ModelSelectionScreen: View {
         NavigationLink(model.name, value: model)
       }
       .navigationTitle("Models")
+      .navigationBarTitleDisplayMode(.inline)
       .navigationDestination(for: Model.self) { model in
-        ConversationScreen(model: model)
-          .environmentObject(ConversationViewModel(model: model))
+        ConversationScreen(viewModel: ConversationViewModel(modelCategory: model))
       }
     }
   }

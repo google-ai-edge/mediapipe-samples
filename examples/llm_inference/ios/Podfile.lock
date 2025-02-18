@@ -1,7 +1,7 @@
 PODS:
-  - MediaPipeTasksGenAI (0.10.14):
-    - MediaPipeTasksGenAIC (= 0.10.14)
-  - MediaPipeTasksGenAIC (0.10.14)
+  - MediaPipeTasksGenAI (0.10.21):
+    - MediaPipeTasksGenAIC (= 0.10.21)
+  - MediaPipeTasksGenAIC (0.10.21)
 
 DEPENDENCIES:
   - MediaPipeTasksGenAI
@@ -12,9 +12,9 @@ SPEC REPOS:
     - MediaPipeTasksGenAIC
 
 SPEC CHECKSUMS:
-  MediaPipeTasksGenAI: 8cd77fa32ea21f7a6319b025aa28cfc3e20ab73b
-  MediaPipeTasksGenAIC: 270ec81f85e96fac283945702e34112ebbfd5e77
+  MediaPipeTasksGenAI: 64f91ec1f2666abeb6dc719a8e8d1e2bf36374c0
+  MediaPipeTasksGenAIC: 1df8d7c6fcbe797d2a04a514edd8b31445291ec8
 
 PODFILE CHECKSUM: b561fe84c5e19b81e1111ba0f8f21564f7006b85
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.15.2
