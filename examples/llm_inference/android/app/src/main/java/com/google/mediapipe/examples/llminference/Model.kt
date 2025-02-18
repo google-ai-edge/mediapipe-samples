@@ -37,7 +37,7 @@ enum class Model(
         url = "https://huggingface.co/litert-community/DeepSeek-R1-Distill-Qwen-1.5B/resolve/main/deepseek_q8_ekv1280.task",
         licenseUrl = "",
         needsAuth = true,
-        DeepSeeUiState(),
+        DeepSeekUiState(),
         temperature = 0.6f,
         topK = 40,
         topP = 0.7f
