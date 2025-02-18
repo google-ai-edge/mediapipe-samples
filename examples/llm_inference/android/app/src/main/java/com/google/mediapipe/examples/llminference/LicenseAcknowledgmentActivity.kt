@@ -11,11 +11,17 @@ import androidx.browser.customtabs.CustomTabsIntent
 class LicenseAcknowledgmentActivity : AppCompatActivity() {
   private lateinit var acknowledgeButton: Button
   private lateinit var continueButton: Button
-  private val licenseUrl = "https://huggingface.co/google/gemma-1.1-2b-it"
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_license_acknowledgment)
+
+    val licenseUrl = InferenceModel.model.licenseUrl
+    if (licenseUrl.isEmpty()) {
+      Toast.makeText(this, "Missing license URL, please try again", Toast.LENGTH_LONG).show()
+      startActivity(Intent(this, MainActivity::class.java))
+      finish()
+    }
 
     acknowledgeButton = findViewById(R.id.btnAcknowledge)
     continueButton = findViewById(R.id.btnContinue)
@@ -32,8 +38,10 @@ class LicenseAcknowledgmentActivity : AppCompatActivity() {
     }
 
     continueButton.setOnClickListener {
-      Toast.makeText(this, "Please try again", Toast.LENGTH_LONG).show()
-      startActivity(Intent(this, MainActivity::class.java))
+      val intent = Intent(this, MainActivity::class.java).apply {
+        putExtra("NAVIGATE_TO", LOAD_SCREEN)
+      }
+      startActivity(intent)
       finish()
     }
 

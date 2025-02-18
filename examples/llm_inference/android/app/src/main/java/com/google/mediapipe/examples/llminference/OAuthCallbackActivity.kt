@@ -46,10 +46,18 @@ class OAuthCallbackActivity : Activity() {
               applicationContext,
               accessToken ?: ""
             )
-            Toast.makeText(this, "Login succeeded", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Sign in succeeded", Toast.LENGTH_LONG).show()
 
-            val intent = Intent(this, LicenseAcknowledgmentActivity::class.java)
-            startActivity(intent)
+            val licenseUrl = InferenceModel.model.licenseUrl
+            if (licenseUrl.isEmpty()) {
+              val intent = Intent(this, MainActivity::class.java).apply {
+                putExtra("NAVIGATE_TO", LOAD_SCREEN)
+              }
+              startActivity(intent)
+            } else {
+              val intent = Intent(this, LicenseAcknowledgmentActivity::class.java)
+              startActivity(intent)
+            }
             finish()
           } else {
             Log.e(TAG,"OAuth Error: ${ex?.message}")

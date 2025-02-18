@@ -65,7 +65,6 @@ internal fun LoadingRoute(
                     }
                 }
 
-                isDownloading = false
                 InferenceModel.resetInstance(context)
                 // Notify the UI that the model has finished loading
                 withContext(Dispatchers.Main) {
@@ -81,7 +80,9 @@ internal fun LoadingRoute(
                 }
             } catch (e: Exception) {
                 val error = e.localizedMessage ?: "Unknown Error"
-                errorMessage = "${error}, please copy the model manually to ${InferenceModel.model.path}"
+                errorMessage = "${error}, please manually copy the model to ${InferenceModel.model.path}"
+            } finally {
+                isDownloading = false
             }
         }
     }
