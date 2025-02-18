@@ -46,10 +46,11 @@ class MainActivity : ComponentActivity() {
                         color = MaterialTheme.colorScheme.background,
                     ) {
                         val navController = rememberNavController()
+                        val startDestination = intent.getStringExtra("NAVIGATE_TO") ?: START_SCREEN
 
                         NavHost(
                             navController = navController,
-                            startDestination = START_SCREEN
+                            startDestination = startDestination
                         ) {
                             composable(START_SCREEN) {
                                 SelectionRoute(

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp"
+    android:gravity="center"
+    android:orientation="vertical">
+
+  <Button
+      android:id="@+id/btnAcknowledge"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="View License and Acknowledge" />
+
+  <Button
+      android:id="@+id/btnContinue"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="20dp"
+      android:enabled="false"
+      android:text="Continue" />
+
+  <TextView
+      android:id="@+id/tvLicenseMessage"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="20dp"
+      android:text="You need to acknowledge the license before continuing"
+      android:textAlignment="center"
+      android:textSize="14sp" />
+</LinearLayout>

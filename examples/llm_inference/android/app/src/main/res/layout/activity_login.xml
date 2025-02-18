@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="20dp">
+
+  <ImageButton
+      android:id="@+id/btnLogin"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:src="@drawable/sign_in_with_huggingface_lg"
+      android:contentDescription="Login Button"
+      android:background="@null"
+      android:padding="0dp"
+      android:scaleType="centerInside"/>
+
+  <TextView
+      android:id="@+id/txtAccessMessage"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="You need Hugging Face access to download the model"
+      android:textColor="@android:color/darker_gray"
+      android:textSize="14sp"
+      android:layout_marginTop="20dp"
+      android:layout_gravity="center_horizontal"/>
+</LinearLayout>

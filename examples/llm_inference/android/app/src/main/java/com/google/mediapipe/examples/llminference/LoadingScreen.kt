@@ -1,6 +1,7 @@
 package com.google.mediapipe.examples.llminference
 
 import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -10,6 +11,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import android.util.Log
 import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -17,7 +19,7 @@ import java.io.File
 import java.io.FileOutputStream
 
 private class MissingAccessTokenException :
-    Exception("Download failed due to missing access token, please add access token in local.properties")
+    Exception("Please try again after sign in")
 
 @Composable
 internal fun LoadingRoute(
@@ -39,7 +41,7 @@ internal fun LoadingRoute(
             job?.cancel()
             isDownloading = false
 
-            CoroutineScope(Dispatchers.IO).launch {
+            CoroutineScope(Dispatchers.Main).launch {
                 deleteDownloadedFile(context)
                 withContext(Dispatchers.Main) {
                     errorMessage = "Download Cancelled"
@@ -63,7 +65,6 @@ internal fun LoadingRoute(
                     }
                 }
 
-                isDownloading = false
                 InferenceModel.resetInstance(context)
                 // Notify the UI that the model has finished loading
                 withContext(Dispatchers.Main) {
@@ -71,27 +72,41 @@ internal fun LoadingRoute(
                 }
             } catch (e: MissingAccessTokenException) {
                 errorMessage = e.localizedMessage ?: "Unknown Error"
+            } catch (e: ModelLoadFailException) {
+                errorMessage = e.localizedMessage ?: "Unknown Error"
+                // Remove invalid model file
+                CoroutineScope(Dispatchers.Main).launch {
+                    deleteDownloadedFile(context)
+                }
             } catch (e: Exception) {
                 val error = e.localizedMessage ?: "Unknown Error"
-                errorMessage = "${error}, please copy the model manually to ${InferenceModel.model.path}"
+                errorMessage = "${error}, please manually copy the model to ${InferenceModel.model.path}"
+            } finally {
+                isDownloading = false
             }
         }
     }
 }
 
 private fun downloadModel(context: Context, model: Model, client: OkHttpClient, onProgressUpdate: (Int) -> Unit) {
-    val outputFile = File(context.filesDir, File(InferenceModel.model.path).name)
     val requestBuilder = Request.Builder().url(model.url)
 
-    if (model.needsAuth && model.url.startsWith("https://huggingface.co/")) {
-        val hfAccessToken = BuildConfig.HF_ACCESS_TOKEN
-        if (hfAccessToken.isEmpty()) {
+    if (model.needsAuth) {
+        val accessToken = SecureStorage.getToken(context)
+        if (accessToken.isNullOrEmpty()) {
+            // Trigger LoginActivity if no access token is found
+            val intent = Intent(context, LoginActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(intent)
+
             throw MissingAccessTokenException()
         } else {
-            requestBuilder.addHeader("Authorization", "Bearer $hfAccessToken")
+            requestBuilder.addHeader("Authorization", "Bearer $accessToken")
         }
     }
 
+    val outputFile = File(context.filesDir, File(InferenceModel.model.path).name)
     val response = client.newCall(requestBuilder.build()).execute()
     if (!response.isSuccessful) throw Exception("Download failed: ${response.code}")
 
