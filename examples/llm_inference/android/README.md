@@ -34,9 +34,9 @@ This application must be run on a physical Android device to take advantage of t
 
 ### Models used
 
-You can download one of the [compatible models](https://developers.google.com/mediapipe/solutions/genai/llm_inference#models).
+You can download compatible models from [LiteRT on Hugging Face](https://huggingface.co/litert-community), e.g. [deepseek_q8_ekv1280.task](https://huggingface.co/litert-community/DeepSeek-R1-Distill-Qwen-1.5B/resolve/main/deepseek_q8_ekv1280.task?download=true) for DeepSeek model.
 
-Once you download it, place it under the path defined as MODEL_PATH in InferenceModel on the Android device
+Once you download it, place it under the path defined as `Model.path` in `Model.kt` on the Android device
  (eg. /data/local/tmp/llm/model.bin).
 
 The easiest way to do that would be to use Android Studio's [Device Explorer](https://developer.android.com/studio/debug/device-file-explorer).
