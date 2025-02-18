@@ -22,7 +22,7 @@ enum class Model(
     ),
     GEMMA_GPU(
         path = "/data/local/tmp/llm/gemma-2b-it-gpu-int4.bin",
-        url = "",
+        url = "https://huggingface.co/meta-llama/Llama-3.1-8B/resolve/main/model-00001-of-00004.safetensors",
         needsAuth = true,
         GemmaUiState(),
         temperature = 0.8f,

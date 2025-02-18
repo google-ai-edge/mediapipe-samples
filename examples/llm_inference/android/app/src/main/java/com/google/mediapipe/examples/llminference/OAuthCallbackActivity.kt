@@ -46,11 +46,9 @@ class OAuthCallbackActivity : Activity() {
               applicationContext,
               accessToken ?: ""
             )
-            Toast.makeText(this, "Login succeeded, please try again", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Login succeeded", Toast.LENGTH_LONG).show()
 
-            // Go back to the main app
-            val intent = Intent(this, MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            val intent = Intent(this, LicenseAcknowledgmentActivity::class.java)
             startActivity(intent)
             finish()
           } else {

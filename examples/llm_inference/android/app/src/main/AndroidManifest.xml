@@ -32,6 +32,11 @@
             android:theme="@style/Theme.LLMInference">
         </activity>
 
+        <activity android:name="com.google.mediapipe.examples.llminference.LicenseAcknowledgmentActivity"
+            android:exported="true"
+            android:theme="@style/Theme.LLMInference">
+        </activity>
+
         <activity
             android:name="com.google.mediapipe.examples.llminference.MainActivity"
             android:exported="true"
