@@ -8,9 +8,9 @@ This application must be run on a physical Android device to take advantage of t
 
 ![LLM Inference Demo](llm_inference.png)
 
-## Build the demo using Android Studio
+## How to Build the Demo App
 
-### Download the code
+### 1. Download the Code
 
 To download the demo code, clone the git repository using the following command:
 
@@ -20,7 +20,7 @@ git clone https://github.com/google-ai-edge/mediapipe-samples
 
 After downloading the demo code, you can import the project into Android Studio and run the app with the following instructions.
 
-### Prerequisites
+### 2. Prerequisites
 
 *   The **[Android Studio](https://developer.android.com/studio)**
     IDE. This demo has been tested on Android Studio Hedgehog.
@@ -28,19 +28,19 @@ After downloading the demo code, you can import the project into Android Studio 
 *   A physical Android device with a minimum OS version of SDK 24 (Android 7.0 -
     Nougat) with developer mode enabled.
 
-### Build and run
+### 3. Build and Run
 
 To import and build the demo app:
 
-1. Start [Android Studio](https://developer.android.com/studio).
+1. Download [Android Studio](https://developer.android.com/studio) and install.
 
-1. From the Android Studio, select **File > New > Import Project**.
+2. From the Android Studio, select **File > New > Import Project**.
 
-1. Navigate to the demo app `android` directory and select that directory, for example: `.../mediapipe-samples/examples/llm_inference/android`
+3. Navigate to the demo app `android` directory and select that directory, for example: `.../mediapipe-samples/examples/llm_inference/android`
 
-1. If Android Studio requests a Gradle Sync, choose **OK**.
+4. If Android Studio requests a Gradle Sync, choose **OK**.
 
-1. Build the project by selecting **Build > Make Project**.
+5. Build the project by selecting **Build > Make Project**.
 
    When the build completes, the Android Studio displays a `BUILD SUCCESSFUL` message in the Build Output status panel.
 
@@ -48,20 +48,23 @@ To run the demo app:
 
 1. Ensure that your Android device is connected to your computer and developer mode is enabled.
 
-1. From Android Studio, run the app by selecting **Run > Run 'app'**.
+2. From Android Studio, run the app by selecting **Run > Run 'app'**.
 
-### Models used
+## How to Use the Demo App
 
-You can download compatible models from [LiteRT on Hugging Face](https://huggingface.co/litert-community), e.g. [deepseek_q8_ekv1280.task](https://huggingface.co/litert-community/DeepSeek-R1-Distill-Qwen-1.5B/resolve/main/deepseek_q8_ekv1280.task?download=true) for DeepSeek model.
+### 1. Select Model
 
-Once you download it, place it under the path defined as `Model.path` in [Model.kt](app/src/main/java/com/google/mediapipe/examples/llminference/Model.kt) on the Android device
- (eg. /data/local/tmp/llm/model.bin).
+The user first selects a model (e.g. `DEEPSEEK_CPU` for the DeepSeek model) from the model selection screen.
 
-You could use either Android Studio's [Device Explorer](https://developer.android.com/studio/debug/device-file-explorer) or `adb` to push the model to the Android device like below:
+### 2. Download Model
 
-```
-$ adb shell mkdir -p /data/local/tmp/llm/
-$ adb push YOUR_MODEL_PATH /data/local/tmp/llm/YOUR_MODEL_VERSION.bin
-```
+If the model has not been downloaded previously, the app will download it from [LiteRT on Hugging Face](https://huggingface.co/litert-community).
 
-For more details, see the [models section](https://developers.google.com/mediapipe/solutions/genai/llm_inference/android#model) in the LLM Inference guide for Android.
+If authentication and license acknowledgment are required to access the model, the user will be prompted to sign in with their Hugging Face account and acknowledge the license if necessary.
+
+### 3. Chat with Model
+
+Once the model is downloaded, the user can interact with it by entering prompts and receiving responses.
+
+## Reference
+For more details, see the [LLM Inference guide for Android](https://developers.google.com/mediapipe/solutions/genai/llm_inference/android).
