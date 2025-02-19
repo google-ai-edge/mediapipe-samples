@@ -46,7 +46,9 @@ struct ConversationScreen: View {
           List {
             ForEach(viewModel.messageViewModels) { vm in
               MessageView(messageViewModel: vm) { messageId in
-                scrollViewProxy.scrollTo(messageId, anchor: .bottom)
+                DispatchQueue.main.async {
+                  scrollViewProxy.scrollTo(messageId, anchor: .bottom)
+                }
               }
             }
           }
