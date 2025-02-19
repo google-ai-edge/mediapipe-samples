@@ -28,33 +28,33 @@ class ConversationViewModel: ObservableObject {
     case criticalError(error: InferenceError)
     case createChatError(error: InferenceError)
     case done
-    
+
     /// Extracts the inference error if the current state is one of the error states.
     var inferenceError: InferenceError? {
       switch self {
-        case let .criticalError(error), let .createChatError(error):
-          return error
-        default:
-          return nil
+      case let .criticalError(error), let .createChatError(error):
+        return error
+      default:
+        return nil
       }
     }
-    
+
     static func == (lhs: State, rhs: State) -> Bool {
       switch (lhs, rhs) {
-        case (.loadingModel, .loadingModel),
-          (.promptSubmitted, .promptSubmitted),
-          (.streamingResponse, .streamingResponse),
-          (.done, .done):
-          return true
-        /// Error equality checks are not required for updates to the UI at the moment. If required more fine grained equality
-        /// logic can be implemented here.
-        case (.criticalError, .criticalError), (.createChatError, .createChatError):
-          return false
-        default:
-          return false
+      case (.loadingModel, .loadingModel),
+        (.promptSubmitted, .promptSubmitted),
+        (.streamingResponse, .streamingResponse),
+        (.done, .done):
+        return true
+      /// Error equality checks are not required for updates to the UI at the moment. If required more fine grained equality
+      /// logic can be implemented here.
+      case (.criticalError, .criticalError), (.createChatError, .createChatError):
+        return false
+      default:
+        return false
       }
     }
-    
+
   }
 
   /// Based on this property updates are made to the UI State including enabling and disabling of messaging, other buttons etc.
@@ -116,7 +116,7 @@ class ConversationViewModel: ObservableObject {
       currentState = .createChatError(error: InferenceError.mediaPipeTasksError(error: error))
     }
   }
-  
+
   /// Resets state after error alert is displayed. If it is a critical error (model loading error), then the UI remains disabled and hence the
   /// state shouldn't be reset.
   /// If  the error is a create chat error and there is an ongoing chat session, the state can be set to done since the user can be allowed
@@ -127,7 +127,7 @@ class ConversationViewModel: ObservableObject {
     guard case .createChatError = currentState, chat != nil else {
       return
     }
-    
+
     currentState = .done
   }
 
@@ -148,13 +148,12 @@ class ConversationViewModel: ObservableObject {
 
       messageVM.closeSystemMessage()
     } catch {
-      
+
       /// Update the existing chat message to an error message if an error is returned before first token is generated. If not, the
       /// message is partially generated and a new message is  added indicating the error.
       if messageVM.chatMessage.participant == .system(.generating) {
         messageVM.chatMessage.participant = .system(.error)
-      }
-      else {
+      } else {
         self.messageViewModels.append(
           MessageViewModel(chatMessage: ChatMessage(participant: .system(.error))))
       }
@@ -185,11 +184,11 @@ class ConversationViewModel: ObservableObject {
     let systemViewModel = MessageViewModel(
       chatMessage: ChatMessage(participant: .system(.generating)))
     messageViewModels.append(systemViewModel)
-    
+
     do {
-  
+
       let responseStream = try await chat.sendMessage(text)
-      
+
       await updateSystemViewModel(systemViewModel, responseStream: responseStream)
     } catch {
       systemViewModel.update(participant: .system(.error))
@@ -205,7 +204,7 @@ enum Model: CaseIterable {
   private var path: (name: String, extension: String) {
     switch self {
     case .gemmaCPU:
-        return ("gemma-2b-it-cpu-int4", "bin")
+      return ("gemma-2b-it-cpu-int4", "bin")
     case .gemmaGPU:
       return ("gemma-2b-it-gpu-int4", "bin")
     }
@@ -232,7 +231,6 @@ enum Model: CaseIterable {
     }
   }
 }
-
 
 /// Represents any error thrown by this application.
 enum InferenceError: LocalizedError {

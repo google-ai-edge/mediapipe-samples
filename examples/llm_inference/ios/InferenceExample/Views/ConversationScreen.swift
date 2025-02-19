@@ -23,7 +23,7 @@ struct ConversationScreen: View {
     static let navigationTitle = "Chat with your LLM here"
     static let modelInitializationAlertText = "Model initialization in progress."
   }
-  
+
   @Environment(\.presentationMode) var presentationMode
 
   @ObservedObject
@@ -70,19 +70,21 @@ struct ConversationScreen: View {
 
       if viewModel.currentState == .loadingModel {
         Constants.alertBackgroundColor
-            .edgesIgnoringSafeArea(.all)
-          ProgressView(Constants.modelInitializationAlertText)
-            .tint(.accentColor)
+          .edgesIgnoringSafeArea(.all)
+        ProgressView(Constants.modelInitializationAlertText)
+          .tint(.accentColor)
       }
     }
-    .alert(state: $viewModel.currentState, action: {
-      viewModel.resetStateAfterErrorIntimation()
-    })
+    .alert(
+      state: $viewModel.currentState,
+      action: {
+        viewModel.resetStateAfterErrorIntimation()
+      })
   }
 
   private func shouldDisableClicks() -> Bool {
     switch viewModel.currentState {
-      case .criticalError, .createChatError:
+    case .criticalError, .createChatError:
       return true
     default:
       return false
@@ -253,10 +255,13 @@ extension View {
   /// - Parameters:
   ///   - error: Binding error based on which the alert is displayed.
   /// - Returns: The error alert.
-  func alert(state: Binding<ConversationViewModel.State>, buttonTitle: String = "OK", action: @escaping () -> Void) -> some View {
-    
+  func alert(
+    state: Binding<ConversationViewModel.State>, buttonTitle: String = "OK",
+    action: @escaping () -> Void
+  ) -> some View {
+
     let inferenceError = state.wrappedValue.inferenceError
-    
+
     return alert(isPresented: .constant(inferenceError != nil), error: inferenceError) { _ in
       Button(buttonTitle) {
         action()

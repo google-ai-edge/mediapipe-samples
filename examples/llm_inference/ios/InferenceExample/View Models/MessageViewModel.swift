@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import Foundation
+
 @MainActor
 class MessageViewModel: ObservableObject, Identifiable {
   @Published var chatMessage: ChatMessage
@@ -34,7 +35,7 @@ class MessageViewModel: ObservableObject, Identifiable {
     case .user:
       chatMessage.text = text
     default:
-      /// Trim any leading characters in whole message. 
+      /// Trim any leading characters in whole message.
       chatMessage.text = String(
         (chatMessage.text + text).drop(while: { $0.isWhitespace || $0.isNewline }))
       chatMessage.participant = .system(.response)
@@ -50,10 +51,10 @@ class MessageViewModel: ObservableObject, Identifiable {
 struct ChatMessage: Identifiable, Equatable {
   /// Unique identifier for the message.
   let id = UUID().uuidString
-  
+
   /// Text contained in the message.
   var text: String
-  
+
   /// Indicates if user or system (LLM) has sent the message.
   var participant: Participant
 
@@ -61,10 +62,10 @@ struct ChatMessage: Identifiable, Equatable {
     self.text = text
     self.participant = participant
   }
-  
+
   /// Represents the type of message.
   enum Participant: Equatable {
-    
+
     enum System: Equatable {
       case thinking
       case generating
@@ -72,20 +73,20 @@ struct ChatMessage: Identifiable, Equatable {
       case done
       case error
     }
-    
+
     case system(_ value: System)
     case user
-    
+
     var title: String {
       switch self {
-        case .system(.generating):
-          return "Generating"
-        case .system(.thinking):
-          return "Thinking"
-        case .system(.response), .system(.done), .system(.error):
-          return "Model"
-        case .user:
-          return "User"
+      case .system(.generating):
+        return "Generating"
+      case .system(.thinking):
+        return "Thinking"
+      case .system(.response), .system(.done), .system(.error):
+        return "Model"
+      case .user:
+        return "User"
       }
     }
   }
