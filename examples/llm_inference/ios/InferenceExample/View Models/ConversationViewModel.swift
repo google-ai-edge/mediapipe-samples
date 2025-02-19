@@ -25,42 +25,40 @@ class ConversationViewModel: ObservableObject {
     case loadingModel
     case promptSubmitted
     case streamingResponse
-    case error
+    case criticalError(error: InferenceError)
+    case createChatError(error: InferenceError)
     case done
+    
+    /// Extracts the inference error if the current state is one of the error states.
+    var inferenceError: InferenceError? {
+      switch self {
+        case let .criticalError(error), let .createChatError(error):
+          return error
+        default:
+          return nil
+      }
+    }
+    
+    static func == (lhs: State, rhs: State) -> Bool {
+      switch (lhs, rhs) {
+        case (.loadingModel, .loadingModel),
+          (.promptSubmitted, .promptSubmitted),
+          (.streamingResponse, .streamingResponse),
+          (.done, .done):
+          return true
+        /// Error equality checks are not required for updates to the UI at the moment. If required more fine grained equality
+        /// logic can be implemented here.
+        case (.criticalError, .criticalError), (.createChatError, .createChatError):
+          return false
+        default:
+          return false
+      }
+    }
+    
   }
 
   /// Based on this property updates are made to the UI State including enabling and disabling of messaging, other buttons etc.
-  @Published var currentState: State = .loadingModel {
-    didSet {
-      guard currentState != .error else {
-        return
-      }
-      
-      criticalError = nil
-    }
-  }
-
-  /// If this error is updated an alert is displayed on the screen.
-  @Published var criticalError: InferenceError? {
-    didSet {
-      guard let _ = criticalError else {
-        return
-      }
-      
-      currentState = .error
-    }
-  }
-  
-  @Published var createChatError: InferenceError? {
-    didSet {
-      guard let _ = createChatError, chat == nil else {
-        currentState = .done
-        return
-      }
-
-      currentState = .error
-    }
-  }
+  @Published var currentState: State = .loadingModel
 
   /// Model used for inference. Wraps around a MediaPipe `LlmInference`.
   private var model: OnDeviceModel?
@@ -82,15 +80,10 @@ class ConversationViewModel: ObservableObject {
 
       startNewChat()
     } catch let error as InferenceError {
-      criticalError = error
+      currentState = .criticalError(error: error)
     } catch {
-      criticalError = InferenceError.mediaPipeTasksError(error: error)
+      currentState = .criticalError(error: InferenceError.mediaPipeTasksError(error: error))
     }
-  }
-
-  func updateCriticalError(_ error: InferenceError) {
-    currentState = .error
-    self.criticalError = error
   }
 
   /// Queries the LLM session with the given text prompt asynchronously. If the prompt completes
@@ -102,7 +95,6 @@ class ConversationViewModel: ObservableObject {
   func sendMessage(_ text: String) {
     Task {
       await internalSendMessage(text)
-      currentState = .done
     }
   }
 
@@ -110,7 +102,7 @@ class ConversationViewModel: ObservableObject {
   func startNewChat() {
     /// Setting critical error so that if user tries to click on new chat when no model is initialized the alert is displayed again.
     guard let model else {
-      criticalError = InferenceError.onDeviceModelNotInitialized
+      currentState = .criticalError(error: InferenceError.onDeviceModelNotInitialized)
       return
     }
 
@@ -121,8 +113,22 @@ class ConversationViewModel: ObservableObject {
       messageViewModels.removeAll()
       currentState = .done
     } catch {
-      createChatError = InferenceError.mediaPipeTasksError(error: error)
+      currentState = .createChatError(error: InferenceError.mediaPipeTasksError(error: error))
     }
+  }
+  
+  /// Resets state after error alert is displayed. If it is a critical error (model loading error), then the UI remains disabled and hence the
+  /// state shouldn't be reset.
+  /// If  the error is a create chat error and there is an ongoing chat session, the state can be set to done since the user can be allowed
+  /// to continue chatting with the current session.
+  /// If the there is no chat session active, then the UI should remain disabled since it indicates an active session could not be created.
+  /// Third scenario would never happen because of the UI guards. Leaving the condition here for correctness.
+  func resetStateAfterErrorIntimation() {
+    guard case .createChatError = currentState, chat != nil else {
+      return
+    }
+    
+    currentState = .done
   }
 
   private func updateSystemViewModel(
@@ -135,13 +141,23 @@ class ConversationViewModel: ObservableObject {
     currentState = .streamingResponse
     do {
       for try await partialResult in responseStream {
+        /// Change participant to .response while message is being generated.
+        messageVM.chatMessage.participant = .system(.response)
         messageVM.update(text: partialResult)
       }
 
       messageVM.closeSystemMessage()
     } catch {
-      self.messageViewModels.append(
-        MessageViewModel(chatMessage: ChatMessage(participant: .system(.error))))
+      
+      /// Update the existing chat message to an error message if an error is returned before first token is generated. If not, the
+      /// message is partially generated and a new message is  added indicating the error.
+      if messageVM.chatMessage.participant == .system(.generating) {
+        messageVM.chatMessage.participant = .system(.error)
+      }
+      else {
+        self.messageViewModels.append(
+          MessageViewModel(chatMessage: ChatMessage(participant: .system(.error))))
+      }
     }
 
   }
@@ -151,7 +167,7 @@ class ConversationViewModel: ObservableObject {
   /// message from  the user to the published `messageViewModels` and continuously updates the streamed response.
   private func internalSendMessage(_ text: String) async {
     guard let chat else {
-      criticalError = InferenceError.onDeviceModelNotInitialized
+      currentState = .criticalError(error: InferenceError.onDeviceModelNotInitialized)
       return
     }
 
@@ -165,51 +181,19 @@ class ConversationViewModel: ObservableObject {
     let userViewModel = MessageViewModel(chatMessage: ChatMessage(text: text, participant: .user))
     messageViewModels.append(userViewModel)
 
+    /// Add a generating message to show a progress bar in the message until first token is generated.
     let systemViewModel = MessageViewModel(
       chatMessage: ChatMessage(participant: .system(.generating)))
     messageViewModels.append(systemViewModel)
     
     do {
+  
       let responseStream = try await chat.sendMessage(text)
       
       await updateSystemViewModel(systemViewModel, responseStream: responseStream)
     } catch {
       systemViewModel.update(participant: .system(.error))
     }
-
-  }
-}
-
-@MainActor
-class MessageViewModel: ObservableObject, Identifiable {
-  @Published var chatMessage: ChatMessage
-
-  init(chatMessage: ChatMessage) {
-    self.chatMessage = chatMessage
-  }
-
-  func update(participant: ChatMessage.Participant) {
-    guard chatMessage.participant != .user && participant != .user else {
-      return
-    }
-
-    chatMessage.participant = participant
-  }
-
-  func update(text: String) {
-    switch chatMessage.participant {
-    case .user:
-      chatMessage.text = text
-    default:
-      /// Trim any leading characters in whole message. 
-      chatMessage.text = String(
-        (chatMessage.text + text).drop(while: { $0.isWhitespace || $0.isNewline }))
-      chatMessage.participant = .system(.response)
-    }
-  }
-
-  func closeSystemMessage() {
-    update(participant: chatMessage.text.count > 0 ? .system(.done) : .system(.error))
   }
 }
 
@@ -249,51 +233,6 @@ enum Model: CaseIterable {
   }
 }
 
-/// Represents a single message in the chat.
-struct ChatMessage: Identifiable, Equatable {
-  /// Unique identifier for the message.
-  let id = UUID().uuidString
-  
-  /// Text contained in the message.
-  var text: String
-  
-  /// Indicates if user or system (LLM) has sent the message.
-  var participant: Participant
-
-  init(text: String = "", participant: Participant) {
-    self.text = text
-    self.participant = participant
-  }
-  
-  /// Represents the type of message.
-  enum Participant: Equatable {
-    
-    enum System: Equatable {
-      case thinking
-      case generating
-      case response
-      case done
-      case error
-    }
-    
-    case system(_ value: System)
-    case user
-    
-    var title: String {
-      switch self {
-        case .system(.generating):
-          return "Generating"
-        case .system(.thinking):
-          return "Thinking"
-        case .system(.response), .system(.done), .system(.error):
-          return "Model"
-        case .user:
-          return "User"
-      }
-    }
-  }
-
-}
 
 /// Represents any error thrown by this application.
 enum InferenceError: LocalizedError {

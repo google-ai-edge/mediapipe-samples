@@ -18,6 +18,7 @@ import SwiftUI
 struct ConversationScreen: View {
   private struct Constants {
     static let scrollDelayInSeconds = 0.05
+    static let alertBackgroundColor = Color.black.opacity(0.3)
     static let newChatSystemSymbolName = "square.and.pencil"
     static let navigationTitle = "Chat with your LLM here"
     static let modelInitializationAlertText = "Model initialization in progress."
@@ -45,9 +46,7 @@ struct ConversationScreen: View {
           List {
             ForEach(viewModel.messageViewModels) { vm in
               MessageView(messageViewModel: vm) { messageId in
-                withAnimation {
-                  scrollViewProxy.scrollTo(messageId, anchor: .bottom)
-                }
+                scrollViewProxy.scrollTo(messageId, anchor: .bottom)
               }
             }
           }
@@ -64,27 +63,26 @@ struct ConversationScreen: View {
             Image(systemName: Constants.newChatSystemSymbolName)
           }
         }
-      } /*.blur(radius: viewModel.currentState == .loadingModel ? 5 : 0)*/
+      }
       .navigationTitle(Constants.navigationTitle)
       .navigationBarTitleDisplayMode(.inline)
-      .onAppear {
-      }
       .disabled(shouldDisableClicks())
 
       if viewModel.currentState == .loadingModel {
-          Color.black.opacity(0.3)
+        Constants.alertBackgroundColor
             .edgesIgnoringSafeArea(.all)
           ProgressView(Constants.modelInitializationAlertText)
             .tint(.accentColor)
       }
     }
-    .alert(error: $viewModel.criticalError)
-    .alert(error: $viewModel.createChatError)
+    .alert(state: $viewModel.currentState, action: {
+      viewModel.resetStateAfterErrorIntimation()
+    })
   }
 
   private func shouldDisableClicks() -> Bool {
     switch viewModel.currentState {
-    case .loadingModel, .promptSubmitted, .streamingResponse, .error:
+      case .criticalError, .createChatError:
       return true
     default:
       return false
@@ -255,11 +253,13 @@ extension View {
   /// - Parameters:
   ///   - error: Binding error based on which the alert is displayed.
   /// - Returns: The error alert.
-  func alert(error: Binding<InferenceError?>, buttonTitle: String = "OK") -> some View {
-    let inferenceError = error.wrappedValue
+  func alert(state: Binding<ConversationViewModel.State>, buttonTitle: String = "OK", action: @escaping () -> Void) -> some View {
+    
+    let inferenceError = state.wrappedValue.inferenceError
+    
     return alert(isPresented: .constant(inferenceError != nil), error: inferenceError) { _ in
       Button(buttonTitle) {
-        error.wrappedValue = nil
+        action()
       }
     } message: { error in
       Text(error.failureReason)
