@@ -20,20 +20,28 @@ import MediaPipeTasksGenAIC
 struct OnDeviceModel {
   /// MediaPipe LlmInference.
   private(set) var inference: LlmInference
+  private static let maxTokens = 1024
 
   init(model: Model) throws {
-    inference = try LlmInference(modelPath: try model.modelPath)
+    let options = LlmInference.Options(modelPath: try model.modelPath)
+    options.maxTokens = OnDeviceModel.maxTokens
+
+    inference = try LlmInference(options: options)
   }
 }
 
 /// Represents a chat session using an instance of `OnDeviceModel`.  It manages a MediaPipe
 /// `LlmInference.Session` under the hood and passes all response generation queries to the session.
 final class Chat {
-  /// The on device inference engine for this chat session
-  private let inference: LlmInference
+  /// The on device model using which this chat session was created.
+  private let model: OnDeviceModel
 
-  init(inference: LlmInference) throws {
-    self.inference = inference
+  /// MediaPipe session managed by the current instance.
+  private var session: LlmInference.Session
+
+  init(model: OnDeviceModel) throws {
+    self.model = model
+    session = try LlmInference.Session(llmInference: model.inference)
   }
 
   /// Sends a streaming response generation query to the underlying MediaPipe
@@ -44,7 +52,8 @@ final class Chat {
   /// - Throws: A MediaPipe `GenAiInferenceError` if the query cannot be added to the current
   /// session.
   func sendMessage(_ text: String) async throws -> AsyncThrowingStream<String, any Error> {
-    let resultStream = inference.generateResponseAsync(inputText: text)
+    try session.addQueryChunk(inputText: text)
+    let resultStream = session.generateResponseAsync()
     return resultStream
   }
 }
