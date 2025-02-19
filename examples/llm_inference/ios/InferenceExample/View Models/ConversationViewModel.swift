@@ -141,24 +141,18 @@ class ConversationViewModel: ObservableObject {
     currentState = .streamingResponse
     do {
       for try await partialResult in responseStream {
-        /// Change participant to .response while message is being generated.
-        messageVM.chatMessage.participant = .system(.response)
         messageVM.update(text: partialResult)
       }
-
-      messageVM.closeSystemMessage()
     } catch {
 
-      /// Update the existing chat message to an error message if an error is returned before first token is generated. If not, the
-      /// message is partially generated and a new message is  added indicating the error.
-      if messageVM.chatMessage.participant == .system(.generating) {
-        messageVM.chatMessage.participant = .system(.error)
-      } else {
+      /// The message is partially generated when an error occurred. Add a new message indicating the error rather than updating
+      /// the existing message with an error.
+      /// If there is a previous message, it's state is updated as done when the messageVM is closed in the calling function.
+      if messageVM.chatMessage.participant == .system(.response) {
         self.messageViewModels.append(
           MessageViewModel(chatMessage: ChatMessage(participant: .system(.error))))
       }
     }
-
   }
 
   /// Sends the message to the currently active instance of `Chat` which in turn queries the underlying MediaPipe
@@ -169,13 +163,10 @@ class ConversationViewModel: ObservableObject {
       currentState = .criticalError(error: InferenceError.onDeviceModelNotInitialized)
       return
     }
-
-    defer {
-      currentState = .done
-    }
-
+    
     currentState = .promptSubmitted
-
+    defer { currentState = .done }
+    
     ///Add the user's message to the chat .
     let userViewModel = MessageViewModel(chatMessage: ChatMessage(text: text, participant: .user))
     messageViewModels.append(userViewModel)
@@ -184,14 +175,15 @@ class ConversationViewModel: ObservableObject {
     let systemViewModel = MessageViewModel(
       chatMessage: ChatMessage(participant: .system(.generating)))
     messageViewModels.append(systemViewModel)
+    
+    defer { systemViewModel.closeSystemMessage() }
 
     do {
-
       let responseStream = try await chat.sendMessage(text)
 
       await updateSystemViewModel(systemViewModel, responseStream: responseStream)
     } catch {
-      systemViewModel.update(participant: .system(.error))
+      /// systemViewModel is closed in a defer before exiting this scope. Any errors are handled during close.
     }
   }
 }
