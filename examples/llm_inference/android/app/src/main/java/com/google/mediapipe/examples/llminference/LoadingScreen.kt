@@ -11,7 +11,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import android.util.Log
 import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -20,6 +19,9 @@ import java.io.FileOutputStream
 
 private class MissingAccessTokenException :
     Exception("Please try again after sign in")
+
+private class MissingUrlException(message: String) :
+    Exception(message)
 
 @Composable
 internal fun LoadingRoute(
@@ -57,7 +59,7 @@ internal fun LoadingRoute(
             try {
                 if (!InferenceModel.modelExists(context)) {
                     if (InferenceModel.model.url.isEmpty()) {
-                        throw Exception("Download failed due to empty URL")
+                        throw MissingUrlException("Please manually copy the model to ${InferenceModel.model.path}")
                     }
                     isDownloading = true
                     downloadModel(context, InferenceModel.model, client) { newProgress ->
@@ -72,6 +74,8 @@ internal fun LoadingRoute(
                 }
             } catch (e: MissingAccessTokenException) {
                 errorMessage = e.localizedMessage ?: "Unknown Error"
+            } catch (e: MissingUrlException) {
+                errorMessage = e.localizedMessage ?: "Unknown Error"
             } catch (e: ModelLoadFailException) {
                 errorMessage = e.localizedMessage ?: "Unknown Error"
                 // Remove invalid model file
@@ -80,7 +84,8 @@ internal fun LoadingRoute(
                 }
             } catch (e: Exception) {
                 val error = e.localizedMessage ?: "Unknown Error"
-                errorMessage = "${error}, please manually copy the model to ${InferenceModel.model.path}"
+                errorMessage =
+                    "${error}, please manually copy the model to ${InferenceModel.model.path}"
             } finally {
                 isDownloading = false
             }
@@ -88,7 +93,12 @@ internal fun LoadingRoute(
     }
 }
 
-private fun downloadModel(context: Context, model: Model, client: OkHttpClient, onProgressUpdate: (Int) -> Unit) {
+private fun downloadModel(
+    context: Context,
+    model: Model,
+    client: OkHttpClient,
+    onProgressUpdate: (Int) -> Unit
+) {
     val requestBuilder = Request.Builder().url(model.url)
 
     if (model.needsAuth) {
