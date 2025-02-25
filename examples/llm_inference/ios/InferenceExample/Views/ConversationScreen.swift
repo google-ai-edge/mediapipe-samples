@@ -24,7 +24,7 @@ struct ConversationScreen: View {
     static let modelInitializationAlertText = "Model initialization in progress."
   }
 
-  @Environment(\.presentationMode) var presentationMode
+  @Environment(\.dismiss) var dismiss
 
   @ObservedObject
   var viewModel: ConversationViewModel
@@ -54,10 +54,11 @@ struct ConversationScreen: View {
           }
           .listStyle(.plain)
         }
+        .scrollDismissesKeyboard(.immediately)
         TextTypingView(
           state: $viewModel.currentState,
-          onSubmitAction: { prompt in
-            viewModel.sendMessage(prompt)
+          onSubmitAction: { [weak viewModel] prompt in
+            viewModel?.sendMessage(prompt)
           })
       }.toolbar {
         ToolbarItem(placement: .primaryAction) {
@@ -77,20 +78,31 @@ struct ConversationScreen: View {
           .tint(.accentColor)
       }
     }
+    .onAppear(perform: { [weak viewModel] in
+      viewModel?.loadModel()
+    })
+    .onDisappear(perform: { [weak viewModel] in
+      viewModel?.clearModel()
+    })
     .alert(
       state: $viewModel.currentState,
-      action: {
-        viewModel.resetStateAfterErrorIntimation()
+      action: { [weak viewModel] in
+        if shouldDismiss() {
+          dismiss()
+        } else {
+          viewModel?.resetStateAfterErrorIntimation()
+        }
       })
   }
 
+  private func shouldDismiss() -> Bool {
+    if case .criticalError = viewModel.currentState { return true }
+    return false
+  }
+
   private func shouldDisableClicks() -> Bool {
-    switch viewModel.currentState {
-    case .criticalError, .createChatError:
-      return true
-    default:
-      return false
-    }
+    if case .createChatError = viewModel.currentState { return true }
+    return false
   }
 }
 
@@ -140,8 +152,11 @@ struct MessageView: View {
     }
     .listRowSeparator(.hidden)
     .id(messageViewModel.chatMessage.id)
-    .onReceive(messageViewModel.$chatMessage) { _ in
-      onTextUpdate(messageViewModel.chatMessage.id)
+    .onReceive(messageViewModel.$chatMessage) { [weak messageViewModel] _ in
+      guard let chatMessageId = messageViewModel?.chatMessage.id else {
+        return
+      }
+      onTextUpdate(chatMessageId)
     }
   }
 }
@@ -179,7 +194,6 @@ struct MessageContentView: View {
 
 /// Bottom view that displays text field and button.
 struct TextTypingView: View {
-
   private struct Constants {
     static let messageFieldPlaceHolder = "Message..."
     static let textFieldCornerRadius = 16.0
@@ -192,9 +206,9 @@ struct TextTypingView: View {
     static let buttonDisabledColor = Color.gray
     static let buttonEnabledColor = Color.green
     static let padding = 10.0
-
   }
 
+  @Environment(\.colorScheme) var colorScheme
   @Binding var state: ConversationViewModel.State
 
   var onSubmitAction: (String) -> Void
@@ -204,6 +218,13 @@ struct TextTypingView: View {
   enum FocusedField: Hashable {
     case message
   }
+  private var backgroundColor: Color {
+    colorScheme == .dark ? Color(.systemGray6) : Color(.systemGray5)
+  }
+
+  private var textColor: Color {
+    colorScheme == .dark ? .white : .black
+  }
 
   @FocusState
   var focusedField: FocusedField?
@@ -212,7 +233,8 @@ struct TextTypingView: View {
     HStack(spacing: Constants.padding) {
       TextField(Constants.messageFieldPlaceHolder, text: $content)
         .padding()
-        .background(Color.white)
+        .background(backgroundColor)
+        .foregroundStyle(textColor)
         .frame(height: Constants.textFieldHeight)
         .textFieldStyle(PlainTextFieldStyle())
         .clipShape(RoundedRectangle(cornerRadius: Constants.textFieldCornerRadius))
@@ -222,9 +244,9 @@ struct TextTypingView: View {
         )
         .focused($focusedField, equals: .message)
         .onSubmit {
-          sendMessage()
+          focusedField = nil
         }
-        .submitLabel(.send)
+        .submitLabel(.return)
         .onChange(of: state) { oldValue, newValue in
           focusedField = state == .done ? .message : nil
         }
@@ -250,6 +272,7 @@ struct TextTypingView: View {
     content = ""
     onSubmitAction(prompt)
   }
+
 }
 
 extension View {

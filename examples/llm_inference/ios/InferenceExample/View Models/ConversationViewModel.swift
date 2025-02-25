@@ -59,6 +59,9 @@ class ConversationViewModel: ObservableObject {
 
   /// Based on this property updates are made to the UI State including enabling and disabling of messaging, other buttons etc.
   @Published var currentState: State = .loadingModel
+  
+  /// Model to initialize.
+  private var modelCategory: Model
 
   /// Model used for inference. Wraps around a MediaPipe `LlmInference`.
   private var model: OnDeviceModel?
@@ -67,12 +70,22 @@ class ConversationViewModel: ObservableObject {
   private var chat: Chat?
 
   init(modelCategory: Model) {
+    self.modelCategory = modelCategory
+  }
+
+  func loadModel() {
     Task {
       load(modelCategory: modelCategory)
     }
   }
 
-  func load(modelCategory: Model) {
+  func clearModel() {
+    currentState = .loadingModel
+    chat = nil
+    model = nil
+  }
+
+  private func load(modelCategory: Model) {
     do {
       /// Gets updated to done or error in `startNewChat()` if there is an error in chat initialization.
       currentState = .loadingModel
@@ -131,6 +144,15 @@ class ConversationViewModel: ObservableObject {
     currentState = .done
   }
 
+  private func formatPrompt(text: String) -> String {
+    let startTurn = "<start_of_turn>"
+    let endTurn = "<end_of_turn>"
+    let userPrefix = "user"
+    let modelPrefix = "model"
+
+    return "\(startTurn)\(userPrefix)\n\(text)\(endTurn)\(startTurn)\(modelPrefix)"
+  }
+
   private func updateSystemViewModel(
     _ messageVM: MessageViewModel, responseStream: AsyncThrowingStream<String, any Error>
   ) async {
@@ -163,10 +185,10 @@ class ConversationViewModel: ObservableObject {
       currentState = .criticalError(error: InferenceError.onDeviceModelNotInitialized)
       return
     }
-    
+
     currentState = .promptSubmitted
     defer { currentState = .done }
-    
+
     ///Add the user's message to the chat .
     let userViewModel = MessageViewModel(chatMessage: ChatMessage(text: text, participant: .user))
     messageViewModels.append(userViewModel)
@@ -175,7 +197,7 @@ class ConversationViewModel: ObservableObject {
     let systemViewModel = MessageViewModel(
       chatMessage: ChatMessage(participant: .system(.generating)))
     messageViewModels.append(systemViewModel)
-    
+
     defer { systemViewModel.closeSystemMessage() }
 
     do {
