@@ -78,12 +78,6 @@ struct ConversationScreen: View {
           .tint(.accentColor)
       }
     }
-    .onAppear(perform: { [weak viewModel] in
-      viewModel?.loadModel()
-    })
-    .onDisappear(perform: { [weak viewModel] in
-      viewModel?.clearModel()
-    })
     .alert(
       state: $viewModel.currentState,
       action: { [weak viewModel] in
@@ -93,6 +87,13 @@ struct ConversationScreen: View {
           viewModel?.resetStateAfterErrorIntimation()
         }
       })
+    .onAppear { [weak viewModel] in
+      viewModel?.loadModel()
+    }
+    .onDisappear { [weak viewModel] in
+      viewModel?.clearModel()
+    }
+    
   }
 
   private func shouldDismiss() -> Bool {

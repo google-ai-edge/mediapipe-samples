@@ -80,9 +80,9 @@ class ConversationViewModel: ObservableObject {
   }
 
   func clearModel() {
-    currentState = .loadingModel
     chat = nil
     model = nil
+    currentState = .loadingModel
   }
 
   private func load(modelCategory: Model) {
