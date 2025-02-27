@@ -188,7 +188,8 @@ class ConversationViewModel: ObservableObject {
 
     do {
       /// Send the message to the chat session to query the model.
-      let responseStream = try await chat.sendMessage(text)
+      let prompt = formatPrompt(text:text)
+      let responseStream = try await chat.sendMessage(prompt)
 
       /// Await for the partial responses from the model. */
       for try await partialResult in responseStream {
