@@ -201,7 +201,8 @@ class ConversationViewModel: ObservableObject {
     defer { systemViewModel.closeSystemMessage() }
 
     do {
-      let responseStream = try await chat.sendMessage(text)
+      let prompt = formatPrompt(text:text)
+      let responseStream = try await chat.sendMessage(prompt)
 
       await updateSystemViewModel(systemViewModel, responseStream: responseStream)
     } catch {
