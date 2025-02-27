@@ -116,7 +116,7 @@ private fun downloadModel(
         }
     }
 
-    val outputFile = File(context.filesDir, File(InferenceModel.model.path).name)
+    val outputFile = File(InferenceModel.modelPathFromUrl(context))
     val response = client.newCall(requestBuilder.build()).execute()
     if (!response.isSuccessful) throw Exception("Download failed: ${response.code}")
 
@@ -144,7 +144,7 @@ private fun downloadModel(
 
 private suspend fun deleteDownloadedFile(context: Context) {
     withContext(Dispatchers.IO) {
-        val outputFile = File(context.filesDir, File(InferenceModel.model.path).name)
+        val outputFile = File(InferenceModel.modelPathFromUrl(context))
         if (outputFile.exists()) {
             outputFile.delete()
         }

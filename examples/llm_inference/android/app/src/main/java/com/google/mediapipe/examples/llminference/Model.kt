@@ -14,8 +14,8 @@ enum class Model(
 ) {
     GEMMA_CPU(
         path = "/data/local/tmp/llm/gemma-2b-it-cpu-int4.bin",
-        url = "",
-        licenseUrl = "",
+        url = "https://huggingface.co/litert-community/Gemma2-2B-IT/resolve/main/gemma2_q8_multi-prefill-seq_ekv1280.task",
+        licenseUrl = "https://huggingface.co/litert-community/Gemma2-2B-IT",
         needsAuth = true,
         GemmaUiState(),
         temperature = 0.8f,

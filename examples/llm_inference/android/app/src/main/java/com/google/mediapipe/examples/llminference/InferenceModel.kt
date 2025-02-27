@@ -1,6 +1,7 @@
 package com.google.mediapipe.examples.llminference
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import com.google.mediapipe.tasks.genai.llminference.LlmInference
 import com.google.mediapipe.tasks.genai.llminference.LlmInferenceSession
@@ -83,19 +84,28 @@ class InferenceModel private constructor(context: Context) {
             return InferenceModel(context).also { instance = it }
         }
 
+        fun modelPathFromUrl(context: Context): String {
+            if (model.url.isNotEmpty()) {
+                val urlFileName = Uri.parse(model.url).lastPathSegment
+                if (!urlFileName.isNullOrEmpty()) {
+                    return File(context.filesDir, urlFileName).absolutePath
+                }
+            }
+
+            return ""
+        }
+
         fun modelPath(context: Context): String {
             val modelFile = File(model.path)
-            val contextFile = File(context.filesDir, modelFile.name)
-
-            return when {
-                modelFile.exists() -> model.path
-                contextFile.exists() -> contextFile.absolutePath
-                else -> ""
+            if (modelFile.exists()) {
+                return model.path
             }
+
+            return modelPathFromUrl(context)
         }
 
         fun modelExists(context: Context): Boolean {
-            return !modelPath(context).isEmpty()
+            return File(modelPath(context)).exists()
         }
     }
 }
