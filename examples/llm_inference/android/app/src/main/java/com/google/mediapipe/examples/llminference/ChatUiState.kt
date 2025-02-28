@@ -97,10 +97,11 @@ class GemmaUiState(
     }
 
     override fun appendMessage(id: String, text: String, done: Boolean): String {
+        val newText =  text.replace(END_TURN, "")
         val index = _messages.indexOfFirst { it.id == id }
         if (index != -1) {
-            val newText =  _messages[index].rawMessage + text
-            _messages[index] = _messages[index].copy(rawMessage = newText, isLoading = false)
+            val newMessage =  _messages[index].rawMessage + newText
+            _messages[index] = _messages[index].copy(rawMessage = newMessage, isLoading = false)
         }
         return id
     }
