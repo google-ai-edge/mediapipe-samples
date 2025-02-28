@@ -20,8 +20,13 @@ import java.io.FileOutputStream
 private class MissingAccessTokenException :
     Exception("Please try again after sign in")
 
+private class UnauthorizedAccessException :
+    Exception("Access denied. Please try again and grant the necessary permissions.")
+
 private class MissingUrlException(message: String) :
     Exception(message)
+
+private const val UNAUTHORIZED_CODE = 401
 
 @Composable
 internal fun LoadingRoute(
@@ -76,6 +81,8 @@ internal fun LoadingRoute(
                 errorMessage = e.localizedMessage ?: "Unknown Error"
             } catch (e: MissingUrlException) {
                 errorMessage = e.localizedMessage ?: "Unknown Error"
+            } catch (e: UnauthorizedAccessException) {
+                errorMessage = e.localizedMessage ?: "Unknown Error"
             } catch (e: ModelLoadFailException) {
                 errorMessage = e.localizedMessage ?: "Unknown Error"
                 // Remove invalid model file
@@ -118,7 +125,17 @@ private fun downloadModel(
 
     val outputFile = File(InferenceModel.modelPathFromUrl(context))
     val response = client.newCall(requestBuilder.build()).execute()
-    if (!response.isSuccessful) throw Exception("Download failed: ${response.code}")
+    if (!response.isSuccessful) {
+        if (response.code == UNAUTHORIZED_CODE) {
+            val accessToken = SecureStorage.getToken(context)
+            if (!accessToken.isNullOrEmpty()) {
+                // Remove invalid or expired token
+                SecureStorage.removeToken(context)
+            }
+            throw UnauthorizedAccessException()
+        }
+        throw Exception("Download failed: ${response.code}")
+    }
 
     response.body?.byteStream()?.use { inputStream ->
         FileOutputStream(outputFile).use { outputStream ->
