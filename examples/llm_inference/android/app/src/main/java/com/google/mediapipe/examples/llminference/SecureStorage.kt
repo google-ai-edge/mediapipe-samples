@@ -42,4 +42,16 @@ object SecureStorage {
     )
     return sharedPreferences.getString(KEY_ACCESS_TOKEN, null)
   }
+
+  fun removeToken(context: Context) {
+    val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+    val sharedPreferences = EncryptedSharedPreferences.create(
+      PREFS_NAME,
+      masterKeyAlias,
+      context,
+      EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+      EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
+    sharedPreferences.edit().remove(KEY_ACCESS_TOKEN).apply()
+  }
 }
