@@ -40,16 +40,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 internal fun ChatRoute(
     onClose: () -> Unit
 ) {
     val context = LocalContext.current.applicationContext
-    val chatViewModel = ViewModelProvider(
-        ViewModelStore(),
-        ChatViewModel.getFactory(context)
-    ).get(ChatViewModel::class.java)
+    val chatViewModel: ChatViewModel = viewModel(factory = ChatViewModel.getFactory(context))
 
     val uiState by chatViewModel.uiState.collectAsStateWithLifecycle()
     val textInputEnabled by chatViewModel.isTextInputEnabled.collectAsStateWithLifecycle()
@@ -68,7 +66,7 @@ internal fun ChatRoute(
 fun ChatScreen(
     context: Context,
     uiState: UiState,
-    textInputEnabled: Boolean = true,
+    textInputEnabled: Boolean,
     onSendMessage: (String) -> Unit,
     onClose: () -> Unit
 ) {
@@ -195,7 +193,7 @@ fun ChatItem(
             stringResource(R.string.user_label)
         } else if (chatMessage.isThinking) {
             stringResource(R.string.thinking_label)
-        } else  {
+        } else {
             stringResource(R.string.model_label)
         }
         Text(
