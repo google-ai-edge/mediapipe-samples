@@ -43,7 +43,7 @@ class ChatUiState(
     messages: List<ChatMessage> = emptyList()
 ) : UiState {
     private val _messages: MutableList<ChatMessage> = messages.toMutableStateList()
-    override val messages: List<ChatMessage> = _messages.reversed()
+    override val messages: List<ChatMessage> = _messages.asReversed()
 
     override fun createLoadingMessage(): String {
         val chatMessage = ChatMessage(author = MODEL_PREFIX, isLoading = true)
