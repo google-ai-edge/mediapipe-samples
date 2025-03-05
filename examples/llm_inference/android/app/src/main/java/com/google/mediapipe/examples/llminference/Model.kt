@@ -42,4 +42,14 @@ enum class Model(
         topK = 40,
         topP = 0.7f
     ),
+    PHI4_CPU(
+        path = "/data/local/tmp/llm/phi4_q8_ekv1280.task",
+        url = "https://huggingface.co/litert-community/Phi-4-mini-instruct/resolve/main/phi4_q8_ekv1280.task",
+        licenseUrl = "",
+        needsAuth = false,
+        ChatUiState(),
+        temperature = 0.0f,
+        topK = 40,
+        topP = 1.0f
+    ),
 }
