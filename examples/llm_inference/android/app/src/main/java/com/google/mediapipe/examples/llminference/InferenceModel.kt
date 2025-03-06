@@ -35,6 +35,7 @@ class InferenceModel private constructor(context: Context) {
         val inferenceOptions = LlmInference.LlmInferenceOptions.builder()
             .setModelPath(modelPath(context))
             .setMaxTokens(1024)
+            .apply { model.preferredBackend?.let { setPreferredBackend(it) } }
             .setResultListener { partialResult, done ->
                 _partialResults.tryEmit(partialResult to done)
             }

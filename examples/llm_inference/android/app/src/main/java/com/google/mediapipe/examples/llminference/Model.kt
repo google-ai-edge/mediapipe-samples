@@ -1,5 +1,8 @@
 package com.google.mediapipe.examples.llminference
 
+
+import com.google.mediapipe.tasks.genai.llminference.LlmInference.Backend
+
 // NB: Make sure the filename is *unique* per model you use!
 // Weight caching is currently based on filename alone.
 enum class Model(
@@ -7,6 +10,7 @@ enum class Model(
     val url: String,
     val licenseUrl: String,
     val needsAuth: Boolean,
+    val preferredBackend: Backend?,
     val uiState: UiState,
     val temperature: Float,
     val topK: Int,
@@ -17,7 +21,8 @@ enum class Model(
         url = "https://huggingface.co/litert-community/Gemma2-2B-IT/resolve/main/gemma2_q8_multi-prefill-seq_ekv1280.task",
         licenseUrl = "https://huggingface.co/litert-community/Gemma2-2B-IT",
         needsAuth = true,
-        GemmaUiState(),
+        preferredBackend = null,
+        uiState = GemmaUiState(),
         temperature = 0.8f,
         topK = 40,
         topP = 1.0f
@@ -27,7 +32,8 @@ enum class Model(
         url = "",
         licenseUrl = "",
         needsAuth = true,
-        GemmaUiState(),
+        preferredBackend = null,
+        uiState = GemmaUiState(),
         temperature = 0.8f,
         topK = 40,
         topP = 1.0f
@@ -37,7 +43,8 @@ enum class Model(
         url = "https://huggingface.co/litert-community/DeepSeek-R1-Distill-Qwen-1.5B/resolve/main/deepseek_q8_ekv1280.task",
         licenseUrl = "",
         needsAuth = false,
-        DeepSeekUiState(),
+        preferredBackend = null,
+        uiState = DeepSeekUiState(),
         temperature = 0.6f,
         topK = 40,
         topP = 0.7f
@@ -47,7 +54,8 @@ enum class Model(
         url = "https://huggingface.co/litert-community/Phi-4-mini-instruct/resolve/main/phi4_q8_ekv1280.task",
         licenseUrl = "",
         needsAuth = false,
-        ChatUiState(),
+        preferredBackend = null,
+        uiState = ChatUiState(),
         temperature = 0.0f,
         topK = 40,
         topP = 1.0f
