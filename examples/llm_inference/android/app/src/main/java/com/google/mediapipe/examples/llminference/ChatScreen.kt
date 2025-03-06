@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -38,8 +39,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
@@ -48,6 +47,12 @@ internal fun ChatRoute(
 ) {
     val context = LocalContext.current.applicationContext
     val chatViewModel: ChatViewModel = viewModel(factory = ChatViewModel.getFactory(context))
+
+    // Reset InferenceModel when entering ChatScreen
+    LaunchedEffect(Unit) {
+        val inferenceModel = InferenceModel.getInstance(context)
+        chatViewModel.resetInferenceModel(inferenceModel)
+    }
 
     val uiState by chatViewModel.uiState.collectAsStateWithLifecycle()
     val textInputEnabled by chatViewModel.isTextInputEnabled.collectAsStateWithLifecycle()

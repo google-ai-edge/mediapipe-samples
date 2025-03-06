@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.launch
 
 class ChatViewModel(
-    private val inferenceModel: InferenceModel
+    private var inferenceModel: InferenceModel
 ) : ViewModel() {
 
     private val _uiState: MutableStateFlow<UiState> = MutableStateFlow(inferenceModel.uiState)
@@ -24,6 +24,11 @@ class ChatViewModel(
         MutableStateFlow(true)
     val isTextInputEnabled: StateFlow<Boolean> =
         _textInputEnabled.asStateFlow()
+
+    fun resetInferenceModel(newModel: InferenceModel) {
+        inferenceModel = newModel
+        _uiState.value = inferenceModel.uiState
+    }
 
     fun sendMessage(userMessage: String) {
         viewModelScope.launch(Dispatchers.IO) {
