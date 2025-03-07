@@ -8,26 +8,19 @@ const val MODEL_PREFIX = "model"
 interface UiState {
     val messages: List<ChatMessage>
 
-    /**
-     * Creates a new loading message.
-     * Returns the id of that message.
-     */
-    fun createLoadingMessage(): String
+    /** Creates a new loading message. */
+    fun createLoadingMessage()
 
     /**
      * Appends the specified text to the message with the specified ID.
      * THe underlying implementations may split the re-use messages or create new ones. The method
      * always returns the ID of the message used.
      * @param done - indicates whether the model has finished generating the message.
-     * @return the id of the message that was used.
      */
-    fun appendMessage(id: String, text: String, done: Boolean = false):  String
+    fun appendMessage(text: String, done: Boolean = false)
 
-    /**
-     * Creates a new message with the specified text and author.
-     * Return the id of that message.
-     */
-    fun addMessage(text: String, author: String): String
+    /** Creates a new message with the specified text and author. */
+    fun addMessage(text: String, author: String)
 
     /** Clear all messages. */
     fun clearMessages()
@@ -44,29 +37,29 @@ class GenericUiState(
 ) : UiState {
     private val _messages: MutableList<ChatMessage> = messages.toMutableStateList()
     override val messages: List<ChatMessage> = _messages.asReversed()
+    private var _currentMessageId = ""
 
-    override fun createLoadingMessage(): String {
+    override fun createLoadingMessage() {
         val chatMessage = ChatMessage(author = MODEL_PREFIX, isLoading = true)
         _messages.add(chatMessage)
-        return chatMessage.id
+        _currentMessageId= chatMessage.id
     }
     
-    override fun appendMessage(id: String, text: String, done: Boolean) :  String{
-        val index = _messages.indexOfFirst { it.id == id }
+    override fun appendMessage(text: String, done: Boolean){
+        val index = _messages.indexOfFirst { it.id == _currentMessageId }
         if (index != -1) {
             val newText = _messages[index].rawMessage + text
             _messages[index] = _messages[index].copy(rawMessage = newText, isLoading = false)
         }
-        return id
     }
 
-    override fun addMessage(text: String, author: String): String {
+    override fun addMessage(text: String, author: String) {
         val chatMessage = ChatMessage(
             rawMessage = text,
             author = author
         )
         _messages.add(chatMessage)
-        return chatMessage.id
+        _currentMessageId = chatMessage.id
     }
 
     override fun clearMessages() {
@@ -89,30 +82,30 @@ class GemmaUiState(
 
     private val _messages: MutableList<ChatMessage> = messages.toMutableStateList()
     override val messages: List<ChatMessage> = _messages.asReversed()
+    private var _currentMessageId = ""
 
-    override fun createLoadingMessage(): String {
+    override fun createLoadingMessage() {
         val chatMessage = ChatMessage(author = MODEL_PREFIX, isLoading = true)
         _messages.add(chatMessage)
-        return chatMessage.id
+        _currentMessageId = chatMessage.id
     }
 
-    override fun appendMessage(id: String, text: String, done: Boolean): String {
+    override fun appendMessage(text: String, done: Boolean) {
         val newText =  text.replace(END_TURN, "")
-        val index = _messages.indexOfFirst { it.id == id }
+        val index = _messages.indexOfFirst { it.id == _currentMessageId }
         if (index != -1) {
             val newMessage =  _messages[index].rawMessage + newText
             _messages[index] = _messages[index].copy(rawMessage = newMessage, isLoading = false)
         }
-        return id
     }
 
-    override fun addMessage(text: String, author: String): String {
+    override fun addMessage(text: String, author: String) {
         val chatMessage = ChatMessage(
             rawMessage = text,
             author = author
         )
         _messages.add(chatMessage)
-        return chatMessage.id
+        _currentMessageId = chatMessage.id
     }
 
     override fun clearMessages() {
@@ -137,15 +130,16 @@ class DeepSeekUiState(
 
     private val _messages: MutableList<ChatMessage> = messages.toMutableStateList()
     override val messages: List<ChatMessage> = _messages.asReversed()
+    private var _currentMessageId = ""
 
-    override fun createLoadingMessage(): String {
+    override fun createLoadingMessage() {
         val chatMessage = ChatMessage(author = MODEL_PREFIX, isLoading = true, isThinking = false)
         _messages.add(chatMessage)
-        return chatMessage.id
+        _currentMessageId = chatMessage.id
     }
 
-    override fun appendMessage( id: String, text: String, done: Boolean): String {
-        val index = _messages.indexOfFirst { it.id == id }
+    override fun appendMessage(text: String, done: Boolean) {
+        val index = _messages.indexOfFirst { it.id == _currentMessageId }
 
         if (text.contains(THINKING_MARKER_START)) {
             _messages[index] = _messages[index].copy(
@@ -160,14 +154,14 @@ class DeepSeekUiState(
             val prefix = text.substring(0, thinkingEnd);
             val suffix = text.substring(thinkingEnd);
 
-            appendToMessage(id, prefix)
+            appendToMessage(_currentMessageId, prefix)
 
             if (_messages[index].isEmpty) {
                 // There are no thoughts from the model. We can just re-use the current bubble
                 _messages[index] = _messages[index].copy(
                     isThinking = false
                 )
-                appendToMessage(id, suffix)
+                appendToMessage(_currentMessageId, suffix)
             } else {
                 // Create a new bubble for the remainder of the model response
                 val message = ChatMessage(
@@ -177,13 +171,11 @@ class DeepSeekUiState(
                     isThinking = false
                 )
                 _messages.add(message)
-                return message.id
+                _currentMessageId = message.id
             }
         } else {
-            appendToMessage(id, text)
+            appendToMessage(_currentMessageId, text)
         }
-
-        return id
     }
 
     private fun appendToMessage(id: String, suffix: String) : Int {
@@ -196,13 +188,13 @@ class DeepSeekUiState(
         return index
     }
 
-    override fun addMessage(text: String, author: String): String {
+    override fun addMessage(text: String, author: String) {
         val chatMessage = ChatMessage(
             rawMessage = text,
             author = author
         )
         _messages.add(chatMessage)
-        return chatMessage.id
+        _currentMessageId = chatMessage.id
     }
 
     override fun clearMessages() {
