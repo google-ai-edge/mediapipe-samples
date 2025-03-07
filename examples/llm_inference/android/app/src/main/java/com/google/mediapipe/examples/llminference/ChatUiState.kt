@@ -39,7 +39,7 @@ interface UiState {
 /**
  * A sample implementation of [UiState] that can be used with any model.
  */
-class ChatUiState(
+class GenericUiState(
     messages: List<ChatMessage> = emptyList()
 ) : UiState {
     private val _messages: MutableList<ChatMessage> = messages.toMutableStateList()

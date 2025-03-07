@@ -6,6 +6,7 @@ import android.util.Log
 import com.google.mediapipe.tasks.genai.llminference.LlmInference
 import com.google.mediapipe.tasks.genai.llminference.LlmInferenceSession
 import com.google.mediapipe.tasks.genai.llminference.LlmInferenceSession.LlmInferenceSessionOptions
+import com.google.mediapipe.tasks.genai.llminference.ProgressListener
 import java.io.File
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -20,11 +21,6 @@ class InferenceModel private constructor(context: Context) {
     private var llmInferenceSession: LlmInferenceSession
     private val TAG = InferenceModel::class.qualifiedName
 
-    private val _partialResults = MutableSharedFlow<Pair<String, Boolean>>(
-        extraBufferCapacity = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-    val partialResults: SharedFlow<Pair<String, Boolean>> = _partialResults.asSharedFlow()
     val uiState: UiState
 
     init {
@@ -36,9 +32,6 @@ class InferenceModel private constructor(context: Context) {
             .setModelPath(modelPath(context))
             .setMaxTokens(1024)
             .apply { model.preferredBackend?.let { setPreferredBackend(it) } }
-            .setResultListener { partialResult, done ->
-                _partialResults.tryEmit(partialResult to done)
-            }
             .build()
 
         val sessionOptions =  LlmInferenceSessionOptions.builder()
@@ -58,10 +51,10 @@ class InferenceModel private constructor(context: Context) {
         }
     }
 
-    fun generateResponseAsync(prompt: String) {
+    fun generateResponseAsync(prompt: String, progressListener: ProgressListener<String> ) {
         val formattedPrompt = model.uiState.formatPrompt(prompt)
         llmInferenceSession.addQueryChunk(formattedPrompt)
-        llmInferenceSession.generateResponseAsync()
+        llmInferenceSession.generateResponseAsync(progressListener)
     }
 
     fun close() {

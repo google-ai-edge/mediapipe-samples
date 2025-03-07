@@ -36,18 +36,16 @@ class ChatViewModel(
             var currentMessageId: String? = _uiState.value.createLoadingMessage()
             setInputEnabled(false)
             try {
-                inferenceModel.generateResponseAsync(userMessage)
-                inferenceModel.partialResults
-                    .collectIndexed { _, (partialResult, done) ->
-                        currentMessageId?.let {
-                            currentMessageId = _uiState.value.appendMessage(it, partialResult, done)
-                            if (done) {
-                                currentMessageId = null
-                                // Re-enable text input
-                                setInputEnabled(true)
-                            }
+                inferenceModel.generateResponseAsync(userMessage, { partialResult, done ->
+                    currentMessageId?.let {
+                        currentMessageId = _uiState.value.appendMessage(it, partialResult, done)
+                        if (done) {
+                            currentMessageId = null
+                            // Re-enable text input
+                            setInputEnabled(true)
                         }
                     }
+                })
             } catch (e: Exception) {
                 _uiState.value.addMessage(e.localizedMessage ?: "Unknown Error", MODEL_PREFIX)
                 setInputEnabled(true)
