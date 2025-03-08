@@ -91,7 +91,7 @@ class InferenceModel private constructor(context: Context) {
     }
 
     companion object {
-        var model: Model = Model.GEMMA3_CPU
+        var model: Model = Model.GEMMA_CPU
         private var instance: InferenceModel? = null
 
         fun getInstance(context: Context): InferenceModel {
