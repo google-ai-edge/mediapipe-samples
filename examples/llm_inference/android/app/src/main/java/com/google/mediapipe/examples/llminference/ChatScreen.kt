@@ -100,7 +100,7 @@ fun ChatScreen(
             Row {
                 IconButton(
                     onClick = {
-                        InferenceModel.resetInstance(context)
+                        InferenceModel.getInstance(context).resetSession()
                         uiState.clearMessages()
                     },
                     enabled = textInputEnabled
