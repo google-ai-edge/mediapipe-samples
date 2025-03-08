@@ -18,6 +18,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -94,12 +96,28 @@ fun ChatScreen(
                 text = InferenceModel.model.toString(),
                 style = MaterialTheme.typography.titleSmall
             )
-            IconButton(onClick = {
-                InferenceModel.getInstance(context).close()
-                uiState.clearMessages()
-                onClose()
-            }) {
-                Icon(Icons.Default.Close, contentDescription = "Close Chat")
+            // Wrap the buttons in another Row to keep them together
+            Row {
+                IconButton(
+                    onClick = {
+                        InferenceModel.getInstance(context).resetSession()
+                        uiState.clearMessages()
+                    },
+                    enabled = textInputEnabled
+                ) {
+                    Icon(Icons.Default.Refresh, contentDescription = "Clear Chat")
+                }
+
+                IconButton(
+                    onClick = {
+                        InferenceModel.getInstance(context).close()
+                        uiState.clearMessages()
+                        onClose()
+                    },
+                    enabled = textInputEnabled
+                ) {
+                    Icon(Icons.Default.Close, contentDescription = "Close Chat")
+                }
             }
         }
 
