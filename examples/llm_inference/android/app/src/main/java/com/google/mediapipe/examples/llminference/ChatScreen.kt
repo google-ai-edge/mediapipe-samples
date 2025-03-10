@@ -1,6 +1,7 @@
 package com.google.mediapipe.examples.llminference
 
 import android.content.Context
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -37,9 +38,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -65,11 +68,14 @@ internal fun ChatRoute(
         uiState,
         textInputEnabled,
         remainingTokens = chatViewModel.tokensRemaining,
+        resetTokenCount = {
+            chatViewModel.recomputeSizeInTokens("")
+        },
         onSendMessage = { message ->
             chatViewModel.sendMessage(message)
         },
         onChangedMessage = { message ->
-                chatViewModel.recomputeSizeInTokens(message)
+            chatViewModel.recomputeSizeInTokens(message)
         },
         onClose = onClose
     )
@@ -81,6 +87,7 @@ fun ChatScreen(
     uiState: UiState,
     textInputEnabled: Boolean,
     remainingTokens: StateFlow<Int>,
+    resetTokenCount: () -> Unit,
     onSendMessage: (String) -> Unit,
     onChangedMessage: (String) -> Unit,
     onClose: () -> Unit
@@ -115,6 +122,7 @@ fun ChatScreen(
                     onClick = {
                         InferenceModel.getInstance(context).resetSession()
                         uiState.clearMessages()
+                        resetTokenCount()
                     },
                     enabled = textInputEnabled
                 ) {
@@ -125,12 +133,33 @@ fun ChatScreen(
                     onClick = {
                         InferenceModel.getInstance(context).close()
                         uiState.clearMessages()
+                        resetTokenCount()
                         onClose()
                     },
                     enabled = textInputEnabled
                 ) {
                     Icon(Icons.Default.Close, contentDescription = "Close Chat")
                 }
+            }
+        }
+
+        if (tokens == 0) {
+            // Show warning label that context is full
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.LightGray)
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.refresh_message),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = Color.Red, // Red text
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
 
@@ -160,8 +189,8 @@ fun ChatScreen(
             TextField(
                 value = userMessage,
                 onValueChange = { userMessage = it
-                    // Only recompute when we get to new words
-                    if (userMessage.trim() != userMessage)  {
+                    // Only recompute on first word or when we get a new word
+                    if (!userMessage.contains(" ") || userMessage.trim() != userMessage)  {
                         onChangedMessage(userMessage)
                     }
                 },
