@@ -3,15 +3,22 @@ package com.google.mediapipe.examples.llminference
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import com.google.common.util.concurrent.ListenableFuture
 import com.google.mediapipe.tasks.genai.llminference.LlmInference
 import com.google.mediapipe.tasks.genai.llminference.LlmInferenceSession
 import com.google.mediapipe.tasks.genai.llminference.LlmInferenceSession.LlmInferenceSessionOptions
 import com.google.mediapipe.tasks.genai.llminference.ProgressListener
 import java.io.File
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlin.math.max
+
+/** The maximum number of tokens the model can process. */
+var MAX_TOKENS = 1024
+
+/**
+ * An offset in tokens that we use to ensure that the model always has the ability to respond when
+ * we compute the remaining context length.
+ */
+var DECODE_TOKEN_OFFSET = 256
 
 class ModelLoadFailException :
     Exception("Failed to load model, please try again")
@@ -49,7 +56,7 @@ class InferenceModel private constructor(context: Context) {
     private fun createEngine(context: Context) {
         val inferenceOptions = LlmInference.LlmInferenceOptions.builder()
             .setModelPath(modelPath(context))
-            .setMaxTokens(1024)
+            .setMaxTokens(MAX_TOKENS)
             .apply { model.preferredBackend?.let { setPreferredBackend(it) } }
             .build()
 
@@ -77,10 +84,18 @@ class InferenceModel private constructor(context: Context) {
         }
     }
 
-    fun generateResponseAsync(prompt: String, progressListener: ProgressListener<String> ) {
+    fun generateResponseAsync(prompt: String, progressListener: ProgressListener<String>) : ListenableFuture<String> {
         val formattedPrompt = model.uiState.formatPrompt(prompt)
         llmInferenceSession.addQueryChunk(formattedPrompt)
-        llmInferenceSession.generateResponseAsync(progressListener)
+        return llmInferenceSession.generateResponseAsync(progressListener)
+    }
+
+    fun estimateTokensRemaining(prompt: String): Int {
+        val context = uiState.messages.joinToString { it.rawMessage } + prompt
+        val sizeOfAllMessages = llmInferenceSession.sizeInTokens(context)
+        val remainingTokens = MAX_TOKENS - sizeOfAllMessages - DECODE_TOKEN_OFFSET
+        // Token size is approximate so, let's not return anything below 0
+        return max(0, remainingTokens)
     }
 
     companion object {
