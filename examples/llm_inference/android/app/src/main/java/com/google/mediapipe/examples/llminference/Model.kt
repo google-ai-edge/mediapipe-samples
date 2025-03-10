@@ -55,7 +55,7 @@ enum class Model(
         licenseUrl = "",
         needsAuth = false,
         preferredBackend = null,
-        uiState = ChatUiState(),
+        uiState = GenericUiState(),
         temperature = 0.0f,
         topK = 40,
         topP = 1.0f

@@ -33,21 +33,15 @@ class ChatViewModel(
     fun sendMessage(userMessage: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.value.addMessage(userMessage, USER_PREFIX)
-            var currentMessageId: String? = _uiState.value.createLoadingMessage()
+            _uiState.value.createLoadingMessage()
             setInputEnabled(false)
             try {
-                inferenceModel.generateResponseAsync(userMessage)
-                inferenceModel.partialResults
-                    .collectIndexed { _, (partialResult, done) ->
-                        currentMessageId?.let {
-                            currentMessageId = _uiState.value.appendMessage(it, partialResult, done)
-                            if (done) {
-                                currentMessageId = null
-                                // Re-enable text input
-                                setInputEnabled(true)
-                            }
-                        }
+                inferenceModel.generateResponseAsync(userMessage, { partialResult, done ->
+                    _uiState.value.appendMessage(partialResult, done)
+                    if (done) {
+                        setInputEnabled(true)  // Re-enable text input
                     }
+                })
             } catch (e: Exception) {
                 _uiState.value.addMessage(e.localizedMessage ?: "Unknown Error", MODEL_PREFIX)
                 setInputEnabled(true)
