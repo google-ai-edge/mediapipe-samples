@@ -10,7 +10,9 @@ import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.math.max
 
 class ChatViewModel(
     private var inferenceModel: InferenceModel
@@ -40,6 +42,10 @@ class ChatViewModel(
                     _uiState.value.appendMessage(partialResult, done)
                     if (done) {
                         setInputEnabled(true)  // Re-enable text input
+                    } else {
+                        // Reduce current token count (estimate only). sizeInTokens() will be used
+                        // when computation is done
+                        _tokensRemaining.update { max(0, it - 1) }
                     }
                 })
                 // Once the inference is done, recompute the remaining size in tokens

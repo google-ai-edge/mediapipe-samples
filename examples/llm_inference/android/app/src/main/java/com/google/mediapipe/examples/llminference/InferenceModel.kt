@@ -95,7 +95,8 @@ class InferenceModel private constructor(context: Context) {
         if (context.isEmpty()) return -1 // Specia marker if no content has been added
 
         val sizeOfAllMessages = llmInferenceSession.sizeInTokens(context)
-        val remainingTokens = MAX_TOKENS - sizeOfAllMessages - DECODE_TOKEN_OFFSET
+        val approximateControlTokens = uiState.messages.size * 3
+        val remainingTokens = MAX_TOKENS - sizeOfAllMessages - approximateControlTokens -  DECODE_TOKEN_OFFSET
         // Token size is approximate so, let's not return anything below 0
         return max(0, remainingTokens)
     }
