@@ -154,7 +154,7 @@ fun ChatScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = stringResource(R.string.refresh_message),
+                    text = stringResource(R.string.context_full_message),
                     style = MaterialTheme.typography.titleSmall,
                     color = Color.Red, // Red text
                     textAlign = TextAlign.Center,
