@@ -156,7 +156,7 @@ fun ChatScreen(
                 Text(
                     text = stringResource(R.string.context_full_message),
                     style = MaterialTheme.typography.titleSmall,
-                    color = Color.Red, // Red text
+                    color = Color.Red,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )
