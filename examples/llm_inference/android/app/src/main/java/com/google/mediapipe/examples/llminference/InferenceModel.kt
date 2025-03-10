@@ -16,9 +16,12 @@ import kotlinx.coroutines.flow.asSharedFlow
 class ModelLoadFailException :
     Exception("Failed to load model, please try again")
 
+class ModelSessionCreateFailException :
+    Exception("Failed to create model session, please try again")
+
 class InferenceModel private constructor(context: Context) {
-    private var llmInference: LlmInference
-    private var llmInferenceSession: LlmInferenceSession
+    private lateinit var llmInference: LlmInference
+    private lateinit var llmInferenceSession: LlmInferenceSession
     private val TAG = InferenceModel::class.qualifiedName
 
     val uiState: UiState
@@ -28,26 +31,49 @@ class InferenceModel private constructor(context: Context) {
             throw IllegalArgumentException("Model not found at path: ${model.path}")
         }
 
+        uiState = model.uiState
+        createEngine(context)
+        createSession()
+    }
+
+    fun close() {
+        llmInferenceSession.close()
+        llmInference.close()
+    }
+
+    fun resetSession() {
+        llmInferenceSession.close()
+        createSession()
+    }
+
+    private fun createEngine(context: Context) {
         val inferenceOptions = LlmInference.LlmInferenceOptions.builder()
             .setModelPath(modelPath(context))
             .setMaxTokens(1024)
             .apply { model.preferredBackend?.let { setPreferredBackend(it) } }
             .build()
 
+        try {
+            llmInference = LlmInference.createFromOptions(context, inferenceOptions)
+        } catch (e: Exception) {
+            Log.e(TAG, "Load model error: ${e.message}", e)
+            throw ModelLoadFailException()
+        }
+    }
+
+    private fun createSession() {
         val sessionOptions =  LlmInferenceSessionOptions.builder()
             .setTemperature(model.temperature)
             .setTopK(model.topK)
             .setTopP(model.topP)
             .build()
 
-        uiState = model.uiState
         try {
-            llmInference = LlmInference.createFromOptions(context, inferenceOptions)
             llmInferenceSession =
                 LlmInferenceSession.createFromOptions(llmInference, sessionOptions)
         } catch (e: Exception) {
-            Log.e(TAG, "Load model error: ${e.message}", e)
-            throw ModelLoadFailException()
+            Log.e(TAG, "LlmInferenceSession create error: ${e.message}", e)
+            throw ModelSessionCreateFailException()
         }
     }
 
@@ -55,11 +81,6 @@ class InferenceModel private constructor(context: Context) {
         val formattedPrompt = model.uiState.formatPrompt(prompt)
         llmInferenceSession.addQueryChunk(formattedPrompt)
         llmInferenceSession.generateResponseAsync(progressListener)
-    }
-
-    fun close() {
-        llmInferenceSession.close()
-        llmInference.close()
     }
 
     companion object {
