@@ -1,6 +1,7 @@
 package com.google.mediapipe.examples.llminference
 
 import android.content.Context
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -18,7 +19,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -30,18 +30,23 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 internal fun ChatRoute(
@@ -62,8 +67,15 @@ internal fun ChatRoute(
         context,
         uiState,
         textInputEnabled,
+        remainingTokens = chatViewModel.tokensRemaining,
+        resetTokenCount = {
+            chatViewModel.recomputeSizeInTokens("")
+        },
         onSendMessage = { message ->
             chatViewModel.sendMessage(message)
+        },
+        onChangedMessage = { message ->
+            chatViewModel.recomputeSizeInTokens(message)
         },
         onClose = onClose
     )
@@ -74,10 +86,14 @@ fun ChatScreen(
     context: Context,
     uiState: UiState,
     textInputEnabled: Boolean,
+    remainingTokens: StateFlow<Int>,
+    resetTokenCount: () -> Unit,
     onSendMessage: (String) -> Unit,
+    onChangedMessage: (String) -> Unit,
     onClose: () -> Unit
 ) {
     var userMessage by rememberSaveable { mutableStateOf("") }
+    val tokens by remainingTokens.collectAsState(initial = -1)
 
     Column(
         modifier = Modifier
@@ -96,12 +112,17 @@ fun ChatScreen(
                 text = InferenceModel.model.toString(),
                 style = MaterialTheme.typography.titleSmall
             )
+            Text(
+                text = if (tokens >= 0) "$tokens ${stringResource(R.string.tokens_remaining)}" else "",
+                style = MaterialTheme.typography.titleSmall
+            )
             // Wrap the buttons in another Row to keep them together
             Row {
                 IconButton(
                     onClick = {
                         InferenceModel.getInstance(context).resetSession()
                         uiState.clearMessages()
+                        resetTokenCount()
                     },
                     enabled = textInputEnabled
                 ) {
@@ -112,12 +133,33 @@ fun ChatScreen(
                     onClick = {
                         InferenceModel.getInstance(context).close()
                         uiState.clearMessages()
+                        resetTokenCount()
                         onClose()
                     },
                     enabled = textInputEnabled
                 ) {
                     Icon(Icons.Default.Close, contentDescription = "Close Chat")
                 }
+            }
+        }
+
+        if (tokens == 0) {
+            // Show warning label that context is full
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.LightGray)
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.context_full_message),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = Color.Red,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
 
@@ -146,7 +188,12 @@ fun ChatScreen(
 
             TextField(
                 value = userMessage,
-                onValueChange = { userMessage = it },
+                onValueChange = { userMessage = it
+                    // Only recompute on first word or when we get a new word
+                    if (!userMessage.contains(" ") || userMessage.trim() != userMessage)  {
+                        onChangedMessage(userMessage)
+                    }
+                },
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.Sentences,
                 ),
@@ -154,7 +201,12 @@ fun ChatScreen(
                     Text(stringResource(R.string.chat_label))
                 },
                 modifier = Modifier
-                    .weight(0.85f),
+                    .weight(0.85f)
+                    .onFocusChanged { focusState ->
+                        if (focusState.isFocused) {
+                            onChangedMessage(userMessage)
+                        }
+                    },
                 enabled = textInputEnabled
             )
 
@@ -170,7 +222,7 @@ fun ChatScreen(
                     .align(Alignment.CenterVertically)
                     .fillMaxWidth()
                     .weight(0.15f),
-                enabled = textInputEnabled
+                enabled = textInputEnabled && tokens > 0
             ) {
                 Icon(
                     Icons.AutoMirrored.Default.Send,

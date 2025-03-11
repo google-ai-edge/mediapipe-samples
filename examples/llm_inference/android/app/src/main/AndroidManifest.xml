@@ -41,7 +41,8 @@
             android:name="com.google.mediapipe.examples.llminference.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.LLMInference">
+            android:theme="@style/Theme.LLMInference"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
