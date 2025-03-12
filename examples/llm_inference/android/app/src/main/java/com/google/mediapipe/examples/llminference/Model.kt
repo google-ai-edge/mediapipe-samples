@@ -16,27 +16,27 @@ enum class Model(
     val topK: Int,
     val topP: Float,
 ) {
-    GEMMA_CPU(
-        path = "/data/local/tmp/llm/gemma-2b-it-cpu-int4.bin",
-        url = "https://huggingface.co/litert-community/Gemma2-2B-IT/resolve/main/gemma2_q8_multi-prefill-seq_ekv1280.task",
-        licenseUrl = "https://huggingface.co/litert-community/Gemma2-2B-IT",
+    GEMMA3_CPU(
+        path = "/data/local/tmp/gemma3-1b-it-int4.task",
+        url = "https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4.task",
+        licenseUrl = "https://huggingface.co/litert-community/Gemma3-1B-IT",
         needsAuth = true,
-        preferredBackend = null,
-        uiState = GemmaUiState(),
-        temperature = 0.8f,
-        topK = 40,
-        topP = 1.0f
+        preferredBackend = Backend.CPU,
+        uiState = GenericUiState(),
+        temperature = 1f,
+        topK = 64,
+        topP = 0.95f
     ),
-    GEMMA_GPU(
-        path = "/data/local/tmp/llm/gemma-2b-it-gpu-int4.bin",
-        url = "",
-        licenseUrl = "",
+    GEMMA3_GPU(
+        path = "/data/local/tmp/gemma3-1b-it-int4.task",
+        url = "https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4.task",
+        licenseUrl = "https://huggingface.co/litert-community/Gemma3-1B-IT",
         needsAuth = true,
-        preferredBackend = null,
-        uiState = GemmaUiState(),
-        temperature = 0.8f,
-        topK = 40,
-        topP = 1.0f
+        preferredBackend = Backend.GPU,
+        uiState = GenericUiState(),
+        temperature = 1f,
+        topK = 64,
+        topP = 0.95f
     ),
     DEEPSEEK_CPU(
         path = "/data/local/tmp/llm/deepseek3k_q8_ekv1280.task",
