@@ -22,7 +22,7 @@ enum class Model(
         licenseUrl = "https://huggingface.co/litert-community/Gemma3-1B-IT",
         needsAuth = true,
         preferredBackend = Backend.CPU,
-        uiState = GenericUiState(),
+        uiState = GemmaUiState(),
         temperature = 1f,
         topK = 64,
         topP = 0.95f
@@ -33,7 +33,7 @@ enum class Model(
         licenseUrl = "https://huggingface.co/litert-community/Gemma3-1B-IT",
         needsAuth = true,
         preferredBackend = Backend.GPU,
-        uiState = GenericUiState(),
+        uiState = GemmaUiState(),
         temperature = 1f,
         topK = 64,
         topP = 0.95f
