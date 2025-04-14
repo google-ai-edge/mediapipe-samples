@@ -13,10 +13,23 @@
 		8DCF4C492B99289E00427D77 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8DCF4C482B99289E00427D77 /* Assets.xcassets */; };
 		8DCF4C4D2B99289E00427D77 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8DCF4C4C2B99289E00427D77 /* Preview Assets.xcassets */; };
 		8DCF4C582B992B9C00427D77 /* ConversationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DCF4C572B992B9C00427D77 /* ConversationViewModel.swift */; };
-		8DCF4C5C2B9939D700427D77 /* OnDeviceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DCF4C5B2B9939D700427D77 /* OnDeviceModel.swift */; };
-		AA3C5AD32D64B66500888383 /* LaTeXSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = AA3C5AD22D64B66500888383 /* LaTeXSwiftUI */; };
 		AA3C5AD52D64DC6400888383 /* String+DisplayFormatExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA3C5AD42D64DC6400888383 /* String+DisplayFormatExtension.swift */; };
 		AA6030432D5F22AC001C005C /* ModelSelectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6030422D5F22AC001C005C /* ModelSelectionScreen.swift */; };
+		AA673F7B2DAD95240066441A /* DownloadViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA673F772DAD95240066441A /* DownloadViewModel.swift */; };
+		AA673F7C2DAD95240066441A /* AcknowledgeLicenseViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA673F782DAD95240066441A /* AcknowledgeLicenseViewModel.swift */; };
+		AA673F7E2DAD95240066441A /* HuggingFaceFlowViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA673F7A2DAD95240066441A /* HuggingFaceFlowViewModel.swift */; };
+		AA673F892DAD955F0066441A /* HuggingFaceFlowScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA673F852DAD955E0066441A /* HuggingFaceFlowScreen.swift */; };
+		AA673F8A2DAD955F0066441A /* DownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA673F862DAD955E0066441A /* DownloadView.swift */; };
+		AA673F8B2DAD955F0066441A /* AcknowledgeLicenseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA673F872DAD955F0066441A /* AcknowledgeLicenseView.swift */; };
+		AA673F8C2DAD955F0066441A /* RoundedRectButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA673F882DAD955F0066441A /* RoundedRectButton.swift */; };
+		AA673F902DAD96C90066441A /* LaTeXSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = AA673F8F2DAD96C90066441A /* LaTeXSwiftUI */; };
+		AA673F952DAD97370066441A /* Metadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA673F922DAD97370066441A /* Metadata.swift */; };
+		AA673F962DAD97370066441A /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA673F932DAD97370066441A /* Model.swift */; };
+		AA673F972DAD97370066441A /* AuthConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA673F942DAD97370066441A /* AuthConfig.swift */; };
+		AA673F9C2DAD977A0066441A /* OAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA673F982DAD977A0066441A /* OAuthService.swift */; };
+		AA673F9D2DAD977A0066441A /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA673F992DAD977A0066441A /* NetworkService.swift */; };
+		AA673F9E2DAD977A0066441A /* OnDeviceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA673F9A2DAD977A0066441A /* OnDeviceModel.swift */; };
+		AA673F9F2DAD977A0066441A /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA673F9B2DAD977A0066441A /* KeychainHelper.swift */; };
 		AA9212892D65F55200C12E69 /* MessageViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA9212882D65F55200C12E69 /* MessageViewModel.swift */; };
 /* End PBXBuildFile section */
 
@@ -29,9 +42,23 @@
 		8DCF4C4A2B99289E00427D77 /* InferenceExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = InferenceExample.entitlements; sourceTree = "<group>"; };
 		8DCF4C4C2B99289E00427D77 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		8DCF4C572B992B9C00427D77 /* ConversationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationViewModel.swift; sourceTree = "<group>"; };
-		8DCF4C5B2B9939D700427D77 /* OnDeviceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnDeviceModel.swift; sourceTree = "<group>"; };
 		AA3C5AD42D64DC6400888383 /* String+DisplayFormatExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+DisplayFormatExtension.swift"; sourceTree = "<group>"; };
 		AA6030422D5F22AC001C005C /* ModelSelectionScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelSelectionScreen.swift; sourceTree = "<group>"; };
+		AA673F772DAD95240066441A /* DownloadViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DownloadViewModel.swift; sourceTree = "<group>"; };
+		AA673F782DAD95240066441A /* AcknowledgeLicenseViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AcknowledgeLicenseViewModel.swift; sourceTree = "<group>"; };
+		AA673F7A2DAD95240066441A /* HuggingFaceFlowViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HuggingFaceFlowViewModel.swift; sourceTree = "<group>"; };
+		AA673F852DAD955E0066441A /* HuggingFaceFlowScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HuggingFaceFlowScreen.swift; sourceTree = "<group>"; };
+		AA673F862DAD955E0066441A /* DownloadView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DownloadView.swift; sourceTree = "<group>"; };
+		AA673F872DAD955F0066441A /* AcknowledgeLicenseView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AcknowledgeLicenseView.swift; sourceTree = "<group>"; };
+		AA673F882DAD955F0066441A /* RoundedRectButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoundedRectButton.swift; sourceTree = "<group>"; };
+		AA673F8D2DAD960C0066441A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		AA673F922DAD97370066441A /* Metadata.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Metadata.swift; sourceTree = "<group>"; };
+		AA673F932DAD97370066441A /* Model.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
+		AA673F942DAD97370066441A /* AuthConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuthConfig.swift; sourceTree = "<group>"; };
+		AA673F982DAD977A0066441A /* OAuthService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OAuthService.swift; sourceTree = "<group>"; };
+		AA673F992DAD977A0066441A /* NetworkService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
+		AA673F9A2DAD977A0066441A /* OnDeviceModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OnDeviceModel.swift; sourceTree = "<group>"; };
+		AA673F9B2DAD977A0066441A /* KeychainHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
 		AA9212882D65F55200C12E69 /* MessageViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageViewModel.swift; sourceTree = "<group>"; };
 		E0D7FB7ACC6233403D36FDF8 /* Pods-InferenceExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InferenceExample.debug.xcconfig"; path = "Target Support Files/Pods-InferenceExample/Pods-InferenceExample.debug.xcconfig"; sourceTree = "<group>"; };
 		F02369998C59A0B7AAC3A1D5 /* Pods_InferenceExample.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_InferenceExample.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -43,7 +70,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0B6641881CDD8AB5E5F6C3FE /* Pods_InferenceExample.framework in Frameworks */,
-				AA3C5AD32D64B66500888383 /* LaTeXSwiftUI in Frameworks */,
+				AA673F902DAD96C90066441A /* LaTeXSwiftUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -88,6 +115,8 @@
 		8DCF4C432B99289E00427D77 /* InferenceExample */ = {
 			isa = PBXGroup;
 			children = (
+				AA673F912DAD97220066441A /* Types */,
+				AA673F8D2DAD960C0066441A /* Info.plist */,
 				AA3C5AD92D64F70900888383 /* Services */,
 				AA3C5AD82D64F6F800888383 /* Extensions */,
 				AA3C5AD72D64F6E700888383 /* View Models */,
@@ -111,6 +140,10 @@
 		AA3C5AD62D64F6CC00888383 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				AA673F872DAD955F0066441A /* AcknowledgeLicenseView.swift */,
+				AA673F862DAD955E0066441A /* DownloadView.swift */,
+				AA673F852DAD955E0066441A /* HuggingFaceFlowScreen.swift */,
+				AA673F882DAD955F0066441A /* RoundedRectButton.swift */,
 				AA6030422D5F22AC001C005C /* ModelSelectionScreen.swift */,
 				8DCF4C462B99289E00427D77 /* ConversationScreen.swift */,
 			);
@@ -120,6 +153,9 @@
 		AA3C5AD72D64F6E700888383 /* View Models */ = {
 			isa = PBXGroup;
 			children = (
+				AA673F782DAD95240066441A /* AcknowledgeLicenseViewModel.swift */,
+				AA673F772DAD95240066441A /* DownloadViewModel.swift */,
+				AA673F7A2DAD95240066441A /* HuggingFaceFlowViewModel.swift */,
 				AA9212882D65F55200C12E69 /* MessageViewModel.swift */,
 				8DCF4C572B992B9C00427D77 /* ConversationViewModel.swift */,
 			);
@@ -137,9 +173,22 @@
 		AA3C5AD92D64F70900888383 /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				8DCF4C5B2B9939D700427D77 /* OnDeviceModel.swift */,
+				AA673F9B2DAD977A0066441A /* KeychainHelper.swift */,
+				AA673F992DAD977A0066441A /* NetworkService.swift */,
+				AA673F982DAD977A0066441A /* OAuthService.swift */,
+				AA673F9A2DAD977A0066441A /* OnDeviceModel.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		AA673F912DAD97220066441A /* Types */ = {
+			isa = PBXGroup;
+			children = (
+				AA673F942DAD97370066441A /* AuthConfig.swift */,
+				AA673F922DAD97370066441A /* Metadata.swift */,
+				AA673F932DAD97370066441A /* Model.swift */,
+			);
+			path = Types;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -160,7 +209,7 @@
 			);
 			name = InferenceExample;
 			packageProductDependencies = (
-				AA3C5AD22D64B66500888383 /* LaTeXSwiftUI */,
+				AA673F8F2DAD96C90066441A /* LaTeXSwiftUI */,
 			);
 			productName = InferenceExample;
 			productReference = 8DCF4C412B99289E00427D77 /* InferenceExample.app */;
@@ -191,7 +240,7 @@
 			);
 			mainGroup = 8DCF4C382B99289D00427D77;
 			packageReferences = (
-				AA3C5AD12D64B66500888383 /* XCRemoteSwiftPackageReference "LaTeXSwiftUI" */,
+				AA673F8E2DAD96C90066441A /* XCRemoteSwiftPackageReference "LaTeXSwiftUI" */,
 			);
 			productRefGroup = 8DCF4C422B99289E00427D77 /* Products */;
 			projectDirPath = "";
@@ -244,13 +293,26 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA673F8A2DAD955F0066441A /* DownloadView.swift in Sources */,
 				AA3C5AD52D64DC6400888383 /* String+DisplayFormatExtension.swift in Sources */,
-				8DCF4C5C2B9939D700427D77 /* OnDeviceModel.swift in Sources */,
 				8DCF4C472B99289E00427D77 /* ConversationScreen.swift in Sources */,
+				AA673F7C2DAD95240066441A /* AcknowledgeLicenseViewModel.swift in Sources */,
+				AA673F9F2DAD977A0066441A /* KeychainHelper.swift in Sources */,
 				8DCF4C582B992B9C00427D77 /* ConversationViewModel.swift in Sources */,
 				AA9212892D65F55200C12E69 /* MessageViewModel.swift in Sources */,
+				AA673F8B2DAD955F0066441A /* AcknowledgeLicenseView.swift in Sources */,
+				AA673F892DAD955F0066441A /* HuggingFaceFlowScreen.swift in Sources */,
+				AA673F9E2DAD977A0066441A /* OnDeviceModel.swift in Sources */,
 				8DCF4C452B99289E00427D77 /* InferenceExampleApp.swift in Sources */,
+				AA673F8C2DAD955F0066441A /* RoundedRectButton.swift in Sources */,
+				AA673F952DAD97370066441A /* Metadata.swift in Sources */,
+				AA673F7B2DAD95240066441A /* DownloadViewModel.swift in Sources */,
+				AA673F962DAD97370066441A /* Model.swift in Sources */,
+				AA673F972DAD97370066441A /* AuthConfig.swift in Sources */,
 				AA6030432D5F22AC001C005C /* ModelSelectionScreen.swift in Sources */,
+				AA673F9D2DAD977A0066441A /* NetworkService.swift in Sources */,
+				AA673F9C2DAD977A0066441A /* OAuthService.swift in Sources */,
+				AA673F7E2DAD95240066441A /* HuggingFaceFlowViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -381,9 +443,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"InferenceExample/Preview Content\"";
-				DEVELOPMENT_TEAM = 98N43B5Q6H;
+				DEVELOPMENT_TEAM = D784CAQKMX;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = InferenceExample/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -394,7 +457,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.2;
@@ -419,9 +482,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"InferenceExample/Preview Content\"";
-				DEVELOPMENT_TEAM = 98N43B5Q6H;
+				DEVELOPMENT_TEAM = D784CAQKMX;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = InferenceExample/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -432,7 +496,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.2;
@@ -471,7 +535,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		AA3C5AD12D64B66500888383 /* XCRemoteSwiftPackageReference "LaTeXSwiftUI" */ = {
+		AA673F8E2DAD96C90066441A /* XCRemoteSwiftPackageReference "LaTeXSwiftUI" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/colinc86/LaTeXSwiftUI";
 			requirement = {
@@ -482,9 +546,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		AA3C5AD22D64B66500888383 /* LaTeXSwiftUI */ = {
+		AA673F8F2DAD96C90066441A /* LaTeXSwiftUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA3C5AD12D64B66500888383 /* XCRemoteSwiftPackageReference "LaTeXSwiftUI" */;
+			package = AA673F8E2DAD96C90066441A /* XCRemoteSwiftPackageReference "LaTeXSwiftUI" */;
 			productName = LaTeXSwiftUI;
 		};
 /* End XCSwiftPackageProductDependency section */

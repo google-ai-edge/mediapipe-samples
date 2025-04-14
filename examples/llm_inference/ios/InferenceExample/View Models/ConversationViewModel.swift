@@ -22,6 +22,7 @@ class ConversationViewModel: ObservableObject {
   /// .error state is set only when there are errors in loading the model and creating a new chat session.
   /// Response generation errors are relayed as messages from the model.
   enum State: Equatable {
+    case idle
     case loadingModel
     case promptSubmitted
     case streamingResponse
@@ -44,6 +45,7 @@ class ConversationViewModel: ObservableObject {
       case (.loadingModel, .loadingModel),
         (.promptSubmitted, .promptSubmitted),
         (.streamingResponse, .streamingResponse),
+        (.idle, .idle),
         (.done, .done):
         return true
       /// Error equality checks are not required for updates to the UI at the moment. If required more fine grained equality
@@ -58,10 +60,12 @@ class ConversationViewModel: ObservableObject {
   }
 
   /// Based on this property updates are made to the UI State including enabling and disabling of messaging, other buttons etc.
-  @Published var currentState: State = .loadingModel
-  
+  @Published var currentState: State = .idle
+
+  @Published var downloadRequired: Bool = true
+
   /// Model to initialize.
-  private var modelCategory: Model
+  var modelCategory: Model
 
   /// Model used for inference. Wraps around a MediaPipe `LlmInference`.
   private var model: OnDeviceModel?
@@ -71,9 +75,15 @@ class ConversationViewModel: ObservableObject {
 
   init(modelCategory: Model) {
     self.modelCategory = modelCategory
+    downloadRequired = (try? modelCategory.modelPath) == nil
   }
 
   func loadModel() {
+    guard currentState == .idle else {
+      return
+    }
+    
+    currentState = .loadingModel
     Task {
       load(modelCategory: modelCategory)
     }
@@ -83,6 +93,12 @@ class ConversationViewModel: ObservableObject {
     chat = nil
     model = nil
     currentState = .loadingModel
+  }
+
+  func handleModelDownloadedCompleted() {
+    downloadRequired = false
+    currentState = .idle
+    loadModel()
   }
 
   private func load(modelCategory: Model) {
@@ -145,12 +161,10 @@ class ConversationViewModel: ObservableObject {
   }
 
   private func formatPrompt(text: String) -> String {
-    let startTurn = "<start_of_turn>"
-    let endTurn = "<end_of_turn>"
-    let userPrefix = "user"
-    let modelPrefix = "model"
+    let conversationMarkers = modelCategory.conversationMarkers
 
-    return "\(startTurn)\(userPrefix)\n\(text)\(endTurn)\(startTurn)\(modelPrefix)"
+    return
+      "\(conversationMarkers.startOfTurn)\(conversationMarkers.userPrefix)\n\(text)\(conversationMarkers.endOfTurn)\(conversationMarkers.startOfTurn)\(conversationMarkers.modelPrefix)"
   }
 
   private func updateSystemViewModel(
@@ -163,7 +177,9 @@ class ConversationViewModel: ObservableObject {
     currentState = .streamingResponse
     do {
       for try await partialResult in responseStream {
-        messageVM.update(text: partialResult)
+        messageVM.update(
+          text: partialResult.replacingOccurrences(
+            of: modelCategory.conversationMarkers.endOfTurn, with: ""))
       }
     } catch {
 
@@ -201,48 +217,12 @@ class ConversationViewModel: ObservableObject {
     defer { systemViewModel.closeSystemMessage() }
 
     do {
-      let prompt = formatPrompt(text:text)
+      let prompt = formatPrompt(text: text)
       let responseStream = try await chat.sendMessage(prompt)
 
       await updateSystemViewModel(systemViewModel, responseStream: responseStream)
     } catch {
       /// systemViewModel is closed in a defer before exiting this scope. Any errors are handled during close.
-    }
-  }
-}
-
-/// Holds the names of the models names that can be  used.
-enum Model: CaseIterable {
-  case gemmaCPU
-  case gemmaGPU
-
-  private var path: (name: String, extension: String) {
-    switch self {
-    case .gemmaCPU:
-      return ("gemma-2b-it-cpu-int4", "bin")
-    case .gemmaGPU:
-      return ("gemma-2b-it-gpu-int4", "bin")
-    }
-  }
-
-  var modelPath: String {
-    get throws {
-      guard
-        let path = Bundle.main.path(
-          forResource: path.name, ofType: path.extension)
-      else {
-        throw InferenceError.modelFileNotFound(modelName: "\(path.name).\(path.extension)")
-      }
-      return path
-    }
-  }
-
-  var name: String {
-    switch self {
-    case .gemmaCPU:
-      return "Gemma CPU"
-    case .gemmaGPU:
-      return "Gemma GPU"
     }
   }
 }
