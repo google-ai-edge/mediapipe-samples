@@ -16,7 +16,27 @@ import SwiftUI
 
 @main
 struct InferenceExampleApp: App {
-
+  
+  private let hasLaunchedBeforeKey = "com.mediapipe.InferenceExampleApp.hasLaunchedBefore"
+  
+  init() {
+    /// Delete keys if this is the first launch of the app. Since the app is not explicitly handling logout, user can delete the app to clear
+    /// the current session if they want to login to a new account.
+    /// Any keys saved to the key chain will be persisted by iOS inspite of the app being uninstalled.
+    defer {
+      UserDefaults.standard.set(true, forKey: hasLaunchedBeforeKey)
+    }
+    
+    guard !UserDefaults.standard.bool(forKey: hasLaunchedBeforeKey) else {
+      return
+    }
+    
+    let keys =
+    [HuggingFaceAuthConfig.accessTokenKeychainKey, HuggingFaceAuthConfig.codeVerifierKeychainKey]
+    + Model.allCases.map { $0.licenseAcnowledgedKey }
+    KeychainHelper.clear(keys: keys)
+  }
+  
   var body: some Scene {
     WindowGroup {
       ModelSelectionScreen()

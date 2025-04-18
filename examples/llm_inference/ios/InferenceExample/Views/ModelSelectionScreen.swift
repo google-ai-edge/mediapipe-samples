@@ -1,4 +1,4 @@
-// Copyright 2024 The Mediapipe Authors.
+// Copyright 2025 The Mediapipe Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,6 +22,9 @@ struct ModelSelectionScreen: View {
       }
       .navigationTitle("Models")
       .navigationBarTitleDisplayMode(.inline)
+      .toolbarBackground(Metadata.globalColor, for: .navigationBar)  // Set color here
+      .toolbarBackground(.visible, for: .navigationBar)  // Ensures the background is visible
+      .toolbarColorScheme(.dark, for: .navigationBar)  //
       .navigationDestination(for: Model.self) { model in
         ConversationScreen(viewModel: ConversationViewModel(modelCategory: model))
       }
