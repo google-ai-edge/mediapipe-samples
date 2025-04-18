@@ -122,10 +122,8 @@ class GemmaUiState(
 class DeepSeekUiState(
     messages: List<ChatMessage> = emptyList()
 ) : UiState {
-    private var START_TOKEN = "<｜begin▁of▁sentence｜>"
-    private var PROMPT_PREFIX = "<｜User｜>"
-    private var PROMPT_SUFFIX = "<｜Assistant｜>"
-    private var THINKING_MARKER_START = "<think>"
+    private var PROMPT_PREFIX = "<｜begin▁of▁sentence｜><｜User｜>"
+    private var PROMPT_SUFFIX = "<｜Assistant｜><think>\\n"
     private var THINKING_MARKER_END = "</think>"
 
     private val _messages: MutableList<ChatMessage> = messages.toMutableStateList()
@@ -133,19 +131,13 @@ class DeepSeekUiState(
     private var _currentMessageId = ""
 
     override fun createLoadingMessage() {
-        val chatMessage = ChatMessage(author = MODEL_PREFIX, isLoading = true, isThinking = false)
+        val chatMessage = ChatMessage(author = MODEL_PREFIX, isLoading = true, isThinking = true)
         _messages.add(chatMessage)
         _currentMessageId = chatMessage.id
     }
 
     override fun appendMessage(text: String, done: Boolean) {
         val index = _messages.indexOfFirst { it.id == _currentMessageId }
-
-        if (text.contains(THINKING_MARKER_START)) {
-            _messages[index] = _messages[index].copy(
-                isThinking = true
-            )
-        }
 
         if (text.contains(THINKING_MARKER_END)) { // The model is done thinking, we add a new bubble
             val thinkingEnd = text.indexOf(THINKING_MARKER_END) + THINKING_MARKER_END.length
@@ -180,7 +172,7 @@ class DeepSeekUiState(
 
     private fun appendToMessage(id: String, suffix: String) : Int {
         val index = _messages.indexOfFirst { it.id == id }
-        val newText =  suffix.replace(THINKING_MARKER_START, "").replace(THINKING_MARKER_END, "")
+        val newText =  suffix.replace(THINKING_MARKER_END, "")
         _messages[index] = _messages[index].copy(
             rawMessage = _messages[index].rawMessage + newText,
             isLoading = false
@@ -202,6 +194,6 @@ class DeepSeekUiState(
     }
 
     override fun formatPrompt(text: String): String {
-       return "$START_TOKEN$PROMPT_PREFIX$text$PROMPT_SUFFIX"
+       return "$PROMPT_PREFIX$text$PROMPT_SUFFIX"
     }
 }
