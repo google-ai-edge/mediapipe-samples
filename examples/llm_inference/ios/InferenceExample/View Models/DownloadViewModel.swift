@@ -22,7 +22,8 @@ class DownloadViewModel: ObservableObject {
 
   let modelName: String
   var authRequired: Bool {
-    return !oauthService.hasAccessToken()
+    /// Restrict models that don't need auth (Deep seek, phi 4) and check for the presence of access token.
+    return modelCategory.authRequired && !oauthService.hasAccessToken()
   }
 
   private let oauthService = OAuthService()
@@ -45,7 +46,7 @@ class DownloadViewModel: ObservableObject {
       guard let self = self else { return }
       do {
         try await performDownload(
-          accessToken: try oauthService.getAccessToken(), downloadUrl: modelCategory.downloadUrl,
+          downloadUrl: modelCategory.downloadUrl,
           destinationURL: try modelCategory.downloadDestination)
       } catch let error as NetworkService.NetworkError {
         defer {
@@ -114,11 +115,18 @@ class DownloadViewModel: ObservableObject {
   }
 
   /// Utility for handling download using the `NetworkService`.
-  private func performDownload(accessToken: String, downloadUrl: URL, destinationURL: URL)
+  private func performDownload(downloadUrl: URL, destinationURL: URL)
     async throws
   {
+    var headers = [String: String]()
+
+    if modelCategory.authRequired {
+      let accessToken = try oauthService.getAccessToken()
+      headers = ["Authorization": "Bearer " + accessToken]
+    }
+
     for try await event in NetworkService.shared.downloadFile(
-      from: downloadUrl, to: destinationURL, headers: ["Authorization": "Bearer " + accessToken])
+      from: downloadUrl, to: destinationURL, headers: headers)
     {
       guard !Task.isCancelled else {
         updateStatesOnCancellation()
