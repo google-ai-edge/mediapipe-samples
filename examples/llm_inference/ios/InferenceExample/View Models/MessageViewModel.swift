@@ -23,11 +23,22 @@ class MessageViewModel: ObservableObject, Identifiable {
   }
 
   func update(participant: ChatMessage.Participant) {
-    guard chatMessage.participant != .user && participant != .user else {
+    /// Can only update participant of system messages
+    guard chatMessage.participant != .user else {
+      return
+    }
+
+    /// Can only update participant of system message to another system message type
+    guard participant != .user else {
       return
     }
 
     chatMessage.participant = participant
+  }
+
+  func update(text: String, participant: ChatMessage.Participant) {
+    update(text: text)
+    update(participant: participant)
   }
 
   func update(text: String) {
@@ -38,12 +49,7 @@ class MessageViewModel: ObservableObject, Identifiable {
       /// Trim any leading characters in whole message.
       chatMessage.text = String(
         (chatMessage.text + text).drop(while: { $0.isWhitespace || $0.isNewline }))
-      chatMessage.participant = .system(.response)
     }
-  }
-
-  func closeSystemMessage() {
-    update(participant: chatMessage.text.count > 0 ? .system(.done) : .system(.error))
   }
 }
 
@@ -70,20 +76,28 @@ struct ChatMessage: Identifiable, Equatable {
       case thinking
       case generating
       case response
-      case done
       case error
     }
 
     case system(_ value: System)
     case user
 
+    var defaultMessage: String {
+      switch self {
+      case .system(.error):
+        return "Some error occured."
+      default:
+        return ""
+      }
+    }
+
     var title: String {
       switch self {
       case .system(.generating):
-        return "Generating"
+        return "Generating..."
       case .system(.thinking):
-        return "Thinking"
-      case .system(.response), .system(.done), .system(.error):
+        return "Thinking..."
+      case .system(.response), .system(.error):
         return "Model"
       case .user:
         return "User"

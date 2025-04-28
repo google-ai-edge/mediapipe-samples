@@ -74,7 +74,7 @@ struct ConversationScreen: View {
       .toolbarBackground(Metadata.globalColor, for: .navigationBar)
       .toolbarBackground(.visible, for: .navigationBar)
       .toolbarColorScheme(.dark, for: .navigationBar)
-      .disabled(shouldDisableClicks())
+      .disabled(viewModel.shouldDisableClicks())
 
       if viewModel.currentState == .loadingModel {
         Constants.alertBackgroundColor
@@ -112,7 +112,6 @@ struct ConversationScreen: View {
   }
 
   func didDismissDownloadSheet() {
-    print("Instance______ \(ObjectIdentifier(viewModel))")
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
       viewModel.handleModelDownloadedCompleted()
     }
@@ -123,10 +122,16 @@ struct ConversationScreen: View {
     return false
   }
 
-  private func shouldDisableClicks() -> Bool {
-    if case .createChatError = viewModel.currentState { return true }
-    return false
-  }
+  //  private func shouldDisableClicks() -> Bool {
+  //    switch viewModel.currentState {
+  //      case .createChatError, .streamingResponse:
+  //        return true
+  //      default:
+  //        return false
+  //    }
+  ////    if case .createChatError = viewModel.currentState || case .stream { return true }
+  ////    return false
+  //  }
 }
 
 /// View that displays a message.
@@ -134,13 +139,14 @@ struct MessageView: View {
   private struct Constants {
     static let textMessagePadding: CGFloat = 10.0
     static let foregroundColor = Color(red: 0.0, green: 0.0, blue: 0.0)
-    static let systemMessageBackgroundColor = Color(white: 0.9231)
-    static let userMessageBackgroundColor = Color(red: 0.8627, green: 0.9725, blue: 0.7764)
+    static let systemMessageBackgroundColor = Color("SystemColor")
+    static let userMessageBackgroundColor = Color("UserColor")
+    static let thinkingMessageBackgroundColor = Color("ThinkingColor")
     static let errorBackgroundColor = Color.red.opacity(0.1)
     static let messageBackgroundCornerRadius: CGFloat = 16.0
     static let generationErrorText = "Could not generate response"
     static let font = Font.system(size: 10, weight: .regular, design: .default)
-    static let tint = Color.green
+    static let tint = Metadata.globalColor
   }
 
   @ObservedObject var messageViewModel: MessageViewModel
@@ -161,10 +167,14 @@ struct MessageView: View {
           MessageContentView(
             text: messageViewModel.chatMessage.text,
             backgroundColor: Constants.userMessageBackgroundColor)
-        case .system(value: .response), .system(value: .thinking), .system(value: .done):
+        case .system(value: .response):
           MessageContentView(
             text: messageViewModel.chatMessage.text,
             backgroundColor: Constants.systemMessageBackgroundColor)
+        case .system(value: .thinking):
+          MessageContentView(
+            text: messageViewModel.chatMessage.text,
+            backgroundColor: Constants.thinkingMessageBackgroundColor)
         case .system(value: .error):
           MessageContentView(
             text: Constants.generationErrorText, backgroundColor: Constants.errorBackgroundColor)
@@ -227,7 +237,7 @@ struct TextTypingView: View {
     static let textFieldStrokeColor = Color.gray
     static let sendButtonImage = "arrow.up.circle.fill"
     static let buttonDisabledColor = Color.gray
-    static let buttonEnabledColor = Color.green
+    static let buttonEnabledColor = Metadata.globalColor
     static let padding = 10.0
   }
 

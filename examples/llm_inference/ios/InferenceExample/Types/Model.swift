@@ -18,14 +18,30 @@ import Foundation
 enum Model: CaseIterable {
   case gemma
   case phi4
+  case deepSeek
 
   struct ConversationMarkers: Equatable {
-    let userPrefix: String
-    let modelPrefix: String
-    let startOfTurn: String
-    let endOfTurn: String
+    let promptPrefix: String
+    let promptSuffix: String
+    //    let userPrefix: String
+    //    let modelPrefix: String
+    //    let startOfTurn: String
+    //    let endOfTurn: String
     let thinkingStart: String?
+    let endOfTurn: String?
     let thinkingEnd: String?
+    //<｜Assistant｜><think>\\n
+
+    init(
+      promptPrefix: String, promptSuffix: String, endOfTurn: String? = nil,
+      thinkingStart: String? = nil, thinkingEnd: String? = nil
+    ) {
+      self.promptPrefix = promptPrefix
+      self.promptSuffix = promptSuffix
+      self.thinkingEnd = thinkingEnd
+      self.thinkingStart = thinkingStart
+      self.endOfTurn = endOfTurn
+    }
   }
 
   private var path: (name: String, extension: String) {
@@ -34,6 +50,8 @@ enum Model: CaseIterable {
       return ("gemma2_q8_multi-prefill-seq_ekv1280", "task")
     case .phi4:
       return ("phi4_q8_ekv1280", "task")
+    case .deepSeek:
+      return ("deepseek3k_q8_ekv1280", "task")
     }
   }
 
@@ -42,6 +60,8 @@ enum Model: CaseIterable {
     case .gemma:
       return "gemma-license"
     case .phi4:
+      return ""
+    case .deepSeek:
       return ""
     }
   }
@@ -69,6 +89,8 @@ enum Model: CaseIterable {
       return "Gemma 2"
     case .phi4:
       return "Phi 4"
+    case .deepSeek:
+      return "Deep Seek"
     }
   }
 
@@ -83,6 +105,11 @@ enum Model: CaseIterable {
       return URL(
         string:
           "https://huggingface.co/litert-community/Phi-4-mini-instruct/resolve/main/phi4_q8_ekv1280.task"
+      )!
+    case .deepSeek:
+      return URL(
+        string:
+          "https://huggingface.co/litert-community/DeepSeek-R1-Distill-Qwen-1.5B/resolve/main/deepseek_q8_ekv1280.task"
       )!
     }
   }
@@ -106,6 +133,8 @@ enum Model: CaseIterable {
       return URL(string: "https://huggingface.co/litert-community/Gemma2-2B-IT")
     case .phi4:
       return nil
+    case .deepSeek:
+      return nil
     }
   }
 
@@ -113,12 +142,25 @@ enum Model: CaseIterable {
     switch self {
     case .gemma:
       return ConversationMarkers(
-        userPrefix: "user", modelPrefix: "model", startOfTurn: "<start_of_turn>",
-        endOfTurn: "<end_of_turn>", thinkingStart: nil, thinkingEnd: nil)
+        promptPrefix: "<start_of_turn>user\n", promptSuffix: "<end_of_turn><start_of_turn>model",
+        endOfTurn: "<end_of_turn>")
     case .phi4:
       return ConversationMarkers(
-        userPrefix: "user", modelPrefix: "model", startOfTurn: "<start_of_turn>",
-        endOfTurn: "<end_of_turn>", thinkingStart: nil, thinkingEnd: nil)
+        promptPrefix: "<start_of_turn>user\n", promptSuffix: "<end_of_turn><start_of_turn>model",
+        endOfTurn: "<end_of_turn>")
+    case .deepSeek:
+      return ConversationMarkers(
+        promptPrefix: "<｜begin▁of▁sentence｜><｜User｜>", promptSuffix: "<｜Assistant｜><think>\\n",
+        thinkingStart: "<think>", thinkingEnd: "</think>")
+    }
+  }
+
+  var authRequired: Bool {
+    switch self {
+    case .gemma:
+      return true
+    case .deepSeek, .phi4:
+      return false
     }
   }
 }
