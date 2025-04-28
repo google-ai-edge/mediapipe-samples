@@ -71,7 +71,7 @@ class ConversationViewModel: ObservableObject {
   private var model: OnDeviceModel?
 
   /// Current conversation with the LLM that preserves history. Wraps around a MediaPipe `LlmInference.Session`.
-  var chat: Chat?
+  private var chat: Chat?
 
   init(modelCategory: Model) {
     self.modelCategory = modelCategory
