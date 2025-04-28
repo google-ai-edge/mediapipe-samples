@@ -121,17 +121,6 @@ struct ConversationScreen: View {
     if case .criticalError = viewModel.currentState { return true }
     return false
   }
-
-  //  private func shouldDisableClicks() -> Bool {
-  //    switch viewModel.currentState {
-  //      case .createChatError, .streamingResponse:
-  //        return true
-  //      default:
-  //        return false
-  //    }
-  ////    if case .createChatError = viewModel.currentState || case .stream { return true }
-  ////    return false
-  //  }
 }
 
 /// View that displays a message.

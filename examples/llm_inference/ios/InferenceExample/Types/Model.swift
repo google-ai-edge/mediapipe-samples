@@ -23,14 +23,9 @@ enum Model: CaseIterable {
   struct ConversationMarkers: Equatable {
     let promptPrefix: String
     let promptSuffix: String
-    //    let userPrefix: String
-    //    let modelPrefix: String
-    //    let startOfTurn: String
-    //    let endOfTurn: String
     let thinkingStart: String?
     let endOfTurn: String?
     let thinkingEnd: String?
-    //<｜Assistant｜><think>\\n
 
     init(
       promptPrefix: String, promptSuffix: String, endOfTurn: String? = nil,
