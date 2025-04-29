@@ -158,4 +158,37 @@ enum Model: CaseIterable {
       return false
     }
   }
+
+  var temperature: Float {
+    switch self {
+    case .gemma:
+      return 1.0
+    case .deepSeek:
+      return 0.6
+    case .phi4:
+      return 0.0
+    }
+  }
+
+  var topK: Int {
+    switch self {
+    case .gemma:
+      return 64
+    case .deepSeek:
+      return 40
+    case .phi4:
+      return 40
+    }
+  }
+
+  var topP: Float {
+    switch self {
+    case .gemma:
+      return 0.95
+    case .deepSeek:
+      return 0.7
+    case .phi4:
+      return 0.1
+    }
+  }
 }

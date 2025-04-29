@@ -20,11 +20,16 @@ import MediaPipeTasksGenAIC
 struct OnDeviceModel {
   /// MediaPipe LlmInference.
   private(set) var inference: LlmInference
-  private static let maxTokens = 1024
+
+  let maxTokens = 1024
+  let decdodeTokenOffset = 256
+
+  let modelCategory: Model
 
   init(model: Model) throws {
+    modelCategory = model
     let options = LlmInference.Options(modelPath: try model.modelPath)
-    options.maxTokens = OnDeviceModel.maxTokens
+    options.maxTokens = maxTokens
 
     inference = try LlmInference(options: options)
   }
@@ -41,7 +46,13 @@ final class Chat {
 
   init(model: OnDeviceModel) throws {
     self.model = model
-    session = try LlmInference.Session(llmInference: model.inference)
+
+    let options = LlmInference.Session.Options()
+    options.topk = model.modelCategory.topK
+    options.topp = model.modelCategory.topP
+    options.temperature = model.modelCategory.temperature
+
+    session = try LlmInference.Session(llmInference: model.inference, options: options)
   }
 
   /// Sends a streaming response generation query to the underlying MediaPipe
@@ -55,5 +66,30 @@ final class Chat {
     try session.addQueryChunk(inputText: text)
     let resultStream = session.generateResponseAsync()
     return resultStream
+  }
+
+  /// Estimates remaining token count that can be processed by the model.
+  /// - Parameters:
+  ///   - prompt: User prompt.
+  ///   - history: Concatenated conversation history.
+  ///   - historyCount: No: of messages in the history.
+  /// - Returns: The remaining token count.
+  /// - Throws: A MediaPipe `GenAiInferenceError` if the token count cannot be estimated.
+  func estimateTokensRemaining(prompt: String, history: String, historyCount: Int) -> Int? {
+    let context = "\(history)\(prompt)"
+    guard !context.isEmpty else {
+      return -1
+    }
+
+    do {
+      let messagesTokenCount = try session.sizeInTokens(text: context)
+      let approximateControlTokensCount = historyCount * 3
+      return max(
+        0,
+        model.maxTokens - model.decdodeTokenOffset - messagesTokenCount
+          - approximateControlTokensCount)
+    } catch {
+      return nil
+    }
   }
 }
