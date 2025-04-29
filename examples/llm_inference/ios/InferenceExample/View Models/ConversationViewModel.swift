@@ -27,13 +27,13 @@ class ConversationViewModel: ObservableObject {
     case promptSubmitted
     case streamingResponse
     case criticalError(error: InferenceError)
-    case createChatError(error: InferenceError)
+    case nonCriticalError(error: InferenceError)
     case done
 
     /// Extracts the inference error if the current state is one of the error states.
     var inferenceError: InferenceError? {
       switch self {
-      case let .criticalError(error), let .createChatError(error):
+      case let .criticalError(error), let .nonCriticalError(error):
         return error
       default:
         return nil
@@ -50,7 +50,7 @@ class ConversationViewModel: ObservableObject {
         return true
       /// Error equality checks are not required for updates to the UI at the moment. If required more fine grained equality
       /// logic can be implemented here.
-      case (.criticalError, .criticalError), (.createChatError, .createChatError):
+      case (.criticalError, .criticalError), (.nonCriticalError, .nonCriticalError):
         return false
       default:
         return false
@@ -62,7 +62,11 @@ class ConversationViewModel: ObservableObject {
   /// Based on this property updates are made to the UI State including enabling and disabling of messaging, other buttons etc.
   @Published var currentState: State = .idle
 
+  /// Based on `modelPath` returned by `modelCategory` dictates if download is required.
   @Published var downloadRequired: Bool = true
+
+  /// An approximate estimate of the remaining token count in the context window.
+  @Published var remainingSizeInTokens: Int = -1
 
   /// Model to initialize.
   var modelCategory: Model
@@ -141,8 +145,9 @@ class ConversationViewModel: ObservableObject {
       chat = try Chat(model: model)
       messageViewModels.removeAll()
       currentState = .done
+      remainingSizeInTokens = -1
     } catch {
-      currentState = .createChatError(error: InferenceError.mediaPipeTasksError(error: error))
+      currentState = .nonCriticalError(error: InferenceError.mediaPipeTasksError(error: error))
     }
   }
 
@@ -153,7 +158,7 @@ class ConversationViewModel: ObservableObject {
   /// If the there is no chat session active, then the UI should remain disabled since it indicates an active session could not be created.
   /// Third scenario would never happen because of the UI guards. Leaving the condition here for correctness.
   func resetStateAfterErrorIntimation() {
-    guard case .createChatError = currentState, chat != nil else {
+    guard case .nonCriticalError = currentState, chat != nil else {
       return
     }
 
@@ -161,10 +166,22 @@ class ConversationViewModel: ObservableObject {
   }
 
   func shouldDisableClicks() -> Bool {
+    return shouldDisableClicksForStartNewChat() || remainingSizeInTokens == 0
+  }
+
+  func shouldDisableClicksForStartNewChat() -> Bool {
     if case .done = currentState {
       return false
     }
     return true
+  }
+
+  func recomputeSizeInTokens(prompt: String) {
+    let history = messageViewModels.map { $0.chatMessage.text }.joined(separator: "")
+    remainingSizeInTokens =
+      chat?.estimateTokensRemaining(
+        prompt: prompt, history: history, historyCount: messageViewModels.count)
+      ?? remainingSizeInTokens
   }
 
   /// Sends the message to the currently active instance of `Chat` which in turn queries the underlying MediaPipe
@@ -177,7 +194,9 @@ class ConversationViewModel: ObservableObject {
     }
 
     currentState = .promptSubmitted
-    defer { currentState = .done }
+    defer {
+      currentState = remainingSizeInTokens == 0 ? .nonCriticalError(error: .tokensExceeded) : .done
+    }
 
     ///Add the user's message to the chat .
     let userViewModel = MessageViewModel(chatMessage: ChatMessage(text: text, participant: .user))
@@ -193,6 +212,9 @@ class ConversationViewModel: ObservableObject {
       let responseStream = try await chat.sendMessage(prompt)
 
       await updateSystemViewModel(systemViewModel, responseStream: responseStream)
+      /// Once the inference is done, recompute the remaining size in tokens. Here prompt is empty as the user prompt is already
+      /// added to messages along with the response.
+      recomputeSizeInTokens(prompt: "")
     } catch {
       handleStreamError(error, for: systemViewModel)
       /// systemViewModel is closed in a defer before exiting this scope. Any errors are handled during close.
@@ -212,9 +234,11 @@ class ConversationViewModel: ObservableObject {
     }
 
     currentState = .streamingResponse
+
     do {
       for try await partialResult in responseStream {
         appendPartialResult(partialResult, to: messageVM)
+        decrementRemainingSizeInTokens()
       }
     } catch {
 
@@ -231,6 +255,10 @@ class ConversationViewModel: ObservableObject {
       text: partialResult.replacingOccurrences(
         of: modelCategory.conversationMarkers.endOfTurn!, with: ""), participant: .system(.response)
     )
+  }
+
+  func decrementRemainingSizeInTokens() {
+    remainingSizeInTokens = max(0, remainingSizeInTokens - 1)
   }
 
   func handleStreamError(_ error: Error, for messageVM: MessageViewModel) {
@@ -275,6 +303,7 @@ class ReasoningViewModel: ConversationViewModel {
         currentMessageVM = appendPartialResult(
           partialResult, to: currentMessageVM, firstResponse: firstResponse)
         firstResponse = false
+        decrementRemainingSizeInTokens()
       }
     } catch {
 
@@ -335,6 +364,7 @@ enum InferenceError: LocalizedError {
   case mediaPipeTasksError(error: Error)
   case modelFileNotFound(modelName: String)
   case onDeviceModelNotInitialized
+  case tokensExceeded
 
   public var errorDescription: String? {
     switch self {
@@ -343,7 +373,9 @@ enum InferenceError: LocalizedError {
     case .modelFileNotFound:
       return "Model not found"
     case .onDeviceModelNotInitialized:
-      return "Model Unitialized"
+      return "Model unitialized"
+    case .tokensExceeded:
+      return "Token limit exceeded"
     }
   }
 
@@ -355,6 +387,9 @@ enum InferenceError: LocalizedError {
       return "Model with name \(modelName) not found on the disk."
     case .onDeviceModelNotInitialized:
       return "A valid on device model has not been initalized."
+    case .tokensExceeded:
+      return
+        "You have exhausted your token limit for the current session. Please refresh the session."
     }
   }
 }
