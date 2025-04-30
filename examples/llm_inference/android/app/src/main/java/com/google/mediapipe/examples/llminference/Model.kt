@@ -16,9 +16,9 @@ enum class Model(
     val topK: Int,
     val topP: Float,
 ) {
-    GEMMA_3_1B_IT_CPU(
-        path = "/data/local/tmp/Gemma-3-1B-IT_multi-prefill-seq_q8_ekv2048.task",
-        url = "https://huggingface.co/litert-community/Gemma-3-1B-IT/resolve/main/Gemma-3-1B-IT_multi-prefill-seq_q8_ekv2048.task",
+    GEMMA3_1B_IT_CPU(
+        path = "/data/local/tmp/Gemma3-1B-IT_multi-prefill-seq_q8_ekv2048.task",
+        url = "https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/Gemma3-1B-IT_multi-prefill-seq_q8_ekv2048.task",
         licenseUrl = "https://huggingface.co/litert-community/Gemma3-1B-IT",
         needsAuth = true,
         preferredBackend = Backend.CPU,
@@ -28,8 +28,8 @@ enum class Model(
         topP = 0.95f
     ),
     GEMMA_3_1B_IT_GPU(
-        path = "/data/local/tmp/Gemma-3-1B-IT_multi-prefill-seq_q8_ekv2048.task",
-        url = "https://huggingface.co/litert-community/Gemma-3-1B-ITresolve/main/Gemma-3-1B-IT_multi-prefill-seq_q8_ekv2048.task",
+        path = "/data/local/tmp/Gemma3-1B-IT_multi-prefill-seq_q8_ekv2048.task",
+        url = "https://huggingface.co/litert-community/Gemma3-1B-ITresolve/main/Gemma3-1B-IT_multi-prefill-seq_q8_ekv2048.task",
         licenseUrl = "https://huggingface.co/litert-community/Gemma3-1B-IT",
         needsAuth = true,
         preferredBackend = Backend.GPU,
@@ -39,9 +39,9 @@ enum class Model(
         topP = 0.95f
     ),
     GEMMA_2_2B_IT_CPU(
-        path = "/data/local/tmp/Gemma-2-2B-IT_multi-prefill-seq_q8_ekv1280.task",
-        url = "https://huggingface.co/litert-community/Gemma-2-2B-IT/resolve/main/Gemma-2-2B-IT_multi-prefill-seq_q8_ekv1280.task",
-        licenseUrl = "https://huggingface.co/litert-community/Gemma-2-2B-IT",
+        path = "/data/local/tmp/Gemma2-2B-IT_multi-prefill-seq_q8_ekv1280.task",
+        url = "https://huggingface.co/litert-community/Gemma2-2B-IT/resolve/main/Gemma2-2B-IT_multi-prefill-seq_q8_ekv1280.task",
+        licenseUrl = "https://huggingface.co/litert-community/Gemma2-2B-IT",
         needsAuth = true,
         preferredBackend = Backend.CPU,
         thinking = false,
