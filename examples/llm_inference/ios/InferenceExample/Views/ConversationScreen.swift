@@ -61,26 +61,39 @@ struct ConversationScreen: View {
           state: $viewModel.currentState,
           onSubmitAction: { [weak viewModel] prompt in
             viewModel?.sendMessage(prompt)
+          },
+          onChangeOfTextAction: { [weak viewModel] prompt in
+            viewModel?.recomputeSizeInTokens(prompt: prompt)
           })
-      }.toolbar {
+      }
+      .navigationTitle("Chat with \(viewModel.modelCategory.name) here")
+      .toolbar {
         ToolbarItem(placement: .primaryAction) {
           Button(action: viewModel.startNewChat) {
             Image(systemName: Constants.newChatSystemSymbolName)
           }
+          .environment(\.isEnabled, !viewModel.shouldDisableClicksForStartNewChat())
         }
       }
-      .navigationTitle(Constants.navigationTitle)
       .navigationBarTitleDisplayMode(.inline)
       .toolbarBackground(Metadata.globalColor, for: .navigationBar)
       .toolbarBackground(.visible, for: .navigationBar)
       .toolbarColorScheme(.dark, for: .navigationBar)
-      .disabled(shouldDisableClicks())
+      .disabled(viewModel.shouldDisableClicks())
 
       if viewModel.currentState == .loadingModel {
         Constants.alertBackgroundColor
           .edgesIgnoringSafeArea(.all)
         ProgressView(Constants.modelInitializationAlertText)
           .tint(Metadata.globalColor)
+      }
+    }
+    .safeAreaInset(edge: .top) {
+      if viewModel.remainingSizeInTokens != -1 {
+        ModelAccessoryView(
+          modelName: viewModel.modelCategory.name,
+          remainingTokenCount: $viewModel.remainingSizeInTokens
+        )
       }
     }
     .alert(
@@ -112,7 +125,6 @@ struct ConversationScreen: View {
   }
 
   func didDismissDownloadSheet() {
-    print("Instance______ \(ObjectIdentifier(viewModel))")
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
       viewModel.handleModelDownloadedCompleted()
     }
@@ -122,11 +134,6 @@ struct ConversationScreen: View {
     if case .criticalError = viewModel.currentState { return true }
     return false
   }
-
-  private func shouldDisableClicks() -> Bool {
-    if case .createChatError = viewModel.currentState { return true }
-    return false
-  }
 }
 
 /// View that displays a message.
@@ -134,13 +141,14 @@ struct MessageView: View {
   private struct Constants {
     static let textMessagePadding: CGFloat = 10.0
     static let foregroundColor = Color(red: 0.0, green: 0.0, blue: 0.0)
-    static let systemMessageBackgroundColor = Color(white: 0.9231)
-    static let userMessageBackgroundColor = Color(red: 0.8627, green: 0.9725, blue: 0.7764)
+    static let systemMessageBackgroundColor = Color("SystemColor")
+    static let userMessageBackgroundColor = Color("UserColor")
+    static let thinkingMessageBackgroundColor = Color("ThinkingColor")
     static let errorBackgroundColor = Color.red.opacity(0.1)
     static let messageBackgroundCornerRadius: CGFloat = 16.0
     static let generationErrorText = "Could not generate response"
     static let font = Font.system(size: 10, weight: .regular, design: .default)
-    static let tint = Color.green
+    static let tint = Metadata.globalColor
   }
 
   @ObservedObject var messageViewModel: MessageViewModel
@@ -161,10 +169,14 @@ struct MessageView: View {
           MessageContentView(
             text: messageViewModel.chatMessage.text,
             backgroundColor: Constants.userMessageBackgroundColor)
-        case .system(value: .response), .system(value: .thinking), .system(value: .done):
+        case .system(value: .response):
           MessageContentView(
             text: messageViewModel.chatMessage.text,
             backgroundColor: Constants.systemMessageBackgroundColor)
+        case .system(value: .thinking):
+          MessageContentView(
+            text: messageViewModel.chatMessage.text,
+            backgroundColor: Constants.thinkingMessageBackgroundColor)
         case .system(value: .error):
           MessageContentView(
             text: Constants.generationErrorText, backgroundColor: Constants.errorBackgroundColor)
@@ -227,14 +239,16 @@ struct TextTypingView: View {
     static let textFieldStrokeColor = Color.gray
     static let sendButtonImage = "arrow.up.circle.fill"
     static let buttonDisabledColor = Color.gray
-    static let buttonEnabledColor = Color.green
+    static let buttonEnabledColor = Metadata.globalColor
     static let padding = 10.0
   }
 
+  @Environment(\.isEnabled) private var isEnabled
   @Environment(\.colorScheme) var colorScheme
   @Binding var state: ConversationViewModel.State
 
   var onSubmitAction: (String) -> Void
+  var onChangeOfTextAction: (String) -> Void
 
   @State private var content: String = ""
 
@@ -273,14 +287,22 @@ struct TextTypingView: View {
         .onChange(of: state) { oldValue, newValue in
           focusedField = state == .done ? .message : nil
         }
+        .onChange(of: content) { oldValue, newValue in
+          /// Only trigger updates when the VM is not generating response.
+          /// Specifically to handle the case when the content is set to "" after prompt is submitted for inference.
+          /// Recomputation should only happen from the VM during response generation.
+          guard state == .done else {
+            return
+          }
+          onChangeOfTextAction(newValue)
+        }
         .padding([.leading, .top], Constants.padding)
       Button(action: sendMessage) {
         Image(systemName: Constants.sendButtonImage)
           .resizable()
           .scaledToFit()
           .frame(width: Constants.buttonSize, height: Constants.buttonSize)
-          .foregroundColor(
-            state == .done ? Constants.buttonEnabledColor : Constants.buttonDisabledColor)
+          .foregroundColor(isEnabled ? Constants.buttonEnabledColor : Constants.buttonDisabledColor)
       }
       .padding([.trailing, .top], Constants.padding)
     }
@@ -292,10 +314,45 @@ struct TextTypingView: View {
       return
     }
     let prompt = content
-    content = ""
     onSubmitAction(prompt)
+    content = ""
+  }
+}
+
+/// View that displays token count information and refresh session button.
+struct ModelAccessoryView: View {
+  private struct Constants {
+    static let refreshIcon = "arrow.triangle.2.circlepath"
+    static let backgroundColor = Color(uiColor: .systemGroupedBackground)
+    static let font = Font.system(size: 14.0)
   }
 
+  let modelName: String
+  
+  @Binding var remainingTokenCount: Int
+  
+  private var tokenCountString: String {
+    if remainingTokenCount == -1 {
+      return ""
+    }
+
+    return "\(remainingTokenCount) tokens remaining."
+      + (remainingTokenCount == 0 ? "Please refresh the session." : "")
+  }
+
+  var body: some View {
+    HStack {
+      Spacer()
+      Text(tokenCountString)
+        .font(Constants.font)
+      Spacer()
+      .tint(Metadata.globalColor)
+    }
+    .padding()
+    .background(Constants.backgroundColor)
+    .buttonStyle(.bordered)
+    .controlSize(.mini)
+  }
 }
 
 extension View {

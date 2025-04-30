@@ -26,7 +26,12 @@ struct ModelSelectionScreen: View {
       .toolbarBackground(.visible, for: .navigationBar)  // Ensures the background is visible
       .toolbarColorScheme(.dark, for: .navigationBar)  //
       .navigationDestination(for: Model.self) { model in
-        ConversationScreen(viewModel: ConversationViewModel(modelCategory: model))
+        switch model {
+        case .gemma, .phi4:
+          ConversationScreen(viewModel: ConversationViewModel(modelCategory: model))
+        case .deepSeek:
+          ConversationScreen(viewModel: ReasoningViewModel(modelCategory: model))
+        }
       }
     }
   }

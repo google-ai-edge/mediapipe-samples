@@ -27,13 +27,13 @@ class ConversationViewModel: ObservableObject {
     case promptSubmitted
     case streamingResponse
     case criticalError(error: InferenceError)
-    case createChatError(error: InferenceError)
+    case nonCriticalError(error: InferenceError)
     case done
 
     /// Extracts the inference error if the current state is one of the error states.
     var inferenceError: InferenceError? {
       switch self {
-      case let .criticalError(error), let .createChatError(error):
+      case let .criticalError(error), let .nonCriticalError(error):
         return error
       default:
         return nil
@@ -50,7 +50,7 @@ class ConversationViewModel: ObservableObject {
         return true
       /// Error equality checks are not required for updates to the UI at the moment. If required more fine grained equality
       /// logic can be implemented here.
-      case (.criticalError, .criticalError), (.createChatError, .createChatError):
+      case (.criticalError, .criticalError), (.nonCriticalError, .nonCriticalError):
         return false
       default:
         return false
@@ -62,7 +62,11 @@ class ConversationViewModel: ObservableObject {
   /// Based on this property updates are made to the UI State including enabling and disabling of messaging, other buttons etc.
   @Published var currentState: State = .idle
 
+  /// Based on `modelPath` returned by `modelCategory` dictates if download is required.
   @Published var downloadRequired: Bool = true
+
+  /// An approximate estimate of the remaining token count in the context window.
+  @Published var remainingSizeInTokens: Int = -1
 
   /// Model to initialize.
   var modelCategory: Model
@@ -82,7 +86,7 @@ class ConversationViewModel: ObservableObject {
     guard currentState == .idle else {
       return
     }
-    
+
     currentState = .loadingModel
     Task {
       load(modelCategory: modelCategory)
@@ -141,8 +145,9 @@ class ConversationViewModel: ObservableObject {
       chat = try Chat(model: model)
       messageViewModels.removeAll()
       currentState = .done
+      remainingSizeInTokens = -1
     } catch {
-      currentState = .createChatError(error: InferenceError.mediaPipeTasksError(error: error))
+      currentState = .nonCriticalError(error: InferenceError.mediaPipeTasksError(error: error))
     }
   }
 
@@ -153,44 +158,30 @@ class ConversationViewModel: ObservableObject {
   /// If the there is no chat session active, then the UI should remain disabled since it indicates an active session could not be created.
   /// Third scenario would never happen because of the UI guards. Leaving the condition here for correctness.
   func resetStateAfterErrorIntimation() {
-    guard case .createChatError = currentState, chat != nil else {
+    guard case .nonCriticalError = currentState, chat != nil else {
       return
     }
 
     currentState = .done
   }
 
-  private func formatPrompt(text: String) -> String {
-    let conversationMarkers = modelCategory.conversationMarkers
-
-    return
-      "\(conversationMarkers.startOfTurn)\(conversationMarkers.userPrefix)\n\(text)\(conversationMarkers.endOfTurn)\(conversationMarkers.startOfTurn)\(conversationMarkers.modelPrefix)"
+  func shouldDisableClicks() -> Bool {
+    return shouldDisableClicksForStartNewChat() || remainingSizeInTokens == 0
   }
 
-  private func updateSystemViewModel(
-    _ messageVM: MessageViewModel, responseStream: AsyncThrowingStream<String, any Error>
-  ) async {
-    defer {
-      currentState = .done
+  func shouldDisableClicksForStartNewChat() -> Bool {
+    if case .done = currentState {
+      return false
     }
+    return true
+  }
 
-    currentState = .streamingResponse
-    do {
-      for try await partialResult in responseStream {
-        messageVM.update(
-          text: partialResult.replacingOccurrences(
-            of: modelCategory.conversationMarkers.endOfTurn, with: ""))
-      }
-    } catch {
-
-      /// The message is partially generated when an error occurred. Add a new message indicating the error rather than updating
-      /// the existing message with an error.
-      /// If there is a previous message, it's state is updated as done when the messageVM is closed in the calling function.
-      if messageVM.chatMessage.participant == .system(.response) {
-        self.messageViewModels.append(
-          MessageViewModel(chatMessage: ChatMessage(participant: .system(.error))))
-      }
-    }
+  func recomputeSizeInTokens(prompt: String) {
+    let history = messageViewModels.map { $0.chatMessage.text }.joined(separator: "")
+    remainingSizeInTokens =
+      chat?.estimateTokensRemaining(
+        prompt: prompt, history: history, historyCount: messageViewModels.count)
+      ?? remainingSizeInTokens
   }
 
   /// Sends the message to the currently active instance of `Chat` which in turn queries the underlying MediaPipe
@@ -203,7 +194,9 @@ class ConversationViewModel: ObservableObject {
     }
 
     currentState = .promptSubmitted
-    defer { currentState = .done }
+    defer {
+      currentState = remainingSizeInTokens == 0 ? .nonCriticalError(error: .tokensExceeded) : .done
+    }
 
     ///Add the user's message to the chat .
     let userViewModel = MessageViewModel(chatMessage: ChatMessage(text: text, participant: .user))
@@ -214,16 +207,154 @@ class ConversationViewModel: ObservableObject {
       chatMessage: ChatMessage(participant: .system(.generating)))
     messageViewModels.append(systemViewModel)
 
-    defer { systemViewModel.closeSystemMessage() }
-
     do {
       let prompt = formatPrompt(text: text)
       let responseStream = try await chat.sendMessage(prompt)
 
       await updateSystemViewModel(systemViewModel, responseStream: responseStream)
+      /// Once the inference is done, recompute the remaining size in tokens. Here prompt is empty as the user prompt is already
+      /// added to messages along with the response.
+      recomputeSizeInTokens(prompt: "")
     } catch {
+      handleStreamError(error, for: systemViewModel)
       /// systemViewModel is closed in a defer before exiting this scope. Any errors are handled during close.
     }
+  }
+
+  private func formatPrompt(text: String) -> String {
+    let conversationMarkers = modelCategory.conversationMarkers
+    return "\(conversationMarkers.promptPrefix)\(text)\(conversationMarkers.promptSuffix)"
+  }
+
+  func updateSystemViewModel(
+    _ messageVM: MessageViewModel, responseStream: AsyncThrowingStream<String, any Error>
+  ) async {
+    defer {
+      currentState = .done
+    }
+
+    currentState = .streamingResponse
+
+    do {
+      for try await partialResult in responseStream {
+        appendPartialResult(partialResult, to: messageVM)
+        decrementRemainingSizeInTokens()
+      }
+    } catch {
+
+      /// The message is partially generated when an error occurred. Add a new message indicating the error rather than updating
+      /// the existing message with an error.
+      /// If there is a previous message, it's state is updated as done when the messageVM is closed in the calling function.
+      ///
+      handleStreamError(error, for: messageVM)
+    }
+  }
+
+  private func appendPartialResult(_ partialResult: String, to messageVM: MessageViewModel) {
+    messageVM.update(
+      text: partialResult.replacingOccurrences(
+        of: modelCategory.conversationMarkers.endOfTurn!, with: ""), participant: .system(.response)
+    )
+  }
+
+  func decrementRemainingSizeInTokens() {
+    remainingSizeInTokens = max(0, remainingSizeInTokens - 1)
+  }
+
+  func handleStreamError(_ error: Error, for messageVM: MessageViewModel) {
+    let participant = messageVM.chatMessage.participant
+    switch participant {
+    case .system(.generating):
+      messageVM.update(text: error.localizedDescription, participant: .system(.error))
+    case .system(.error):
+      self.messageViewModels.append(
+        MessageViewModel(chatMessage: ChatMessage(participant: .system(.error)))
+      )
+    case .system(.thinking), .system(.response):
+      if messageVM.chatMessage.text.count > 0 {
+        self.messageViewModels.append(
+          MessageViewModel(chatMessage: ChatMessage(participant: .system(.error)))
+        )
+      } else {
+        messageVM.update(text: error.localizedDescription, participant: .system(.error))
+      }
+    case .user:
+      break
+    }
+  }
+}
+
+@MainActor
+class ReasoningViewModel: ConversationViewModel {
+  override func updateSystemViewModel(
+    _ messageVM: MessageViewModel, responseStream: AsyncThrowingStream<String, any Error>
+  ) async {
+
+    defer {
+      currentState = .done
+    }
+
+    currentState = .streamingResponse
+    var firstResponse = true
+    var currentMessageVM = messageVM
+
+    do {
+      for try await partialResult in responseStream {
+        currentMessageVM = appendPartialResult(
+          partialResult, to: currentMessageVM, firstResponse: firstResponse)
+        firstResponse = false
+        decrementRemainingSizeInTokens()
+      }
+    } catch {
+
+      /// The message is partially generated when an error occurred. Add a new message indicating the error rather than updating
+      /// the existing message with an error.
+      /// If there is a previous message, it's state is updated as done when the messageVM is closed in the calling function.
+      handleStreamError(error, for: messageVM)
+    }
+  }
+
+  private func appendPartialResult(
+    _ partialResult: String, to messageVM: MessageViewModel, firstResponse: Bool
+  ) -> MessageViewModel {
+    var newMessageVM = messageVM
+
+    let thinkingMarkerEnd = modelCategory.conversationMarkers.thinkingEnd!
+    if let (prefix, suffix) = partialResult.extractPrefixSuffix(substring: thinkingMarkerEnd) {
+      let trimmedSuffix = trimmedOfMarkers(text: suffix)
+
+      messageVM.update(text: prefix, participant: .system(.thinking))
+
+      if messageVM.chatMessage.text.isEmpty {
+        /// No thoughts. Continue appending to the current messageVM with type .response.
+        messageVM.update(text: trimmedSuffix, participant: .system(.response))
+      } else {
+        /// Append a new messageVM for response.
+        let nextMessageVM = MessageViewModel(
+          chatMessage: ChatMessage(text: trimmedSuffix, participant: .system(.response)))
+        newMessageVM = nextMessageVM
+
+        self.messageViewModels.append(nextMessageVM)
+      }
+    } else {
+      /// Does not contain a thinking marker end. Keep updating the previous message.
+      /// If this is the first response, update participant to thinking, otherwise keep appending to the messageVM with same
+      /// participant. (Can be .system or .response).
+      if firstResponse {
+        messageVM.update(participant: .system(.thinking))
+      }
+
+      messageVM.update(text: trimmedOfMarkers(text: partialResult))
+    }
+
+    return newMessageVM
+  }
+
+  private func trimmedOfMarkers(text: String) -> String {
+    let trimmedText = text.replacingOccurrences(
+      of: modelCategory.conversationMarkers.thinkingStart!, with: "")
+    return trimmedText.replacingOccurrences(
+      of: modelCategory.conversationMarkers.thinkingEnd!, with: "")
   }
 }
 
@@ -233,6 +364,7 @@ enum InferenceError: LocalizedError {
   case mediaPipeTasksError(error: Error)
   case modelFileNotFound(modelName: String)
   case onDeviceModelNotInitialized
+  case tokensExceeded
 
   public var errorDescription: String? {
     switch self {
@@ -241,18 +373,40 @@ enum InferenceError: LocalizedError {
     case .modelFileNotFound:
       return "Model not found"
     case .onDeviceModelNotInitialized:
-      return "Model Unitialized"
+      return "Model unitialized"
+    case .tokensExceeded:
+      return "Token limit exceeded"
     }
   }
 
-  public var failureReason: String {
+  public var failureReason: String? {
     switch self {
     case .mediaPipeTasksError(let error):
       return error.localizedDescription
     case .modelFileNotFound(let modelName):
-      return "Model with name \(modelName) not found in your app."
+      return "Model with name \(modelName) not found on the disk."
     case .onDeviceModelNotInitialized:
       return "A valid on device model has not been initalized."
+    case .tokensExceeded:
+      return
+        "You have exhausted your token limit for the current session. Please refresh the session."
     }
+  }
+}
+
+extension String {
+  fileprivate func extractPrefixSuffix(substring: String) -> (prefix: String, suffix: String)? {
+    guard !substring.isEmpty,  // Ensure substring is not empty
+      let range = self.range(of: substring)
+    else {
+      // Substring not found or is empty, return empty strings
+      // or handle as needed (e.g., return (mainString, "") )
+      return nil
+    }
+
+    let prefix = String(self[..<range.lowerBound])
+    let suffix = String(self[range.upperBound...])
+
+    return (prefix, suffix)
   }
 }
