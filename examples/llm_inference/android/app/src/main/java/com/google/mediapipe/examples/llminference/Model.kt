@@ -63,7 +63,7 @@ enum class Model(
     LLAMA_3_2_1B_INSTRUCT(
         path = "/data/local/tmp/Llama-3.2-1B-Instruct_multi-prefill-seq_q8_ekv1280.task",
         url = "https://huggingface.co/litert-community/Llama-3.2-1B-Instruct/resolve/main/Llama-3.2-1B-Instruct_multi-prefill-seq_q8_ekv1280.task",
-        licenseUrl = "https://huggingface.co/litert-community/Llama-3.2-1B-Instruct/",
+        licenseUrl = "https://huggingface.co/litert-community/Llama-3.2-1B-Instruct",
         needsAuth = true,
         preferredBackend = Backend.CPU,
         thinking = false,
@@ -74,7 +74,7 @@ enum class Model(
     LLAMA_3_2_3B_INSTRUCT(
         path = "/data/local/tmp/Llama-3.2-3B-Instruct_multi-prefill-seq_q8_ekv1280.task",
         url = "https://huggingface.co/litert-community/Llama-3.2-3B-Instruct/resolve/main/Llama-3.2-3B-Instruct_multi-prefill-seq_q8_ekv1280.task",
-        licenseUrl = "https://huggingface.co/litert-community/Llama-3.2-3B-Instruct/",
+        licenseUrl = "https://huggingface.co/litert-community/Llama-3.2-3B-Instruct",
         needsAuth = true,
         preferredBackend = Backend.CPU,
         thinking = false,
