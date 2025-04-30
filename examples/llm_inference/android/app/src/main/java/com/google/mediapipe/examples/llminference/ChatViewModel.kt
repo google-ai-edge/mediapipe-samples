@@ -39,7 +39,7 @@ class ChatViewModel(
             setInputEnabled(false)
             try {
                 val asyncInference =  inferenceModel.generateResponseAsync(userMessage, { partialResult, done ->
-                    _uiState.value.appendMessage(partialResult, done)
+                    _uiState.value.appendMessage(partialResult)
                     if (done) {
                         setInputEnabled(true)  // Re-enable text input
                     } else {
