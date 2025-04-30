@@ -17,8 +17,8 @@ enum class Model(
     val topP: Float,
 ) {
     GEMMA_3_1B_IT_CPU(
-        path = "/data/local/tmp/gemma-3-1b-it_multi-prefill-seq_q8_ekv2048.task",
-        url = "https://huggingface.co/litert-community/gemma-3-1b-it/resolve/main/gemma-3-1b-it_multi-prefill-seq_q8_ekv2048.task",
+        path = "/data/local/tmp/Gemma-3-1B-IT_multi-prefill-seq_q8_ekv2048.task",
+        url = "https://huggingface.co/litert-community/Gemma-3-1B-IT/resolve/main/Gemma-3-1B-IT_multi-prefill-seq_q8_ekv2048.task",
         licenseUrl = "https://huggingface.co/litert-community/Gemma3-1B-IT",
         needsAuth = true,
         preferredBackend = Backend.CPU,
@@ -28,8 +28,8 @@ enum class Model(
         topP = 0.95f
     ),
     GEMMA_3_1B_IT_GPU(
-        path = "/data/local/tmp/gemma-3-1b-it_multi-prefill-seq_q8_ekv2048.task",
-        url = "https://huggingface.co/litert-community/gemma-3-1b-it/resolve/main/gemma-3-1b-it_multi-prefill-seq_q8_ekv2048.task",
+        path = "/data/local/tmp/Gemma-3-1B-IT_multi-prefill-seq_q8_ekv2048.task",
+        url = "https://huggingface.co/litert-community/Gemma-3-1B-ITresolve/main/Gemma-3-1B-IT_multi-prefill-seq_q8_ekv2048.task",
         licenseUrl = "https://huggingface.co/litert-community/Gemma3-1B-IT",
         needsAuth = true,
         preferredBackend = Backend.GPU,
@@ -39,9 +39,9 @@ enum class Model(
         topP = 0.95f
     ),
     GEMMA_2_2B_IT_CPU(
-        path = "/data/local/tmp/gemma-2-2b-it_multi-prefill-seq_q8_ekv1280.task",
-        url = "https://huggingface.co/litert-community/gemma-2-2b-it/resolve/main/gemma-2-2b-it_multi-prefill-seq_q8_ekv1280.task",
-        licenseUrl = "https://huggingface.co/litert-community/Gemma3-1B-IT",
+        path = "/data/local/tmp/Gemma-2-2B-IT_multi-prefill-seq_q8_ekv1280.task",
+        url = "https://huggingface.co/litert-community/Gemma-2-2B-IT/resolve/main/Gemma-2-2B-IT_multi-prefill-seq_q8_ekv1280.task",
+        licenseUrl = "https://huggingface.co/litert-community/Gemma-2-2B-IT",
         needsAuth = true,
         preferredBackend = Backend.CPU,
         thinking = false,
@@ -51,7 +51,7 @@ enum class Model(
     ),
     DEEPSEEK_R1_DISTILL_QWEN_1_5_B(
         path = "/data/local/tmp/DeepSeek-R1-Distill-Qwen-1.5B_multi-prefill-seq_q8_ekv1280.task",
-        url = "https://huggingface.co/litert-community/DeepSeek-R1-Distill-Qwen-1.5B/resolve/main//data/local/tmp/DeepSeek-R1-Distill-Qwen-1.5B_multi-prefill-seq_q8_ekv1280.task",
+        url = "https://huggingface.co/litert-community/DeepSeek-R1-Distill-Qwen-1.5B/resolve/main/DeepSeek-R1-Distill-Qwen-1.5B_multi-prefill-seq_q8_ekv1280.task",
         licenseUrl = "",
         needsAuth = false,
         preferredBackend = Backend.CPU,
@@ -62,7 +62,7 @@ enum class Model(
     ),
     LLAMA_3_2_1B_INSTRUCT(
         path = "/data/local/tmp/Llama-3.2-1B-Instruct_multi-prefill-seq_q8_ekv1280.task",
-        url = "https://huggingface.co/litert-community/DeepSeek-R1-Distill-Qwen-1.5B/resolve/main/deepseek_q8_ekv1280.task",
+        url = "https://huggingface.co/litert-community/DeepSeek-R1-Distill-Qwen-1.5B/resolve/main/Llama-3.2-1B-Instruct_multi-prefill-seq_q8_ekv1280.task",
         licenseUrl = "",
         needsAuth = false,
         preferredBackend = Backend.CPU,
@@ -126,7 +126,7 @@ enum class Model(
         topK = 40,
         topP = 1.0f
     ),
-    SMOLLM_135M_INSTRUCT( // wrong stop stoken
+    SMOLLM_135M_INSTRUCT(
         path = "/data/local/tmp/SmolLM-135M-Instruct_SmolLM-135M-Instruct_multi-prefill-seq_q8_ekv1280.task",
         url = "https://huggingface.co/litert-community/SmolLM-135M-Instruct/resolve/main/SmolLM-135M-Instruct_SmolLM-135M-Instruct_multi-prefill-seq_q8_ekv1280.task",
         licenseUrl = "",
