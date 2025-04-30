@@ -31,14 +31,13 @@ class InferenceModel private constructor(context: Context) {
     private lateinit var llmInferenceSession: LlmInferenceSession
     private val TAG = InferenceModel::class.qualifiedName
 
-    val uiState: UiState
+    val uiState = UiState(model.thinking)
 
     init {
         if (!modelExists(context)) {
             throw IllegalArgumentException("Model not found at path: ${model.path}")
         }
 
-        uiState = model.uiState
         createEngine(context)
         createSession()
     }
@@ -85,8 +84,7 @@ class InferenceModel private constructor(context: Context) {
     }
 
     fun generateResponseAsync(prompt: String, progressListener: ProgressListener<String>) : ListenableFuture<String> {
-        val formattedPrompt = model.uiState.formatPrompt(prompt)
-        llmInferenceSession.addQueryChunk(formattedPrompt)
+        llmInferenceSession.addQueryChunk(prompt)
         return llmInferenceSession.generateResponseAsync(progressListener)
     }
 
@@ -102,7 +100,7 @@ class InferenceModel private constructor(context: Context) {
     }
 
     companion object {
-        var model: Model = Model.GEMMA3_CPU
+        var model: Model = Model.GEMMA_3_1B_IT_GPU
         private var instance: InferenceModel? = null
 
         fun getInstance(context: Context): InferenceModel {
