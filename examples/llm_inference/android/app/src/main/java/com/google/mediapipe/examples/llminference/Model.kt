@@ -29,7 +29,7 @@ enum class Model(
     ),
     GEMMA_3_1B_IT_GPU(
         path = "/data/local/tmp/Gemma3-1B-IT_multi-prefill-seq_q8_ekv2048.task",
-        url = "https://huggingface.co/litert-community/Gemma3-1B-ITresolve/main/Gemma3-1B-IT_multi-prefill-seq_q8_ekv2048.task",
+        url = "https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/Gemma3-1B-IT_multi-prefill-seq_q8_ekv2048.task",
         licenseUrl = "https://huggingface.co/litert-community/Gemma3-1B-IT",
         needsAuth = true,
         preferredBackend = Backend.GPU,
@@ -62,9 +62,9 @@ enum class Model(
     ),
     LLAMA_3_2_1B_INSTRUCT(
         path = "/data/local/tmp/Llama-3.2-1B-Instruct_multi-prefill-seq_q8_ekv1280.task",
-        url = "https://huggingface.co/litert-community/DeepSeek-R1-Distill-Qwen-1.5B/resolve/main/Llama-3.2-1B-Instruct_multi-prefill-seq_q8_ekv1280.task",
-        licenseUrl = "",
-        needsAuth = false,
+        url = "https://huggingface.co/litert-community/Llama-3.2-1B-Instruct/resolve/main/Llama-3.2-1B-Instruct_multi-prefill-seq_q8_ekv1280.task",
+        licenseUrl = "https://huggingface.co/litert-community/Llama-3.2-1B-Instruct",
+        needsAuth = true,
         preferredBackend = Backend.CPU,
         thinking = false,
         temperature = 0.6f,
@@ -74,8 +74,8 @@ enum class Model(
     LLAMA_3_2_3B_INSTRUCT(
         path = "/data/local/tmp/Llama-3.2-3B-Instruct_multi-prefill-seq_q8_ekv1280.task",
         url = "https://huggingface.co/litert-community/Llama-3.2-3B-Instruct/resolve/main/Llama-3.2-3B-Instruct_multi-prefill-seq_q8_ekv1280.task",
-        licenseUrl = "",
-        needsAuth = false,
+        licenseUrl = "https://huggingface.co/litert-community/Llama-3.2-3B-Instruct",
+        needsAuth = true,
         preferredBackend = Backend.CPU,
         thinking = false,
         temperature = 0.6f,
@@ -106,7 +106,7 @@ enum class Model(
     ),
     QWEN2_1_5B_INSTRUCT(
         path = "/data/local/tmp/Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv1280.task",
-        url = "https://huggingface.co/litert-communityQwen2.5-1.5B-Instruct/resolve/main/Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv1280.task",
+        url = "https://huggingface.co/litert-community/Qwen2.5-1.5B-Instruct/resolve/main/Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv1280.task",
         licenseUrl = "",
         needsAuth = false,
         preferredBackend = Backend.CPU,
@@ -127,8 +127,8 @@ enum class Model(
         topP = 1.0f
     ),
     SMOLLM_135M_INSTRUCT(
-        path = "/data/local/tmp/SmolLM-135M-Instruct_SmolLM-135M-Instruct_multi-prefill-seq_q8_ekv1280.task",
-        url = "https://huggingface.co/litert-community/SmolLM-135M-Instruct/resolve/main/SmolLM-135M-Instruct_SmolLM-135M-Instruct_multi-prefill-seq_q8_ekv1280.task",
+        path = "/data/local/tmp/SmolLM-135M-Instruct_multi-prefill-seq_q8_ekv1280.task",
+        url = "https://huggingface.co/litert-community/SmolLM-135M-Instruct/resolve/main/SmolLM-135M-Instruct_multi-prefill-seq_q8_ekv1280.task",
         licenseUrl = "",
         needsAuth = false,
         preferredBackend = Backend.CPU,
