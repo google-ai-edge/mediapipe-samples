@@ -59,22 +59,34 @@ struct ChatMessage: Identifiable, Equatable {
   let id = UUID().uuidString
 
   /// Text contained in the message.
-  var text: String
+  var text: String {
+    /// didSet gets called whenever the property gets set except for during initialization. Implementation assumes that anyone using
+    /// chat message will only set to its `text` after it starts receiving model responses.
+    didSet {
+      isLoading = false
+    }
+  }
 
   /// Indicates if user or system (LLM) has sent the message.
   var participant: Participant
-
-  init(text: String = "", participant: Participant) {
-    self.text = text
-    self.participant = participant
+  
+  private(set) var isLoading: Bool
+  
+  var title: String {
+    return isLoading && participant == .system(.response) ? "Generating...." : participant.title
   }
 
+  init(text: String = "", participant: Participant, isLoading: Bool=false) {
+    self.text = text
+    self.participant = participant
+    self.isLoading = isLoading
+  }
+  
   /// Represents the type of message.
   enum Participant: Equatable {
 
     enum System: Equatable {
       case thinking
-      case generating
       case response
       case error
     }
@@ -93,8 +105,6 @@ struct ChatMessage: Identifiable, Equatable {
 
     var title: String {
       switch self {
-      case .system(.generating):
-        return "Generating..."
       case .system(.thinking):
         return "Thinking..."
       case .system(.response), .system(.error):

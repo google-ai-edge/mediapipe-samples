@@ -20,33 +20,14 @@ enum Model: CaseIterable {
   case phi4
   case deepSeek
 
-  struct ConversationMarkers: Equatable {
-    let promptPrefix: String
-    let promptSuffix: String
-    let thinkingStart: String?
-    let endOfTurn: String?
-    let thinkingEnd: String?
-
-    init(
-      promptPrefix: String, promptSuffix: String, endOfTurn: String? = nil,
-      thinkingStart: String? = nil, thinkingEnd: String? = nil
-    ) {
-      self.promptPrefix = promptPrefix
-      self.promptSuffix = promptSuffix
-      self.thinkingEnd = thinkingEnd
-      self.thinkingStart = thinkingStart
-      self.endOfTurn = endOfTurn
-    }
-  }
-
   private var path: (name: String, extension: String) {
     switch self {
     case .gemma:
-      return ("gemma2_q8_multi-prefill-seq_ekv1280", "task")
+      return ("Gemma2-2B-IT_multi-prefill-seq_q8_ekv1280", "task")
     case .phi4:
-      return ("phi4_q8_ekv1280", "task")
+      return ("Phi-4-mini-instruct_multi-prefill-seq_q8_ekv1280", "task")
     case .deepSeek:
-      return ("deepseek3k_q8_ekv1280", "task")
+      return ("DeepSeek-R1-Distill-Qwen-1.5B_multi-prefill-seq_q8_ekv1280", "task")
     }
   }
 
@@ -81,7 +62,7 @@ enum Model: CaseIterable {
   var name: String {
     switch self {
     case .gemma:
-      return "Gemma 2"
+      return "Gemma 2 2B CPU"
     case .phi4:
       return "Phi 4"
     case .deepSeek:
@@ -94,17 +75,17 @@ enum Model: CaseIterable {
     case .gemma:
       return URL(
         string:
-          "https://huggingface.co/litert-community/Gemma2-2B-IT/resolve/main/gemma2_q8_multi-prefill-seq_ekv1280.task"
+          "https://huggingface.co/litert-community/Gemma2-2B-IT/resolve/main/Gemma2-2B-IT_multi-prefill-seq_q8_ekv1280.task"
       )!
     case .phi4:
       return URL(
         string:
-          "https://huggingface.co/litert-community/Phi-4-mini-instruct/resolve/main/phi4_q8_ekv1280.task"
+          "https://huggingface.co/litert-community/Phi-4-mini-instruct/resolve/main/Phi-4-mini-instruct_multi-prefill-seq_q8_ekv1280.task"
       )!
     case .deepSeek:
       return URL(
         string:
-          "https://huggingface.co/litert-community/DeepSeek-R1-Distill-Qwen-1.5B/resolve/main/deepseek_q8_ekv1280.task"
+          "https://huggingface.co/litert-community/DeepSeek-R1-Distill-Qwen-1.5B/resolve/main/DeepSeek-R1-Distill-Qwen-1.5B_multi-prefill-seq_q8_ekv1280.task"
       )!
     }
   }
@@ -133,21 +114,20 @@ enum Model: CaseIterable {
     }
   }
 
-  var conversationMarkers: ConversationMarkers {
-    switch self {
-    case .gemma:
-      return ConversationMarkers(
-        promptPrefix: "<start_of_turn>user\n", promptSuffix: "<end_of_turn><start_of_turn>model",
-        endOfTurn: "<end_of_turn>")
-    case .phi4:
-      return ConversationMarkers(
-        promptPrefix: "<start_of_turn>user\n", promptSuffix: "<end_of_turn><start_of_turn>model",
-        endOfTurn: "<end_of_turn>")
-    case .deepSeek:
-      return ConversationMarkers(
-        promptPrefix: "<｜begin▁of▁sentence｜><｜User｜>", promptSuffix: "<｜Assistant｜><think>\\n",
-        thinkingStart: "<think>", thinkingEnd: "</think>")
+  var canReason: Bool {
+    if case .deepSeek = self {
+      return true
     }
+
+    return false
+  }
+
+  var thinkingMarkerEnd: String? {
+    if case .deepSeek = self {
+      return "</think>"
+    }
+
+    return nil
   }
 
   var authRequired: Bool {
