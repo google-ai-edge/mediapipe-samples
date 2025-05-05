@@ -204,12 +204,13 @@ class ConversationViewModel: ObservableObject {
 
     /// Add a generating message to show a progress bar in the message until first token is generated.
     let systemViewModel = MessageViewModel(
-      chatMessage: ChatMessage(participant: .system(.generating)))
+      chatMessage: ChatMessage(
+        participant: modelCategory.canReason ? .system(.thinking) : .system(.response),
+        isLoading: true))
     messageViewModels.append(systemViewModel)
 
     do {
-      let prompt = formatPrompt(text: text)
-      let responseStream = try await chat.sendMessage(prompt)
+      let responseStream = try await chat.sendMessage(text)
 
       await updateSystemViewModel(systemViewModel, responseStream: responseStream)
       /// Once the inference is done, recompute the remaining size in tokens. Here prompt is empty as the user prompt is already
@@ -221,72 +222,7 @@ class ConversationViewModel: ObservableObject {
     }
   }
 
-  private func formatPrompt(text: String) -> String {
-    let conversationMarkers = modelCategory.conversationMarkers
-    return "\(conversationMarkers.promptPrefix)\(text)\(conversationMarkers.promptSuffix)"
-  }
-
-  func updateSystemViewModel(
-    _ messageVM: MessageViewModel, responseStream: AsyncThrowingStream<String, any Error>
-  ) async {
-    defer {
-      currentState = .done
-    }
-
-    currentState = .streamingResponse
-
-    do {
-      for try await partialResult in responseStream {
-        appendPartialResult(partialResult, to: messageVM)
-        decrementRemainingSizeInTokens()
-      }
-    } catch {
-
-      /// The message is partially generated when an error occurred. Add a new message indicating the error rather than updating
-      /// the existing message with an error.
-      /// If there is a previous message, it's state is updated as done when the messageVM is closed in the calling function.
-      ///
-      handleStreamError(error, for: messageVM)
-    }
-  }
-
-  private func appendPartialResult(_ partialResult: String, to messageVM: MessageViewModel) {
-    messageVM.update(
-      text: partialResult.replacingOccurrences(
-        of: modelCategory.conversationMarkers.endOfTurn!, with: ""), participant: .system(.response)
-    )
-  }
-
-  func decrementRemainingSizeInTokens() {
-    remainingSizeInTokens = max(0, remainingSizeInTokens - 1)
-  }
-
-  func handleStreamError(_ error: Error, for messageVM: MessageViewModel) {
-    let participant = messageVM.chatMessage.participant
-    switch participant {
-    case .system(.generating):
-      messageVM.update(text: error.localizedDescription, participant: .system(.error))
-    case .system(.error):
-      self.messageViewModels.append(
-        MessageViewModel(chatMessage: ChatMessage(participant: .system(.error)))
-      )
-    case .system(.thinking), .system(.response):
-      if messageVM.chatMessage.text.count > 0 {
-        self.messageViewModels.append(
-          MessageViewModel(chatMessage: ChatMessage(participant: .system(.error)))
-        )
-      } else {
-        messageVM.update(text: error.localizedDescription, participant: .system(.error))
-      }
-    case .user:
-      break
-    }
-  }
-}
-
-@MainActor
-class ReasoningViewModel: ConversationViewModel {
-  override func updateSystemViewModel(
+  private func updateSystemViewModel(
     _ messageVM: MessageViewModel, responseStream: AsyncThrowingStream<String, any Error>
   ) async {
 
@@ -295,14 +231,12 @@ class ReasoningViewModel: ConversationViewModel {
     }
 
     currentState = .streamingResponse
-    var firstResponse = true
     var currentMessageVM = messageVM
 
     do {
       for try await partialResult in responseStream {
         currentMessageVM = appendPartialResult(
-          partialResult, to: currentMessageVM, firstResponse: firstResponse)
-        firstResponse = false
+          partialResult, to: currentMessageVM)
         decrementRemainingSizeInTokens()
       }
     } catch {
@@ -315,12 +249,13 @@ class ReasoningViewModel: ConversationViewModel {
   }
 
   private func appendPartialResult(
-    _ partialResult: String, to messageVM: MessageViewModel, firstResponse: Bool
+    _ partialResult: String, to messageVM: MessageViewModel
   ) -> MessageViewModel {
     var newMessageVM = messageVM
 
-    let thinkingMarkerEnd = modelCategory.conversationMarkers.thinkingEnd!
-    if let (prefix, suffix) = partialResult.extractPrefixSuffix(substring: thinkingMarkerEnd) {
+    if let (prefix, suffix) = partialResult.extractPrefixSuffix(
+      substring: modelCategory.thinkingMarkerEnd)
+    {
       let trimmedSuffix = trimmedOfMarkers(text: suffix)
 
       messageVM.update(text: prefix, participant: .system(.thinking))
@@ -338,12 +273,6 @@ class ReasoningViewModel: ConversationViewModel {
       }
     } else {
       /// Does not contain a thinking marker end. Keep updating the previous message.
-      /// If this is the first response, update participant to thinking, otherwise keep appending to the messageVM with same
-      /// participant. (Can be .system or .response).
-      if firstResponse {
-        messageVM.update(participant: .system(.thinking))
-      }
-
       messageVM.update(text: trimmedOfMarkers(text: partialResult))
     }
 
@@ -351,10 +280,33 @@ class ReasoningViewModel: ConversationViewModel {
   }
 
   private func trimmedOfMarkers(text: String) -> String {
-    let trimmedText = text.replacingOccurrences(
-      of: modelCategory.conversationMarkers.thinkingStart!, with: "")
-    return trimmedText.replacingOccurrences(
-      of: modelCategory.conversationMarkers.thinkingEnd!, with: "")
+    return modelCategory.canReason
+      ? text.replacingOccurrences(
+        of: modelCategory.thinkingMarkerEnd!, with: "") : text
+  }
+  
+  private func decrementRemainingSizeInTokens() {
+    remainingSizeInTokens = max(0, remainingSizeInTokens - 1)
+  }
+
+  private func handleStreamError(_ error: Error, for messageVM: MessageViewModel) {
+    let participant = messageVM.chatMessage.participant
+    switch participant {
+    case .system(.error):
+      self.messageViewModels.append(
+        MessageViewModel(chatMessage: ChatMessage(participant: .system(.error)))
+      )
+    case .system(.thinking), .system(.response):
+      if messageVM.chatMessage.text.count > 0 {
+        self.messageViewModels.append(
+          MessageViewModel(chatMessage: ChatMessage(participant: .system(.error)))
+        )
+      } else {
+        messageVM.update(text: error.localizedDescription, participant: .system(.error))
+      }
+    case .user:
+      break
+    }
   }
 }
 
@@ -395,8 +347,8 @@ enum InferenceError: LocalizedError {
 }
 
 extension String {
-  fileprivate func extractPrefixSuffix(substring: String) -> (prefix: String, suffix: String)? {
-    guard !substring.isEmpty,  // Ensure substring is not empty
+  fileprivate func extractPrefixSuffix(substring: String?) -> (prefix: String, suffix: String)? {
+    guard let substring = substring, !substring.isEmpty,  // Ensure substring is not empty
       let range = self.range(of: substring)
     else {
       // Substring not found or is empty, return empty strings

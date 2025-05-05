@@ -19,7 +19,7 @@ struct ConversationScreen: View {
   private struct Constants {
     static let scrollDelayInSeconds = 0.05
     static let alertBackgroundColor = Color.black.opacity(0.3)
-    static let newChatSystemSymbolName = "square.and.pencil"
+    static let newChatSystemSymbolName = "arrow.clockwise"
     static let navigationTitle = "Chat with your LLM here"
     static let modelInitializationAlertText = "Model initialization in progress."
   }
@@ -160,7 +160,7 @@ struct MessageView: View {
         Spacer()
       }
       VStack(alignment: messageViewModel.chatMessage.participant == .user ? .trailing : .leading) {
-        Text(messageViewModel.chatMessage.participant.title)
+        Text(messageViewModel.chatMessage.title)
           .font(Constants.font)
           .frame(
             alignment: messageViewModel.chatMessage.participant == .user ? .trailing : .leading)
@@ -170,18 +170,24 @@ struct MessageView: View {
             text: messageViewModel.chatMessage.text,
             backgroundColor: Constants.userMessageBackgroundColor)
         case .system(value: .response):
-          MessageContentView(
-            text: messageViewModel.chatMessage.text,
-            backgroundColor: Constants.systemMessageBackgroundColor)
+          if messageViewModel.chatMessage.isLoading {
+            ProgressView().tint(Constants.tint)
+          } else {
+            MessageContentView(
+              text: messageViewModel.chatMessage.text,
+              backgroundColor: Constants.systemMessageBackgroundColor)
+          }
         case .system(value: .thinking):
-          MessageContentView(
-            text: messageViewModel.chatMessage.text,
-            backgroundColor: Constants.thinkingMessageBackgroundColor)
+          if messageViewModel.chatMessage.isLoading {
+            ProgressView().tint(Constants.tint)
+          } else {
+            MessageContentView(
+              text: messageViewModel.chatMessage.text,
+              backgroundColor: Constants.thinkingMessageBackgroundColor)
+          }
         case .system(value: .error):
           MessageContentView(
             text: Constants.generationErrorText, backgroundColor: Constants.errorBackgroundColor)
-        case .system(value: .generating):
-          ProgressView().tint(Constants.tint)
         }
       }
     }
@@ -328,9 +334,9 @@ struct ModelAccessoryView: View {
   }
 
   let modelName: String
-  
+
   @Binding var remainingTokenCount: Int
-  
+
   private var tokenCountString: String {
     if remainingTokenCount == -1 {
       return ""
@@ -346,7 +352,7 @@ struct ModelAccessoryView: View {
       Text(tokenCountString)
         .font(Constants.font)
       Spacer()
-      .tint(Metadata.globalColor)
+        .tint(Metadata.globalColor)
     }
     .padding()
     .background(Constants.backgroundColor)
