@@ -83,7 +83,7 @@ class ConversationViewModel: ObservableObject {
   }
 
   func loadModel() {
-    guard currentState == .idle else {
+    guard currentState == .idle, downloadRequired == false else {
       return
     }
 
