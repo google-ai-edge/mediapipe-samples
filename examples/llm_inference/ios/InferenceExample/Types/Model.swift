@@ -47,14 +47,11 @@ struct ModelMetadata {
 /// Holds the metadata of the models that can be used.
 enum Model: CaseIterable {
   case gemma
-  case phi4
   case deepSeek
   case qwen_2_5_0_5B_Instruct
   case qwen_2_5_1_5B_Instruct
-  case qwen_2_5_3B_Instruct
   case tinyLlama_1_1B
   case llama_3_2_1B
-  case llama_3_2_3B
 
   private var metadata: ModelMetadata {
     switch self {
@@ -70,16 +67,6 @@ enum Model: CaseIterable {
           temperature: 1.0,
           topK: 64,
           topP: 0.95
-        )
-      case .phi4:
-        return ModelMetadata(
-          pathName: "Phi-4-mini-instruct_multi-prefill-seq_q8_ekv1280",
-          pathExtension: "task",
-          displayName: "Phi 4 Mini Instruct",
-          downloadUrlString: "https://huggingface.co/litert-community/Phi-4-mini-instruct/resolve/main/Phi-4-mini-instruct_multi-prefill-seq_q8_ekv1280.task",
-          temperature: 0.6,
-          topK: 40,
-          topP: 0.1
         )
       case .deepSeek:
         return ModelMetadata(
@@ -98,22 +85,9 @@ enum Model: CaseIterable {
           pathName: "Llama-3.2-1B-Instruct_multi-prefill-seq_q8_ekv1280",
           pathExtension: "task",
           licenseAcknowledgedKey: "llama3.2-1B-license",
-          displayName: "Llama 3.2 IB Instruct",
+          displayName: "Llama 3.2 1B Instruct",
           downloadUrlString: "https://huggingface.co/litert-community/Llama-3.2-1B-Instruct/resolve/main/Llama-3.2-1B-Instruct_multi-prefill-seq_q8_ekv1280.task",
           licenseUrlString: "https://huggingface.co/litert-community/Llama-3.2-1B-Instruct",
-          authRequired: true,
-          temperature: 0.6,
-          topK: 64,
-          topP: 0.9
-        )
-      case .llama_3_2_3B:
-        return ModelMetadata(
-          pathName: "Llama-3.2-3B-Instruct_multi-prefill-seq_q8_ekv1280",
-          pathExtension: "task",
-          licenseAcknowledgedKey: "llama3.2-3B-license",
-          displayName: "Llama 3.2 3B Instruct",
-          downloadUrlString: "https://huggingface.co/litert-community/Llama-3.2-3B-Instruct/resolve/main/Llama-3.2-3B-Instruct_multi-prefill-seq_q8_ekv1280.task",
-          licenseUrlString: "https://huggingface.co/litert-community/Llama-3.2-3B-Instruct",
           authRequired: true,
           temperature: 0.6,
           topK: 64,
@@ -135,16 +109,6 @@ enum Model: CaseIterable {
           pathExtension: "task",
           displayName: "Qwen 2.5 1.5B Instruct",
           downloadUrlString: "https://huggingface.co/litert-community/Qwen2.5-1.5B-Instruct/resolve/main/Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv1280.task",
-          temperature: 0.95,
-          topK: 40,
-          topP: 1.0
-        )
-      case .qwen_2_5_3B_Instruct:
-        return ModelMetadata(
-          pathName: "Qwen2.5-3B-Instruct_multi-prefill-seq_q8_ekv1280",
-          pathExtension: "task",
-          displayName: "Qwen 2.5 3B Instruct",
-          downloadUrlString: "https://huggingface.co/litert-community/Qwen2.5-3B-Instruct/resolve/main/Qwen2.5-3B-Instruct_multi-prefill-seq_q8_ekv1280.task",
           temperature: 0.95,
           topK: 40,
           topP: 1.0
