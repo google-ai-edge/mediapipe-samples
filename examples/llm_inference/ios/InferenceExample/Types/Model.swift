@@ -14,32 +14,174 @@
 
 import Foundation
 
+struct ModelMetadata {
+  let pathName: String
+  let pathExtension: String
+  let licenseAcknowledgedKey: String
+  let displayName: String // Renamed from 'name' to avoid conflict
+  let downloadUrlString: String
+  let licenseUrlString: String?
+  let canReason: Bool
+  let thinkingMarkerEnd: String?
+  let authRequired: Bool
+  let temperature: Float
+  let topK: Int
+  let topP: Float
+  
+  init(pathName: String, pathExtension: String, licenseAcknowledgedKey: String="", displayName: String, downloadUrlString: String, licenseUrlString: String?=nil, canReason: Bool=false, thinkingMarkerEnd: String?=nil, authRequired: Bool=false, temperature: Float, topK: Int, topP: Float) {
+    self.pathName = pathName
+    self.pathExtension = pathExtension
+    self.licenseAcknowledgedKey = licenseAcknowledgedKey
+    self.displayName = displayName
+    self.downloadUrlString = downloadUrlString
+    self.licenseUrlString = licenseUrlString
+    self.canReason = canReason
+    self.thinkingMarkerEnd = thinkingMarkerEnd
+    self.authRequired = authRequired
+    self.temperature = temperature
+    self.topK = topK
+    self.topP = topP
+  }
+}
+
 /// Holds the metadata of the models that can be used.
 enum Model: CaseIterable {
   case gemma
   case phi4
   case deepSeek
+  case qwen_2_5_0_5B_Instruct
+  case qwen_2_5_1_5B_Instruct
+  case qwen_2_5_3B_Instruct
+  case tinyLlama_1_1B
+  case llama_3_2_1B
+  case llama_3_2_3B
 
-  private var path: (name: String, extension: String) {
+  private var metadata: ModelMetadata {
     switch self {
-    case .gemma:
-      return ("Gemma2-2B-IT_multi-prefill-seq_q8_ekv1280", "task")
-    case .phi4:
-      return ("Phi-4-mini-instruct_multi-prefill-seq_q8_ekv1280", "task")
-    case .deepSeek:
-      return ("DeepSeek-R1-Distill-Qwen-1.5B_multi-prefill-seq_q8_ekv1280", "task")
+      case .gemma:
+        return ModelMetadata(
+          pathName: "Gemma2-2B-IT_multi-prefill-seq_q8_ekv1280",
+          pathExtension: "task",
+          licenseAcknowledgedKey: "gemma-license",
+          displayName: "Gemma 2 2B CPU",
+          downloadUrlString: "https://huggingface.co/litert-community/Gemma2-2B-IT/resolve/main/Gemma2-2B-IT_multi-prefill-seq_q8_ekv1280.task",
+          licenseUrlString: "https://huggingface.co/litert-community/Gemma2-2B-IT",
+          authRequired: true,
+          temperature: 1.0,
+          topK: 64,
+          topP: 0.95
+        )
+      case .phi4:
+        return ModelMetadata(
+          pathName: "Phi-4-mini-instruct_multi-prefill-seq_q8_ekv1280",
+          pathExtension: "task",
+          displayName: "Phi 4 Mini Instruct",
+          downloadUrlString: "https://huggingface.co/litert-community/Phi-4-mini-instruct/resolve/main/Phi-4-mini-instruct_multi-prefill-seq_q8_ekv1280.task",
+          temperature: 0.6,
+          topK: 40,
+          topP: 0.1
+        )
+      case .deepSeek:
+        return ModelMetadata(
+          pathName: "DeepSeek-R1-Distill-Qwen-1.5B_multi-prefill-seq_q8_ekv1280",
+          pathExtension: "task",
+          displayName: "Deep Seek R1 Distill Qwen 1.5B",
+          downloadUrlString: "https://huggingface.co/litert-community/DeepSeek-R1-Distill-Qwen-1.5B/resolve/main/DeepSeek-R1-Distill-Qwen-1.5B_multi-prefill-seq_q8_ekv1280.task",
+          canReason: true,
+          thinkingMarkerEnd: "</think>",
+          temperature: 0.6,
+          topK: 40,
+          topP: 0.7
+        )
+      case .llama_3_2_1B:
+        return ModelMetadata(
+          pathName: "Llama-3.2-1B-Instruct_multi-prefill-seq_q8_ekv1280",
+          pathExtension: "task",
+          licenseAcknowledgedKey: "llama3.2-1B-license",
+          displayName: "Llama 3.2 IB Instruct",
+          downloadUrlString: "https://huggingface.co/litert-community/Llama-3.2-1B-Instruct/resolve/main/Llama-3.2-1B-Instruct_multi-prefill-seq_q8_ekv1280.task",
+          licenseUrlString: "https://huggingface.co/litert-community/Llama-3.2-1B-Instruct",
+          authRequired: true,
+          temperature: 0.6,
+          topK: 64,
+          topP: 0.9
+        )
+      case .llama_3_2_3B:
+        return ModelMetadata(
+          pathName: "Llama-3.2-3B-Instruct_multi-prefill-seq_q8_ekv1280",
+          pathExtension: "task",
+          licenseAcknowledgedKey: "llama3.2-3B-license",
+          displayName: "Llama 3.2 3B Instruct",
+          downloadUrlString: "https://huggingface.co/litert-community/Llama-3.2-3B-Instruct/resolve/main/Llama-3.2-3B-Instruct_multi-prefill-seq_q8_ekv1280.task",
+          licenseUrlString: "https://huggingface.co/litert-community/Llama-3.2-3B-Instruct",
+          authRequired: true,
+          temperature: 0.6,
+          topK: 64,
+          topP: 0.9
+        )
+      case .qwen_2_5_0_5B_Instruct:
+        return ModelMetadata(
+          pathName: "Qwen2.5-0.5B-Instruct_multi-prefill-seq_q8_ekv1280",
+          pathExtension: "task",
+          displayName: "Qwen 2.5 0.5B Instruct",
+          downloadUrlString: "https://huggingface.co/litert-community/Qwen2.5-0.5B-Instruct/resolve/main/Qwen2.5-0.5B-Instruct_multi-prefill-seq_q8_ekv1280.task",
+          temperature: 0.95,
+          topK: 40,
+          topP: 1.0
+        )
+      case .qwen_2_5_1_5B_Instruct:
+        return ModelMetadata(
+          pathName: "Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv1280",
+          pathExtension: "task",
+          displayName: "Qwen 2.5 1.5B Instruct",
+          downloadUrlString: "https://huggingface.co/litert-community/Qwen2.5-1.5B-Instruct/resolve/main/Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv1280.task",
+          temperature: 0.95,
+          topK: 40,
+          topP: 1.0
+        )
+      case .qwen_2_5_3B_Instruct:
+        return ModelMetadata(
+          pathName: "Qwen2.5-3B-Instruct_multi-prefill-seq_q8_ekv1280",
+          pathExtension: "task",
+          displayName: "Qwen 2.5 3B Instruct",
+          downloadUrlString: "https://huggingface.co/litert-community/Qwen2.5-3B-Instruct/resolve/main/Qwen2.5-3B-Instruct_multi-prefill-seq_q8_ekv1280.task",
+          temperature: 0.95,
+          topK: 40,
+          topP: 1.0
+        )
+      case .tinyLlama_1_1B:
+        return ModelMetadata(
+          pathName: "TinyLlama-1.1B-Chat-v1.0_multi-prefill-seq_q8_ekv1280",
+          pathExtension: "task",
+          displayName: "Tiny Llama 1.1B v1.0",
+          downloadUrlString: "https://huggingface.co/litert-community/TinyLlama-1.1B-Chat-v1.0/resolve/main/TinyLlama-1.1B-Chat-v1.0_multi-prefill-seq_q8_ekv1280.task",
+          temperature: 0.95,
+          topK: 40,
+          topP: 1.0
+        )
     }
   }
+  
+  var licenseAcnowledgedKey: String { metadata.licenseAcknowledgedKey }
+  var name: String { metadata.displayName }
+  var canReason: Bool { metadata.canReason }
+  var thinkingMarkerEnd: String? { metadata.thinkingMarkerEnd }
+  var authRequired: Bool { metadata.authRequired }
+  var temperature: Float { metadata.temperature }
+  var topK: Int { metadata.topK }
+  var topP: Float { metadata.topP }
 
-  var licenseAcnowledgedKey: String {
-    switch self {
-    case .gemma:
-      return "gemma-license"
-    case .phi4:
-      return ""
-    case .deepSeek:
-      return ""
-    }
+  private var path: (name: String, extension: String) {
+    (metadata.pathName, metadata.pathExtension)
+  }
+  
+  var downloadUrl: URL {
+    URL(string: metadata.downloadUrlString)!
+  }
+  
+  var licenseUrl: URL? {
+    guard let urlString = metadata.licenseUrlString else { return nil }
+    return URL(string: urlString)
   }
 
   var modelPath: String {
@@ -54,39 +196,9 @@ enum Model: CaseIterable {
       else {
         throw InferenceError.modelFileNotFound(modelName: "\(path.name).\(path.extension)")
       }
-
+      
+      print(path)
       return path
-    }
-  }
-
-  var name: String {
-    switch self {
-    case .gemma:
-      return "Gemma 2 2B CPU"
-    case .phi4:
-      return "Phi 4"
-    case .deepSeek:
-      return "Deep Seek"
-    }
-  }
-
-  var downloadUrl: URL {
-    switch self {
-    case .gemma:
-      return URL(
-        string:
-          "https://huggingface.co/litert-community/Gemma2-2B-IT/resolve/main/Gemma2-2B-IT_multi-prefill-seq_q8_ekv1280.task"
-      )!
-    case .phi4:
-      return URL(
-        string:
-          "https://huggingface.co/litert-community/Phi-4-mini-instruct/resolve/main/Phi-4-mini-instruct_multi-prefill-seq_q8_ekv1280.task"
-      )!
-    case .deepSeek:
-      return URL(
-        string:
-          "https://huggingface.co/litert-community/DeepSeek-R1-Distill-Qwen-1.5B/resolve/main/DeepSeek-R1-Distill-Qwen-1.5B_multi-prefill-seq_q8_ekv1280.task"
-      )!
     }
   }
 
@@ -100,75 +212,6 @@ enum Model: CaseIterable {
       ).appendingPathComponent("\(path.name).\(path.extension)")
 
       return path
-    }
-  }
-
-  var licenseUrl: URL? {
-    switch self {
-    case .gemma:
-      return URL(string: "https://huggingface.co/litert-community/Gemma2-2B-IT")
-    case .phi4:
-      return nil
-    case .deepSeek:
-      return nil
-    }
-  }
-
-  var canReason: Bool {
-    if case .deepSeek = self {
-      return true
-    }
-
-    return false
-  }
-
-  var thinkingMarkerEnd: String? {
-    if case .deepSeek = self {
-      return "</think>"
-    }
-
-    return nil
-  }
-
-  var authRequired: Bool {
-    switch self {
-    case .gemma:
-      return true
-    case .deepSeek, .phi4:
-      return false
-    }
-  }
-
-  var temperature: Float {
-    switch self {
-    case .gemma:
-      return 1.0
-    case .deepSeek:
-      return 0.6
-    case .phi4:
-      return 0.0
-    }
-  }
-
-  var topK: Int {
-    switch self {
-    case .gemma:
-      return 64
-    case .deepSeek:
-      return 40
-    case .phi4:
-      return 40
-    }
-  }
-
-  var topP: Float {
-    switch self {
-    case .gemma:
-      return 0.95
-    case .deepSeek:
-      return 0.7
-    case .phi4:
-      return 0.1
     }
   }
 }
