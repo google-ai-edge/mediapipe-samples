@@ -62,9 +62,8 @@ enum Model: CaseIterable {
   private var metadata: ModelMetadata {
     switch self {
       case .gemma3:
-        //      https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4.task
         return ModelMetadata(
-          pathName: "Gemma2-2B-IT_multi-prefill-seq_q8_ekv1280",
+          pathName: "gemma3-1b-it-int4",
           pathExtension: "task",
           licenseAcknowledgedKey: "gemma-license",
           displayName: "Gemma 3 1B CPU",
