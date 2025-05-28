@@ -85,9 +85,9 @@ enum Model: CaseIterable {
             "https://huggingface.co/litert-community/Gemma2-2B-IT/resolve/main/Gemma2-2B-IT_multi-prefill-seq_q8_ekv1280.task",
           licenseUrlString: "https://huggingface.co/litert-community/Gemma2-2B-IT",
           authRequired: true,
-          temperature: 1.0,
-          topK: 64,
-          topP: 0.95
+          temperature: 0.6,
+          topK: 50,
+          topP: 0.9
         )
       case .deepSeek:
         return ModelMetadata(
