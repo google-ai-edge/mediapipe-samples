@@ -21,6 +21,7 @@ buildscript {
     ext.java_version = JavaVersion.VERSION_1_8
 
     repositories {
+        mavenLocal()
         google()
         mavenCentral()
     }
@@ -38,6 +39,7 @@ buildscript {
 
 allprojects {
     repositories {
+        mavenLocal()
         google()
         mavenCentral()
     }
