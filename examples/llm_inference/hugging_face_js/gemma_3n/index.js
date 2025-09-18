@@ -15,7 +15,7 @@
 // -------------------------------------------------------------------------- //
 
 import {oauthLoginUrl, oauthHandleRedirectIfPresent} from "@huggingface/hub";
-import {FilesetResolver, LlmInference} from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-genai';
+import {FilesetResolver, LlmInference} from '@mediapipe/tasks-genai';
 
 // --- DOM Element References ---
 const webcamElement = document.getElementById('webcam');
@@ -81,28 +81,26 @@ async function initLlm(modelReader) {
   updateProgressBar(90);
   const genaiFileset = await FilesetResolver.forGenAiTasks(
       'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-genai/wasm');
-  LlmInference
-      .createFromOptions(genaiFileset, {
-        baseOptions: {modelAssetBuffer: modelReader},
-        maxTokens: 2048,
-        maxNumImages: 1,
-        supportAudio: true,
-      })
-      .then(llm => {
-        llmInference = llm;
-        // Enable demo now that loading has fully finished.
-        loaderOverlay.style.opacity = '0';
-        setTimeout(() => {
-          loaderOverlay.style.display = 'none';
-          promptInputElement.disabled = false;
-          sendButton.disabled = false;
-          recordButton.disabled = false;
-        }, 300);
-      })
-      .catch((error) => {
-        console.error('Failed to initialize the LLM', error);
-        loaderOverlay.style.display = 'none'; // Hide loader on error
-      });
+  try {
+    llmInference = await LlmInference.createFromOptions(genaiFileset, {
+          baseOptions: {modelAssetBuffer: modelReader},
+          maxTokens: 2048,
+          maxNumImages: 1,
+          supportAudio: true,
+        });
+  
+    // Enable demo now that loading has fully finished.
+    loaderOverlay.style.opacity = '0';
+    setTimeout(() => {
+      loaderOverlay.style.display = 'none';
+      promptInputElement.disabled = false;
+      sendButton.disabled = false;
+      recordButton.disabled = false;
+    }, 300);
+  } catch (error) {
+    console.error('Failed to initialize the LLM', error);
+    loaderOverlay.style.display = 'none'; // Hide loader on error
+  }
 }
 
 /**
@@ -204,7 +202,7 @@ async function loadLlm() {
     oauthResult ||= await oauthHandleRedirectIfPresent();
     // If we have successful oauth from one of the methods above, download from
     // remote.
-    if (oauthResult && oauthResult.accessToken) {
+    if (oauthResult?.accessToken) {
       localStorage.setItem("oauth", JSON.stringify(oauthResult));
       const modelUrl = remoteFileUrl;
       const oauthHeaders = {
@@ -370,7 +368,7 @@ function setLoading(loading) {
 
   if (loading) {
     responseContainer.classList.add('thinking');
-    responseContainer.innerHTML = '<p>Thinking...</p>';
+    responseContainer.innerHTML = '<p>Processing...</p>';
   }
 }
 
