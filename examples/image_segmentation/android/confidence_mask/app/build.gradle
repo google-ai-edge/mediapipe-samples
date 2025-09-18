@@ -24,7 +24,7 @@ plugins {
 
 android {
     compileSdk 34
-    namespace "com.google.mediapipe.examples.imagesegmenter"
+    namespace "com.google.mediapipe.examples.imagesegmentation"
 
     defaultConfig {
         applicationId "com.google.mediapipe.examples.imagesegmentation"
