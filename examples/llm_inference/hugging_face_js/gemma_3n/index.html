@@ -1,0 +1,88 @@
+<!-- Copyright 2025 The MediaPipe Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+------------------------------------------------------------------------ -->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gemma 3n Multimodal Demo</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://unpkg.com/es-module-shims@1.7.0/dist/es-module-shims.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "@huggingface/hub": "https://cdn.jsdelivr.net/npm/@huggingface/hub@0.21.0/+esm"
+            }
+        }
+    </script>
+  </head>
+  <body>
+    <img src="https://huggingface.co/datasets/huggingface/badges/resolve/main/sign-in-with-huggingface-xl-dark.svg" alt="Sign in with Hugging Face" style="cursor: pointer; display: none;" id="signin">
+    <div class="loader-content" id="sign-in-message" style="display:none">
+      <p>Please sign in and make sure you've accepted the Gemma license.</p>
+      <p>You do not need to grant access to any of your organizations.</p>
+    </div>
+    <div id="loader-overlay" class="loader-overlay">
+      <div class="loader-content">
+        <p id="loader-message">Loading model...</p>
+        <div class="progress-bar">
+          <div id="progress-bar-fill" class="progress-bar-fill"></div>
+        </div>
+      </div>
+    </div>
+    <main class="container" id="main-container">
+      <h1>Gemma 3n Multimodal Demo</h1>
+      <div class="video-container">
+        <video id="webcam" autoplay playsinline muted></video>
+        <p id="status-message">Requesting camera access...</p>
+      </div>
+      <div
+        id="response-container"
+        class="response-container"
+        aria-live="polite"
+      >
+        <p>Gemma's response will appear here.</p>
+      </div>
+      <div class="input-container">
+        <input
+          type="text"
+          id="prompt-input"
+          placeholder="Ask a question about what you see..."
+          aria-label="Question input"
+        />
+        <button
+          id="record-button"
+          title="Record audio question"
+          aria-label="Record audio question"
+        >
+          <i class="fa-solid fa-microphone"></i>
+        </button>
+        <button id="send-button" title="Send question" aria-label="Send question">
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </div>
+    </main>
+    <script type="module" src="/index.js"></script>
+  </body>
+</html>
