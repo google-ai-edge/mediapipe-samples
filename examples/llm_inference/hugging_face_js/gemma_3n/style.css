@@ -101,6 +101,13 @@ h1 {
   font-style: italic;
 }
 
+.disclaimer {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--secondary-text-color);
+  margin: 0;
+}
+
 .input-container {
   display: flex;
   gap: 0.5rem;
