@@ -18,6 +18,7 @@ buildscript {
     dependencies {
         classpath 'androidx.navigation:navigation-safe-args-gradle-plugin:2.8.5'
         classpath 'de.undercouch:gradle-download-task:4.1.2'
+        classpath 'com.android.tools.build:gradle:8.11.0'
     }
 }
 plugins {
