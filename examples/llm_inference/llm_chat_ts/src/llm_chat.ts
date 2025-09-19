@@ -34,7 +34,7 @@ export class LlmChat extends LitElement {
   private userInput: string = '';
 
   @state()
-  private isLoadingModel: boolean = true;
+  private isLoadingModel: boolean = false;
 
   @state()
   private isGenerating: boolean = false;
@@ -77,35 +77,6 @@ export class LlmChat extends LitElement {
       this.loadingProgress = progress;
       this.requestUpdate();
     });
-    this.initializeLlm();
-  }
-
-  private async initializeLlm() {
-    this.isLoadingModel = true;
-    this.errorMessage = null;
-    this.requestUpdate();
-
-    try {
-      this.llmService.setPersona(this.selectedPersona);
-      await this.llmService.setOptions(structuredClone(DEFAULT_OPTIONS));
-      this.currentAppliedOptions = structuredClone(DEFAULT_OPTIONS);
-      this.pendingOptions = structuredClone(DEFAULT_OPTIONS);
-      this.hasPendingOptionsChanges = false;
-
-      console.log(
-        'LLM Initialized with default options and persona:',
-        this.currentAppliedOptions,
-        this.selectedPersona.name
-      );
-    } catch (error) {
-      console.error('Failed to initialize LLM:', error);
-      this.errorMessage = `Failed to initialize LLM. Error: ${
-        error instanceof Error ? error.message : String(error)
-      }`;
-    } finally {
-      this.isLoadingModel = false;
-      this.requestUpdate();
-    }
   }
 
   async handlePersonaChanged(event: CustomEvent<Persona>) {
@@ -116,9 +87,7 @@ export class LlmChat extends LitElement {
 
     console.log('Persona selected:', newPersona.name);
     this.isGenerating = false;
-    this.userInput = '';
 
-    this.isLoadingModel = true;
     this.errorMessage = null;
     this.selectedPersona = newPersona;
     this.requestUpdate();
@@ -132,7 +101,6 @@ export class LlmChat extends LitElement {
         console.error('Failed to apply new persona:', error);
         this.errorMessage = `Failed to switch persona. Error: ${error instanceof Error ? error.message : String(error)}`;
     } finally {
-        this.isLoadingModel = false;
         this.userInputElement?.focus();
         this.requestUpdate();
     }
@@ -151,13 +119,16 @@ export class LlmChat extends LitElement {
   }
 
   private async _applyPendingOptionsIfNeeded(): Promise<boolean> {
-    if (this.hasPendingOptionsChanges) {
+    if (this.hasPendingOptionsChanges || !this.llmService.isInitialized()) {
       console.log('Applying pending LLM options:', this.pendingOptions);
       this.isLoadingModel = true;
       this.errorMessage = null;
       this.requestUpdate();
 
       try {
+        if (!this.llmService.isInitialized()) {
+          this.llmService.setPersona(this.selectedPersona);
+        }
         await this.llmService.setOptions(structuredClone(this.pendingOptions));
         this.currentAppliedOptions = structuredClone(this.pendingOptions);
         this.hasPendingOptionsChanges = false;

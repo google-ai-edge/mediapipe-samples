@@ -89,6 +89,10 @@ export class LlmService {
     );
   }
 
+  isInitialized(): boolean {
+    return !!this.llmInference;
+  }
+
   setPersona(persona: Persona) {
     this.persona = persona;
     this.promptTemplate = this.persona.promptTemplate
