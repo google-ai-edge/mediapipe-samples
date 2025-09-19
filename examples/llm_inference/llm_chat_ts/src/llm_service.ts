@@ -23,15 +23,39 @@ import { streamWithProgress } from './streaming_utils';
 import { loadModelWithCache } from './opfs_cache';
 
 export const MODEL_PATHS = [
-  ['Gemma3 1B IT int8', './models/gemma3_1b_it_int8-web.task'] as const,
-  ['Gemma3 1B IT int4', './models/gemma3_1b_it_int4-web.task'] as const,
-  ['Gemma3 4B IT int8', './models/gemma3_4b_it_int8-web.task'] as const,
-  ['Gemma3 4B IT int4', './models/gemma3_4b_it_int4-web.task'] as const,
-  ['Gemma3 12B IT int8', './models/gemma3_12b_it_int8-web.task'] as const,
-  ['Gemma3 12B IT int4', './models/gemma3_12b_it_int4-web.task'] as const,
-  ['Gemma3 27B IT int8', './models/gemma3_27b_it_int8-web.task'] as const,
-  ['MedGemma 27B IT int8', './models/medgemma-27b-it-int8-web.task'] as const,
-] as const;
+  [
+    'Gemma3 1B IT int8',
+    'https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int8-web.task',
+  ] as const,
+  [
+    'Gemma3 1B IT int4',
+    'https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4-web.task',
+  ] as const,
+  [
+    'Gemma3 4B IT int8',
+    'https://huggingface.co/litert-community/Gemma3-4B-IT/resolve/main/gemma3-4b-it-int8-web.task',
+  ] as const,
+  [
+    'Gemma3 4B IT int4',
+    'https://huggingface.co/litert-community/Gemma3-4B-IT/resolve/main/gemma3-4b-it-int4-web.task',
+  ] as const,
+  [
+    'Gemma3 12B IT int8',
+    'https://huggingface.co/litert-community/Gemma3-12B-IT/resolve/main/gemma3-12b-it-int8-web.task',
+  ] as const,
+  [
+    'Gemma3 12B IT int4',
+    'https://huggingface.co/litert-community/Gemma3-12B-IT/resolve/main/gemma3-12b-it-int4-web.task',
+  ] as const,
+  [
+    'Gemma3 27B IT int8',
+    'https://huggingface.co/litert-community/Gemma3-27B-IT/resolve/main/gemma3-27b-it-int8-web.task',
+  ] as const,
+  [
+    'MedGemma 27B IT int8',
+    'https://huggingface.co/litert-community/MedGemma-27B-IT/resolve/main/medgemma-27b-it-int8-web.task',
+  ] as const,
+];
 
 const DEFAULT_MAX_TOKENS = 1024
 

@@ -4,13 +4,14 @@
   "license": "Apache-2.0",
   "main": "index.js",
   "scripts": {
-    "dev": "rimraf dist && cp -r static dist && ln -s ../models/ dist/models && esbuild --bundle --target=es2020 --watch --outfile=dist/bundle.js --serve --servedir=dist --sourcemap src/index.ts",
+    "dev": "rimraf dist && cp -r static dist && esbuild --bundle --target=es2020 --watch --outfile=dist/bundle.js --serve --servedir=dist --sourcemap src/index.ts",
     "build": "rimraf dist && cp -rL static dist && esbuild --bundle --target=es2020 --outfile=dist/bundle.js --sourcemap src/index.ts",
     "lint": "tsc && eslint"
   },
   "author": "",
   "description": "",
   "dependencies": {
+    "@huggingface/hub": "^2.6.5",
     "@mediapipe/tasks-genai": "^0.10.25",
     "lit": "^3.3.0",
     "rimraf": "^6.0.1"
