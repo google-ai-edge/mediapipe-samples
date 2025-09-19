@@ -160,8 +160,7 @@ export class ChatHistory extends LitElement {
   }
 
   private _handleScroll() {
-    const el = this;
-    const atBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + SCROLL_THRESHOLD;
+    const atBottom = this.scrollHeight - this.scrollTop <= this.clientHeight + SCROLL_THRESHOLD;
     this._isScrolledToBottom = atBottom;
   }
 

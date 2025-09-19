@@ -16,7 +16,7 @@
 
 import { Persona } from "../types";
 import { BASE_GEMMA3_PERSONA } from "./base_gemma3";
-import {CodeSandbox, SandboxResult} from '../code_sandbox';
+import {CodeSandbox} from '../code_sandbox';
 
 const EVAL_TAG = '```js-eval';
 const MAX_CONSOLE_LOG_CHARS = 1000;

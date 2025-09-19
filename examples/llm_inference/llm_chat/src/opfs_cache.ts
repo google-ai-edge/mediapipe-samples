@@ -93,7 +93,8 @@ export async function loadModelWithCache(modelPath: string): Promise<{ stream: R
       // Clean up partial file on failure
       try {
         await opfsRoot.removeEntry(fileName);
-      } catch (cleanupError) {
+        //eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_cleanupError) {
         // Ignore cleanup error
       }
     }

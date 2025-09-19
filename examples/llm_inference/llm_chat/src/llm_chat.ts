@@ -17,7 +17,6 @@
 import { LlmInferenceOptions } from '@mediapipe/tasks-genai';
 import { LitElement, css, html } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
-import { lastValueFrom } from 'rxjs';
 import './chat_history';
 import { DEFAULT_OPTIONS } from './constants';
 import './llm_options';

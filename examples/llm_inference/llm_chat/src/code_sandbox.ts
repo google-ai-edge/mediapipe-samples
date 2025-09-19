@@ -205,13 +205,15 @@ export class CodeSandbox {
         try {
             workerForThisRun.removeEventListener('message', messageHandlerWrapper);
             workerForThisRun.removeEventListener('error', errorHandlerWrapper);
-        } catch(e) {/* ignore */}
+          //eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch(_e) {/* ignore */}
 
 
         resolve({
           error: `Execution timed out after ${timeoutMs}ms. The worker for this run has been terminated.`,
           consoleMessages: [] // Console messages from worker are lost on timeout
         });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       }, timeoutMs) as any; // Use 'as any' for Node.js setTimeout return type if in mixed env
 
       // Add event listeners to the worker instance for this run

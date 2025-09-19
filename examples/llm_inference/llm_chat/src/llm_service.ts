@@ -17,7 +17,7 @@
 import { FilesetResolver, LlmInference, LlmInferenceOptions } from '@mediapipe/tasks-genai';
 import { BehaviorSubject, lastValueFrom } from 'rxjs';
 import { produce } from 'immer';
-import { ChatMessage, Persona, PromptTemplate, Tool } from './types';
+import { ChatMessage, Persona, Tool } from './types';
 import { BASE_GEMMA3_PERSONA } from './personas/base_gemma3';
 import { streamWithProgress } from './streaming_utils';
 import { loadModelWithCache } from './opfs_cache';
@@ -140,6 +140,9 @@ export class LlmService {
     this.llmInference.generateResponse(renderedText, async (partialResult, done) => {
       responseSubject.next(responseSubject.value + partialResult);
       this.history.next(produce(this.history.value, messages => {
+        if (messages.length === 0) {
+          return;
+        }
         const lastMessage = messages.at(-1)!;
         lastMessage.text = responseSubject.value;
         lastMessage.doneGenerating = false;
@@ -149,10 +152,13 @@ export class LlmService {
         const latencyMilliseconds = performance.now() - start;
         await sleep(0); // TODO: Let the user not have to do this.
         this.history.next(produce(this.history.value, messages => {
+          if (messages.length === 0) {
+            return;
+          }
           const lastMessage = messages[messages.length - 1]!;
           lastMessage.latencyMilliseconds = latencyMilliseconds;
           lastMessage.generatedTokenCount =
-            this.llmInference!.sizeInTokens(lastMessage.text)!;
+            this.llmInference?.sizeInTokens(lastMessage.text) ?? 0;
           lastMessage.doneGenerating = true;
           messages[messages.length - 1] = this.applyTemplate(lastMessage);
         }));
@@ -205,10 +211,14 @@ export class LlmService {
   }
 
   private applyTemplate(message: ChatMessage): WithKeys<ChatMessage, 'templateApplied'> {
+    if (!this.llmInference) {
+      throw new Error('Llm not done loading');
+    }
+    const {pre, post} = this.promptTemplate[message.role];
+    const text = `${pre}${message.text}${post}`
+    const tokenCount = this.llmInference.sizeInTokens(text) ?? 0;
+
     return produce(message, newMessage => {
-      const {pre, post} = this.promptTemplate[newMessage.role];
-      const text = `${pre}${newMessage.text}${post}`
-      const tokenCount = this.llmInference?.sizeInTokens(text)!;
       newMessage.templateApplied = {
         text,
         tokenCount,
