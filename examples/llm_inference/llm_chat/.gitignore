@@ -1,0 +1,11 @@
+dist/
+
+# npm
+node_modules/
+
+# emacs
+*~
+\#*\#
+
+venv/
+**/models/
