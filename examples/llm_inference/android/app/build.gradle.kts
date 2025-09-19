@@ -82,7 +82,7 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("com.google.android.material:material:1.12.0")
 
-    implementation ("com.google.mediapipe:tasks-genai:0.10.22")
+    implementation ("com.google.mediapipe:tasks-genai:0.10.28")
 
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
     implementation("net.openid:appauth:0.11.1") // Add AppAuth for OAuth support
