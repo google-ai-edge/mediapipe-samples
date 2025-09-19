@@ -21,12 +21,12 @@ plugins {
 
 android {
     namespace 'com.google.mediapipe.examples.languagedetector'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.google.mediapipe.examples.languagedetector"
         minSdk 24
-        targetSdk 33
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 
@@ -77,5 +77,5 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
-    implementation 'com.google.mediapipe:tasks-text:0.10.26'
+    implementation 'com.google.mediapipe:tasks-text:0.10.28'
 }
