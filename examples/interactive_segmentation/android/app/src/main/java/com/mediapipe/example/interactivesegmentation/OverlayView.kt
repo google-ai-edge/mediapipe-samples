@@ -39,7 +39,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
         color = Color.parseColor(selectionMarkerBorderColor)
     }
 
-    override fun onDraw(canvas: Canvas?) {
+    override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         maskBitmap?.let {
             canvas?.drawBitmap(it, 0f, 0f, null)

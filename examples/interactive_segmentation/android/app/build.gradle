@@ -21,11 +21,11 @@ plugins {
 
 android {
     namespace 'com.mediapipe.example.interactivesegmentation'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.mediapipe.example.interactivesegmentation"
-        minSdk 24
+        minSdk 34
         targetSdk 33
         versionCode 1
         versionName "1.0"
@@ -64,7 +64,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
     // MediaPipe Library
-    implementation 'com.google.mediapipe:tasks-vision:0.10.26'
+    implementation 'com.google.mediapipe:tasks-vision:0.10.28'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
