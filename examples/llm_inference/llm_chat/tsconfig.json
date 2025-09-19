@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    /* Type Checking */
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "strict": true,
+    "moduleResolution": "Node",
+    "module": "ESNext",
+
+    /* Interop Constraints */
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+
+    /* Language and Environment */
+    "target": "ESNext",
+
+    /* Completeness */
+    "skipLibCheck": true,
+
+    /* This project builds with esbuild */
+    "noEmit": true,
+
+    "sourceMap": true,
+
+    /* lit js */
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "emitDecoratorMetadata": true
+  },
+  "exclude": ["**/node_modules"]
+}
