@@ -93,6 +93,14 @@ export class CustomDropdown extends LitElement {
     .dropdown-content.show {
       display: block;
     }
+    ::slotted([disabled]) {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background-color: #eee;
+    }
+    ::slotted([disabled]:hover) {
+      background-color: #eee;
+    }
   `;
 
   private _toggleDropdown() {
@@ -101,7 +109,7 @@ export class CustomDropdown extends LitElement {
 
   private _handleItemClick(e: Event) {
     const target = (e.target as HTMLElement).closest('[data-value]') as HTMLElement | null;
-    if (target?.dataset['value']) {
+    if (target?.dataset['value'] && !target.hasAttribute('disabled')) {
       this.value = target.dataset['value'];
       this._setOpen(false);
       this.dispatchEvent(new CustomEvent('change', { detail: this.value }));

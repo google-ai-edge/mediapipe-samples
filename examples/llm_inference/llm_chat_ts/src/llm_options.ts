@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { oauthLoginUrl } from './hf-hub';
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { MODEL_PATHS } from './llm_service';
@@ -43,6 +44,9 @@ export class LlmOptions extends LitElement {
 
   @state()
   private cachedModels = new Set<string>();
+
+  @state()
+  private isLoggedIn = !!localStorage.getItem('oauth');
 
   override async connectedCallback() {
     super.connectedCallback();
@@ -109,6 +113,11 @@ export class LlmOptions extends LitElement {
       font-size: 0.8em;
       margin-left: 8px;
     }
+    .login-button {
+      cursor: pointer;
+      display: inline-block;
+      margin-top: 8px;
+    }
   `;
 
   private _dispatchOptionsChanged() {
@@ -173,6 +182,12 @@ export class LlmOptions extends LitElement {
     this._dispatchOptionsChanged();
   }
 
+  private async handleLogin() {
+    window.location.href = await oauthLoginUrl({
+      scopes: ['read-repos'],
+    }) + '&prompt=consent';
+  }
+
   private _getFileName(path: string): string {
     return path.split('/').pop()!;
   }
@@ -188,16 +203,28 @@ export class LlmOptions extends LitElement {
             @change=${this.handleModelChange}
           >
             ${MODEL_PATHS.map(
-              ([name, path]) => html`
-                <div class="dropdown-item" data-value=${path}>
+              ([name, path]) => {
+                const isCached = this.cachedModels.has(this._getFileName(path));
+                const isDisabled = !this.isLoggedIn && !isCached;
+                return html`
+                <div class="dropdown-item" data-value=${path} ?disabled=${isDisabled}>
                   <span>${name}</span>
-                  ${this.cachedModels.has(this._getFileName(path)) ?
+                  ${isCached ?
                     html`<span class="cached-badge">Cached</span>` : ''
                   }
                 </div>
               `
+              }
             )}
           </custom-dropdown>
+          ${!this.isLoggedIn ? html`
+            <img
+              class="login-button"
+              src="https://huggingface.co/datasets/huggingface/badges/resolve/main/sign-in-with-huggingface-xl-dark.svg"
+              alt="Sign in with Hugging Face"
+              @click=${this.handleLogin}
+            />
+          ` : ''}
         </div>
         <div>
           <label for="persona-select">Prompt Template:</label>

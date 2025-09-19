@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { oauthLoginUrl, oauthHandleRedirectIfPresent, type OAuthToken } from "./hf-hub";
+
 /**
  * Extracts the filename from a URL or path.
  * @param path The URL or path string.
@@ -22,6 +24,22 @@
 function getFileName(path: string): string {
   const parts = path.split('/');
   return parts[parts.length - 1]!;
+}
+
+async function getOauthToken(): Promise<OAuthToken | null> {
+  let oauthToken = localStorage.getItem("oauth");
+  if (oauthToken) {
+    try {
+      return JSON.parse(oauthToken);
+    } catch {
+      return null;
+    }
+  }
+  const newOauthToken = await oauthHandleRedirectIfPresent();
+  if (newOauthToken) {
+    localStorage.setItem('oauth', JSON.stringify(newOauthToken));
+  }
+  return newOauthToken;
 }
 
 /**
@@ -43,16 +61,24 @@ function getFileName(path: string): string {
 export async function loadModelWithCache(modelPath: string): Promise<{ stream: ReadableStream<Uint8Array>, size: number }> {
   const fileName = getFileName(modelPath);
   const opfsRoot = await navigator.storage.getDirectory();
+  const oauthToken = await getOauthToken();
+  const headers = oauthToken ? { "Authorization": `Bearer ${oauthToken.accessToken}` } : undefined;
 
   // 1. Get expected model size from HEAD request
-  const headResponse = await fetch(modelPath, { method: 'HEAD' });
-  if (!headResponse.ok) {
-    throw new Error(`Failed to fetch model headers for ${modelPath}: ${headResponse.statusText}`);
+  let expectedSize = -1;
+  try {
+    const headResponse = await fetch(modelPath, { method: 'HEAD', headers });
+    if (!headResponse.ok) {
+      throw new Error(`Failed to fetch model headers for ${modelPath}: ${headResponse.statusText}`);
+    }
+    expectedSize = Number(headResponse.headers.get('Content-Length'));
+    if (isNaN(expectedSize) || expectedSize <= 0) {
+      throw new Error('Invalid Content-Length header received.');
+    }
+  } catch (e) {
+    console.warn(e);
   }
-  const expectedSize = Number(headResponse.headers.get('Content-Length'));
-  if (isNaN(expectedSize) || expectedSize <= 0) {
-    throw new Error('Invalid Content-Length header received.');
-  }
+
 
   // 2. Check for and validate the cached file
   try {
@@ -64,6 +90,7 @@ export async function loadModelWithCache(modelPath: string): Promise<{ stream: R
     } else {
       console.warn('Cached model has incorrect size. Deleting and re-downloading.');
       await opfsRoot.removeEntry(fileName);
+      throw new Error('Incorrect file size');
     }
   } catch (e) {
     // Ignore error if file doesn't exist, but log other errors
@@ -74,7 +101,7 @@ export async function loadModelWithCache(modelPath: string): Promise<{ stream: R
 
   // 3. If cache is invalid or missing, fetch from network and cache it
   console.log('Fetching model from network and caching to OPFS.');
-  const response = await fetch(modelPath);
+  const response = await fetch(modelPath, { headers });
   if (!response.ok || !response.body) {
     throw new Error(`Failed to download model from ${modelPath}: ${response.statusText}`);
   }
