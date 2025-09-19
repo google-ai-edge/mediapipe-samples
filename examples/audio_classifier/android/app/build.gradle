@@ -21,12 +21,12 @@ plugins {
 
 android {
     namespace 'com.google.mediapipe.examples.audioclassifier'
-    compileSdk 32
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.google.mediapipe.examples.audioclassifier"
         minSdk 24
-        targetSdk 32
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 
@@ -81,5 +81,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
 
     // Mediapipe Library
-    implementation 'com.google.mediapipe:tasks-audio:0.10.26'
+    implementation 'com.google.mediapipe:tasks-audio:0.10.28'
 }
