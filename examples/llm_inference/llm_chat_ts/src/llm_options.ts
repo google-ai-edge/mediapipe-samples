@@ -38,12 +38,12 @@ export class LlmOptions extends LitElement {
   @property({ type: String })
   selectedPersonaName: string = PERSONAS[0]?.name ?? '';
 
+  @property({ type: Array })
+  cachedModels: Set<string> = new Set<string>();
+
   @state()
   private options: LlmInferenceOptions & { forceF32?: boolean } =
     structuredClone(DEFAULT_OPTIONS);
-
-  @state()
-  private cachedModels = new Set<string>();
 
   @state()
   private isLoggedIn = !!localStorage.getItem('oauth');

@@ -64,8 +64,6 @@ export async function getOauthToken(): Promise<OAuthToken | null> {
 export async function loadModelWithCache(modelPath: string): Promise<{ stream: ReadableStream<Uint8Array>, size: number }> {
   const fileName = getFileName(modelPath);
   const opfsRoot = await navigator.storage.getDirectory();
-  const oauthToken = await getOauthToken();
-  const headers = oauthToken ? { "Authorization": `Bearer ${oauthToken.accessToken}` } : undefined;
 
   // 1. Check for and validate the cached file
   try {
@@ -93,6 +91,9 @@ export async function loadModelWithCache(modelPath: string): Promise<{ stream: R
         console.error('Error accessing OPFS:', e);
     }
   }
+
+  const oauthToken = await getOauthToken();
+  const headers = oauthToken ? { "Authorization": `Bearer ${oauthToken.accessToken}` } : undefined;
 
   // 2. If model was missing or invalid in cache, first fetch the size from headers.
   let expectedSize = -1;
