@@ -23,7 +23,7 @@ import { produce } from 'immer';
 import { DEFAULT_OPTIONS } from './constants';
 import { Persona } from './types';
 import { PERSONAS } from './personas';
-import { listCachedModels } from './opfs_cache';
+import { getOauthToken, listCachedModels } from './opfs_cache';
 import './custom_dropdown';
 
 /**
@@ -51,6 +51,7 @@ export class LlmOptions extends LitElement {
   override async connectedCallback() {
     super.connectedCallback();
     this.cachedModels = await listCachedModels();
+    this.isLoggedIn = !!(await getOauthToken());
   }
 
   static override styles = css`

@@ -26,7 +26,11 @@ function getFileName(path: string): string {
   return parts[parts.length - 1]!;
 }
 
-async function getOauthToken(): Promise<OAuthToken | null> {
+/**
+ * Returns oauth token, following redirect if needed.
+ * @returns The oauth token, or null if none exists yet.
+ */
+export async function getOauthToken(): Promise<OAuthToken | null> {
   let oauthToken = localStorage.getItem("oauth");
   if (oauthToken) {
     try {
@@ -46,13 +50,12 @@ async function getOauthToken(): Promise<OAuthToken | null> {
  * Loads a model, utilizing the Origin Private File System (OPFS) as a cache.
  *
  * This function performs the following steps:
- * 1. Fetches the model's headers to get the expected size (Content-Length).
- * 2. Checks if the model file exists in the OPFS cache.
- * 3. If it exists, validates its size against the expected size.
- * 4. If the cached file is valid, it returns a ReadableStream from the cache.
- * 5. If the file is missing or invalid, it fetches the full model from the network.
- * 6. As the model downloads, it's streamed to the OPFS cache for future use.
- * 7. The download stream is returned for immediate consumption.
+ * 1. Checks if the model file exists in the OPFS cache.
+ * 2. If it exists, then we grab the stored expected size and ensure validity.
+ * 3. If the cached file is valid, it returns a ReadableStream from the cache.
+ * 4. If the file is missing or invalid, it fetches the full model from the network, first saving the expected size from headers.
+ * 5. As the model downloads, it's streamed to the OPFS cache for future use.
+ * 6. The download stream is returned for immediate consumption.
  *
  * @param modelPath The URL of the model to load.
  * @returns A promise that resolves to an object containing the model's
@@ -64,7 +67,34 @@ export async function loadModelWithCache(modelPath: string): Promise<{ stream: R
   const oauthToken = await getOauthToken();
   const headers = oauthToken ? { "Authorization": `Bearer ${oauthToken.accessToken}` } : undefined;
 
-  // 1. Get expected model size from HEAD request
+  // 1. Check for and validate the cached file
+  try {
+    const fileHandle = await opfsRoot.getFileHandle(fileName);
+    const file = await fileHandle.getFile();
+    const sizeHandle = await opfsRoot.getFileHandle(fileName + '_size');
+    const sizeFile = await sizeHandle.getFile();
+    const expectedSizeText = await sizeFile.text();
+    const expectedSize = parseInt(expectedSizeText);
+    if (file.size === expectedSize) {
+      console.log('Found valid model in cache.');
+      return { stream: file.stream(), size: file.size };
+    } else {
+      console.warn('Cached model has incorrect size. Deleting and re-downloading.');
+      console.warn('Expected size text: ', expectedSizeText);
+      console.warn('Expected size: ', expectedSize);
+      console.warn('Actual size: ', file.size);
+      await opfsRoot.removeEntry(fileName);
+      await opfsRoot.removeEntry(fileName + '_size');
+      throw new Error('Incorrect file size');
+    }
+  } catch (e) {
+    // Ignore error if file doesn't exist, but log other errors
+    if ((e as DOMException).name !== 'NotFoundError') {
+        console.error('Error accessing OPFS:', e);
+    }
+  }
+
+  // 2. If model was missing or invalid in cache, first fetch the size from headers.
   let expectedSize = -1;
   try {
     const headResponse = await fetch(modelPath, { method: 'HEAD', headers });
@@ -76,33 +106,15 @@ export async function loadModelWithCache(modelPath: string): Promise<{ stream: R
       throw new Error('Invalid Content-Length header received.');
     }
   } catch (e) {
-    console.warn(e);
+    console.warn(e)
   }
 
-
-  // 2. Check for and validate the cached file
-  try {
-    const fileHandle = await opfsRoot.getFileHandle(fileName);
-    const file = await fileHandle.getFile();
-    if (file.size === expectedSize) {
-      console.log('Found valid model in cache.');
-      return { stream: file.stream(), size: file.size };
-    } else {
-      console.warn('Cached model has incorrect size. Deleting and re-downloading.');
-      await opfsRoot.removeEntry(fileName);
-      throw new Error('Incorrect file size');
-    }
-  } catch (e) {
-    // Ignore error if file doesn't exist, but log other errors
-    if ((e as DOMException).name !== 'NotFoundError') {
-        console.error('Error accessing OPFS:', e);
-    }
-  }
-
-  // 3. If cache is invalid or missing, fetch from network and cache it
+  // 3. Then fetch model from network and cache it
   console.log('Fetching model from network and caching to OPFS.');
   const response = await fetch(modelPath, { headers });
   if (!response.ok || !response.body) {
+    // If this happens, our credentials may be stale; ensure those are not being cached to allow for re-auth to be triggered.
+    localStorage.removeItem("oauth");
     throw new Error(`Failed to download model from ${modelPath}: ${response.statusText}`);
   }
 
@@ -113,6 +125,15 @@ export async function loadModelWithCache(modelPath: string): Promise<{ stream: R
     try {
       const fileHandle = await opfsRoot.getFileHandle(fileName, { create: true });
       const writable = await fileHandle.createWritable();
+
+      // Write the expected size to a companion file
+      const sizeHandle = await opfsRoot.getFileHandle(fileName + '_size', { create: true });
+      const sizeWritable = await sizeHandle.createWritable();
+      const sizeWriter = sizeWritable.getWriter();
+      const encoder = new TextEncoder();
+      await sizeWriter.write(encoder.encode(expectedSize));
+      sizeWriter.close();
+
       await streamForCache.pipeTo(writable);
       console.log(`Successfully cached ${fileName}.`);
     } catch (error) {
@@ -120,6 +141,7 @@ export async function loadModelWithCache(modelPath: string): Promise<{ stream: R
       // Clean up partial file on failure
       try {
         await opfsRoot.removeEntry(fileName);
+	await opfsRoot.removeEntry(fileName + '_size');
         //eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_cleanupError) {
         // Ignore cleanup error
