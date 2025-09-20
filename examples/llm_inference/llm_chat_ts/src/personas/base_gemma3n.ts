@@ -14,13 +14,23 @@
  * limitations under the License.
  */
 
-import { BASE_GEMMA3_PERSONA } from "./personas/base_gemma3";
-import { BASE_GEMMA3N_PERSONA } from "./personas/base_gemma3n";
-import { JS_TOOL_USE } from "./personas/js_tool_use";
-import { Persona } from "./types";
+import { Persona } from "../types";
 
-export const PERSONAS = [
-  BASE_GEMMA3_PERSONA,
-  BASE_GEMMA3N_PERSONA,
-  JS_TOOL_USE,
-] as const satisfies Persona[];
+export const BASE_GEMMA3N_PERSONA = {
+  name: 'Base Gemma3n',
+  instructions: [],
+  promptTemplate: {
+    user: {
+      pre: '<ctrl99>user\n',
+      post: '<ctrl100>\n',
+    },
+    model: {
+      pre: '<ctrl99>model\n',
+      post: '<ctrl100>\n',
+    },
+    system: {
+      pre: '<ctrl99>user\n',
+      post: '<ctrl100>\n',
+    }
+  }
+} satisfies Persona;
