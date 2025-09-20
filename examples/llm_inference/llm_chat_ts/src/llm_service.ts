@@ -20,7 +20,7 @@ import { produce } from 'immer';
 import { ChatMessage, Persona, Tool } from './types';
 import { BASE_GEMMA3_PERSONA } from './personas/base_gemma3';
 import { streamWithProgress } from './streaming_utils';
-import { loadModelWithCache } from './opfs_cache';
+import { getOauthToken, loadModelWithCache } from './opfs_cache';
 
 export const MODEL_PATHS = [
   [
@@ -95,6 +95,7 @@ export class LlmService {
     this.genaiFileset = FilesetResolver.forGenAiTasks(
       "wasm"
     );
+    getOauthToken();
   }
 
   isInitialized(): boolean {
