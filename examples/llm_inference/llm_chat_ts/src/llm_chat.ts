@@ -217,6 +217,12 @@ export class LlmChat extends LitElement {
 
     const userMessageText = this.userInput.trim();
     this.userInput = '';
+
+    const optionsApplied = await this._applyPendingOptionsIfNeeded();
+    if (!optionsApplied) {
+      return;
+    }
+
     this.llmService.addUserMessage(userMessageText);
     return this.generate();
   }
