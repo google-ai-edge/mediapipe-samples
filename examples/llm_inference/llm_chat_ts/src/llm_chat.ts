@@ -25,6 +25,7 @@ import type { ChatMessage, Persona } from './types';
 import { PERSONAS } from './personas';
 import deepEqual from 'deep-equal';
 import { BASE_GEMMA3_PERSONA } from './personas/base_gemma3';
+import { listCachedModels } from './opfs_cache';
 
 @customElement('llm-chat')
 export class LlmChat extends LitElement {
@@ -62,6 +63,9 @@ export class LlmChat extends LitElement {
   @state()
   private selectedPersona: Persona = PERSONAS.find(p => p.name === BASE_GEMMA3_PERSONA.name) || PERSONAS[0] || { name: 'Default', instructions: [] };
 
+  @state()
+  private cachedModels: Set<string> = new Set<string>();
+
   @query('#userInput')
   private userInputElement!: HTMLInputElement;
 
@@ -76,6 +80,9 @@ export class LlmChat extends LitElement {
     this.llmService.loadingProgress$.subscribe((progress) => {
       this.loadingProgress = progress;
       this.requestUpdate();
+    });
+    listCachedModels().then((models) => {
+      this.cachedModels = models;
     });
   }
 
@@ -134,6 +141,7 @@ export class LlmChat extends LitElement {
         this.hasPendingOptionsChanges = false;
         console.log('LLM options applied successfully.');
         this.isLoadingModel = false;
+        this.cachedModels = await listCachedModels();
         this.requestUpdate();
         return true;
       } catch (error) {
@@ -142,6 +150,7 @@ export class LlmChat extends LitElement {
           error instanceof Error ? error.message : String(error)
         }`;
         this.isLoadingModel = false;
+        this.cachedModels = await listCachedModels();
         this.requestUpdate();
         return false;
       }
@@ -434,6 +443,7 @@ export class LlmChat extends LitElement {
           .options=${this.pendingOptions}
           .personas=${PERSONAS}
           .selectedPersonaName=${this.selectedPersona.name}
+          .cachedModels=${this.cachedModels}
           @options-changed=${this.handleOptionsChange}
           @persona-changed=${this.handlePersonaChanged}
           ?disabled=${this.isLoadingModel || this.isGenerating}
