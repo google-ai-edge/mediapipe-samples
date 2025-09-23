@@ -316,10 +316,21 @@ export class LlmChat extends LitElement {
       padding-top: 50px;
     }
 
+    .disclaimer {
+      padding: 8px 16px;
+      text-align: center;
+      font-size: 0.9em;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #666;
+      background-color: #f9f9f9;
+      border-top: 1px solid #ddd;
+    }
+
     .input-area {
       display: flex;
-      padding: 16px;
-      border-top: 1px solid #ddd;
+      padding-left: 16px;
+      padding-right: 16px;
+      padding-bottom: 16px;
       background-color: #f9f9f9;
     }
 
@@ -419,6 +430,9 @@ export class LlmChat extends LitElement {
             @regenerate-last-model-message=${this.handleRegenerateLastMessage}
             @remove-last-message=${this.handleRemoveLastMessage}
           ></chat-history>
+        </div>
+        <div class="disclaimer">
+          This is a demonstration for illustrative purposes and is not a Google product.
         </div>
         <div class="input-area">
           <input
