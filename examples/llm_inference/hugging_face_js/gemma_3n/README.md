@@ -13,4 +13,4 @@ models:
   - google/gemma-3n-E4B-it-litert-lm
   - google/gemma-3n-E2B-it-litert-lm
 ---
-Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+Source code from [MediaPipe Samples](https://github.com/google-ai-edge/mediapipe-samples/tree/main/examples/llm_inference/hugging_face_js)
