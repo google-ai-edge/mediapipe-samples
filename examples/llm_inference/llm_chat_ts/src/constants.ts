@@ -25,5 +25,5 @@ export const DEFAULT_OPTIONS: LlmInferenceOptions & {forceF32?: boolean} = {
   topK: 64,
   temperature: 1,
   maxTokens: 1536,
-  forceF32: true,
+  forceF32: false,
 };
