@@ -13,10 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import com.google.mediapipe.tasks.npu.NpuProvider
+
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'de.undercouch.download'
+    id 'com.google.mediapipe.npu'
+}
+apply plugin: NpuProvider
+buildInfo {
+    packageName.set("com.myapp.info")
+    className.set("AppBuildInfo")
 }
 
 android {
@@ -48,6 +57,12 @@ android {
     }
     buildFeatures {
         viewBinding true
+    }
+
+    sourceSets {
+        getByName("main") {
+            java.srcDir("build/generated/source/buildInfo/kotlin")
+        }
     }
 }
 

@@ -15,13 +15,13 @@
  */
 buildscript {
     dependencies {
-        classpath 'androidx.navigation:navigation-safe-args-gradle-plugin:2.8.5'
-        classpath 'com.android.tools.build:gradle:8.11.0'
+        classpath 'androidx.navigation:navigation-safe-args-gradle-plugin:2.9.4'
+        classpath 'com.android.tools.build:gradle:8.12.3'
     }
 }
 plugins {
-    id 'com.android.application' version '7.4.1' apply false
-    id 'com.android.library' version '7.4.1' apply false
-    id 'org.jetbrains.kotlin.android' version '1.8.0' apply false
-    id 'de.undercouch.download' version '4.1.2' apply false
+    id 'com.android.application' apply false
+    id 'org.jetbrains.kotlin.android' apply false
+    id 'de.undercouch.download' apply false
+
 }

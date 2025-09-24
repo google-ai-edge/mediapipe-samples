@@ -33,7 +33,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.Date
-
+import com.myapp.info.AppBuildInfo
 class MainActivity : AppCompatActivity(), InteractiveSegmentationHelper.InteractiveSegmentationListener {
 
     private lateinit var activityMainBinding: ActivityMainBinding
@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity(), InteractiveSegmentationHelper.Interact
     // Update UI
     private val takePictureLauncher =
         registerForActivityResult(ActivityResultContracts.TakePicture()) { isSuccess ->
+            System.out.println(AppBuildInfo.VERSION)
             if (isSuccess && pictureUri != null) {
                 val bitmap = pictureUri!!.toBitmap()
                 activityMainBinding.imgSegmentation.setImageBitmap(bitmap)
