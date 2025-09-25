@@ -22,12 +22,12 @@ apply plugin: 'de.undercouch.download'
 
 android {
     namespace 'com.google.mediapipe.examples.facedetection'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.google.mediapipe.examples.facedetection"
         minSdk 24
-        targetSdk 33
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 
@@ -90,7 +90,7 @@ dependencies {
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
 
     // CameraX core library
-    def camerax_version = '1.1.0'
+    def camerax_version = '1.4.2'
     implementation "androidx.camera:camera-core:$camerax_version"
 
     // CameraX Camera2 extensions
@@ -119,6 +119,6 @@ dependencies {
     androidTestImplementation "androidx.test:runner:1.4.0"
     androidTestImplementation "androidx.test.espresso:espresso-core:3.4.0"
 
-    implementation 'com.google.mediapipe:tasks-vision:0.10.26'
+    implementation 'com.google.mediapipe:tasks-vision:0.10.29'
 
 }
