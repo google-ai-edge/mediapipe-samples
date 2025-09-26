@@ -24,6 +24,10 @@ import { loadModelWithCache } from './opfs_cache';
 
 export const MODEL_PATHS = [
   [
+    'Gemma3 270M IT int8',
+    'https://huggingface.co/litert-community/gemma-3-270m-it/resolve/main/gemma3-270m-it-q8-web.task',
+  ] as const,
+  [
     'Gemma3 1B IT int8',
     'https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int8-web.task',
   ] as const,
