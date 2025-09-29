@@ -15,12 +15,10 @@
  */
 
 import { BASE_GEMMA3_PERSONA } from "./personas/base_gemma3";
-import { BASE_GEMMA3N_PERSONA } from "./personas/base_gemma3n";
 import { JS_TOOL_USE } from "./personas/js_tool_use";
 import { Persona } from "./types";
 
 export const PERSONAS = [
   BASE_GEMMA3_PERSONA,
-  BASE_GEMMA3N_PERSONA,
   JS_TOOL_USE,
 ] as const satisfies Persona[];

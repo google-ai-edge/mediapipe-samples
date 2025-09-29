@@ -323,10 +323,8 @@ async function sendQuery(prompt) {
 
   try {
     const query = [
-      '<ctrl99>user\n',
       prompt,  // audio or text
       {imageSource: webcam},
-      '<ctrl100>\n<ctrl99>model\n'
     ];
     let resultSoFar = '';
     await llmInference.generateResponse(query, (newText, isDone) => {

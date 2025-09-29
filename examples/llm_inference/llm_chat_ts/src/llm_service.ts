@@ -56,14 +56,6 @@ export const MODEL_PATHS = [
     'https://huggingface.co/litert-community/Gemma3-27B-IT/resolve/main/gemma3-27b-it-int8-web.task',
   ] as const,
   [
-    'Gemma3n E2B IT int4',
-    'https://huggingface.co/google/gemma-3n-E2B-it-litert-lm/resolve/main/gemma-3n-E2B-it-int4-Web.litertlm',
-  ] as const,
-  [
-    'Gemma3n E4B IT int4',
-    'https://huggingface.co/google/gemma-3n-E4B-it-litert-lm/resolve/main/gemma-3n-E4B-it-int4-Web.litertlm',
-  ] as const,
-  [
     'MedGemma 27B IT int8',
     'https://huggingface.co/litert-community/MedGemma-27B-IT/resolve/main/medgemma-27b-it-int8-web.task',
   ] as const,
