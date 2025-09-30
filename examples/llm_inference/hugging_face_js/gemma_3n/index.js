@@ -53,7 +53,7 @@ const cacheFileName = use_e4b ? "3n_e4b" : "3n_e2b";
 const remoteFileUrl = use_e4b ? 'https://huggingface.co/google/gemma-3n-E4B-it-litert-lm/resolve/main/gemma-3n-E4B-it-int4-Web.litertlm'
                               : 'https://huggingface.co/google/gemma-3n-E2B-it-litert-lm/resolve/main/gemma-3n-E2B-it-int4-Web.litertlm';
 // Model size in bytes for reliable progress indication; just hard-coded for now
-const modelSize = use_e4b ? 4274978816 : 3038117888;
+const modelSize = use_e4b ? 4275044352 : 3038117888;
 
 // --- Core Functions ---
 
@@ -323,8 +323,10 @@ async function sendQuery(prompt) {
 
   try {
     const query = [
+      '<start_of_turn>user\n',
       prompt,  // audio or text
       {imageSource: webcam},
+      '<end_of_turn>\n<start_of_turn>model\n',
     ];
     let resultSoFar = '';
     await llmInference.generateResponse(query, (newText, isDone) => {
