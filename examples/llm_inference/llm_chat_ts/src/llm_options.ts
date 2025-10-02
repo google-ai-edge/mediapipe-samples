@@ -50,9 +50,36 @@ export class LlmOptions extends LitElement {
 
   override async connectedCallback() {
     super.connectedCallback();
+    await this._validateCache();
     this.cachedModels = await listCachedModels();
     this.isLoggedIn = !!(await getOauthToken());
     window.addEventListener('oauth-removed', this.handleOauthRemoved);
+  }
+
+  private async _validateCache() {
+    const opfsRoot = await navigator.storage.getDirectory();
+    const allFiles = await listCachedModels();
+    for (const fileName of allFiles) {
+      if (fileName.endsWith('_size')) {
+        continue;
+      }
+
+      try {
+        const fileHandle = await opfsRoot.getFileHandle(fileName);
+        const file = await fileHandle.getFile();
+        const sizeHandle = await opfsRoot.getFileHandle(fileName + '_size');
+        const sizeFile = await sizeHandle.getFile();
+        const expectedSize = parseInt(await sizeFile.text());
+        if (file.size !== expectedSize) {
+          await opfsRoot.removeEntry(fileName);
+          await opfsRoot.removeEntry(fileName + '_size');
+        }
+      } catch (e) {
+        // If any error occurs (e.g., size file not found), remove the cached model
+        await opfsRoot.removeEntry(fileName);
+        await opfsRoot.removeEntry(fileName + '_size');
+      }
+    }
   }
 
   override disconnectedCallback() {
