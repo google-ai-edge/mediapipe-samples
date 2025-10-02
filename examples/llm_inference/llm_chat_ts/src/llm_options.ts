@@ -15,7 +15,7 @@
  */
 
 import { oauthLoginUrl } from './hf-hub';
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { MODEL_PATHS } from './llm_service';
 import { LlmInferenceOptions } from '@mediapipe/tasks-genai';
@@ -240,6 +240,13 @@ export class LlmOptions extends LitElement {
     return path.split('/').pop()!;
   }
 
+  private renderPersonaOptions(): Array<TemplateResult> {
+    return this.personas.map(
+      (persona) =>
+        html`<option value="${persona.name}">${persona.name}</option>`
+    );
+  }
+
   override render() {
     return html`
       <h3>LLM Options</h3>
@@ -281,10 +288,7 @@ export class LlmOptions extends LitElement {
             .value=${this.selectedPersonaName}
             @change=${this.handlePersonaChange}
           >
-            ${this.personas.map(
-              (persona) =>
-                html`<option value=${persona.name}>${persona.name}</option>`
-            )}
+            ${this.renderPersonaOptions() as any}
           </select>
         </div>
         <div>
