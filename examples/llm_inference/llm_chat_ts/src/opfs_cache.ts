@@ -100,7 +100,7 @@ export async function loadModelWithCache(modelPath: string): Promise<{ stream: R
   try {
     const headResponse = await fetch(modelPath, { method: 'HEAD', headers });
     if (!headResponse.ok) {
-      throw new Error(`Failed to fetch model headers for ${modelPath}: ${headResponse.statusText}`);
+      throw new Error(`Failed to fetch model headers for ${modelPath}: ${headResponse.statusText}. Ensure you have accepted the proper model license on your HuggingFace account for the selected model.`);
     }
     expectedSize = Number(headResponse.headers.get('Content-Length'));
     if (isNaN(expectedSize) || expectedSize <= 0) {
@@ -117,7 +117,7 @@ export async function loadModelWithCache(modelPath: string): Promise<{ stream: R
     // If this happens, our credentials may be stale; ensure those are not being cached to allow for re-auth to be triggered.
     localStorage.removeItem("oauth");
     window.dispatchEvent(new CustomEvent('oauth-removed'));
-    throw new Error(`Failed to download model from ${modelPath}: ${response.statusText}`);
+    throw new Error(`Failed to download model from ${modelPath}: ${response.statusText}. Ensure you have accepted the proper model license on your HuggingFace account for the selected model.`);
   }
 
   const [streamForConsumer, streamForCache] = response.body.tee();
@@ -133,7 +133,7 @@ export async function loadModelWithCache(modelPath: string): Promise<{ stream: R
       const sizeWritable = await sizeHandle.createWritable();
       const sizeWriter = sizeWritable.getWriter();
       const encoder = new TextEncoder();
-      await sizeWriter.write(encoder.encode(expectedSize));
+      await sizeWriter.write(encoder.encode(expectedSize.toString()));
       sizeWriter.close();
 
       await streamForCache.pipeTo(writable);
