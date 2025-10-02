@@ -116,6 +116,7 @@ export async function loadModelWithCache(modelPath: string): Promise<{ stream: R
   if (!response.ok || !response.body) {
     // If this happens, our credentials may be stale; ensure those are not being cached to allow for re-auth to be triggered.
     localStorage.removeItem("oauth");
+    window.dispatchEvent(new CustomEvent('oauth-removed'));
     throw new Error(`Failed to download model from ${modelPath}: ${response.statusText}`);
   }
 

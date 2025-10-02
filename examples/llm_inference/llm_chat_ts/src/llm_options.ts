@@ -52,6 +52,16 @@ export class LlmOptions extends LitElement {
     super.connectedCallback();
     this.cachedModels = await listCachedModels();
     this.isLoggedIn = !!(await getOauthToken());
+    window.addEventListener('oauth-removed', this.handleOauthRemoved);
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener('oauth-removed', this.handleOauthRemoved);
+  }
+
+  private handleOauthRemoved = () => {
+    this.isLoggedIn = false;
   }
 
   static override styles = css`
@@ -184,6 +194,7 @@ export class LlmOptions extends LitElement {
   }
 
   private async handleLogin() {
+    localStorage.removeItem("oauth");
     window.location.href = await oauthLoginUrl({
       scopes: ['read-repos'],
     }) + '&prompt=consent';
