@@ -20,7 +20,7 @@ import { customElement, query, state } from 'lit/decorators.js';
 import './chat_history';
 import { DEFAULT_OPTIONS } from './constants';
 import './llm_options';
-import { LlmService } from './llm_service'; // Ensure LlmService has setPersona and removeLastMessage
+import { LlmService, MODEL_PATHS } from './llm_service'; // Ensure LlmService has setPersona and removeLastMessage
 import type { ChatMessage, Persona } from './types';
 import { PERSONAS } from './personas';
 import deepEqual from 'deep-equal';
@@ -84,6 +84,15 @@ export class LlmChat extends LitElement {
     listCachedModels().then((models) => {
       this.cachedModels = models;
     });
+  }
+
+  getModelName(): string {
+    const modelPath = this.currentAppliedOptions.baseOptions?.modelAssetPath;
+    if (!modelPath) {
+      return 'default model';
+    }
+    const model = MODEL_PATHS.find(m => m[1] === modelPath);
+    return model ? model[0] : 'custom model';
   }
 
   async handlePersonaChanged(event: CustomEvent<Persona>) {
@@ -418,7 +427,7 @@ export class LlmChat extends LitElement {
         </div>
       `;
     } else if (this.isGenerating) {
-        statusMessageHtml = html`<div class="status-bar generating-message">Generating response with ${this.selectedPersona.name}...</div>`;
+        statusMessageHtml = html`<div class="status-bar generating-message">Generating response with ${this.getModelName()}...</div>`;
     }
 
     return html`
