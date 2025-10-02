@@ -169,3 +169,22 @@ export async function listCachedModels(): Promise<Set<string>> {
   }
   return cachedFiles;
 }
+
+/**
+ * Removes a model and its size file from the OPFS cache.
+ *
+ * @param modelPath The path of the model to remove.
+ */
+export async function removeCachedModel(modelPath: string): Promise<void> {
+  const fileName = getFileName(modelPath);
+  const opfsRoot = await navigator.storage.getDirectory();
+  try {
+    await opfsRoot.removeEntry(fileName);
+    await opfsRoot.removeEntry(fileName + '_size');
+    console.log(`Successfully removed ${fileName} from cache.`);
+  } catch (e) {
+    if ((e as DOMException).name !== 'NotFoundError') {
+      console.error(`Failed to remove ${fileName} from cache:`, e);
+    }
+  }
+}
