@@ -16,6 +16,12 @@
 
 import { BehaviorSubject } from 'rxjs';
 
+export interface ProgressUpdate {
+  progress: number; // 0.0 - 1.0
+  downloadedBytes: number;
+  totalBytes: number;
+}
+
 /**
  * Creates a TransformStream that monitors the progress of a stream
  * and reports it via a BehaviorSubject. This is backpressure-aware and
@@ -27,18 +33,26 @@ import { BehaviorSubject } from 'rxjs';
  */
 function createProgressTransformer(
   contentLength: number,
-  progress$: BehaviorSubject<number>
+  progress$: BehaviorSubject<ProgressUpdate>
 ): TransformStream<Uint8Array, Uint8Array> {
   let bytesRead = 0;
   return new TransformStream({
     transform(chunk, controller) {
       bytesRead += chunk.length;
       const percentage = bytesRead / contentLength;
-      progress$.next(percentage);
+      progress$.next({
+        progress: percentage,
+        downloadedBytes: bytesRead,
+        totalBytes: contentLength,
+      });
       controller.enqueue(chunk);
     },
     flush() {
-      progress$.next(1);
+      progress$.next({
+        progress: 1,
+        downloadedBytes: contentLength,
+        totalBytes: contentLength,
+      });
       progress$.complete();
     }
   });
@@ -60,8 +74,12 @@ function createProgressTransformer(
 export function streamWithProgress(
   inputStream: ReadableStream<Uint8Array>,
   contentLength: number
-): { stream: ReadableStream<Uint8Array>; progress$: BehaviorSubject<number> } {
-  const progress$ = new BehaviorSubject<number>(0);
+): { stream: ReadableStream<Uint8Array>; progress$: BehaviorSubject<ProgressUpdate> } {
+  const progress$ = new BehaviorSubject<ProgressUpdate>({
+    progress: 0,
+    downloadedBytes: 0,
+    totalBytes: contentLength,
+  });
   const progressTransformer = createProgressTransformer(contentLength, progress$);
   const stream = inputStream.pipeThrough(progressTransformer);
 

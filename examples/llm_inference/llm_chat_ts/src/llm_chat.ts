@@ -26,6 +26,7 @@ import { PERSONAS } from './personas';
 import deepEqual from 'deep-equal';
 import { BASE_GEMMA3_PERSONA } from './personas/base_gemma3';
 import { listCachedModels } from './opfs_cache';
+import { ProgressUpdate } from './streaming_utils';
 
 @customElement('llm-chat')
 export class LlmChat extends LitElement {
@@ -47,7 +48,7 @@ export class LlmChat extends LitElement {
   private chatHistory: ChatMessage[] = [];
 
   @state()
-  private loadingProgress: number | null = null;
+  private loadingProgress: ProgressUpdate | null = null;
 
   @state()
   private currentAppliedOptions: LlmInferenceOptions & { forceF32?: boolean } =
@@ -412,8 +413,10 @@ export class LlmChat extends LitElement {
       statusMessageHtml = html`<div class="status-bar error-message">${this.errorMessage}</div>`;
     } else if (this.isLoadingModel) {
       let message = 'Loading...';
-      if (this.loadingProgress !== null && this.loadingProgress < 1) {
-        message = `Loading model...`;
+      if (this.loadingProgress !== null && this.loadingProgress.progress < 1) {
+        const downloadedMB = (this.loadingProgress.downloadedBytes / (1024 * 1024)).toFixed(2);
+        const totalMB = (this.loadingProgress.totalBytes / (1024 * 1024)).toFixed(2);
+        message = `Loading model... (${downloadedMB}MB / ${totalMB}MB)`;
       } else if (this.hasPendingOptionsChanges) {
         message = 'Applying new options...';
       } else {
@@ -422,8 +425,8 @@ export class LlmChat extends LitElement {
       statusMessageHtml = html`
         <div class="status-bar loading-message">
           <span>${message}</span>
-          ${this.loadingProgress !== null && this.loadingProgress < 1 ?
-            html`<progress .value=${this.loadingProgress}></progress>` : ''}
+          ${this.loadingProgress !== null && this.loadingProgress.progress < 1 ?
+            html`<progress .value=${this.loadingProgress.progress}></progress>` : ''}
         </div>
       `;
     } else if (this.isGenerating) {

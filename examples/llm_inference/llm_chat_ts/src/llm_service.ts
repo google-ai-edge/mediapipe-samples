@@ -19,7 +19,7 @@ import { BehaviorSubject, lastValueFrom } from 'rxjs';
 import { produce } from 'immer';
 import { ChatMessage, Persona, Tool } from './types';
 import { BASE_GEMMA3_PERSONA } from './personas/base_gemma3';
-import { streamWithProgress } from './streaming_utils';
+import { streamWithProgress, ProgressUpdate } from './streaming_utils';
 import { loadModelWithCache } from './opfs_cache';
 
 export const MODEL_PATHS = [
@@ -87,7 +87,7 @@ export class LlmService {
   };
   private genaiFileset: ReturnType<typeof FilesetResolver['forGenAiTasks']>;
   history = new BehaviorSubject<ChatMessage[]>([]);
-  loadingProgress$ = new BehaviorSubject<number | null>(null);
+  loadingProgress$ = new BehaviorSubject<ProgressUpdate | null>(null);
   persona: Persona = BASE_GEMMA3_PERSONA;
   private promptTemplate = BASE_GEMMA3_PERSONA.promptTemplate;
 
@@ -126,7 +126,6 @@ export class LlmService {
       throw new Error('modelAssetPath is required');
     }
 
-    this.loadingProgress$.next(0); // Start progress
     try {
       const { stream: modelStream, size: contentLength } = await loadModelWithCache(modelAssetPath);
       const { stream, progress$ } = streamWithProgress(modelStream, contentLength);
