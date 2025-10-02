@@ -23,7 +23,7 @@ import { produce } from 'immer';
 import { DEFAULT_OPTIONS } from './constants';
 import { Persona } from './types';
 import { PERSONAS } from './personas';
-import { getOauthToken, listCachedModels } from './opfs_cache';
+import { getOauthToken, listCachedModels, removeCachedModel } from './opfs_cache';
 import './custom_dropdown';
 
 /**
@@ -123,6 +123,7 @@ export class LlmOptions extends LitElement {
       border-radius: 4px;
       font-size: 0.8em;
       margin-left: 8px;
+      cursor: pointer;
     }
     .login-button {
       cursor: pointer;
@@ -193,6 +194,14 @@ export class LlmOptions extends LitElement {
     this._dispatchOptionsChanged();
   }
 
+  private async handleRemoveCached(e: Event, path: string) {
+    e.stopPropagation();
+    if (confirm('Remove model from cache?')) {
+      await removeCachedModel(path);
+      this.cachedModels = await listCachedModels();
+    }
+  }
+
   private async handleLogin() {
     localStorage.removeItem("oauth");
     window.location.href = await oauthLoginUrl({
@@ -222,7 +231,7 @@ export class LlmOptions extends LitElement {
                 <div class="dropdown-item" data-value=${path} ?disabled=${isDisabled}>
                   <span>${name}</span>
                   ${isCached ?
-                    html`<span class="cached-badge">Cached</span>` : ''
+                    html`<span class="cached-badge" @click=${(e: Event) => this.handleRemoveCached(e, path)}>Cached</span>` : ''
                   }
                 </div>
               `
