@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat App</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+    <div id="app-login-container">
+        <img src="logo.png" alt="App Logo" id="app-logo" style="display: none;"/>
+        <h2>App Login</h2>
+        <input id="app-password" type="password" placeholder="Enter App Password" />
+        <button id="app-login-button">Login</button>
+        <p id="app-login-error" class="error-message" style="display: none;">Incorrect Password</p>
+    </div>
+
+    <div id="main-app-container" style="display: none;">
+        <div id="login-container">
+            <h2>Join a Room</h2>
+            <input id="room" placeholder="Room" autocomplete="off" />
+            <input id="password" type="password" placeholder="Password" autocomplete="off" />
+            <button id="join">Join</button>
+            <p id="room-login-error" class="error-message" style="display: none;">Incorrect Room Password</p>
+        </div>
+        <div id="chat-container" style="display: none;">
+            <div id="chat-header">
+                <h3 id="room-name"></h3>
+                <input type="color" id="background-color-picker" title="Change background color" />
+            </div>
+            <ul id="messages"></ul>
+            <form id="form" action="">
+                <input id="input" autocomplete="off" /><button>Send</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- The socket.io script is commented out as the backend is not running -->
+    <!-- <script src="/socket.io/socket.io.js"></script> -->
+    <script src="script.js"></script>
+</body>
+</html>
