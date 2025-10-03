@@ -26,11 +26,11 @@ const modelFileName = 'gemma-2b-it-gpu-int4.bin'; /* Update the file name */
  * Display newly generated partial results to the output text box.
  */
 function displayPartialResults(partialResults, complete) {
-  output.textContent += partialResults;
+  output.value += partialResults;
 
   if (complete) {
-    if (!output.textContent) {
-      output.textContent = 'Result is empty';
+    if (!output.value) {
+      output.value = 'Result is empty';
     }
     submit.disabled = false;
   }
@@ -45,7 +45,7 @@ async function runDemo() {
   let llmInference;
 
   submit.onclick = () => {
-    output.textContent = '';
+    output.value = '';
     submit.disabled = true;
     llmInference.generateResponse(input.value, displayPartialResults);
   };
