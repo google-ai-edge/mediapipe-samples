@@ -41,6 +41,7 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  position: relative;
 }
 
 .container {
@@ -50,6 +51,36 @@ body {
   width: 100%;
   max-width: 720px;
   margin: 0 auto;
+}
+
+.title-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#clear-cache-button {
+  position: absolute;
+  top: 16px; /* Add some top spacing */
+  right: 16px; /* Add some right spacing */
+  background-color: transparent;
+  border: none;
+  color: var(--secondary-text-color);
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0.5rem;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+#clear-cache-button:hover {
+  background-color: var(--surface-color);
+  color: var(--primary-text-color);
 }
 
 h1 {
