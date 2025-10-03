@@ -1,0 +1,245 @@
+/* Copyright 2025 The MediaPipe Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+-------------------------------------------------------------------------- */
+
+:root {
+  --background-color: #1e1e1e;
+  --surface-color: #252526;
+  --primary-text-color: #d4d4d4;
+  --secondary-text-color: #888;
+  --accent-color: #0e639c;
+  --accent-hover-color: #17b;
+  --error-color: #f44747;
+  --recording-color: #ef5350;
+  --border-color: #3c3c3c;
+  --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--primary-text-color);
+  font-family: var(--font-family);
+  margin: 0;
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  position: relative;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.title-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#clear-cache-button {
+  position: absolute;
+  top: 16px; /* Add some top spacing */
+  right: 16px; /* Add some right spacing */
+  background-color: transparent;
+  border: none;
+  color: var(--secondary-text-color);
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0.5rem;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+#clear-cache-button:hover {
+  background-color: var(--surface-color);
+  color: var(--primary-text-color);
+}
+
+h1 {
+  text-align: center;
+  font-weight: 300;
+  color: var(--primary-text-color);
+  margin: 0;
+}
+
+.video-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background-color: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#webcam {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* Mirror effect */
+}
+
+#status-message {
+  position: absolute;
+  color: var(--secondary-text-color);
+}
+
+.response-container {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  min-height: 100px;
+  font-size: 1rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-y: auto;
+}
+
+.response-container.thinking {
+  color: var(--secondary-text-color);
+  font-style: italic;
+}
+
+.disclaimer {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--secondary-text-color);
+  margin: 0;
+}
+
+.input-container {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+#prompt-input {
+  flex-grow: 1;
+  background-color: var(--surface-color);
+  color: var(--primary-text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  padding: 12px 20px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+#prompt-input:focus {
+  border-color: var(--accent-color);
+}
+
+.input-container button {
+  background-color: var(--surface-color);
+  color: var(--primary-text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.input-container button:hover {
+  background-color: var(--border-color);
+}
+
+.input-container button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+#record-button.recording {
+  background-color: var(--recording-color);
+  color: white;
+  border-color: var(--recording-color);
+}
+
+#send-button {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: white;
+}
+
+#send-button:hover {
+  background-color: var(--accent-hover-color);
+  border-color: var(--accent-hover-color);
+}
+
+/* Loader Styles */
+.loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.loader-content {
+  text-align: center;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 80%;
+  max-width: 300px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: var(--surface-color);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  width: 0%;
+  height: 100%;
+  background-color: var(--accent-color);
+  border-radius: 4px;
+  transition: width 0.2s ease-out;
+}
