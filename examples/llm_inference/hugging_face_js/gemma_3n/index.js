@@ -391,6 +391,7 @@ clearCacheButton.addEventListener('click', async () => {
       const opfs = await navigator.storage.getDirectory();
       await opfs.removeEntry(cacheFileName);
       console.log('Cache cleared successfully.');
+      clearCacheButton.style.display = 'none';
     } catch (error) {
       console.error('Error clearing cache:', error);
     }
