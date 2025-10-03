@@ -32,6 +32,7 @@ const recordButton = document.getElementById(
   'record-button',
 );
 const sendButton = document.getElementById('send-button');
+const clearCacheButton = document.getElementById('clear-cache-button');
 const recordButtonIcon = recordButton.querySelector('i');
 const loaderOverlay = document.getElementById('loader-overlay');
 const progressBarFill = document.getElementById('progress-bar-fill');
@@ -378,6 +379,24 @@ sendButton.addEventListener('click', sendTextQuery);
 promptInputElement.addEventListener('keydown', (event) => {
   if (event.key === 'Enter') {
     sendTextQuery();
+  }
+});
+clearCacheButton.addEventListener('click', async () => {
+  const userConfirmed = confirm(
+    'Are you sure you want to clear the cached model? ' +
+    'This will require re-downloading the model on the next visit.'
+  );
+  if (userConfirmed) {
+    try {
+      const opfs = await navigator.storage.getDirectory();
+      await opfs.removeEntry(cacheFileName);
+      console.log('Cache cleared successfully.');
+      // Reload the page to apply changes
+      window.location.reload();
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+      alert('Could not clear the cache. See console for details.');
+    }
   }
 });
 
