@@ -144,6 +144,10 @@ async function pipeStreamAndReportProgress(readableStream, writableStream) {
         if (percentage > progressBarPercent) {
           progressBarPercent = percentage;
           updateProgressBar(progressBarPercent);
+          const downloadedMB = (bytesCount / (1024 * 1024)).toFixed(2);
+          const totalMB = (modelSize / (1024 * 1024)).toFixed(2);
+          loaderMessage.textContent =
+              `Downloading model: ${downloadedMB}MB / ${totalMB}MB`;
         }
         await writer.write(value);
       }
