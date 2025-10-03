@@ -1,0 +1,115 @@
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+#password-container, #chat-container {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+}
+
+#password-container {
+    text-align: center;
+}
+
+#password-container h2 {
+    margin-bottom: 20px;
+}
+
+#password-input {
+    width: calc(100% - 22px);
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+#password-submit {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background-color: #1877f2;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+#password-submit:hover {
+    background-color: #166fe5;
+}
+
+#chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+#chat-header h2 {
+    margin: 0;
+}
+
+#messages {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    height: 300px;
+    overflow-y: auto;
+    border-bottom: 1px solid #ddd;
+}
+
+#messages li {
+    padding: 8px 12px;
+}
+
+#messages li:nth-child(odd) {
+    background: #f1f1f1;
+}
+
+#form {
+    display: flex;
+    margin-top: 10px;
+}
+
+#input {
+    border: 1px solid #ddd;
+    padding: 10px;
+    flex-grow: 1;
+    border-radius: 18px;
+    margin-right: 10px;
+}
+
+#form button {
+    background: #1877f2;
+    border: none;
+    padding: 10px 20px;
+    color: white;
+    border-radius: 18px;
+    cursor: pointer;
+}
+
+#form button:hover {
+    background: #166fe5;
+}
+
+.hidden {
+    display: none;
+}
+
+#error-message {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 10px;
+}
