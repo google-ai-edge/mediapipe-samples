@@ -41,6 +41,7 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  position: relative;
 }
 
 .container {
@@ -56,12 +57,12 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
 }
 
 #clear-cache-button {
   position: absolute;
-  right: 0;
+  top: 16px; /* Add some top spacing */
+  right: 16px; /* Add some right spacing */
   background-color: transparent;
   border: none;
   color: var(--secondary-text-color);
