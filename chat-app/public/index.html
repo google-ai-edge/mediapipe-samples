@@ -2,7 +2,168 @@
 <html>
 <head>
     <title>Chat App</title>
-    <link rel="stylesheet" href="style.css" />
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            transition: background-color 0.5s;
+        }
+
+        #app-login-container, #login-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 300px;
+        }
+
+        #app-logo {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        input[type="password"], input[type="text"] {
+            width: calc(100% - 2rem);
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        input.input-error {
+            border-color: red;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 0.9rem;
+            margin-top: -0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        #main-app-container {
+            width: 100%;
+            height: 100%;
+            display: none; /* Initially hidden */
+        }
+
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+            background-color: white;
+        }
+
+        #chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background-color: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+        }
+
+        #room-name {
+            margin: 0;
+        }
+
+        #background-color-picker {
+            border: none;
+            background: none;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            padding: 0;
+        }
+
+        #messages {
+            list-style-type: none;
+            margin: 0;
+            padding: 1rem;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        #messages > li {
+            padding: 0.5rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 10px;
+            max-width: 70%;
+        }
+
+        #messages > li:nth-child(odd) {
+            background: #e9e9eb;
+            align-self: flex-start;
+        }
+
+        #messages > li:nth-child(even) {
+            background: #007bff;
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        #form {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem;
+            display: flex;
+            height: 3rem;
+            box-sizing: border-box;
+            border-top: 1px solid #ddd;
+        }
+
+        #input {
+            border: 1px solid #ddd;
+            padding: 0 1rem;
+            flex-grow: 1;
+            border-radius: 2rem;
+            margin-right: 0.5rem;
+        }
+
+        #input:focus {
+            outline: none;
+        }
+
+        #form > button {
+            background: #007bff;
+            border: none;
+            padding: 0 1rem;
+            border-radius: 2rem;
+            outline: none;
+            color: #fff;
+            width: auto;
+        }
+    </style>
 </head>
 <body>
 
@@ -34,8 +195,119 @@
         </div>
     </div>
 
-    <!-- The socket.io script is commented out as the backend is not running -->
-    <!-- <script src="/socket.io/socket.io.js"></script> -->
-    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- App Login Elements ---
+            const appLoginContainer = document.getElementById('app-login-container');
+            const mainAppContainer = document.getElementById('main-app-container');
+            const appPasswordInput = document.getElementById('app-password');
+            const appLoginButton = document.getElementById('app-login-button');
+            const appLoginError = document.getElementById('app-login-error');
+            const appLogo = document.getElementById('app-logo');
+
+            // --- Room Login Elements ---
+            const loginContainer = document.getElementById('login-container');
+            const chatContainer = document.getElementById('chat-container');
+            const roomInput = document.getElementById('room');
+            const passwordInput = document.getElementById('password');
+            const joinButton = document.getElementById('join');
+            const roomLoginError = document.getElementById('room-login-error');
+
+            // --- Chat Elements ---
+            const roomNameHeader = document.getElementById('room-name');
+            const messages = document.getElementById('messages');
+            const form = document.getElementById('form');
+            const input = document.getElementById('input');
+
+            // --- Background Changer ---
+            const backgroundColorPicker = document.getElementById('background-color-picker');
+            const chatBody = document.body; // Or a specific chat area
+
+            // --- Mock Data & State ---
+            const APP_PASSWORD = "123"; // Hardcoded app password
+            const ROOM_PASSWORDS = {
+                "general": "pass1",
+                "dev-team": "pass2"
+            };
+            let currentRoom = "";
+
+            // --- App Logo ---
+            // In a real app, you'd check if logo.png exists. For now, we assume it does.
+            // To make it visible, remove the `style="display: none;"` from the HTML or do it here.
+            // For now, we will just keep it hidden as the file is missing.
+            // appLogo.style.display = 'block';
+
+
+            // --- App Login Logic ---
+            appLoginButton.addEventListener('click', () => {
+                if (appPasswordInput.value === APP_PASSWORD) {
+                    appLoginContainer.style.display = 'none';
+                    mainAppContainer.style.display = 'block'; // Show the main app
+                    loginContainer.style.display = 'block'; // Show the room login
+                } else {
+                    appLoginError.style.display = 'block';
+                    appPasswordInput.classList.add('input-error');
+                }
+            });
+
+            appPasswordInput.addEventListener('input', () => {
+                appLoginError.style.display = 'none';
+                appPasswordInput.classList.remove('input-error');
+            });
+
+
+            // --- Room Join Logic ---
+            joinButton.addEventListener('click', () => {
+                const room = roomInput.value.trim();
+                const password = passwordInput.value;
+
+                // In a real app, this would be an API call.
+                // For this frontend-only demo, we use a mock object.
+                if (room && ROOM_PASSWORDS[room] === password) {
+                    // Correct password
+                    currentRoom = room;
+                    loginContainer.style.display = 'none';
+                    chatContainer.style.display = 'flex';
+                    roomNameHeader.textContent = `Room: ${currentRoom}`;
+                } else if (room && !ROOM_PASSWORDS[room]) {
+                    // New room, auto-admin (creator)
+                    ROOM_PASSWORDS[room] = password; // "Create" the room
+                    currentRoom = room;
+                    loginContainer.style.display = 'none';
+                    chatContainer.style.display = 'flex';
+                    roomNameHeader.textContent = `Room: ${currentRoom} (Admin)`;
+                }
+                else {
+                    // Incorrect password
+                    roomLoginError.style.display = 'block';
+                    passwordInput.classList.add('input-error');
+                }
+            });
+
+            passwordInput.addEventListener('input', () => {
+                roomLoginError.style.display = 'none';
+                passwordInput.classList.remove('input-error');
+            });
+
+
+            // --- Chat Message Logic (Frontend Only) ---
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                if (input.value) {
+                    const item = document.createElement('li');
+                    item.textContent = input.value;
+                    messages.appendChild(item);
+                    window.scrollTo(0, document.body.scrollHeight);
+                    input.value = '';
+                }
+            });
+
+            // --- Background Color Changer ---
+            backgroundColorPicker.addEventListener('input', (e) => {
+                chatContainer.style.backgroundColor = e.target.value;
+            });
+
+        });
+    </script>
 </body>
 </html>
