@@ -15,11 +15,10 @@
  */
 
 import { LlmInferenceOptions } from "@mediapipe/tasks-genai";
-import { MODEL_PATHS } from "./llm_service";
 
 export const DEFAULT_OPTIONS: LlmInferenceOptions & {forceF32?: boolean} = {
   baseOptions: {
-    modelAssetPath: MODEL_PATHS[0]![1],
+    modelAssetPath: undefined,
   },
   numResponses: 1,
   topK: 64,

@@ -186,12 +186,7 @@ export class LlmOptions extends LitElement {
     }
   }
 
-  private handleModelChange(e: CustomEvent<string>) {
-    this.options = produce(this.options, (options) => {
-      options.baseOptions!.modelAssetPath = e.detail;
-    });
-    this._dispatchOptionsChanged();
-  }
+
 
   private handleTemperatureChange(e: Event) {
     this.options = produce(this.options, (options) => {
@@ -276,7 +271,12 @@ export class LlmOptions extends LitElement {
             html`
               <custom-dropdown
                 .value=${this.options.baseOptions?.modelAssetPath}
-                @change=${this.handleModelChange}
+                @change=${(e: CustomEvent<string>) => {
+                  this.options = produce(this.options, (options) => {
+                    options.baseOptions!.modelAssetPath = e.detail;
+                  });
+                  this._dispatchOptionsChanged();
+                }}
               >
                 ${MODEL_PATHS.map(
                   ([name, path]) => {

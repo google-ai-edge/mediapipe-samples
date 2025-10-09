@@ -450,14 +450,15 @@ export class LlmChat extends LitElement {
           <input
             type="text"
             id="userInput"
-            placeholder="Chat with ${this.selectedPersona.name}..."
+            placeholder=${!this.currentAppliedOptions.baseOptions?.modelAssetPath ? "Select a model to begin..." : `Chat with ${this.selectedPersona.name}...`}
             .value=${this.userInput}
             @input=${this.handleUserInput}
             @keypress=${(e: KeyboardEvent) => e.key === 'Enter' && this.sendMessage()}
+            ?disabled=${!this.currentAppliedOptions.baseOptions?.modelAssetPath}
           />
           <button
             @click=${this.sendMessage}
-            ?disabled=${this.isGenerating || this.isLoadingModel || !this.userInput.trim()}
+            ?disabled=${this.isGenerating || this.isLoadingModel || !this.userInput.trim() || !this.currentAppliedOptions.baseOptions?.modelAssetPath}
           >
             Send
           </button>
