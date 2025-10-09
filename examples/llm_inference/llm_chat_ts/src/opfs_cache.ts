@@ -58,10 +58,17 @@ export async function getOauthToken(): Promise<OAuthToken | null> {
  * 6. The download stream is returned for immediate consumption.
  *
  * @param modelPath The URL of the model to load.
+ * @param modelFile The model file to load instead, if uploaded manually
  * @returns A promise that resolves to an object containing the model's
  *   ReadableStream and its total size in bytes.
  */
-export async function loadModelWithCache(modelPath: string): Promise<{ stream: ReadableStream<Uint8Array>, size: number }> {
+export async function loadModelWithCache(
+  modelPath: string,
+  modelFile?: File
+): Promise<{ stream: ReadableStream<Uint8Array>; size: number }> {
+  if (modelFile) {
+    return { stream: modelFile.stream(), size: modelFile.size };
+  }
   const fileName = getFileName(modelPath);
   const opfsRoot = await navigator.storage.getDirectory();
 
