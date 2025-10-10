@@ -186,12 +186,7 @@ export class LlmOptions extends LitElement {
     }
   }
 
-  private handleModelChange(e: CustomEvent<string>) {
-    this.options = produce(this.options, (options) => {
-      options.baseOptions!.modelAssetPath = e.detail;
-    });
-    this._dispatchOptionsChanged();
-  }
+
 
   private handleTemperatureChange(e: Event) {
     this.options = produce(this.options, (options) => {
@@ -247,39 +242,67 @@ export class LlmOptions extends LitElement {
     );
   }
 
+  private handleModelFileChange(e: Event) {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (file) {
+      this.options = produce(this.options, (options) => {
+        options.baseOptions!.modelAssetPath = file.name;
+        (options.baseOptions as any).modelAssetFile = file;
+      });
+      this._dispatchOptionsChanged();
+    }
+  }
+
   override render() {
+    const isChrome = navigator.userAgent.includes('Chrome');
+    const isEdge = navigator.userAgent.includes('Edg');
+    const showNativeFileChooser = !isChrome && !isEdge;
+
     return html`
       <h3>LLM Options</h3>
       <div class="options-grid">
         <div>
           <label for="model-select">Model:</label>
-          <custom-dropdown
-            .value=${this.options.baseOptions?.modelAssetPath}
-            @change=${this.handleModelChange}
-          >
-            ${MODEL_PATHS.map(
-              ([name, path]) => {
-                const isCached = this.cachedModels.has(this._getFileName(path));
-                const isDisabled = !this.isLoggedIn && !isCached;
-                return html`
-                <div class="dropdown-item" data-value=${path} ?disabled=${isDisabled}>
-                  <span>${name}</span>
-                  ${isCached ?
-                    html`<span class="cached-badge" @click=${(e: Event) => this.handleRemoveCached(e, path)}>Cached</span>` : ''
+          ${showNativeFileChooser ?
+            html`
+              <input type="file" @change=${this.handleModelFileChange} />
+              <p>Selected model: ${this.options.baseOptions?.modelAssetPath?.replace('file:', '')}</p>
+            ` :
+            html`
+              <custom-dropdown
+                .value=${this.options.baseOptions?.modelAssetPath}
+                @change=${(e: CustomEvent<string>) => {
+                  this.options = produce(this.options, (options) => {
+                    options.baseOptions!.modelAssetPath = e.detail;
+                  });
+                  this._dispatchOptionsChanged();
+                }}
+              >
+                ${MODEL_PATHS.map(
+                  ([name, path]) => {
+                    const isCached = this.cachedModels.has(this._getFileName(path));
+                    const isDisabled = !this.isLoggedIn && !isCached;
+                    return html`
+                    <div class="dropdown-item" data-value=${path} ?disabled=${isDisabled}>
+                      <span>${name}</span>
+                      ${isCached ?
+                        html`<span class="cached-badge" @click=${(e: Event) => this.handleRemoveCached(e, path)}>Cached</span>` : ''
+                      }
+                    </div>
+                  `
                   }
-                </div>
-              `
-              }
-            )}
-          </custom-dropdown>
-          ${!this.isLoggedIn ? html`
-            <img
-              class="login-button"
-              src="https://huggingface.co/datasets/huggingface/badges/resolve/main/sign-in-with-huggingface-xl-dark.svg"
-              alt="Sign in with Hugging Face"
-              @click=${this.handleLogin}
-            />
-          ` : ''}
+                )}
+              </custom-dropdown>
+              ${!this.isLoggedIn ? html`
+                <img
+                  class="login-button"
+                  src="https://huggingface.co/datasets/huggingface/badges/resolve/main/sign-in-with-huggingface-xl-dark.svg"
+                  alt="Sign in with Hugging Face"
+                  @click=${this.handleLogin}
+                />
+              ` : ''}
+            `
+          }
         </div>
         <div>
           <label for="persona-select">Prompt Template:</label>

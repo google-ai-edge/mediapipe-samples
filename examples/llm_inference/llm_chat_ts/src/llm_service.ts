@@ -122,12 +122,14 @@ export class LlmService {
     this.options = options;
     
     const modelAssetPath = options.baseOptions?.modelAssetPath;
-    if (!modelAssetPath) {
-      throw new Error('modelAssetPath is required');
+    const modelAssetFile = (options.baseOptions as any)?.modelAssetFile as File | undefined;
+
+    if (!modelAssetPath && !modelAssetFile) {
+      throw new Error('modelAssetPath or modelAssetFile is required');
     }
 
     try {
-      const { stream: modelStream, size: contentLength } = await loadModelWithCache(modelAssetPath);
+      const { stream: modelStream, size: contentLength } = await loadModelWithCache(modelAssetPath!, modelAssetFile);
       const { stream, progress$ } = streamWithProgress(modelStream, contentLength);
       
       // Pipe progress updates to the service's public subject
@@ -137,6 +139,7 @@ export class LlmService {
       newOptions.baseOptions ??= {};
       newOptions.baseOptions.modelAssetBuffer = stream.getReader();
       delete newOptions.baseOptions.modelAssetPath;
+      delete (newOptions.baseOptions as any).modelAssetFile;
 
       this.llmInferencePromise = LlmInference.createFromOptions(
         await this.genaiFileset,

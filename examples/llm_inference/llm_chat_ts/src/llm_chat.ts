@@ -14,6 +14,26 @@
  * limitations under the License.
  */
 
+// Function to check for Chrome or Edge
+function isChromium() {
+  // Check for Chrome
+  if (navigator.userAgent.includes('Chrome')) {
+    return true;
+  }
+  // Check for Edge, which is also Chromium-based
+  if (navigator.userAgent.includes('Edg')) {
+    return true;
+  }
+  return false;
+}
+
+// One-time alert for non-Chromium browsers
+if (!isChromium()) {
+  alert(
+    "Your browser does not support automatic downloading. Please run the demo on Chrome. If you want to try on other browsers, you can download models manually and select them from the file chooser. Models can be found in litert-community's Web Models collection."
+  );
+}
+
 import { LlmInferenceOptions } from '@mediapipe/tasks-genai';
 import { LitElement, css, html } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
@@ -450,14 +470,15 @@ export class LlmChat extends LitElement {
           <input
             type="text"
             id="userInput"
-            placeholder="Chat with ${this.selectedPersona.name}..."
+            placeholder=${!this.pendingOptions.baseOptions?.modelAssetPath ? "Select a model to begin..." : `Chat with ${this.selectedPersona.name}...`}
             .value=${this.userInput}
             @input=${this.handleUserInput}
             @keypress=${(e: KeyboardEvent) => e.key === 'Enter' && this.sendMessage()}
+            ?disabled=${!this.pendingOptions.baseOptions?.modelAssetPath}
           />
           <button
             @click=${this.sendMessage}
-            ?disabled=${this.isGenerating || this.isLoadingModel || !this.userInput.trim()}
+            ?disabled=${this.isGenerating || this.isLoadingModel || !this.userInput.trim() || !this.pendingOptions.baseOptions?.modelAssetPath}
           >
             Send
           </button>
