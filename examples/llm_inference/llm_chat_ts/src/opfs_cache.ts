@@ -15,6 +15,7 @@
  */
 
 import { oauthLoginUrl, oauthHandleRedirectIfPresent, type OAuthToken } from "./hf-hub";
+import { isHostedOnHuggingFace } from "./llm_service";
 
 /**
  * Extracts the filename from a URL or path.
@@ -107,7 +108,10 @@ export async function loadModelWithCache(
   try {
     const headResponse = await fetch(modelPath, { method: 'HEAD', headers });
     if (!headResponse.ok) {
-      throw new Error(`Failed to fetch model headers for ${modelPath}: ${headResponse.statusText}. Ensure you have accepted the proper model license on your HuggingFace account for the selected model.`);
+      const hfError = `Ensure you have accepted the proper model license on your HuggingFace account for the selected model.`;
+      const localError = `Ensure the model is hosted at ${modelPath}.`;
+      const error = isHostedOnHuggingFace() ? hfError : localError;
+      throw new Error(`Failed to fetch model headers for ${modelPath}: ${headResponse.statusText}. ${error}`);
     }
     expectedSize = Number(headResponse.headers.get('Content-Length'));
     if (isNaN(expectedSize) || expectedSize <= 0) {
@@ -124,7 +128,10 @@ export async function loadModelWithCache(
     // If this happens, our credentials may be stale; ensure those are not being cached to allow for re-auth to be triggered.
     localStorage.removeItem("oauth");
     window.dispatchEvent(new CustomEvent('oauth-removed'));
-    throw new Error(`Failed to download model from ${modelPath}: ${response.statusText}. Ensure you have accepted the proper model license on your HuggingFace account for the selected model.`);
+    const hfError = `Ensure you have accepted the proper model license on your HuggingFace account for the selected model.`;
+    const localError = `Ensure the model is hosted at ${modelPath}.`;
+    const error = isHostedOnHuggingFace() ? hfError : localError;
+    throw new Error(`Failed to download model from ${modelPath}: ${response.statusText}. ${error}`);
   }
 
   const [streamForConsumer, streamForCache] = response.body.tee();

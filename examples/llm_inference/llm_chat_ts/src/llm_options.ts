@@ -17,7 +17,7 @@
 import { oauthLoginUrl } from './hf-hub';
 import { LitElement, html, css, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { MODEL_PATHS } from './llm_service';
+import { MODEL_PATHS, getModelUrl, isHostedOnHuggingFace } from './llm_service';
 import { LlmInferenceOptions } from '@mediapipe/tasks-genai';
 import { produce } from 'immer';
 import { DEFAULT_OPTIONS } from './constants';
@@ -279,12 +279,13 @@ export class LlmOptions extends LitElement {
                 }}
               >
                 ${MODEL_PATHS.map(
-                  ([name, path]) => {
+                  (model) => {
+                    const path = getModelUrl(model);
                     const isCached = this.cachedModels.has(this._getFileName(path));
-                    const isDisabled = !this.isLoggedIn && !isCached;
+                    const isDisabled = isHostedOnHuggingFace() && !this.isLoggedIn && !isCached;
                     return html`
                     <div class="dropdown-item" data-value=${path} ?disabled=${isDisabled}>
-                      <span>${name}</span>
+                      <span>${model.name}</span>
                       ${isCached ?
                         html`<span class="cached-badge" @click=${(e: Event) => this.handleRemoveCached(e, path)}>Cached</span>` : ''
                       }
@@ -293,7 +294,7 @@ export class LlmOptions extends LitElement {
                   }
                 )}
               </custom-dropdown>
-              ${!this.isLoggedIn ? html`
+              ${!this.isLoggedIn && isHostedOnHuggingFace() ? html`
                 <img
                   class="login-button"
                   src="https://huggingface.co/datasets/huggingface/badges/resolve/main/sign-in-with-huggingface-xl-dark.svg"
