@@ -170,7 +170,7 @@ export class LlmOptions extends LitElement {
     }
   `;
 
-  private _dispatchOptionsChanged() {
+  private dispatchOptionsChanged() {
     const event = new CustomEvent('options-changed', {
       detail: structuredClone(this.options),
       bubbles: true,
@@ -179,7 +179,7 @@ export class LlmOptions extends LitElement {
     this.dispatchEvent(event);
   }
 
-  private _dispatchPersonaChanged(persona: Persona) {
+  private dispatchPersonaChanged(persona: Persona) {
     const event = new CustomEvent('persona-changed', {
       detail: persona,
       bubbles: true,
@@ -193,7 +193,7 @@ export class LlmOptions extends LitElement {
     const selectedPersona = this.personas.find(p => p.name === selectedName);
     if (selectedPersona) {
       this.selectedPersonaName = selectedName;
-      this._dispatchPersonaChanged(selectedPersona);
+      this.dispatchPersonaChanged(selectedPersona);
     }
   }
 
@@ -203,28 +203,28 @@ export class LlmOptions extends LitElement {
     this.options = produce(this.options, (options) => {
       options.temperature = parseFloat((e.target as HTMLInputElement).value);
     });
-    this._dispatchOptionsChanged();
+    this.dispatchOptionsChanged();
   }
 
   private handleMaxTokensChange(e: Event) {
     this.options = produce(this.options, (options) => {
       options.maxTokens = parseInt((e.target as HTMLInputElement).value);
     });
-    this._dispatchOptionsChanged();
+    this.dispatchOptionsChanged();
   }
 
   private handleTopKChange(e: Event) {
     this.options = produce(this.options, (options) => {
       options.topK = parseInt((e.target as HTMLInputElement).value);
     });
-    this._dispatchOptionsChanged();
+    this.dispatchOptionsChanged();
   }
 
   private handleForceF32Change(e: Event) {
     this.options = produce(this.options, (options) => {
       options.forceF32 = (e.target as HTMLInputElement).checked;
     });
-    this._dispatchOptionsChanged();
+    this.dispatchOptionsChanged();
   }
 
   private async handleRemoveCached(e: Event, path: string) {
@@ -250,7 +250,7 @@ export class LlmOptions extends LitElement {
     }) + '&prompt=consent';
   }
 
-  private _getFileName(path: string): string {
+  private getFileName(path: string): string {
     return path.split('/').pop()!;
   }
 
@@ -268,11 +268,11 @@ export class LlmOptions extends LitElement {
         options.baseOptions!.modelAssetPath = file.name;
         (options.baseOptions as any).modelAssetFile = file;
       });
-      this._dispatchOptionsChanged();
+      this.dispatchOptionsChanged();
     }
   }
 
-  private _getTotalCacheSize(): string {
+  private getTotalCacheSize(): string {
     const totalSize = Array.from(this.cachedModels.values()).reduce((acc, size) => acc + size, 0);
     return (totalSize / 1e9).toFixed(2);
   }
@@ -281,7 +281,7 @@ export class LlmOptions extends LitElement {
     this.options = produce(this.options, (options) => {
       options.baseOptions!.modelAssetPath = e.detail;
     });
-    this._dispatchOptionsChanged();
+    this.dispatchOptionsChanged();
   }
 
   override render() {
@@ -307,7 +307,7 @@ export class LlmOptions extends LitElement {
                 ${MODEL_PATHS.map(
                   (model) => {
                     const path = getModelUrl(model);
-                    const cachedSize = this.cachedModels.get(this._getFileName(path));
+                    const cachedSize = this.cachedModels.get(this.getFileName(path));
                     const isDisabled = isHostedOnHuggingFace() && !this.isLoggedIn && !cachedSize;
                     return html`
                     <div class="dropdown-item" data-value=${path} ?disabled=${isDisabled}>
@@ -326,7 +326,7 @@ export class LlmOptions extends LitElement {
                 )}
               </custom-dropdown>
               <div class="cache-info">
-                <span>Total cached: ${this._getTotalCacheSize()}GB</span>
+                <span>Total cached: ${this.getTotalCacheSize()}GB</span>
                 ${this.cachedModels.size > 0 ?
                   html`<button class="clear-all-btn" title="Remove all from cache" @click=${this.handleRemoveAllCached}>Clear all</button>` : ''
                 }

@@ -23,37 +23,37 @@ export class CustomDropdown extends LitElement {
   value: string = '';
 
   @state()
-  private _isOpen = false;
+  private isOpen = false;
 
-  private _boundHandleOutsideClick: (e: MouseEvent) => void;
+  private boundHandleOutsideClick: (e: MouseEvent) => void;
 
   constructor() {
     super();
-    this._boundHandleOutsideClick = this._handleOutsideClick.bind(this);
+    this.boundHandleOutsideClick = this.handleOutsideClick.bind(this);
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
-    document.removeEventListener('click', this._boundHandleOutsideClick);
+    document.removeEventListener('click', this.boundHandleOutsideClick);
   }
 
-  private _setOpen(isOpen: boolean) {
-    if (this._isOpen === isOpen) {
+  private setOpen(isOpen: boolean) {
+    if (this.isOpen === isOpen) {
       return;
     }
-    this._isOpen = isOpen;
-    if (this._isOpen) {
+    this.isOpen = isOpen;
+    if (this.isOpen) {
       setTimeout(() => {
-        document.addEventListener('click', this._boundHandleOutsideClick);
+        document.addEventListener('click', this.boundHandleOutsideClick);
       }, 0);
     } else {
-      document.removeEventListener('click', this._boundHandleOutsideClick);
+      document.removeEventListener('click', this.boundHandleOutsideClick);
     }
   }
 
-  private _handleOutsideClick(e: MouseEvent) {
+  private handleOutsideClick(e: MouseEvent) {
     if (!this.contains(e.target as Node)) {
-      this._setOpen(false);
+      this.setOpen(false);
     }
   }
 
@@ -103,15 +103,15 @@ export class CustomDropdown extends LitElement {
     }
   `;
 
-  private _toggleDropdown() {
-    this._setOpen(!this._isOpen);
+  private toggleDropdown() {
+    this.setOpen(!this.isOpen);
   }
 
-  private _handleItemClick(e: Event) {
+  private handleItemClick(e: Event) {
     const target = (e.target as HTMLElement).closest('[data-value]') as HTMLElement | null;
     if (target?.dataset['value'] && !target.hasAttribute('disabled')) {
       this.value = target.dataset['value'];
-      this._setOpen(false);
+      this.setOpen(false);
       this.dispatchEvent(new CustomEvent('change', { detail: this.value }));
     }
   }
@@ -123,11 +123,11 @@ export class CustomDropdown extends LitElement {
     const buttonText = selectedItem ? selectedItem.querySelector('span')?.textContent ?? selectedItem.textContent : 'Select...';
 
     return html`
-      <button class="dropdown-button" @click=${this._toggleDropdown}>
+      <button class="dropdown-button" @click=${this.toggleDropdown}>
         ${buttonText}
       </button>
-      <div class="dropdown-content ${this._isOpen ? 'show' : ''}">
-        <slot @slotchange=${() => this.requestUpdate()} @click=${this._handleItemClick}></slot>
+      <div class="dropdown-content ${this.isOpen ? 'show' : ''}">
+        <slot @slotchange=${() => this.requestUpdate()} @click=${this.handleItemClick}></slot>
       </div>
     `;
   }
