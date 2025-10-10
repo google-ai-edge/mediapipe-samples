@@ -287,7 +287,7 @@ export class LlmOptions extends LitElement {
   override render() {
     const isChrome = navigator.userAgent.includes('Chrome');
     const isEdge = navigator.userAgent.includes('Edg');
-    const showNativeFileChooser = !isChrome && !isEdge;
+    const showNativeFileChooser = !isChrome && !isEdge && isHostedOnHuggingFace();
 
     return html`
       <h3>LLM Options</h3>
