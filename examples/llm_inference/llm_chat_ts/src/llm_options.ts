@@ -330,15 +330,15 @@ export class LlmOptions extends LitElement {
                 ${this.cachedModels.size > 0 ?
                   html`<button class="clear-all-btn" title="Remove all from cache" @click=${this.handleRemoveAllCached}>Clear all</button>` : ''
                 }
-                ${!this.isLoggedIn && isHostedOnHuggingFace() ? html`
-                  <img
-                    class="login-button"
-                    src="https://huggingface.co/datasets/huggingface/badges/resolve/main/sign-in-with-huggingface-xl-dark.svg"
-                    alt="Sign in with Hugging Face"
-                    @click=${this.handleLogin}
-                  />
-                ` : ''}
               </div>
+              ${!this.isLoggedIn && isHostedOnHuggingFace() ? html`
+                <img
+                  class="login-button"
+                  src="https://huggingface.co/datasets/huggingface/badges/resolve/main/sign-in-with-huggingface-xl-dark.svg"
+                  alt="Sign in with Hugging Face"
+                  @click=${this.handleLogin}
+                />
+              ` : ''}
             `
           }
         </div>
