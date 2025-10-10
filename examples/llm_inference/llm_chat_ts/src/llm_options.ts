@@ -232,6 +232,7 @@ export class LlmOptions extends LitElement {
     if (confirm('Remove model from cache?')) {
       await removeCachedModel(path);
       this.cachedModels = await getCachedModelsInfo();
+      this._dispatchCachedModelsChanged();
     }
   }
 
@@ -240,7 +241,17 @@ export class LlmOptions extends LitElement {
     if (confirm('Remove all models from cache?')) {
       await removeAllCachedModels();
       this.cachedModels = await getCachedModelsInfo();
+      this._dispatchCachedModelsChanged();
     }
+  }
+
+  private _dispatchCachedModelsChanged() {
+    const event = new CustomEvent('cached-models-changed', {
+      detail: this.cachedModels,
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
   }
 
   private async handleLogin() {
@@ -412,5 +423,6 @@ declare global {
       LlmInferenceOptions & { forceF32?: boolean }
     >;
     'persona-changed': CustomEvent<Persona>;
+    'cached-models-changed': CustomEvent<Set<string>>;
   }
 }

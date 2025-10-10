@@ -499,10 +499,15 @@ export class LlmChat extends LitElement {
           .cachedModels=${this.cachedModels}
           @options-changed=${this.handleOptionsChange}
           @persona-changed=${this.handlePersonaChanged}
+          @cached-models-changed=${this.handleCachedModelsChanged}
           ?disabled=${this.isLoadingModel || this.isGenerating}
         >
         </llm-options>
       </div>
     `;
+  }
+
+  private handleCachedModelsChanged(event: CustomEvent<Set<string>>) {
+    this.cachedModels = event.detail;
   }
 }
