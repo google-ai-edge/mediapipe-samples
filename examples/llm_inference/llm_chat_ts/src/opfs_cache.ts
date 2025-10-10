@@ -169,19 +169,77 @@ export async function loadModelWithCache(
 }
 
 /**
- * Lists the names of all files currently stored in the OPFS cache.
+ * Lists all valid cached models and their sizes. Invalid cache entries are
+ * removed.
  *
- * @returns A promise that resolves to a Set<string> of cached filenames.
+ * @returns A promise that resolves to a Map<string, number> where keys are
+ *   cached filenames and values are their sizes in bytes.
  */
-export async function listCachedModels(): Promise<Set<string>> {
+export async function getCachedModelsInfo(): Promise<Map<string, number>> {
   const opfsRoot = await navigator.storage.getDirectory();
-  const cachedFiles = new Set<string>();
+  const models = new Map<string, number>();
+  const filesToRemove = new Set<string>();
+
+  const fileHandles = new Map<string, FileSystemFileHandle>();
   for await (const handle of opfsRoot.values()) {
     if (handle.kind === 'file') {
-      cachedFiles.add(handle.name);
+        fileHandles.set(handle.name, handle);
     }
   }
-  return cachedFiles;
+
+  for (const [name, handle] of fileHandles.entries()) {
+    if (name.endsWith('_size')) {
+      continue;
+    }
+
+    const sizeFileName = name + '_size';
+    const sizeFileHandle = fileHandles.get(sizeFileName);
+
+    if (!sizeFileHandle) {
+      // Model file without size file, mark for removal
+      filesToRemove.add(name);
+      continue;
+    }
+
+    try {
+      const modelFile = await handle.getFile();
+      const sizeFile = await sizeFileHandle.getFile();
+      const expectedSize = parseInt(await sizeFile.text());
+
+      if (modelFile.size === expectedSize) {
+        models.set(name, modelFile.size);
+      } else {
+        // Mismatch, mark both for removal
+        filesToRemove.add(name);
+        filesToRemove.add(sizeFileName);
+      }
+    } catch (e) {
+      console.warn(`Error validating cache for ${name}, removing.`, e);
+      filesToRemove.add(name);
+      filesToRemove.add(sizeFileName);
+    }
+  }
+
+  // Clean up orphaned size files
+  for (const name of fileHandles.keys()) {
+      if (name.endsWith('_size')) {
+          const modelFileName = name.slice(0, -5);
+          if (!fileHandles.has(modelFileName)) {
+              filesToRemove.add(name);
+          }
+      }
+  }
+
+
+  for (const fileName of filesToRemove) {
+    try {
+      await opfsRoot.removeEntry(fileName);
+    } catch (e) {
+        // Ignore if already removed
+    }
+  }
+
+  return models;
 }
 
 /**
@@ -200,5 +258,26 @@ export async function removeCachedModel(modelPath: string): Promise<void> {
     if ((e as DOMException).name !== 'NotFoundError') {
       console.error(`Failed to remove ${fileName} from cache:`, e);
     }
+  }
+}
+
+/**
+ * Removes all models and their size files from the OPFS cache.
+ */
+export async function removeAllCachedModels(): Promise<void> {
+  const opfsRoot = await navigator.storage.getDirectory();
+  try {
+    // Create a list of names first to avoid issues with iterator invalidation
+    const names = [];
+    for await (const handle of opfsRoot.values()) {
+      names.push(handle.name);
+    }
+    // Now remove the entries
+    for (const name of names) {
+      await opfsRoot.removeEntry(name);
+    }
+    console.log('Successfully removed all models from cache.');
+  } catch (e) {
+    console.error('Failed to remove all models from cache:', e);
   }
 }
