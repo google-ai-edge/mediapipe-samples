@@ -57,6 +57,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
+  z-index: 1001;
 }
 
 #clear-cache-button {
@@ -90,6 +92,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  z-index: 1001;
 }
 
 #version-text {

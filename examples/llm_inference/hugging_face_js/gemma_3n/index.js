@@ -112,6 +112,8 @@ async function initLlm(modelReader) {
 function requireSignIn() {
   document.getElementById('loader-overlay').style = "display:none";
   document.getElementById('main-container').style = "display:none";
+  document.body.parentElement.prepend(document.getElementById('title-container'));
+  document.body.appendChild(document.getElementById('version-info');
   document.getElementById("signin").style.removeProperty("display");
   document.getElementById('sign-in-message').style.removeProperty("display");
   document.getElementById("signin").onclick = async function() {
