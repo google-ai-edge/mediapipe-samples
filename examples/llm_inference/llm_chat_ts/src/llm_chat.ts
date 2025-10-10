@@ -14,6 +14,20 @@
  * limitations under the License.
  */
 
+import { LlmInferenceOptions } from '@mediapipe/tasks-genai';
+import { LitElement, css, html } from 'lit';
+import { customElement, query, state } from 'lit/decorators.js';
+import './chat_history';
+import { DEFAULT_OPTIONS } from './constants';
+import './llm_options';
+import { LlmService, MODEL_PATHS, getModelUrl, isHostedOnHuggingFace } from './llm_service';
+import type { ChatMessage, Persona } from './types';
+import { PERSONAS } from './personas';
+import deepEqual from 'deep-equal';
+import { BASE_GEMMA3_PERSONA } from './personas/base_gemma3';
+import { getCachedModelsInfo } from './opfs_cache';
+import { ProgressUpdate } from './streaming_utils';
+
 // Function to check for Chrome or Edge
 function isChromium() {
   // Check for Chrome
@@ -29,24 +43,16 @@ function isChromium() {
 
 // One-time alert for non-Chromium browsers
 if (!isChromium()) {
-  alert(
-    "Your browser does not support automatic downloading. Please run the demo on Chrome. If you want to try on other browsers, you can download models manually and select them from the file chooser. Models can be found in litert-community's Web Models collection."
-  );
+  if (isHostedOnHuggingFace()) {
+    alert(
+      "Your browser does not support automatic downloading. Please run the demo on Chrome. If you want to try on other browsers, you can download models manually and select them from the file chooser. Models can be found in litert-community's Web Models collection."
+    );
+  } else {
+    alert(
+      "Your browser may not have full WebGPU support. Please run the demo on Chrome for the best possible experience."
+    );
+  }
 }
-
-import { LlmInferenceOptions } from '@mediapipe/tasks-genai';
-import { LitElement, css, html } from 'lit';
-import { customElement, query, state } from 'lit/decorators.js';
-import './chat_history';
-import { DEFAULT_OPTIONS } from './constants';
-import './llm_options';
-import { LlmService, MODEL_PATHS, getModelUrl } from './llm_service';
-import type { ChatMessage, Persona } from './types';
-import { PERSONAS } from './personas';
-import deepEqual from 'deep-equal';
-import { BASE_GEMMA3_PERSONA } from './personas/base_gemma3';
-import { getCachedModelsInfo } from './opfs_cache';
-import { ProgressUpdate } from './streaming_utils';
 
 @customElement('llm-chat')
 export class LlmChat extends LitElement {
@@ -434,8 +440,8 @@ export class LlmChat extends LitElement {
     } else if (this.isLoadingModel) {
       let message = 'Loading...';
       if (this.loadingProgress !== null && this.loadingProgress.progress < 1) {
-        const downloadedMB = (this.loadingProgress.downloadedBytes / (1024 * 1024)).toFixed(2);
-        const totalMB = (this.loadingProgress.totalBytes / (1024 * 1024)).toFixed(2);
+        const downloadedMB = (this.loadingProgress.downloadedBytes / 1e6).toFixed(2);
+        const totalMB = (this.loadingProgress.totalBytes / 1e6).toFixed(2);
         message = `Loading model... (${downloadedMB}MB / ${totalMB}MB)`;
       } else if (this.hasPendingOptionsChanges) {
         message = 'Applying new options...';

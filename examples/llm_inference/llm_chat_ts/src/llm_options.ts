@@ -287,7 +287,7 @@ export class LlmOptions extends LitElement {
   override render() {
     const isChrome = navigator.userAgent.includes('Chrome');
     const isEdge = navigator.userAgent.includes('Edg');
-    const showNativeFileChooser = !isChrome && !isEdge;
+    const showNativeFileChooser = !isChrome && !isEdge && isHostedOnHuggingFace();
 
     return html`
       <h3>LLM Options</h3>
@@ -330,15 +330,15 @@ export class LlmOptions extends LitElement {
                 ${this.cachedModels.size > 0 ?
                   html`<button class="clear-all-btn" title="Remove all from cache" @click=${this.handleRemoveAllCached}>Clear all</button>` : ''
                 }
-                ${!this.isLoggedIn && isHostedOnHuggingFace() ? html`
-                  <img
-                    class="login-button"
-                    src="https://huggingface.co/datasets/huggingface/badges/resolve/main/sign-in-with-huggingface-xl-dark.svg"
-                    alt="Sign in with Hugging Face"
-                    @click=${this.handleLogin}
-                  />
-                ` : ''}
               </div>
+              ${!this.isLoggedIn && isHostedOnHuggingFace() ? html`
+                <img
+                  class="login-button"
+                  src="https://huggingface.co/datasets/huggingface/badges/resolve/main/sign-in-with-huggingface-xl-dark.svg"
+                  alt="Sign in with Hugging Face"
+                  @click=${this.handleLogin}
+                />
+              ` : ''}
             `
           }
         </div>
