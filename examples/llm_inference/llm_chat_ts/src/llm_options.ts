@@ -23,7 +23,7 @@ import { produce } from 'immer';
 import { DEFAULT_OPTIONS } from './constants';
 import { Persona } from './types';
 import { PERSONAS } from './personas';
-import { getOauthToken, listCachedModels, removeCachedModel } from './opfs_cache';
+import { getOauthToken, getCachedModelsInfo, removeCachedModel, removeAllCachedModels } from './opfs_cache';
 import './custom_dropdown';
 
 /**
@@ -39,7 +39,7 @@ export class LlmOptions extends LitElement {
   selectedPersonaName: string = PERSONAS[0]?.name ?? '';
 
   @property({ type: Array })
-  cachedModels: Set<string> = new Set<string>();
+  cachedModels: Map<string, number> = new Map<string, number>();
 
   @state()
   private options: LlmInferenceOptions & { forceF32?: boolean } =
@@ -50,37 +50,12 @@ export class LlmOptions extends LitElement {
 
   override async connectedCallback() {
     super.connectedCallback();
-    await this._validateCache();
-    this.cachedModels = await listCachedModels();
+    this.cachedModels = await getCachedModelsInfo();
     this.isLoggedIn = !!(await getOauthToken());
     window.addEventListener('oauth-removed', this.handleOauthRemoved);
   }
 
-  private async _validateCache() {
-    const opfsRoot = await navigator.storage.getDirectory();
-    const allFiles = await listCachedModels();
-    for (const fileName of allFiles) {
-      if (fileName.endsWith('_size')) {
-        continue;
-      }
 
-      try {
-        const fileHandle = await opfsRoot.getFileHandle(fileName);
-        const file = await fileHandle.getFile();
-        const sizeHandle = await opfsRoot.getFileHandle(fileName + '_size');
-        const sizeFile = await sizeHandle.getFile();
-        const expectedSize = parseInt(await sizeFile.text());
-        if (file.size !== expectedSize) {
-          await opfsRoot.removeEntry(fileName);
-          await opfsRoot.removeEntry(fileName + '_size');
-        }
-      } catch (e) {
-        // If any error occurs (e.g., size file not found), remove the cached model
-        await opfsRoot.removeEntry(fileName);
-        await opfsRoot.removeEntry(fileName + '_size');
-      }
-    }
-  }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
@@ -143,19 +118,55 @@ export class LlmOptions extends LitElement {
     .dropdown-item:hover {
       background-color: #f0f0f0;
     }
-    .cached-badge {
+    .cached-info {
+      display: flex;
+      align-items: center;
+      gap: 4px;
       background-color: #e0e0e0;
       color: #333;
-      padding: 2px 6px;
+      padding: 2px 4px 2px 6px;
       border-radius: 4px;
       font-size: 0.8em;
       margin-left: 8px;
+    }
+    .delete-cache-btn {
+      background: transparent;
+      border: none;
+      color: #888;
       cursor: pointer;
+      font-weight: bold;
+      padding: 0;
+      margin: 0;
+      font-size: 1.2em;
+      line-height: 1;
+    }
+    .delete-cache-btn:hover {
+      color: #c00;
+    }
+    .clear-all-btn {
+      background: transparent;
+      border: none;
+      color: #888;
+      cursor: pointer;
+      padding: 0;
+      margin: 0;
+      line-height: 1;
+      text-decoration: underline;
+    }
+    .clear-all-btn:hover {
+      color: #c00;
     }
     .login-button {
       cursor: pointer;
       display: inline-block;
+    }
+    .cache-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-top: 8px;
+      font-size: 0.9em;
+      color: #666;
     }
   `;
 
@@ -220,7 +231,15 @@ export class LlmOptions extends LitElement {
     e.stopPropagation();
     if (confirm('Remove model from cache?')) {
       await removeCachedModel(path);
-      this.cachedModels = await listCachedModels();
+      this.cachedModels = await getCachedModelsInfo();
+    }
+  }
+
+  private async handleRemoveAllCached(e: Event) {
+    e.stopPropagation();
+    if (confirm('Remove all models from cache?')) {
+      await removeAllCachedModels();
+      this.cachedModels = await getCachedModelsInfo();
     }
   }
 
@@ -253,6 +272,18 @@ export class LlmOptions extends LitElement {
     }
   }
 
+  private _getTotalCacheSize(): string {
+    const totalSize = Array.from(this.cachedModels.values()).reduce((acc, size) => acc + size, 0);
+    return (totalSize / 1e9).toFixed(2);
+  }
+
+  private handleModelChange(e: CustomEvent<string>) {
+    this.options = produce(this.options, (options) => {
+      options.baseOptions!.modelAssetPath = e.detail;
+    });
+    this._dispatchOptionsChanged();
+  }
+
   override render() {
     const isChrome = navigator.userAgent.includes('Chrome');
     const isEdge = navigator.userAgent.includes('Edg');
@@ -271,37 +302,43 @@ export class LlmOptions extends LitElement {
             html`
               <custom-dropdown
                 .value=${this.options.baseOptions?.modelAssetPath}
-                @change=${(e: CustomEvent<string>) => {
-                  this.options = produce(this.options, (options) => {
-                    options.baseOptions!.modelAssetPath = e.detail;
-                  });
-                  this._dispatchOptionsChanged();
-                }}
+                @change=${this.handleModelChange}
               >
                 ${MODEL_PATHS.map(
                   (model) => {
                     const path = getModelUrl(model);
-                    const isCached = this.cachedModels.has(this._getFileName(path));
-                    const isDisabled = isHostedOnHuggingFace() && !this.isLoggedIn && !isCached;
+                    const cachedSize = this.cachedModels.get(this._getFileName(path));
+                    const isDisabled = isHostedOnHuggingFace() && !this.isLoggedIn && !cachedSize;
                     return html`
                     <div class="dropdown-item" data-value=${path} ?disabled=${isDisabled}>
                       <span>${model.name}</span>
-                      ${isCached ?
-                        html`<span class="cached-badge" @click=${(e: Event) => this.handleRemoveCached(e, path)}>Cached</span>` : ''
+                      ${cachedSize ?
+                        html`
+                          <span class="cached-info">
+                            <span>${(cachedSize / 1e9).toFixed(2)}GB</span>
+                            <button class="delete-cache-btn" title="Remove from cache" @click=${(e: Event) => this.handleRemoveCached(e, path)}>✕</button>
+                          </span>
+                        ` : ''
                       }
                     </div>
                   `
                   }
                 )}
               </custom-dropdown>
-              ${!this.isLoggedIn && isHostedOnHuggingFace() ? html`
-                <img
-                  class="login-button"
-                  src="https://huggingface.co/datasets/huggingface/badges/resolve/main/sign-in-with-huggingface-xl-dark.svg"
-                  alt="Sign in with Hugging Face"
-                  @click=${this.handleLogin}
-                />
-              ` : ''}
+              <div class="cache-info">
+                <span>Total cached: ${this._getTotalCacheSize()}GB</span>
+                ${this.cachedModels.size > 0 ?
+                  html`<button class="clear-all-btn" title="Remove all from cache" @click=${this.handleRemoveAllCached}>Clear all</button>` : ''
+                }
+                ${!this.isLoggedIn && isHostedOnHuggingFace() ? html`
+                  <img
+                    class="login-button"
+                    src="https://huggingface.co/datasets/huggingface/badges/resolve/main/sign-in-with-huggingface-xl-dark.svg"
+                    alt="Sign in with Hugging Face"
+                    @click=${this.handleLogin}
+                  />
+                ` : ''}
+              </div>
             `
           }
         </div>

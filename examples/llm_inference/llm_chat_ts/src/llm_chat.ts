@@ -45,7 +45,7 @@ import type { ChatMessage, Persona } from './types';
 import { PERSONAS } from './personas';
 import deepEqual from 'deep-equal';
 import { BASE_GEMMA3_PERSONA } from './personas/base_gemma3';
-import { listCachedModels } from './opfs_cache';
+import { getCachedModelsInfo } from './opfs_cache';
 import { ProgressUpdate } from './streaming_utils';
 
 @customElement('llm-chat')
@@ -85,7 +85,7 @@ export class LlmChat extends LitElement {
   private selectedPersona: Persona = PERSONAS.find(p => p.name === BASE_GEMMA3_PERSONA.name) || PERSONAS[0] || { name: 'Default', instructions: [] };
 
   @state()
-  private cachedModels: Set<string> = new Set<string>();
+  private cachedModels: Map<string, number> = new Map<string, number>();
 
   @query('#userInput')
   private userInputElement!: HTMLInputElement;
@@ -102,7 +102,7 @@ export class LlmChat extends LitElement {
       this.loadingProgress = progress;
       this.requestUpdate();
     });
-    listCachedModels().then((models) => {
+    getCachedModelsInfo().then((models) => {
       this.cachedModels = models;
     });
   }
@@ -171,7 +171,7 @@ export class LlmChat extends LitElement {
         this.hasPendingOptionsChanges = false;
         console.log('LLM options applied successfully.');
         this.isLoadingModel = false;
-        this.cachedModels = await listCachedModels();
+        this.cachedModels = await getCachedModelsInfo();
         this.requestUpdate();
         return true;
       } catch (error) {
@@ -180,7 +180,7 @@ export class LlmChat extends LitElement {
           error instanceof Error ? error.message : String(error)
         }`;
         this.isLoadingModel = false;
-        this.cachedModels = await listCachedModels();
+        this.cachedModels = await getCachedModelsInfo();
         this.requestUpdate();
         return false;
       }
