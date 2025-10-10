@@ -83,6 +83,34 @@ body {
   color: var(--primary-text-color);
 }
 
+.version-info {
+  position: absolute;
+  top: 16px;
+  right: 80px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#version-text {
+  font-size: 1rem;
+  color: var(--secondary-text-color);
+}
+
+#toggle-version-button {
+  background-color: var(--surface-color);
+  color: var(--primary-text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+#toggle-version-button:hover {
+  background-color: var(--border-color);
+}
+
 h1 {
   text-align: center;
   font-weight: 300;
