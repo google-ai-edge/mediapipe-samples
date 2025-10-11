@@ -152,6 +152,12 @@ export async function loadModelWithCache(
       await sizeWriter.write(encoder.encode(expectedSize.toString()));
       await sizeWriter.close();
 
+      // Alert the user if we expect caching to run out of memory.
+      const cacheEstimate = await navigator.storage.estimate();
+      if (expectedSize > (cacheEstimate.quota - cacheEstimate.usage)) {
+        alert(`The browser reports it does not have enough space in cache for this model. Ensure you are not running in incognito mode, or else try to free up some space. Model size: ${expectedSize}. Cache quota: ${cacheEstimate.quota}. Cache usage: ${cacheEstimate.usage}.`);
+      }
+
       writingToCachePromise = streamForCache.pipeTo(writable);
       await writingToCachePromise;
       console.log(`Successfully cached ${fileName}.`);
