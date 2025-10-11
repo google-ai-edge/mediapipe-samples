@@ -129,6 +129,12 @@ function requireSignIn() {
  * cache.
  */
 async function pipeStreamAndReportProgress(readableStream, writableStream) {
+  // Alert the user if browser expects caching to run out of memory.
+  const cacheEstimate = await navigator.storage.estimate();
+  if (modelSize > (cacheEstimate.quota - cacheEstimate.usage)) {
+    alert(`The browser reports it does not have enough space in cache for this model. Ensure you are not running in incognito mode, or else try to free up some space. Model size: ${modelSize}. Cache quota: ${cacheEstimate.quota}. Cache usage: ${cacheEstimate.usage}.`);
+  }
+
   // Effectively "await responseStream.pipeTo(writeStream)", but with progress
   // reporting.
   const reader = readableStream.getReader();

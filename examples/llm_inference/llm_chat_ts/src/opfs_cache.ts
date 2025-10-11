@@ -47,6 +47,8 @@ export async function getOauthToken(): Promise<OAuthToken | null> {
   return newOauthToken;
 }
 
+let writingToCachePromise = undefined;
+
 /**
  * Loads a model, utilizing the Origin Private File System (OPFS) as a cache.
  *
@@ -148,9 +150,16 @@ export async function loadModelWithCache(
       const sizeWriter = sizeWritable.getWriter();
       const encoder = new TextEncoder();
       await sizeWriter.write(encoder.encode(expectedSize.toString()));
-      sizeWriter.close();
+      await sizeWriter.close();
 
-      await streamForCache.pipeTo(writable);
+      // Alert the user if we expect caching to run out of memory.
+      const cacheEstimate = await navigator.storage.estimate();
+      if (expectedSize > (cacheEstimate.quota - cacheEstimate.usage)) {
+        alert(`The browser reports it does not have enough space in cache for this model. Ensure you are not running in incognito mode, or else try to free up some space. Model size: ${expectedSize}. Cache quota: ${cacheEstimate.quota}. Cache usage: ${cacheEstimate.usage}.`);
+      }
+
+      writingToCachePromise = streamForCache.pipeTo(writable);
+      await writingToCachePromise;
       console.log(`Successfully cached ${fileName}.`);
     } catch (error) {
       console.error(`Failed to cache model ${fileName}:`, error);
@@ -176,6 +185,8 @@ export async function loadModelWithCache(
  *   cached filenames and values are their sizes in bytes.
  */
 export async function getCachedModelsInfo(): Promise<Map<string, number>> {
+  // Wait for any pending cache writing to finish before validating.
+  if (writingToCachePromise) await writingToCachePromise;
   const opfsRoot = await navigator.storage.getDirectory();
   const models = new Map<string, number>();
   const filesToRemove = new Set<string>();
@@ -188,7 +199,8 @@ export async function getCachedModelsInfo(): Promise<Map<string, number>> {
   }
 
   for (const [name, handle] of fileHandles.entries()) {
-    if (name.endsWith('_size')) {
+    // Chrome can sometimes use temporary .crswap files while writing.
+    if (name.endsWith('_size') || name.endsWith('crswap')) {
       continue;
     }
 
@@ -229,7 +241,6 @@ export async function getCachedModelsInfo(): Promise<Map<string, number>> {
           }
       }
   }
-
 
   for (const fileName of filesToRemove) {
     try {
