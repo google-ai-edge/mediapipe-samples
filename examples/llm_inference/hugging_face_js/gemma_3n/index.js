@@ -128,7 +128,7 @@ function requireSignIn() {
  * Utility function to show progress while we load from remote file into local
  * cache.
  */
-    async function pipeStreamAndReportProgress(readableStream, writableStream) {
+async function pipeStreamAndReportProgress(readableStream, writableStream) {
   // Alert the user if browser expects caching to run out of memory.
   const cacheEstimate = await navigator.storage.estimate();
   if (modelSize > (cacheEstimate.quota - cacheEstimate.usage)) {
