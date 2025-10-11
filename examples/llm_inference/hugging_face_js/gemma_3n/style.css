@@ -57,6 +57,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
+  z-index: 1001;
 }
 
 #clear-cache-button {
@@ -81,6 +83,35 @@ body {
 #clear-cache-button:hover {
   background-color: var(--surface-color);
   color: var(--primary-text-color);
+}
+
+.version-info {
+  position: absolute;
+  top: 16px;
+  right: 80px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 1001;
+}
+
+#version-text {
+  font-size: 1rem;
+  color: var(--secondary-text-color);
+}
+
+#toggle-version-button {
+  background-color: var(--surface-color);
+  color: var(--primary-text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+#toggle-version-button:hover {
+  background-color: var(--border-color);
 }
 
 h1 {

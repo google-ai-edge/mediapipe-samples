@@ -38,6 +38,8 @@ const loaderOverlay = document.getElementById('loader-overlay');
 const progressBarFill = document.getElementById('progress-bar-fill');
 const signInMessage = document.getElementById('sign-in-message');
 const loaderMessage = document.getElementById('loader-message');
+const versionText = document.getElementById('version-text');
+const toggleVersionButton = document.getElementById('toggle-version-button');
 
 // --- State Management ---
 let isRecording = false;
@@ -110,6 +112,8 @@ async function initLlm(modelReader) {
 function requireSignIn() {
   document.getElementById('loader-overlay').style = "display:none";
   document.getElementById('main-container').style = "display:none";
+  document.body.parentElement.prepend(document.getElementById('title-container'));
+  document.body.appendChild(document.getElementById('version-info');
   document.getElementById("signin").style.removeProperty("display");
   document.getElementById('sign-in-message').style.removeProperty("display");
   document.getElementById("signin").onclick = async function() {
@@ -243,24 +247,25 @@ async function loadLlm() {
  */
 let audioUrl = undefined;
 async function initMedia() {
+  versionText.textContent = use_e4b ? 'E4B' : 'E2B';
+  toggleVersionButton.textContent = use_e4b ? 'Switch to E2B' : 'Switch to E4B';
+
   // Disable controls on startup
   promptInputElement.disabled = true;
   sendButton.disabled = true;
   recordButton.disabled = true;
 
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true,
-    });
-    webcamElement.srcObject = stream;
+    const videoStream = await navigator.mediaDevices.getUserMedia({video: true});
+    const audioStream = await navigator.mediaDevices.getUserMedia({audio: true});
+    webcamElement.srcObject = videoStream;
     statusMessageElement.style.display = 'none';
     webcamElement.style.display = 'block';
 
     await loadLlm();
 
     // Set up MediaRecorder for audio
-    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder = new MediaRecorder(audioStream);
     mediaRecorder.ondataavailable = (event) => {
       audioChunks.push(event.data);
     };
@@ -400,6 +405,15 @@ clearCacheButton.addEventListener('click', async () => {
       console.error('Error clearing cache:', error);
     }
   }
+});
+toggleVersionButton.addEventListener('click', () => {
+  const url = new URL(window.location.href);
+  if (use_e4b) {
+    url.searchParams.set('e2b', 'true');
+  } else {
+    url.searchParams.delete('e2b');
+  }
+  window.location.href = url.href;
 });
 
 // --- Initialization ---
