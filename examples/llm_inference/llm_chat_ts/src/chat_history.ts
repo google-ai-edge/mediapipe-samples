@@ -27,9 +27,9 @@ export class ChatHistory extends LitElement {
   history: ChatMessage[] = [];
 
   @state()
-  private _isScrolledToBottom = true;
+  private isScrolledToBottom = true;
 
-  private _resizeObserver!: ResizeObserver;
+  private resizeObserver!: ResizeObserver;
 
   static override styles = css`
     :host {
@@ -142,36 +142,36 @@ export class ChatHistory extends LitElement {
 
   override connectedCallback() {
     super.connectedCallback();
-    this.addEventListener('scroll', this._handleScroll);
-    this._resizeObserver = new ResizeObserver(() => {
-      if (this._isScrolledToBottom) {
-        this._scrollToBottom();
+    this.addEventListener('scroll', this.handleScroll);
+    this.resizeObserver = new ResizeObserver(() => {
+      if (this.isScrolledToBottom) {
+        this.scrollToBottom();
       }
     });
-    this._resizeObserver.observe(this);
+    this.resizeObserver.observe(this);
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
-    this.removeEventListener('scroll', this._handleScroll);
-    if (this._resizeObserver) {
-      this._resizeObserver.disconnect();
+    this.removeEventListener('scroll', this.handleScroll);
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
     }
   }
 
-  private _handleScroll() {
+  private handleScroll() {
     const atBottom = this.scrollHeight - this.scrollTop <= this.clientHeight + SCROLL_THRESHOLD;
-    this._isScrolledToBottom = atBottom;
+    this.isScrolledToBottom = atBottom;
   }
 
-  private _scrollToBottom() {
+  private scrollToBottom() {
     this.scrollTop = this.scrollHeight;
   }
 
   override updated(changedProperties: PropertyValues<this>) {
     super.updated(changedProperties);
-    if (changedProperties.has('history') && this._isScrolledToBottom) {
-      Promise.resolve().then(() => this._scrollToBottom());
+    if (changedProperties.has('history') && this.isScrolledToBottom) {
+      Promise.resolve().then(() => this.scrollToBottom());
     }
   }
 
@@ -185,7 +185,7 @@ export class ChatHistory extends LitElement {
     return `(${tokenCount} Tokens${latencyInfo})`;
   }
 
-  private _handleRedoLastMessage() {
+  private handleRedoLastMessage() {
     const event = new CustomEvent('regenerate-last-model-message', {
       bubbles: true,
       composed: true
@@ -193,7 +193,7 @@ export class ChatHistory extends LitElement {
     this.dispatchEvent(event);
   }
 
-  private _handleRemoveLastMessage() {
+  private handleRemoveLastMessage() {
     const event = new CustomEvent('remove-last-message', {
       bubbles: true,
       composed: true
@@ -231,7 +231,7 @@ export class ChatHistory extends LitElement {
                     <div class="action-buttons-container">
                       <button
                         class="action-button remove-button"
-                        @click=${this._handleRemoveLastMessage}
+                        @click=${this.handleRemoveLastMessage}
                         title="Remove this message"
                       >
                         ✕
@@ -240,7 +240,7 @@ export class ChatHistory extends LitElement {
                         ? html`
                             <button
                               class="action-button redo-button"
-                              @click=${this._handleRedoLastMessage}
+                              @click=${this.handleRedoLastMessage}
                               title="Regenerate this message"
                             >
                               ↻

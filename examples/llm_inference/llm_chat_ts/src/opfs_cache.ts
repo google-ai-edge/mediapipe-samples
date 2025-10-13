@@ -15,6 +15,7 @@
  */
 
 import { oauthLoginUrl, oauthHandleRedirectIfPresent, type OAuthToken } from "./hf-hub";
+import { isHostedOnHuggingFace } from "./llm_service";
 
 /**
  * Extracts the filename from a URL or path.
@@ -46,6 +47,8 @@ export async function getOauthToken(): Promise<OAuthToken | null> {
   return newOauthToken;
 }
 
+let writingToCachePromise = undefined;
+
 /**
  * Loads a model, utilizing the Origin Private File System (OPFS) as a cache.
  *
@@ -58,10 +61,17 @@ export async function getOauthToken(): Promise<OAuthToken | null> {
  * 6. The download stream is returned for immediate consumption.
  *
  * @param modelPath The URL of the model to load.
+ * @param modelFile The model file to load instead, if uploaded manually
  * @returns A promise that resolves to an object containing the model's
  *   ReadableStream and its total size in bytes.
  */
-export async function loadModelWithCache(modelPath: string): Promise<{ stream: ReadableStream<Uint8Array>, size: number }> {
+export async function loadModelWithCache(
+  modelPath: string,
+  modelFile?: File
+): Promise<{ stream: ReadableStream<Uint8Array>; size: number }> {
+  if (modelFile) {
+    return { stream: modelFile.stream(), size: modelFile.size };
+  }
   const fileName = getFileName(modelPath);
   const opfsRoot = await navigator.storage.getDirectory();
 
@@ -100,7 +110,10 @@ export async function loadModelWithCache(modelPath: string): Promise<{ stream: R
   try {
     const headResponse = await fetch(modelPath, { method: 'HEAD', headers });
     if (!headResponse.ok) {
-      throw new Error(`Failed to fetch model headers for ${modelPath}: ${headResponse.statusText}`);
+      const hfError = `Ensure you have accepted the proper model license on your HuggingFace account for the selected model.`;
+      const localError = `Ensure the model is hosted at ${modelPath}.`;
+      const error = isHostedOnHuggingFace() ? hfError : localError;
+      throw new Error(`Failed to fetch model headers for ${modelPath}: ${headResponse.statusText}. ${error}`);
     }
     expectedSize = Number(headResponse.headers.get('Content-Length'));
     if (isNaN(expectedSize) || expectedSize <= 0) {
@@ -117,7 +130,10 @@ export async function loadModelWithCache(modelPath: string): Promise<{ stream: R
     // If this happens, our credentials may be stale; ensure those are not being cached to allow for re-auth to be triggered.
     localStorage.removeItem("oauth");
     window.dispatchEvent(new CustomEvent('oauth-removed'));
-    throw new Error(`Failed to download model from ${modelPath}: ${response.statusText}`);
+    const hfError = `Ensure you have accepted the proper model license on your HuggingFace account for the selected model.`;
+    const localError = `Ensure the model is hosted at ${modelPath}.`;
+    const error = isHostedOnHuggingFace() ? hfError : localError;
+    throw new Error(`Failed to download model from ${modelPath}: ${response.statusText}. ${error}`);
   }
 
   const [streamForConsumer, streamForCache] = response.body.tee();
@@ -133,10 +149,17 @@ export async function loadModelWithCache(modelPath: string): Promise<{ stream: R
       const sizeWritable = await sizeHandle.createWritable();
       const sizeWriter = sizeWritable.getWriter();
       const encoder = new TextEncoder();
-      await sizeWriter.write(encoder.encode(expectedSize));
-      sizeWriter.close();
+      await sizeWriter.write(encoder.encode(expectedSize.toString()));
+      await sizeWriter.close();
 
-      await streamForCache.pipeTo(writable);
+      // Alert the user if we expect caching to run out of memory.
+      const cacheEstimate = await navigator.storage.estimate();
+      if (expectedSize > (cacheEstimate.quota - cacheEstimate.usage)) {
+        alert(`The browser reports it does not have enough space in cache for this model. Ensure you are not running in incognito mode, or else try to free up some space. Model size: ${expectedSize}. Cache quota: ${cacheEstimate.quota}. Cache usage: ${cacheEstimate.usage}.`);
+      }
+
+      writingToCachePromise = streamForCache.pipeTo(writable);
+      await writingToCachePromise;
       console.log(`Successfully cached ${fileName}.`);
     } catch (error) {
       console.error(`Failed to cache model ${fileName}:`, error);
@@ -155,19 +178,79 @@ export async function loadModelWithCache(modelPath: string): Promise<{ stream: R
 }
 
 /**
- * Lists the names of all files currently stored in the OPFS cache.
+ * Lists all valid cached models and their sizes. Invalid cache entries are
+ * removed.
  *
- * @returns A promise that resolves to a Set<string> of cached filenames.
+ * @returns A promise that resolves to a Map<string, number> where keys are
+ *   cached filenames and values are their sizes in bytes.
  */
-export async function listCachedModels(): Promise<Set<string>> {
+export async function getCachedModelsInfo(): Promise<Map<string, number>> {
+  // Wait for any pending cache writing to finish before validating.
+  if (writingToCachePromise) await writingToCachePromise;
   const opfsRoot = await navigator.storage.getDirectory();
-  const cachedFiles = new Set<string>();
+  const models = new Map<string, number>();
+  const filesToRemove = new Set<string>();
+
+  const fileHandles = new Map<string, FileSystemFileHandle>();
   for await (const handle of opfsRoot.values()) {
     if (handle.kind === 'file') {
-      cachedFiles.add(handle.name);
+        fileHandles.set(handle.name, handle);
     }
   }
-  return cachedFiles;
+
+  for (const [name, handle] of fileHandles.entries()) {
+    // Chrome can sometimes use temporary .crswap files while writing.
+    if (name.endsWith('_size') || name.endsWith('crswap')) {
+      continue;
+    }
+
+    const sizeFileName = name + '_size';
+    const sizeFileHandle = fileHandles.get(sizeFileName);
+
+    if (!sizeFileHandle) {
+      // Model file without size file, mark for removal
+      filesToRemove.add(name);
+      continue;
+    }
+
+    try {
+      const modelFile = await handle.getFile();
+      const sizeFile = await sizeFileHandle.getFile();
+      const expectedSize = parseInt(await sizeFile.text());
+
+      if (modelFile.size === expectedSize) {
+        models.set(name, modelFile.size);
+      } else {
+        // Mismatch, mark both for removal
+        filesToRemove.add(name);
+        filesToRemove.add(sizeFileName);
+      }
+    } catch (e) {
+      console.warn(`Error validating cache for ${name}, removing.`, e);
+      filesToRemove.add(name);
+      filesToRemove.add(sizeFileName);
+    }
+  }
+
+  // Clean up orphaned size files
+  for (const name of fileHandles.keys()) {
+      if (name.endsWith('_size')) {
+          const modelFileName = name.slice(0, -5);
+          if (!fileHandles.has(modelFileName)) {
+              filesToRemove.add(name);
+          }
+      }
+  }
+
+  for (const fileName of filesToRemove) {
+    try {
+      await opfsRoot.removeEntry(fileName);
+    } catch (e) {
+        // Ignore if already removed
+    }
+  }
+
+  return models;
 }
 
 /**
@@ -186,5 +269,26 @@ export async function removeCachedModel(modelPath: string): Promise<void> {
     if ((e as DOMException).name !== 'NotFoundError') {
       console.error(`Failed to remove ${fileName} from cache:`, e);
     }
+  }
+}
+
+/**
+ * Removes all models and their size files from the OPFS cache.
+ */
+export async function removeAllCachedModels(): Promise<void> {
+  const opfsRoot = await navigator.storage.getDirectory();
+  try {
+    // Create a list of names first to avoid issues with iterator invalidation
+    const names = [];
+    for await (const handle of opfsRoot.values()) {
+      names.push(handle.name);
+    }
+    // Now remove the entries
+    for (const name of names) {
+      await opfsRoot.removeEntry(name);
+    }
+    console.log('Successfully removed all models from cache.');
+  } catch (e) {
+    console.error('Failed to remove all models from cache:', e);
   }
 }

@@ -15,15 +15,15 @@
  */
 
 import { oauthLoginUrl } from './hf-hub';
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { MODEL_PATHS } from './llm_service';
+import { MODEL_PATHS, getModelUrl, isHostedOnHuggingFace } from './llm_service';
 import { LlmInferenceOptions } from '@mediapipe/tasks-genai';
 import { produce } from 'immer';
 import { DEFAULT_OPTIONS } from './constants';
 import { Persona } from './types';
 import { PERSONAS } from './personas';
-import { getOauthToken, listCachedModels, removeCachedModel } from './opfs_cache';
+import { getOauthToken, getCachedModelsInfo, removeCachedModel, removeAllCachedModels } from './opfs_cache';
 import './custom_dropdown';
 
 /**
@@ -39,7 +39,7 @@ export class LlmOptions extends LitElement {
   selectedPersonaName: string = PERSONAS[0]?.name ?? '';
 
   @property({ type: Array })
-  cachedModels: Set<string> = new Set<string>();
+  cachedModels: Map<string, number> = new Map<string, number>();
 
   @state()
   private options: LlmInferenceOptions & { forceF32?: boolean } =
@@ -50,37 +50,12 @@ export class LlmOptions extends LitElement {
 
   override async connectedCallback() {
     super.connectedCallback();
-    await this._validateCache();
-    this.cachedModels = await listCachedModels();
+    this.cachedModels = await getCachedModelsInfo();
     this.isLoggedIn = !!(await getOauthToken());
     window.addEventListener('oauth-removed', this.handleOauthRemoved);
   }
 
-  private async _validateCache() {
-    const opfsRoot = await navigator.storage.getDirectory();
-    const allFiles = await listCachedModels();
-    for (const fileName of allFiles) {
-      if (fileName.endsWith('_size')) {
-        continue;
-      }
 
-      try {
-        const fileHandle = await opfsRoot.getFileHandle(fileName);
-        const file = await fileHandle.getFile();
-        const sizeHandle = await opfsRoot.getFileHandle(fileName + '_size');
-        const sizeFile = await sizeHandle.getFile();
-        const expectedSize = parseInt(await sizeFile.text());
-        if (file.size !== expectedSize) {
-          await opfsRoot.removeEntry(fileName);
-          await opfsRoot.removeEntry(fileName + '_size');
-        }
-      } catch (e) {
-        // If any error occurs (e.g., size file not found), remove the cached model
-        await opfsRoot.removeEntry(fileName);
-        await opfsRoot.removeEntry(fileName + '_size');
-      }
-    }
-  }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
@@ -143,23 +118,59 @@ export class LlmOptions extends LitElement {
     .dropdown-item:hover {
       background-color: #f0f0f0;
     }
-    .cached-badge {
+    .cached-info {
+      display: flex;
+      align-items: center;
+      gap: 4px;
       background-color: #e0e0e0;
       color: #333;
-      padding: 2px 6px;
+      padding: 2px 4px 2px 6px;
       border-radius: 4px;
       font-size: 0.8em;
       margin-left: 8px;
+    }
+    .delete-cache-btn {
+      background: transparent;
+      border: none;
+      color: #888;
       cursor: pointer;
+      font-weight: bold;
+      padding: 0;
+      margin: 0;
+      font-size: 1.2em;
+      line-height: 1;
+    }
+    .delete-cache-btn:hover {
+      color: #c00;
+    }
+    .clear-all-btn {
+      background: transparent;
+      border: none;
+      color: #888;
+      cursor: pointer;
+      padding: 0;
+      margin: 0;
+      line-height: 1;
+      text-decoration: underline;
+    }
+    .clear-all-btn:hover {
+      color: #c00;
     }
     .login-button {
       cursor: pointer;
       display: inline-block;
+    }
+    .cache-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-top: 8px;
+      font-size: 0.9em;
+      color: #666;
     }
   `;
 
-  private _dispatchOptionsChanged() {
+  private dispatchOptionsChanged() {
     const event = new CustomEvent('options-changed', {
       detail: structuredClone(this.options),
       bubbles: true,
@@ -168,7 +179,7 @@ export class LlmOptions extends LitElement {
     this.dispatchEvent(event);
   }
 
-  private _dispatchPersonaChanged(persona: Persona) {
+  private dispatchPersonaChanged(persona: Persona) {
     const event = new CustomEvent('persona-changed', {
       detail: persona,
       bubbles: true,
@@ -182,51 +193,65 @@ export class LlmOptions extends LitElement {
     const selectedPersona = this.personas.find(p => p.name === selectedName);
     if (selectedPersona) {
       this.selectedPersonaName = selectedName;
-      this._dispatchPersonaChanged(selectedPersona);
+      this.dispatchPersonaChanged(selectedPersona);
     }
   }
 
-  private handleModelChange(e: CustomEvent<string>) {
-    this.options = produce(this.options, (options) => {
-      options.baseOptions!.modelAssetPath = e.detail;
-    });
-    this._dispatchOptionsChanged();
-  }
+
 
   private handleTemperatureChange(e: Event) {
     this.options = produce(this.options, (options) => {
       options.temperature = parseFloat((e.target as HTMLInputElement).value);
     });
-    this._dispatchOptionsChanged();
+    this.dispatchOptionsChanged();
   }
 
   private handleMaxTokensChange(e: Event) {
     this.options = produce(this.options, (options) => {
       options.maxTokens = parseInt((e.target as HTMLInputElement).value);
     });
-    this._dispatchOptionsChanged();
+    this.dispatchOptionsChanged();
   }
 
   private handleTopKChange(e: Event) {
     this.options = produce(this.options, (options) => {
       options.topK = parseInt((e.target as HTMLInputElement).value);
     });
-    this._dispatchOptionsChanged();
+    this.dispatchOptionsChanged();
   }
 
   private handleForceF32Change(e: Event) {
     this.options = produce(this.options, (options) => {
       options.forceF32 = (e.target as HTMLInputElement).checked;
     });
-    this._dispatchOptionsChanged();
+    this.dispatchOptionsChanged();
   }
 
   private async handleRemoveCached(e: Event, path: string) {
     e.stopPropagation();
     if (confirm('Remove model from cache?')) {
       await removeCachedModel(path);
-      this.cachedModels = await listCachedModels();
+      this.cachedModels = await getCachedModelsInfo();
+      this._dispatchCachedModelsChanged();
     }
+  }
+
+  private async handleRemoveAllCached(e: Event) {
+    e.stopPropagation();
+    if (confirm('Remove all models from cache?')) {
+      await removeAllCachedModels();
+      this.cachedModels = await getCachedModelsInfo();
+      this._dispatchCachedModelsChanged();
+    }
+  }
+
+  private _dispatchCachedModelsChanged() {
+    const event = new CustomEvent('cached-models-changed', {
+      detail: this.cachedModels,
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
   }
 
   private async handleLogin() {
@@ -236,43 +261,97 @@ export class LlmOptions extends LitElement {
     }) + '&prompt=consent';
   }
 
-  private _getFileName(path: string): string {
+  private getFileName(path: string): string {
     return path.split('/').pop()!;
   }
 
+  private renderPersonaOptions(): Array<TemplateResult> {
+    return this.personas.map(
+      (persona) =>
+        html`<option value="${persona.name}">${persona.name}</option>`
+    );
+  }
+
+  private handleModelFileChange(e: Event) {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (file) {
+      this.options = produce(this.options, (options) => {
+        options.baseOptions!.modelAssetPath = file.name;
+        (options.baseOptions as any).modelAssetFile = file;
+      });
+      this.dispatchOptionsChanged();
+    }
+  }
+
+  private getTotalCacheSize(): string {
+    const totalSize = Array.from(this.cachedModels.values()).reduce((acc, size) => acc + size, 0);
+    return (totalSize / 1e9).toFixed(2);
+  }
+
+  private handleModelChange(e: CustomEvent<string>) {
+    this.options = produce(this.options, (options) => {
+      options.baseOptions!.modelAssetPath = e.detail;
+    });
+    this.dispatchOptionsChanged();
+  }
+
   override render() {
+    const isChrome = navigator.userAgent.includes('Chrome');
+    const isEdge = navigator.userAgent.includes('Edg');
+    const showNativeFileChooser = !isChrome && !isEdge && isHostedOnHuggingFace();
+
     return html`
       <h3>LLM Options</h3>
       <div class="options-grid">
         <div>
           <label for="model-select">Model:</label>
-          <custom-dropdown
-            .value=${this.options.baseOptions?.modelAssetPath}
-            @change=${this.handleModelChange}
-          >
-            ${MODEL_PATHS.map(
-              ([name, path]) => {
-                const isCached = this.cachedModels.has(this._getFileName(path));
-                const isDisabled = !this.isLoggedIn && !isCached;
-                return html`
-                <div class="dropdown-item" data-value=${path} ?disabled=${isDisabled}>
-                  <span>${name}</span>
-                  ${isCached ?
-                    html`<span class="cached-badge" @click=${(e: Event) => this.handleRemoveCached(e, path)}>Cached</span>` : ''
+          ${showNativeFileChooser ?
+            html`
+              <input type="file" @change=${this.handleModelFileChange} />
+              <p>Selected model: ${this.options.baseOptions?.modelAssetPath?.replace('file:', '')}</p>
+            ` :
+            html`
+              <custom-dropdown
+                .value=${this.options.baseOptions?.modelAssetPath}
+                @change=${this.handleModelChange}
+              >
+                ${MODEL_PATHS.map(
+                  (model) => {
+                    const path = getModelUrl(model);
+                    const cachedSize = this.cachedModels.get(this.getFileName(path));
+                    const isDisabled = isHostedOnHuggingFace() && !this.isLoggedIn && !cachedSize;
+                    return html`
+                    <div class="dropdown-item" data-value=${path} ?disabled=${isDisabled}>
+                      <span>${model.name}</span>
+                      ${cachedSize ?
+                        html`
+                          <span class="cached-info">
+                            <span>${(cachedSize / 1e9).toFixed(2)}GB</span>
+                            <button class="delete-cache-btn" title="Remove from cache" @click=${(e: Event) => this.handleRemoveCached(e, path)}>✕</button>
+                          </span>
+                        ` : ''
+                      }
+                    </div>
+                  `
                   }
-                </div>
-              `
-              }
-            )}
-          </custom-dropdown>
-          ${!this.isLoggedIn ? html`
-            <img
-              class="login-button"
-              src="https://huggingface.co/datasets/huggingface/badges/resolve/main/sign-in-with-huggingface-xl-dark.svg"
-              alt="Sign in with Hugging Face"
-              @click=${this.handleLogin}
-            />
-          ` : ''}
+                )}
+              </custom-dropdown>
+              <div class="cache-info">
+                <span>Total cached: ${this.getTotalCacheSize()}GB</span>
+                ${this.cachedModels.size > 0 ?
+                  html`<button class="clear-all-btn" title="Remove all from cache" @click=${this.handleRemoveAllCached}>Clear all</button>` : ''
+                }
+              </div>
+              ${!this.isLoggedIn && isHostedOnHuggingFace() ? html`
+                <img
+                  class="login-button"
+                  src="https://huggingface.co/datasets/huggingface/badges/resolve/main/sign-in-with-huggingface-xl-dark.svg"
+                  alt="Sign in with Hugging Face"
+                  @click=${this.handleLogin}
+                />
+              ` : ''}
+            `
+          }
         </div>
         <div>
           <label for="persona-select">Prompt Template:</label>
@@ -281,10 +360,7 @@ export class LlmOptions extends LitElement {
             .value=${this.selectedPersonaName}
             @change=${this.handlePersonaChange}
           >
-            ${this.personas.map(
-              (persona) =>
-                html`<option value=${persona.name}>${persona.name}</option>`
-            )}
+            ${this.renderPersonaOptions() as any}
           </select>
         </div>
         <div>
@@ -347,5 +423,6 @@ declare global {
       LlmInferenceOptions & { forceF32?: boolean }
     >;
     'persona-changed': CustomEvent<Persona>;
+    'cached-models-changed': CustomEvent<Set<string>>;
   }
 }

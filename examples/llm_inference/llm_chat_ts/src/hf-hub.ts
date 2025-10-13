@@ -21,21 +21,31 @@
 // import from here with proper types.
 
 import type { OAuthToken as HubOAuthToken, oauthLoginUrl as hubOauthLoginUrl, oauthHandleRedirectIfPresent as hubOauthHandleRedirectIfPresent } from '@huggingface/hub';
+import { isHostedOnHuggingFace } from './llm_service';
 
 // Re-export the type directly from the installed package.
 // TypeScript will use this for type-checking.
 export type OAuthToken = HubOAuthToken;
 
-// Dynamically import the browser-compatible module from the CDN.
-const hubModulePromise = import('https://esm.sh/@huggingface/hub');
+// Dynamically import the browser-compatible module from the CDN only if needed.
+const hubModulePromise = isHostedOnHuggingFace() ?
+  import('https://esm.sh/@huggingface/hub') :
+  Promise.resolve(null);
 
 // Export functions that resolve the promise and call the actual implementation.
 export const oauthLoginUrl: typeof hubOauthLoginUrl = async (...args) => {
   const hub = await hubModulePromise;
+  if (!hub) {
+    throw new Error('Hugging Face Hub module is not available.');
+  }
   return hub.oauthLoginUrl(...args);
 };
 
 export const oauthHandleRedirectIfPresent: typeof hubOauthHandleRedirectIfPresent = async (...args) => {
   const hub = await hubModulePromise;
+  if (!hub) {
+    // Silently fail if not on huggingface.
+    return null;
+  }
   return hub.oauthHandleRedirectIfPresent(...args);
 };

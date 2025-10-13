@@ -32,11 +32,14 @@ const recordButton = document.getElementById(
   'record-button',
 );
 const sendButton = document.getElementById('send-button');
+const clearCacheButton = document.getElementById('clear-cache-button');
 const recordButtonIcon = recordButton.querySelector('i');
 const loaderOverlay = document.getElementById('loader-overlay');
 const progressBarFill = document.getElementById('progress-bar-fill');
 const signInMessage = document.getElementById('sign-in-message');
 const loaderMessage = document.getElementById('loader-message');
+const versionText = document.getElementById('version-text');
+const toggleVersionButton = document.getElementById('toggle-version-button');
 
 // --- State Management ---
 let isRecording = false;
@@ -109,6 +112,8 @@ async function initLlm(modelReader) {
 function requireSignIn() {
   document.getElementById('loader-overlay').style = "display:none";
   document.getElementById('main-container').style = "display:none";
+  document.body.parentElement.prepend(document.getElementById('title-container'));
+  document.body.appendChild(document.getElementById('version-info');
   document.getElementById("signin").style.removeProperty("display");
   document.getElementById('sign-in-message').style.removeProperty("display");
   document.getElementById("signin").onclick = async function() {
@@ -124,6 +129,12 @@ function requireSignIn() {
  * cache.
  */
 async function pipeStreamAndReportProgress(readableStream, writableStream) {
+  // Alert the user if browser expects caching to run out of memory.
+  const cacheEstimate = await navigator.storage.estimate();
+  if (modelSize > (cacheEstimate.quota - cacheEstimate.usage)) {
+    alert(`The browser reports it does not have enough space in cache for this model. Ensure you are not running in incognito mode, or else try to free up some space. Model size: ${modelSize}. Cache quota: ${cacheEstimate.quota}. Cache usage: ${cacheEstimate.usage}.`);
+  }
+
   // Effectively "await responseStream.pipeTo(writeStream)", but with progress
   // reporting.
   const reader = readableStream.getReader();
@@ -143,6 +154,10 @@ async function pipeStreamAndReportProgress(readableStream, writableStream) {
         if (percentage > progressBarPercent) {
           progressBarPercent = percentage;
           updateProgressBar(progressBarPercent);
+          const downloadedMB = (bytesCount / 1e6).toFixed(2);
+          const totalMB = (modelSize / 1e6).toFixed(2);
+          loaderMessage.textContent =
+              `Downloading model: ${downloadedMB}MB / ${totalMB}MB`;
         }
         await writer.write(value);
       }
@@ -238,24 +253,25 @@ async function loadLlm() {
  */
 let audioUrl = undefined;
 async function initMedia() {
+  versionText.textContent = use_e4b ? 'E4B' : 'E2B';
+  toggleVersionButton.textContent = use_e4b ? 'Switch to E2B' : 'Switch to E4B';
+
   // Disable controls on startup
   promptInputElement.disabled = true;
   sendButton.disabled = true;
   recordButton.disabled = true;
 
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true,
-    });
-    webcamElement.srcObject = stream;
+    const videoStream = await navigator.mediaDevices.getUserMedia({video: true});
+    const audioStream = await navigator.mediaDevices.getUserMedia({audio: true});
+    webcamElement.srcObject = videoStream;
     statusMessageElement.style.display = 'none';
     webcamElement.style.display = 'block';
 
     await loadLlm();
 
     // Set up MediaRecorder for audio
-    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder = new MediaRecorder(audioStream);
     mediaRecorder.ondataavailable = (event) => {
       audioChunks.push(event.data);
     };
@@ -379,6 +395,31 @@ promptInputElement.addEventListener('keydown', (event) => {
   if (event.key === 'Enter') {
     sendTextQuery();
   }
+});
+clearCacheButton.addEventListener('click', async () => {
+  const userConfirmed = confirm(
+    'Are you sure you want to clear the cached model? ' +
+    'This will require re-downloading the model on the next visit.'
+  );
+  if (userConfirmed) {
+    try {
+      const opfs = await navigator.storage.getDirectory();
+      await opfs.removeEntry(cacheFileName);
+      console.log('Cache cleared successfully.');
+      clearCacheButton.style.display = 'none';
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+    }
+  }
+});
+toggleVersionButton.addEventListener('click', () => {
+  const url = new URL(window.location.href);
+  if (use_e4b) {
+    url.searchParams.set('e2b', 'true');
+  } else {
+    url.searchParams.delete('e2b');
+  }
+  window.location.href = url.href;
 });
 
 // --- Initialization ---

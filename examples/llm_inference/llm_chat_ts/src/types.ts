@@ -46,3 +46,10 @@ export interface ChatMessage {
   generatedTokenCount?: number;
   doneGenerating?: boolean;
 };
+
+export interface ModelPath {
+  name: string;
+  hfUrl: string;
+  localUrl: string;
+}
+

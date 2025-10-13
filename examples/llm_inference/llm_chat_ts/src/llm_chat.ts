@@ -20,12 +20,39 @@ import { customElement, query, state } from 'lit/decorators.js';
 import './chat_history';
 import { DEFAULT_OPTIONS } from './constants';
 import './llm_options';
-import { LlmService, MODEL_PATHS } from './llm_service'; // Ensure LlmService has setPersona and removeLastMessage
+import { LlmService, MODEL_PATHS, getModelUrl, isHostedOnHuggingFace } from './llm_service';
 import type { ChatMessage, Persona } from './types';
 import { PERSONAS } from './personas';
 import deepEqual from 'deep-equal';
 import { BASE_GEMMA3_PERSONA } from './personas/base_gemma3';
-import { listCachedModels } from './opfs_cache';
+import { getCachedModelsInfo } from './opfs_cache';
+import { ProgressUpdate } from './streaming_utils';
+
+// Function to check for Chrome or Edge
+function isChromium() {
+  // Check for Chrome
+  if (navigator.userAgent.includes('Chrome')) {
+    return true;
+  }
+  // Check for Edge, which is also Chromium-based
+  if (navigator.userAgent.includes('Edg')) {
+    return true;
+  }
+  return false;
+}
+
+// One-time alert for non-Chromium browsers
+if (!isChromium()) {
+  if (isHostedOnHuggingFace()) {
+    alert(
+      "Your browser does not support automatic downloading. Please run the demo on Chrome. If you want to try on other browsers, you can download models manually and select them from the file chooser. Models can be found in litert-community's Web Models collection."
+    );
+  } else {
+    alert(
+      "Your browser may not have full WebGPU support. Please run the demo on Chrome for the best possible experience."
+    );
+  }
+}
 
 @customElement('llm-chat')
 export class LlmChat extends LitElement {
@@ -47,7 +74,7 @@ export class LlmChat extends LitElement {
   private chatHistory: ChatMessage[] = [];
 
   @state()
-  private loadingProgress: number | null = null;
+  private loadingProgress: ProgressUpdate | null = null;
 
   @state()
   private currentAppliedOptions: LlmInferenceOptions & { forceF32?: boolean } =
@@ -64,7 +91,7 @@ export class LlmChat extends LitElement {
   private selectedPersona: Persona = PERSONAS.find(p => p.name === BASE_GEMMA3_PERSONA.name) || PERSONAS[0] || { name: 'Default', instructions: [] };
 
   @state()
-  private cachedModels: Set<string> = new Set<string>();
+  private cachedModels: Map<string, number> = new Map<string, number>();
 
   @query('#userInput')
   private userInputElement!: HTMLInputElement;
@@ -81,7 +108,7 @@ export class LlmChat extends LitElement {
       this.loadingProgress = progress;
       this.requestUpdate();
     });
-    listCachedModels().then((models) => {
+    getCachedModelsInfo().then((models) => {
       this.cachedModels = models;
     });
   }
@@ -91,8 +118,8 @@ export class LlmChat extends LitElement {
     if (!modelPath) {
       return 'default model';
     }
-    const model = MODEL_PATHS.find(m => m[1] === modelPath);
-    return model ? model[0] : 'custom model';
+    const model = MODEL_PATHS.find(m => getModelUrl(m) === modelPath);
+    return model ? model.name : 'custom model';
   }
 
   async handlePersonaChanged(event: CustomEvent<Persona>) {
@@ -150,7 +177,7 @@ export class LlmChat extends LitElement {
         this.hasPendingOptionsChanges = false;
         console.log('LLM options applied successfully.');
         this.isLoadingModel = false;
-        this.cachedModels = await listCachedModels();
+        this.cachedModels = await getCachedModelsInfo();
         this.requestUpdate();
         return true;
       } catch (error) {
@@ -159,7 +186,7 @@ export class LlmChat extends LitElement {
           error instanceof Error ? error.message : String(error)
         }`;
         this.isLoadingModel = false;
-        this.cachedModels = await listCachedModels();
+        this.cachedModels = await getCachedModelsInfo();
         this.requestUpdate();
         return false;
       }
@@ -412,8 +439,10 @@ export class LlmChat extends LitElement {
       statusMessageHtml = html`<div class="status-bar error-message">${this.errorMessage}</div>`;
     } else if (this.isLoadingModel) {
       let message = 'Loading...';
-      if (this.loadingProgress !== null && this.loadingProgress < 1) {
-        message = `Loading model...`;
+      if (this.loadingProgress !== null && this.loadingProgress.progress < 1) {
+        const downloadedMB = (this.loadingProgress.downloadedBytes / 1e6).toFixed(2);
+        const totalMB = (this.loadingProgress.totalBytes / 1e6).toFixed(2);
+        message = `Loading model... (${downloadedMB}MB / ${totalMB}MB)`;
       } else if (this.hasPendingOptionsChanges) {
         message = 'Applying new options...';
       } else {
@@ -422,8 +451,8 @@ export class LlmChat extends LitElement {
       statusMessageHtml = html`
         <div class="status-bar loading-message">
           <span>${message}</span>
-          ${this.loadingProgress !== null && this.loadingProgress < 1 ?
-            html`<progress .value=${this.loadingProgress}></progress>` : ''}
+          ${this.loadingProgress !== null && this.loadingProgress.progress < 1 ?
+            html`<progress .value=${this.loadingProgress.progress}></progress>` : ''}
         </div>
       `;
     } else if (this.isGenerating) {
@@ -447,14 +476,15 @@ export class LlmChat extends LitElement {
           <input
             type="text"
             id="userInput"
-            placeholder="Chat with ${this.selectedPersona.name}..."
+            placeholder=${!this.pendingOptions.baseOptions?.modelAssetPath ? "Select a model to begin..." : `Chat with ${this.selectedPersona.name}...`}
             .value=${this.userInput}
             @input=${this.handleUserInput}
             @keypress=${(e: KeyboardEvent) => e.key === 'Enter' && this.sendMessage()}
+            ?disabled=${!this.pendingOptions.baseOptions?.modelAssetPath}
           />
           <button
             @click=${this.sendMessage}
-            ?disabled=${this.isGenerating || this.isLoadingModel || !this.userInput.trim()}
+            ?disabled=${this.isGenerating || this.isLoadingModel || !this.userInput.trim() || !this.pendingOptions.baseOptions?.modelAssetPath}
           >
             Send
           </button>
@@ -469,10 +499,15 @@ export class LlmChat extends LitElement {
           .cachedModels=${this.cachedModels}
           @options-changed=${this.handleOptionsChange}
           @persona-changed=${this.handlePersonaChanged}
+          @cached-models-changed=${this.handleCachedModelsChanged}
           ?disabled=${this.isLoadingModel || this.isGenerating}
         >
         </llm-options>
       </div>
     `;
+  }
+
+  private handleCachedModelsChanged(event: CustomEvent<Set<string>>) {
+    this.cachedModels = event.detail;
   }
 }

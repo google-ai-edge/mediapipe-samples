@@ -53,7 +53,16 @@ limitations under the License.
       </div>
     </div>
     <main class="container" id="main-container">
-      <h1>Gemma 3n Multimodal Demo</h1>
+      <button id="clear-cache-button" title="Clear model cache">
+        <i class="fa-solid fa-trash"></i>
+      </button>
+      <div class="version-info" id="version-info">
+        <span id="version-text"></span>
+        <button id="toggle-version-button"></button>
+      </div>
+      <div class="title-container" id="title-container">
+        <h1>Gemma 3n Multimodal Demo</h1>
+      </div>
       <div class="video-container">
         <video id="webcam" autoplay playsinline muted></video>
         <p id="status-message">Requesting camera access...</p>

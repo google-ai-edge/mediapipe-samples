@@ -17,57 +17,77 @@
 import { FilesetResolver, LlmInference, LlmInferenceOptions } from '@mediapipe/tasks-genai';
 import { BehaviorSubject, lastValueFrom } from 'rxjs';
 import { produce } from 'immer';
-import { ChatMessage, Persona, Tool } from './types';
+import { ChatMessage, ModelPath, Persona, Tool } from './types';
 import { BASE_GEMMA3_PERSONA } from './personas/base_gemma3';
-import { streamWithProgress } from './streaming_utils';
+import { streamWithProgress, ProgressUpdate } from './streaming_utils';
 import { loadModelWithCache } from './opfs_cache';
 
-export const MODEL_PATHS = [
-  [
-    'Gemma3 270M IT int8',
-    'https://huggingface.co/litert-community/gemma-3-270m-it/resolve/main/gemma3-270m-it-q8-web.task',
-  ] as const,
-  [
-    'Gemma3 1B IT int8',
-    'https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int8-web.task',
-  ] as const,
-  [
-    'Gemma3 1B IT int4',
-    'https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4-web.task',
-  ] as const,
-  [
-    'Gemma3 4B IT int8',
-    'https://huggingface.co/litert-community/Gemma3-4B-IT/resolve/main/gemma3-4b-it-int8-web.task',
-  ] as const,
-  [
-    'Gemma3 4B IT int4',
-    'https://huggingface.co/litert-community/Gemma3-4B-IT/resolve/main/gemma3-4b-it-int4-web.task',
-  ] as const,
-  [
-    'Gemma3 12B IT int8',
-    'https://huggingface.co/litert-community/Gemma3-12B-IT/resolve/main/gemma3-12b-it-int8-web.task',
-  ] as const,
-  [
-    'Gemma3 12B IT int4',
-    'https://huggingface.co/litert-community/Gemma3-12B-IT/resolve/main/gemma3-12b-it-int4-web.task',
-  ] as const,
-  [
-    'Gemma3 27B IT int8',
-    'https://huggingface.co/litert-community/Gemma3-27B-IT/resolve/main/gemma3-27b-it-int8-web.task',
-  ] as const,
-  [
-    'Gemma3n E2B IT int4',
-    'https://huggingface.co/google/gemma-3n-E2B-it-litert-lm/resolve/main/gemma-3n-E2B-it-int4-Web.litertlm',
-  ] as const,
-  [
-    'Gemma3n E4B IT int4',
-    'https://huggingface.co/google/gemma-3n-E4B-it-litert-lm/resolve/main/gemma-3n-E4B-it-int4-Web.litertlm',
-  ] as const,
-  [
-    'MedGemma 27B IT int8',
-    'https://huggingface.co/litert-community/MedGemma-27B-IT/resolve/main/medgemma-27b-it-int8-web.task',
-  ] as const,
+export function isHostedOnHuggingFace(): boolean {
+  return window.location.hostname.endsWith('hf.space');
+}
+
+export const MODEL_PATHS: ModelPath[] = [
+  {
+    name: 'Gemma3 270M IT int8',
+    hfUrl: 'https://huggingface.co/litert-community/gemma-3-270m-it/resolve/main/gemma3-270m-it-q8-web.task',
+    localUrl: './models/gemma3-270m-it-q8-web.task',
+  },
+  {
+    name: 'Gemma3 1B IT int8',
+    hfUrl: 'https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int8-web.task',
+    localUrl: './models/gemma3-1b-it-int8-web.task',
+  },
+  {
+    name: 'Gemma3 1B IT int4',
+    hfUrl: 'https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4-web.task',
+    localUrl: './models/gemma3-1b-it-int4-web.task',
+  },
+  {
+    name: 'Gemma3 4B IT int8',
+    hfUrl: 'https://huggingface.co/litert-community/Gemma3-4B-IT/resolve/main/gemma3-4b-it-int8-web.task',
+    localUrl: './models/gemma3-4b-it-int8-web.task',
+  },
+  {
+    name: 'Gemma3 4B IT int4',
+    hfUrl: 'https://huggingface.co/litert-community/Gemma3-4B-IT/resolve/main/gemma3-4b-it-int4-web.task',
+    localUrl: './models/gemma3-4b-it-int4-web.task',
+  },
+  {
+    name: 'Gemma3 12B IT int8',
+    hfUrl: 'https://huggingface.co/litert-community/Gemma3-12B-IT/resolve/main/gemma3-12b-it-int8-web.task',
+    localUrl: './models/gemma3-12b-it-int8-web.task',
+  },
+  {
+    name: 'Gemma3 12B IT int4',
+    hfUrl: 'https://huggingface.co/litert-community/Gemma3-12B-IT/resolve/main/gemma3-12b-it-int4-web.task',
+    localUrl: './models/gemma3-12b-it-int4-web.task',
+  },
+  {
+    name: 'Gemma3 27B IT int8',
+    hfUrl: 'https://huggingface.co/litert-community/Gemma3-27B-IT/resolve/main/gemma3-27b-it-int8-web.task',
+    localUrl: './models/gemma3-27b-it-int8-web.task',
+  },
+  {
+    name: 'Gemma3n E2B IT int4',
+    hfUrl: 'https://huggingface.co/google/gemma-3n-E2B-it-litert-lm/resolve/main/gemma-3n-E2B-it-int4-Web.litertlm',
+    localUrl: './models/gemma-3n-E2B-it-int4-Web.litertlm',
+  },
+  {
+    name: 'Gemma3n E4B IT int4',
+    hfUrl: 'https://huggingface.co/google/gemma-3n-E4B-it-litert-lm/resolve/main/gemma-3n-E4B-it-int4-Web.litertlm',
+    localUrl: './models/gemma-3n-E4B-it-int4-Web.litertlm',
+  },
+  {
+    name: 'MedGemma 27B IT int8',
+    hfUrl: 'https://huggingface.co/litert-community/MedGemma-27B-IT/resolve/main/medgemma-27b-it-int8-web.task',
+    localUrl: './models/medgemma-27b-it-int8-web.task',
+  },
 ];
+
+export function getModelUrl(model: ModelPath): string {
+  return isHostedOnHuggingFace() ? model.hfUrl : model.localUrl;
+}
+
 
 const DEFAULT_MAX_TOKENS = 1024
 
@@ -87,7 +107,7 @@ export class LlmService {
   };
   private genaiFileset: ReturnType<typeof FilesetResolver['forGenAiTasks']>;
   history = new BehaviorSubject<ChatMessage[]>([]);
-  loadingProgress$ = new BehaviorSubject<number | null>(null);
+  loadingProgress$ = new BehaviorSubject<ProgressUpdate | null>(null);
   persona: Persona = BASE_GEMMA3_PERSONA;
   private promptTemplate = BASE_GEMMA3_PERSONA.promptTemplate;
 
@@ -122,13 +142,14 @@ export class LlmService {
     this.options = options;
     
     const modelAssetPath = options.baseOptions?.modelAssetPath;
-    if (!modelAssetPath) {
-      throw new Error('modelAssetPath is required');
+    const modelAssetFile = (options.baseOptions as any)?.modelAssetFile as File | undefined;
+
+    if (!modelAssetPath && !modelAssetFile) {
+      throw new Error('modelAssetPath or modelAssetFile is required');
     }
 
-    this.loadingProgress$.next(0); // Start progress
     try {
-      const { stream: modelStream, size: contentLength } = await loadModelWithCache(modelAssetPath);
+      const { stream: modelStream, size: contentLength } = await loadModelWithCache(modelAssetPath!, modelAssetFile);
       const { stream, progress$ } = streamWithProgress(modelStream, contentLength);
       
       // Pipe progress updates to the service's public subject
@@ -138,6 +159,7 @@ export class LlmService {
       newOptions.baseOptions ??= {};
       newOptions.baseOptions.modelAssetBuffer = stream.getReader();
       delete newOptions.baseOptions.modelAssetPath;
+      delete (newOptions.baseOptions as any).modelAssetFile;
 
       this.llmInferencePromise = LlmInference.createFromOptions(
         await this.genaiFileset,

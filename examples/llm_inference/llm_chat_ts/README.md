@@ -10,7 +10,7 @@ This is a web-based chat demo that uses the MediaPipe LLM Inference API to run a
     ```
 2.  **Navigate to the demo directory:**
     ```bash
-    cd mediapipe-samples/examples/llm_inference/llm_chat
+    cd mediapipe-samples/examples/llm_inference/llm_chat_ts
     ```
 3.  **Install the dependencies:**
     ```bash
@@ -23,4 +23,4 @@ This is a web-based chat demo that uses the MediaPipe LLM Inference API to run a
     ```bash
     npm run dev
     ```
-    This will start a local development server and open the demo in your browser. When you first run the demo, you will be prompted to sign in with your Hugging Face account to access the models.
+    This will start a local development server and open the demo in your browser (latest Chrome is recommended). Any models you wish to try should be downloaded in advance from the litert-community "Web Models" collection on HuggingFace, and saved to mediapipe-samples/examples/llm_inference/llm_chat_ts/models/.
