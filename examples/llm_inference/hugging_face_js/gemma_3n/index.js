@@ -183,6 +183,15 @@ async function pipeStreamAndReportProgress(readableStream, writableStream) {
  * Loads the LLM file from either cache or OAuth-guarded remote download.
  */
 async function loadLlm() {
+  // For browsers other than Chrome and Edge, we just show an alert and error out.
+  const isChrome = navigator.userAgent.includes('Chrome');
+  const isEdge = navigator.userAgent.includes('Edg');
+  if (!isChrome && !isEdge) {
+    alert('Non-Chromium browsers are not supported yet. Please run demo on Chrome for the best experience.');
+    loaderMessage.textContent = "Non-Chromium browsers are not supported yet. Please run on Chrome for best experience.";
+    return;
+  }
+
   let opfs = await navigator.storage.getDirectory();
   // If we can load the model from cache, then do so.
   try {
