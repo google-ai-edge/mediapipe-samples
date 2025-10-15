@@ -16,6 +16,8 @@
 
 package com.google.mediapipe.examples.audioclassifier
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class MainViewModel : ViewModel() {
@@ -23,10 +25,13 @@ class MainViewModel : ViewModel() {
     private var _threshold: Float = AudioClassifierHelper.DISPLAY_THRESHOLD
     private var _maxResults: Int = AudioClassifierHelper.DEFAULT_NUM_OF_RESULTS
     private var _overlapPosition: Int = 2
+    private val _audioPermission = MutableLiveData<Boolean>()
 
     val currentThreshold: Float get() = _threshold
     val currentMaxResults: Int get() = _maxResults
     val currentOverlapPosition: Int get() = _overlapPosition
+    val audioPermission: LiveData<Boolean> get() = _audioPermission
+
 
     fun setThreshold(threshold: Float) {
         _threshold = threshold
@@ -38,5 +43,9 @@ class MainViewModel : ViewModel() {
 
     fun setOverlap(position: Int) {
         _overlapPosition = position
+    }
+
+    fun setAudioPermission(isGranted: Boolean) {
+        _audioPermission.value = isGranted
     }
 }
