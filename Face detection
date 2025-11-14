@@ -1,0 +1,12 @@
+pip install mediapipe opencv-python
+import cv2
+import mediapipe as mp
+face_detection = mp_face_detection.FaceDetection(
+    model_selection=0,             # 0 = short range (~2m), 1 = long range (~5m)
+    min_detection_confidence=0.5   # threshold for accuracy
+)
+cap = cv2.VideoCapture(0)
+while cap.isOpened():
+    success, frame = cap.read()
+    if not success:
+        break
