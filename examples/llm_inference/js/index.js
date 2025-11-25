@@ -21,7 +21,7 @@ const output = document.getElementById('output');
 const submit = document.getElementById('submit');
 
 const modelFileName = 'gemma-2b-it-gpu-int4.bin'; /* Update the file name */
-//const modelFileName = 'https://huggingface.co/google/gemma-3n-E2B-it-litert-lm/resolve/main/gemma-3n-E2B-it-int4-Web.litertlm'; /* Update the file name */
+//const modelFileName = 'https://huggingface.co/google/gemma-3n-E2B-it-litert-lm/resolve/main/gemma-3n-E2B-it-int4-Web.litertlm'; /* Works with URLs as well! */
 
 /**
  * Gets the final part of a path whether URL or file directory
