@@ -12,7 +12,7 @@
   "description": "",
   "dependencies": {
     "@huggingface/hub": "^2.6.5",
-    "@mediapipe/tasks-genai": "^0.10.25",
+    "@mediapipe/tasks-genai": "^0.10.26",
     "lit": "^3.3.0",
     "rimraf": "^6.0.1"
   },
