@@ -253,7 +253,15 @@ export class LlmService {
       }
     }
   }
-  
+
+
+  cancelProcessing() {
+    if (!this.llmInference) {
+      return;
+    }
+    this.llmInference.cancelProcessing();
+  }
+
   addUserMessage(text: string) {
     if (!this.llmInference) {
       throw new Error('Llm not done loading');

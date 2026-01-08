@@ -488,6 +488,11 @@ export class LlmChat extends LitElement {
           >
             Send
           </button>
+          ${this.isGenerating ?
+            html`<button @click=${this.handleCancel} ?disabled=${this.isLoadingModel}>
+                  Stop Generation
+                </button>` : ''
+          }
         </div>
       </div>
 
@@ -505,6 +510,10 @@ export class LlmChat extends LitElement {
         </llm-options>
       </div>
     `;
+  }
+
+  private handleCancel() {
+    this.llmService.cancelProcessing();
   }
 
   private handleCachedModelsChanged(event: CustomEvent<Set<string>>) {
