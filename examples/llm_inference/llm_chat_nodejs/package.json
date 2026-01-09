@@ -1,0 +1,15 @@
+{
+  "name": "mp_tasks_genai_in_node",
+  "private": "true",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@mediapipe/tasks-genai": "^0.10.26",
+    "argparse": "^2.0.1",
+    "typescript": "^5.8.3",
+    "webgpu": "^0.3.8"
+  }
+}
