@@ -18,12 +18,104 @@ limitations under the License. -->
     <title>LLM Inference Web Demo</title>
 </head>
 <body>
+    <input type="file" id="model-select" /><br />
     Input:<br />
     <textarea id="input" style="height: 300px; width: 600px"></textarea><br />
-    <input type="button" id="submit" value="Get Response" disabled /><br />
+    <input type="button" id="submit" value="Upload an LLM model first!" disabled />
+    <input type="button" id="cancel" value="Cancel" disabled />
+    <br />
     <br />
     Result:<br />
     <textarea id="output" style="height: 300px; width: 600px"></textarea>
-    <script type="module" src="index.js"></script>
+    <script type="module">
+// For real web apps, the script would be included as a separate file. We inline
+// it into the HTML here so the code can stay of type "module" while still
+// allowing the demo to be run trivially by just opening this one file in the
+// browser.
+import {FilesetResolver, LlmInference} from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-genai';
+
+const modelSelector = document.getElementById('model-select');
+const cancel = document.getElementById('cancel');
+const input = document.getElementById('input');
+const output = document.getElementById('output');
+const submit = document.getElementById('submit');
+
+/**
+ * Display newly generated partial results to the output text box.
+ */
+function displayPartialResults(partialResults, complete) {
+  output.textContent += partialResults;
+
+  if (complete) {
+    if (!output.textContent) {
+      output.textContent = 'Result is empty';
+    }
+    submit.disabled = false;
+    cancel.disabled = true;
+  }
+}
+
+/**
+ * Main function to run LLM Inference given a model.
+ */
+async function runDemo(modelStream) {
+  const genaiFileset = await FilesetResolver.forGenAiTasks(
+      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-genai/wasm');
+  let llmInference;
+
+  submit.disabled = true;
+  submit.onclick = () => {
+    output.textContent = '';
+    submit.disabled = true;
+    // Gemma 3 models require a simple template for best results. See
+    // https://ai.google.dev/gemma/docs/core/prompt-structure.
+    const query = '<start_of_turn>user\n'
+        + input.value
+        + '<end_of_turn>\n<start_of_turn>model\n';
+    llmInference.generateResponse(query, displayPartialResults);
+    cancel.disabled = false;
+  };
+
+  cancel.onclick = () => {
+    llmInference.cancelProcessing();
+  };
+
+  submit.value = 'Loading the model...'
+  LlmInference
+      .createFromOptions(genaiFileset, {
+        baseOptions: {modelAssetBuffer: modelStream},  // Use modelAssetPath
+                                                       // instead for URLs.
+        // maxTokens: 512,  // The maximum number of tokens (input tokens + output
+        //                  // tokens) the model handles.
+        // randomSeed: 1,   // The random seed used during text generation.
+        // topK: 1,  // The number of tokens the model considers at each step of
+        //           // generation. Limits predictions to the top k most-probable
+        //           // tokens. Setting randomSeed is required for this to make
+        //           // effects.
+        // temperature:
+        //     1.0,  // The amount of randomness introduced during generation.
+        //           // Setting randomSeed is required for this to make effects.
+        // For multimodal (Gemma 3n) options and more documentation, see
+        // https://ai.google.dev/edge/mediapipe/solutions/genai/llm_inference/web_js
+      })
+      .then(llm => {
+        llmInference = llm;
+        submit.disabled = false;
+        submit.value = 'Get Response'
+      })
+      .catch(() => {
+        alert('Failed to initialize the task.');
+      });
+}
+
+// When the user chooses a model from their local hard drive, load it and start
+// the demo.
+modelSelector.onchange = async () => {
+  if (modelSelector.files && modelSelector.files.length > 0) {
+    const reader = await modelSelector.files[0].stream().getReader();
+    runDemo(reader);
+  }
+};
+    </script>
 </body>
 </html>
