@@ -33,6 +33,11 @@ export const MODEL_PATHS: ModelPath[] = [
     localUrl: './models/gemma3-270m-it-q8-web.task',
   },
   {
+    name: 'Gemma3 270M IT q4_0',
+    hfUrl: 'https://huggingface.co/litert-community/gemma-3-270m-it/resolve/main/gemma3-270m-it-q4_0-web.task',
+    localUrl: './models/gemma3-270m-it-q4_0-web.task',
+  },
+  {
     name: 'Gemma3 1B IT int8',
     hfUrl: 'https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int8-web.task',
     localUrl: './models/gemma3-1b-it-int8-web.task',
@@ -41,6 +46,11 @@ export const MODEL_PATHS: ModelPath[] = [
     name: 'Gemma3 1B IT int4',
     hfUrl: 'https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4-web.task',
     localUrl: './models/gemma3-1b-it-int4-web.task',
+  },
+  {
+    name: 'Gemma3 1B IT q4_0',
+    hfUrl: 'https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-q4_0-web.task',
+    localUrl: './models/gemma3-1b-it-q4_0-web.task',
   },
   {
     name: 'Gemma3 4B IT int8',
@@ -53,6 +63,11 @@ export const MODEL_PATHS: ModelPath[] = [
     localUrl: './models/gemma3-4b-it-int4-web.task',
   },
   {
+    name: 'Gemma3 4B IT q4_0',
+    hfUrl: 'https://huggingface.co/litert-community/Gemma3-4B-IT/resolve/main/gemma3-4b-it-q4_0-web.task',
+    localUrl: './models/gemma3-4b-it-q4_0-web.task',
+  },
+  {
     name: 'Gemma3 12B IT int8',
     hfUrl: 'https://huggingface.co/litert-community/Gemma3-12B-IT/resolve/main/gemma3-12b-it-int8-web.task',
     localUrl: './models/gemma3-12b-it-int8-web.task',
@@ -63,9 +78,19 @@ export const MODEL_PATHS: ModelPath[] = [
     localUrl: './models/gemma3-12b-it-int4-web.task',
   },
   {
+    name: 'Gemma3 12B IT q4_0',
+    hfUrl: 'https://huggingface.co/litert-community/Gemma3-12B-IT/resolve/main/gemma3-12b-it-q4_0-web.task',
+    localUrl: './models/gemma3-12b-it-q4_0-web.task',
+  },
+  {
     name: 'Gemma3 27B IT int8',
     hfUrl: 'https://huggingface.co/litert-community/Gemma3-27B-IT/resolve/main/gemma3-27b-it-int8-web.task',
     localUrl: './models/gemma3-27b-it-int8-web.task',
+  },
+  {
+    name: 'Gemma3 27B IT q4_0',
+    hfUrl: 'https://huggingface.co/litert-community/Gemma3-27B-IT/resolve/main/gemma3-27b-it-q4_0-web.task',
+    localUrl: './models/gemma3-27b-it-q4_0-web.task',
   },
   {
     name: 'Gemma3n E2B IT int4',
