@@ -1,5 +1,5 @@
 # Run LLM Inference Engine through nodejs
-This demo runs [LLM Inference Engine](https://www.npmjs.com/package/@mediapipe/tasks-genai) in WASM through NodeJS.
+This demo runs [LLM Inference Engine](https://www.npmjs.com/package/@mediapipe/tasks-genai) in WebAssembly through NodeJS.
 
 ## Dependencies
 If you don't have a model checkpoint already downloaded, start downloading one from the [HuggingFace LiteRT Community](https://huggingface.co/collections/litert-community/web-models)
