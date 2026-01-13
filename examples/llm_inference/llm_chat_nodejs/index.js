@@ -71,7 +71,12 @@ async function run(args) {
 
   // Polyfill other browser-specific globals.
   Object.assign(globalThis, globals);
-  globalThis.navigator = { gpu: create([]) };
+
+  if (args.adapter) {
+    globalThis.navigator = { gpu: create([`adapter=${args.adapter}`]) };
+  } else {
+    globalThis.navigator = { gpu: create([]) };
+  }
   globalThis.self = globalThis;
 
   /**
@@ -88,6 +93,7 @@ async function run(args) {
       const nodeStream = fsSync.createReadStream(modelPath);
       const modelStream = Readable.toWeb(nodeStream);
 
+      const loadStart = performance.now();
       const llmInference = await LlmInference.createFromOptions(genai, {
         baseOptions: {
           modelAssetBuffer: modelStream.getReader(),
@@ -97,7 +103,10 @@ async function run(args) {
         topK: llmOptions.top_k,
         randomSeed: llmOptions.random_seed,
       });
-      console.log("Model loaded successfully.\n");
+      const loadEnd = performance.now();
+
+      const loadSec = (loadEnd - loadStart) / 1000;
+      console.log(`Model loaded successfully in ~${loadSec.toFixed(1)}s.\n`);
       return llmInference;
     } catch (error) {
       console.error("Error loading model:", error);
@@ -159,11 +168,12 @@ async function run(args) {
         // Create a temporary history to check for token length
         let tempHistory = [...chatHistory];
         let formattedPrompt;
+        let totalInputTokens;
 
         while (true) {
             // Format the prompt with the current temporary history
             formattedPrompt = formatPrompt(tempHistory, prompt);
-            const totalInputTokens = model.sizeInTokens(formattedPrompt);
+            totalInputTokens = model.sizeInTokens(formattedPrompt);
 
             if (totalInputTokens <= maxInputTokens) {
                 // If the prompt fits, update the actual history and break the loop
@@ -181,10 +191,10 @@ async function run(args) {
             console.log(`\n[Trimming history... Current tokens: ${totalInputTokens}, Max: ${maxInputTokens}]`);
             tempHistory.splice(0, 2);
         }
-
         let fullResponse = '';
         process.stdout.write('Model: ');
 
+        const start = performance.now();
         try {
           // Generate response with streaming.
           await model.generateResponse(formattedPrompt, (partialResponse, done) => {
@@ -196,13 +206,24 @@ async function run(args) {
               chatHistory.push({ role: 'user', text: prompt });
               chatHistory.push({ role: 'model', text: trimmedResponse });
               process.stdout.write('\n\n');
-              chat(); // Continue the loop by asking for the next prompt.
             }
           });
         } catch (error) {
           console.error("\nError during response generation:", error);
-          chat(); // Continue the loop even if an error occurs.
         }
+        const end = performance.now();
+
+        if (args.stats) {
+          const timeSeconds = (end - start) / 1000;
+          const responseTokens = model.sizeInTokens(fullResponse);
+          console.log(`Input tokens (incl. history): ${totalInputTokens}
+Response tokens: ${responseTokens}
+Time: ${timeSeconds.toFixed(1)}s
+Approximate tokens / sec: ${(responseTokens / timeSeconds).toFixed(1)}
+`);
+        }
+
+        chat();
       });
     };
 
@@ -251,6 +272,14 @@ parser.add_argument('--random_seed', {
   help: 'The random seed for sampling for reproducibility.',
   type: 'int',
   default: Math.floor(Math.random() * 100000) // Default to a random seed
+});
+parser.add_argument('--adapter', {
+  help: 'The GPU adapter to use. To list available adapters, pass a non-existent adapter value here',
+  type: 'string',
+});
+parser.add_argument('--stats', {
+  help: 'Print stats for loading the model and for each query / response',
+  action: 'store_true',
 });
 
 const args = parser.parse_args();
