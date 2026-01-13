@@ -1,4 +1,4 @@
-# Run LLM Inference Engine thorugh nodejs
+# Run LLM Inference Engine through nodejs
 This demo runs [LLM Inference Engine](https://www.npmjs.com/package/@mediapipe/tasks-genai) in WASM through NodeJS.
 
 ## Dependencies
