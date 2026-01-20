@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="stroke_small">4dp</dimen>
+    <dimen name="round_button_medium">64dp</dimen>
+
+    <!-- Bottom Sheet -->
+    <dimen name="bottom_sheet_text_size">14sp</dimen>
+    <dimen name="bottom_sheet_padding">16dp</dimen>
+    <dimen name="bottom_sheet_peek_height">40dp</dimen>
+    <dimen name="bottom_sheet_default_row_margin">10dp</dimen>
+    <dimen name="bottom_sheet_control_btn_size">48dp</dimen>
+    <dimen name="bottom_sheet_control_text_side_margin">10dp</dimen>
+    <dimen name="bottom_sheet_spinner_delegate_min_width">160dp</dimen>
+    <dimen name="bottom_sheet_spinner_model_min_width">240dp</dimen>
+
+    <integer name="bottom_sheet_control_text_min_ems">3</integer>
+    <dimen name="fab_margin">16dp</dimen>
+</resources>
