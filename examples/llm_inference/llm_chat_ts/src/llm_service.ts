@@ -103,6 +103,21 @@ export const MODEL_PATHS: ModelPath[] = [
     localUrl: './models/gemma-3n-E4B-it-int4-Web.litertlm',
   },
   {
+    name: 'TranslateGemma 4B IT int8',
+    hfUrl: 'https://huggingface.co/litert-community/TranslateGemma-4B-IT/resolve/main/translategemma-4b-it-int8-web.task',
+    localUrl: './models/translategemma-4b-it-int8-web.task',
+  },
+  {
+    name: 'TranslateGemma 12B IT int8',
+    hfUrl: 'https://huggingface.co/litert-community/TranslateGemma-12B-IT/resolve/main/translategemma-12b-it-int8-web.task',
+    localUrl: './models/translategemma-12b-it-int8-web.task',
+  },
+  {
+    name: 'TranslateGemma 27B IT int8',
+    hfUrl: 'https://huggingface.co/litert-community/TranslateGemma-27B-IT/resolve/main/translategemma-27b-it-int8-web.task',
+    localUrl: './models/translategemma-27b-it-int8-web.task',
+  },
+  {
     name: 'MedGemma 27B IT int8',
     hfUrl: 'https://huggingface.co/litert-community/MedGemma-27B-IT/resolve/main/medgemma-27b-it-int8-web.task',
     localUrl: './models/medgemma-27b-it-int8-web.task',
