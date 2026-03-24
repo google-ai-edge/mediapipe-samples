@@ -29,7 +29,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     View(context, attrs) {
     private var maskBitmap: Bitmap? = null
     private var selectedPoint: Pair<Float, Float>? = null
-    private var overlayColor: String = "#8012B5CB"
+    private var overlayColor: String = "#8012B5CB" // Semi-transparent cyan
     private var selectionMarkerColor: String = "#FBBC04"
     private var selectionMarkerBorderColor: String = "#000000"
     private val selectPaint = Paint().apply {
@@ -56,9 +56,13 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
      */
     fun setMaskResult(byteBuffer: ByteBuffer, maskWidth: Int, maskHeight: Int) {
         val pixels = IntArray(byteBuffer.capacity())
+        val parsedOverlayColor = Color.parseColor(overlayColor) // Parse color once
+
         for (i in pixels.indices) {
             val index = byteBuffer.get(i).toInt()
-            val color = if (index == 0) Color.TRANSPARENT else Color.parseColor(overlayColor)
+            // *** CHANGE HERE: Invert the condition ***
+            // If index is 0, color it. Otherwise, make it transparent.
+            val color = if (index == 0) parsedOverlayColor else Color.TRANSPARENT
             pixels[i] = color
         }
 
@@ -91,3 +95,4 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
         invalidate()
     }
 }
+
