@@ -60,8 +60,8 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
         for (i in pixels.indices) {
             val index = byteBuffer.get(i).toInt()
-            // *** CHANGE HERE: Invert the condition ***
             // If index is 0, color it. Otherwise, make it transparent.
+            // Index 0 typically represents the primary or first detected item in the results.
             val color = if (index == 0) parsedOverlayColor else Color.TRANSPARENT
             pixels[i] = color
         }
