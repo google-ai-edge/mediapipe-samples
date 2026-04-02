@@ -69,6 +69,9 @@ async function runDemo(modelStream) {
     submit.disabled = true;
     // Gemma 3 models require a simple template for best results. See
     // https://ai.google.dev/gemma/docs/core/prompt-structure.
+    // Gemma 4 models use a different structure and have more options:
+    // https://ai.google.dev/gemma/docs/core/prompt-formatting-gemma4.
+    // We use the simple Gemma 3 format here.
     const query = '<start_of_turn>user\n'
         + input.value
         + '<end_of_turn>\n<start_of_turn>model\n';
