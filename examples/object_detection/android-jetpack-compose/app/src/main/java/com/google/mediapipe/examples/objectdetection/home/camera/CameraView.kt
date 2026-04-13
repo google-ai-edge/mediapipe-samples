@@ -240,8 +240,8 @@ fun CameraView(
                             )
                         }
 
-                        // We close any currently open camera just in case, then open up
-                        // our own to be display the live camera feed
+                        // We close any currently open camera just in case, then open
+                        // our own to display the live camera feed
                         cameraProvider.unbindAll()
                         cameraProvider.bindToLifecycle(
                             lifecycleOwner,
