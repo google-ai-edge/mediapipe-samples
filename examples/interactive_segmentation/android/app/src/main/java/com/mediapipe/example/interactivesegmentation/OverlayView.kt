@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+ * Copyright 2026 The MediaPipe Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,79 +20,189 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.Rect
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
-import java.nio.ByteBuffer
-import kotlin.math.min
+import com.google.mediapipe.tasks.components.containers.NormalizedKeypoint
+import com.google.mediapipe.tasks.vision.interactivesegmenter.Stroke
 
-class OverlayView(context: Context?, attrs: AttributeSet?) :
-    View(context, attrs) {
-    private var maskBitmap: Bitmap? = null
-    private var selectedPoint: Pair<Float, Float>? = null
-    private var overlayColor: String = "#8012B5CB" // Semi-transparent cyan
-    private var selectionMarkerColor: String = "#FBBC04"
-    private var selectionMarkerBorderColor: String = "#000000"
-    private val selectPaint = Paint().apply {
-        color = Color.parseColor(selectionMarkerColor)
+enum class AppBrushMode {
+    POSITIVE,
+    NEGATIVE,
+    LASSO
+}
+
+data class PointF(val x: Float, val y: Float)
+
+class UserStroke(val mode: AppBrushMode) {
+    val path = Path()
+    val points = mutableListOf<PointF>()
+
+    fun moveTo(x: Float, y: Float) {
+        path.moveTo(x, y)
+        points.add(PointF(x, y))
     }
-    private val borderPaint = Paint().apply {
-        color = Color.parseColor(selectionMarkerBorderColor)
+
+    fun lineTo(x: Float, y: Float) {
+        path.lineTo(x, y)
+        points.add(PointF(x, y))
+    }
+
+    fun toStroke(scaleX: Float, scaleY: Float): Stroke {
+        val pointsList = points.map { point ->
+            NormalizedKeypoint.create(point.x * scaleX, point.y * scaleY)
+        }
+        val mpBrushMode = when (mode) {
+            AppBrushMode.POSITIVE -> Stroke.BrushMode.POSITIVE
+            AppBrushMode.NEGATIVE -> Stroke.BrushMode.NEGATIVE
+            AppBrushMode.LASSO -> Stroke.BrushMode.LASSO
+        }
+        return Stroke.builder()
+            .setBrushMode(mpBrushMode)
+            .setPoints(pointsList)
+            .setCompleted(true)
+            .build()
+    }
+}
+
+class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
+
+    var currentBrushMode: AppBrushMode = AppBrushMode.POSITIVE
+    var onStrokesUpdatedListener: ((List<Stroke>) -> Unit)? = null
+    var isInteractionEnabled: Boolean = false
+
+    private var maskBitmap: Bitmap? = null
+    private val strokes = mutableListOf<UserStroke>()
+    private var activeStroke: UserStroke? = null
+
+    private val positivePaint = Paint().apply {
+        color = Color.parseColor("#E64CAF50") // Green with 90% opacity
+        style = Paint.Style.STROKE
+        strokeWidth = 12f
+        strokeCap = Paint.Cap.ROUND
+        strokeJoin = Paint.Join.ROUND
+        isAntiAlias = true
+    }
+
+    private val negativePaint = Paint().apply {
+        color = Color.parseColor("#E6E53935") // Red with 90% opacity
+        style = Paint.Style.STROKE
+        strokeWidth = 12f
+        strokeCap = Paint.Cap.ROUND
+        strokeJoin = Paint.Join.ROUND
+        isAntiAlias = true
+    }
+
+    private val lassoStrokePaint = Paint().apply {
+        color = Color.parseColor("#E62196F3") // Blue with 90% opacity
+        style = Paint.Style.STROKE
+        strokeWidth = 8f
+        strokeCap = Paint.Cap.ROUND
+        strokeJoin = Paint.Join.ROUND
+        isAntiAlias = true
+    }
+
+    private val lassoFillPaint = Paint().apply {
+        color = Color.parseColor("#262196F3") // Blue with 15% opacity
+        style = Paint.Style.FILL
+        isAntiAlias = true
+    }
+
+    private val maskPaint = Paint().apply {
+        alpha = 180 // Semi-transparent overlay mask
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+
+        // 1. Draw segmentation mask overlay
         maskBitmap?.let {
-            canvas?.drawBitmap(it, 0f, 0f, null)
+            val dstRect = Rect(0, 0, width, height)
+            canvas.drawBitmap(it, null, dstRect, maskPaint)
         }
-        selectedPoint?.let {
-            canvas?.drawCircle(it.first, it.second, 20f, borderPaint)
-            canvas?.drawCircle(it.first, it.second, 15f, selectPaint)
+
+        // 2. Draw stored strokes
+        for (stroke in strokes) {
+            drawSingleStroke(canvas, stroke)
+        }
+
+        // 3. Draw active stroke while dragging
+        activeStroke?.let { stroke ->
+            drawSingleStroke(canvas, stroke)
         }
     }
 
-    /**
-     * Converts byteBuffer to mask bitmap
-     * Scales the bitmap to match the view
-     */
-    fun setMaskResult(byteBuffer: ByteBuffer, maskWidth: Int, maskHeight: Int) {
-        val pixels = IntArray(byteBuffer.capacity())
-        val parsedOverlayColor = Color.parseColor(overlayColor) // Parse color once
+    private fun drawSingleStroke(canvas: Canvas, stroke: UserStroke) {
+        if (stroke.points.isEmpty()) return
 
-        for (i in pixels.indices) {
-            val index = byteBuffer.get(i).toInt()
-            // If index is 0, color it. Otherwise, make it transparent.
-            // Index 0 typically represents the primary or first detected item in the results.
-            val color = if (index == 0) parsedOverlayColor else Color.TRANSPARENT
-            pixels[i] = color
+        val paint = when (stroke.mode) {
+            AppBrushMode.POSITIVE -> positivePaint
+            AppBrushMode.NEGATIVE -> negativePaint
+            AppBrushMode.LASSO -> lassoStrokePaint
         }
 
-        val bitmap = Bitmap.createBitmap(
-            pixels,
-            maskWidth,
-            maskHeight,
-            Bitmap.Config.ARGB_8888
-        )
-
-        // Assumes portrait for this sample, but scaling can be adjusted for landscape.
-        // Code for selecting orientation excluded for sample simplicity
-        val scaleFactor =
-            min(width * 1f / bitmap.width, height * 1f / bitmap.height)
-        val scaleWidth = (bitmap.width * scaleFactor).toInt()
-        val scaleHeight = (bitmap.height * scaleFactor).toInt()
-        maskBitmap =
-            Bitmap.createScaledBitmap(bitmap, scaleWidth, scaleHeight, false)
-        invalidate()
+        if (stroke.points.size == 1) {
+            val p = stroke.points[0]
+            val dotPaint = Paint(paint).apply { style = Paint.Style.FILL }
+            canvas.drawCircle(p.x, p.y, 8f, dotPaint)
+        } else {
+            if (stroke.mode == AppBrushMode.LASSO) {
+                val fillPath = Path(stroke.path)
+                fillPath.close()
+                canvas.drawPath(fillPath, lassoFillPaint)
+            }
+            canvas.drawPath(stroke.path, paint)
+        }
     }
 
-    fun setSelectPosition(x: Float, y: Float) {
-        selectedPoint = Pair(x, y)
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (!isInteractionEnabled) return false
+
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                val newStroke = UserStroke(currentBrushMode)
+                newStroke.moveTo(event.x, event.y)
+                activeStroke = newStroke
+                invalidate()
+                return true
+            }
+            MotionEvent.ACTION_MOVE -> {
+                activeStroke?.lineTo(event.x, event.y)
+                invalidate()
+                return true
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                activeStroke?.let {
+                    strokes.add(it)
+                }
+                activeStroke = null
+                invalidate()
+                dispatchStrokesUpdate()
+                return true
+            }
+        }
+        return super.onTouchEvent(event)
+    }
+
+    private fun dispatchStrokesUpdate() {
+        if (width <= 0 || height <= 0) return
+        val scaleX = 1.0f / width
+        val scaleY = 1.0f / height
+        val mpStrokes = strokes.map { it.toStroke(scaleX, scaleY) }
+        onStrokesUpdatedListener?.invoke(mpStrokes)
+    }
+
+    fun setMaskResult(bitmap: Bitmap?) {
+        maskBitmap = bitmap
         invalidate()
     }
 
     fun clearAll() {
         maskBitmap = null
-        selectedPoint = null
+        strokes.clear()
+        activeStroke = null
         invalidate()
     }
 }
-

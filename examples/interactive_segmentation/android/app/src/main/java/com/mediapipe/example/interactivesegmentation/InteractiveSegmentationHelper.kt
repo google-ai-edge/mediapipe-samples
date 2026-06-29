@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+ * Copyright 2026 The MediaPipe Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,15 @@ package com.mediapipe.example.interactivesegmentation
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.util.Log
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.ByteBufferExtractor
 import com.google.mediapipe.framework.image.MPImage
-import com.google.mediapipe.tasks.components.containers.NormalizedKeypoint
 import com.google.mediapipe.tasks.core.BaseOptions
-import com.google.mediapipe.tasks.vision.imagesegmenter.ImageSegmenterResult
 import com.google.mediapipe.tasks.vision.interactivesegmenter.InteractiveSegmenter
-import com.google.mediapipe.tasks.vision.interactivesegmenter.InteractiveSegmenter.RegionOfInterest
+import com.google.mediapipe.tasks.vision.interactivesegmenter.InteractiveSegmenterOptions
+import com.google.mediapipe.tasks.vision.interactivesegmenter.Stroke
 import java.nio.ByteBuffer
 
 class InteractiveSegmentationHelper(
@@ -52,12 +52,8 @@ class InteractiveSegmentationHelper(
         try {
             val baseOptions = baseOptionBuilder.build()
             val optionsBuilder =
-                InteractiveSegmenter.InteractiveSegmenterOptions.builder()
+                InteractiveSegmenterOptions.builder()
                     .setBaseOptions(baseOptions)
-                    .setOutputCategoryMask(true)
-                    .setOutputConfidenceMasks(false)
-                    .setResultListener(this::returnSegmeneterResults)
-                    .setErrorListener(this::returnSegmenterError)
 
             val options = optionsBuilder.build()
             interactiveSegmenter =
@@ -87,6 +83,11 @@ class InteractiveSegmentationHelper(
      */
     fun setInputImage(bitmap: Bitmap) {
         inputImage = bitmap
+        try {
+            interactiveSegmenter?.setImage(BitmapImageBuilder(bitmap).build())
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to set image on segmenter: " + e.message)
+        }
     }
 
     fun isInputImageAssigned(): Boolean {
@@ -94,52 +95,42 @@ class InteractiveSegmentationHelper(
     }
 
     /**
-     * Runs segmentation on an image using a custom ROI (region of interest)
+     * Runs segmentation on an image using provided strokes
      */
-    fun segment(normX: Float, normY: Float) {
-        clear()
-        setupInteractiveSegmenter()
-        inputImage?.let {
-            val roi = RegionOfInterest.create(
-                NormalizedKeypoint.create(
-                    normX * it.width,
-                    normY * it.height
-                )
-            )
-            val mpImage = BitmapImageBuilder(it).build()
-            interactiveSegmenter?.segmentWithResultListener(mpImage, roi)
+    fun segment(strokes: List<Stroke>) {
+        if (inputImage == null || interactiveSegmenter == null) return
+        try {
+            val mpImage = interactiveSegmenter?.segment(strokes) ?: return
+            val buffer = ByteBufferExtractor.extract(mpImage).asFloatBuffer()
+            val width = mpImage.width
+            val height = mpImage.height
+            val pixels = IntArray(width * height)
+            buffer.rewind()
+            val floatArray = FloatArray(width * height)
+            buffer.get(floatArray)
+            for (i in 0 until width * height) {
+                val bufferValue = floatArray[i]
+                val alpha = (bufferValue * 255).toInt()
+                pixels[i] = Color.argb(alpha, 255, 255, 255)
+            }
+            val maskBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            maskBitmap.setPixels(pixels, 0, width, 0, 0, width, height)
+            
+            val resultBundle = ResultBundle(maskBitmap, width, height)
+            listener.onResults(resultBundle)
+        } catch (e: Exception) {
+            listener.onError("Segmentation failed: " + e.message)
         }
-    }
-
-    /**
-     * Returns the result of segmentation as a ByteBuffer
-     * @returns {ResultBundle|null} The segmented bitmap data as a ByteBuffer, or null if there are no result.
-     */
-    private fun returnSegmeneterResults(
-        result: ImageSegmenterResult,
-        mpImage: MPImage
-    ) {
-        // Extract first MPImage and convert to byte buffer to display
-        val byteBuffer =
-            ByteBufferExtractor.extract(result.categoryMask().get())
-
-        val resultBundle =
-            ResultBundle(byteBuffer, mpImage.width, mpImage.height)
-        listener.onResults(resultBundle)
-    }
-
-    private fun returnSegmenterError(error: RuntimeException) {
-        listener.onError(error.message.toString())
     }
 
     companion object {
         private const val TAG = "InteractiveSegmentationHelper"
         private const val MP_INTERACTIVE_SEGMENTATION_MODEL =
-            "interactive_segmentation_model.tflite"
+            "interactive_segmentation.task"
     }
 
     data class ResultBundle(
-        val byteBuffer: ByteBuffer,
+        val maskBitmap: Bitmap,
         val maskWidth: Int,
         val maskHeight: Int
     )

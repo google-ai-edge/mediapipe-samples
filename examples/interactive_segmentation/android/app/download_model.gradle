@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 task downloadTaskFile(type: Download) {
-    src 'https://storage.googleapis.com/mediapipe-models/interactive_segmenter/magic_touch/float32/1/magic_touch.tflite'
-    dest project.ext.ASSET_DIR + '/interactive_segmentation_model.tflite'
+    src 'https://storage.googleapis.com/mediapipe-models/interactive_segmenter_v2/magic_touch/int8/1/interactive_segmentation.task'
+    dest project.ext.ASSET_DIR + '/interactive_segmentation.task'
     overwrite false
 }
 

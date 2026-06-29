@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    ~ Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+    ~ Copyright 2026 The MediaPipe Authors.
     ~
     ~ Licensed under the Apache License, Version 2.0 (the "License");
     ~ you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:layout_alignParentTop="true"
         android:background="@color/toolbar_background"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -36,6 +35,69 @@
             android:src="@drawable/media_pipe_banner" />
     </androidx.appcompat.widget.Toolbar>
 
+    <LinearLayout
+        android:id="@+id/layoutControls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="6dp"
+        android:gravity="center_vertical"
+        android:background="#0D000000"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/toggleBrushGroup"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:singleSelection="true"
+            app:selectionRequired="true"
+            app:checkedButton="@id/btnPositive">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPositive"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/brush_positive"
+                android:textSize="11sp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnNegative"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/brush_negative"
+                android:textSize="11sp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLasso"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/brush_lasso"
+                android:textSize="11sp"
+                android:paddingLeft="2dp"
+                android:paddingRight="2dp" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnClearStrokes"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:text="@string/btn_clear_strokes"
+            android:textSize="11sp" />
+    </LinearLayout>
+
     <ImageView
         android:id="@+id/imgSegmentation"
         android:layout_width="match_parent"
@@ -44,7 +106,7 @@
         android:contentDescription="@string/show_image"
         android:scaleType="fitStart"
         app:layout_constrainedHeight="true"
-        app:layout_constraintTop_toBottomOf="@id/toolbar" />
+        app:layout_constraintTop_toBottomOf="@id/layoutControls" />
 
     <com.mediapipe.example.interactivesegmentation.OverlayView
         android:id="@+id/overlapView"
@@ -52,7 +114,7 @@
         android:layout_height="0dp"
         app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toBottomOf="@id/imgSegmentation"
-        app:layout_constraintTop_toBottomOf="@id/toolbar" />
+        app:layout_constraintTop_toBottomOf="@id/layoutControls" />
 
     <TextView
         android:id="@+id/tvDescription"
@@ -61,7 +123,7 @@
         android:text="@string/tv_screen_description"
         android:textAlignment="center"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar" />
+        app:layout_constraintTop_toBottomOf="@id/layoutControls" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/add_fab"
