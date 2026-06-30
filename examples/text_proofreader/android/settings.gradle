@@ -1,23 +1,15 @@
 pluginManagement {
     repositories {
         gradlePluginPortal()
-//        google()
-        maven {
-            url 'http://adt-proxy.uplink2.goog:999/Pz7OaFWwQ0WzxzcHXtlOug'
-            allowInsecureProtocol = true
-        }
+        google()
         mavenCentral()
     }
 }
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-//        mavenLocal()
-//        google()
-        maven {
-            url 'http://adt-proxy.uplink2.goog:999/Pz7OaFWwQ0WzxzcHXtlOug'
-            allowInsecureProtocol = true
-        }
+        mavenLocal()
+        google()
         mavenCentral()
     }
 }
