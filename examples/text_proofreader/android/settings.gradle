@@ -1,0 +1,25 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+//        google()
+        maven {
+            url 'http://adt-proxy.uplink2.goog:999/Pz7OaFWwQ0WzxzcHXtlOug'
+            allowInsecureProtocol = true
+        }
+        mavenCentral()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+//        mavenLocal()
+//        google()
+        maven {
+            url 'http://adt-proxy.uplink2.goog:999/Pz7OaFWwQ0WzxzcHXtlOug'
+            allowInsecureProtocol = true
+        }
+        mavenCentral()
+    }
+}
+rootProject.name = "MP Text Proofreader"
+include ':app'

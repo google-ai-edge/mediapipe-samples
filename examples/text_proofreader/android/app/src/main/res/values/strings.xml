@@ -15,8 +15,13 @@
     ~ limitations under the License.
 -->
 <resources>
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
-    </style>
+    <string name="app_name">MP Text Proofreader</string>
+    <string name="hint_text">Enter text to proofread...</string>
+    <string name="btn_proofread">PROOFREAD</string>
+    <string name="btn_stream">PROOFREAD (STREAM)</string>
+    <string name="btn_clear">CLEAR</string>
+    <string name="label_final_result">Final Result:</string>
+    <string name="label_changes">Changes:</string>
+    <string name="default_result">Result will appear here.</string>
+    <string name="default_diff">Diff will appear here.</string>
 </resources>

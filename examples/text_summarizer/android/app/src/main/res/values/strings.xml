@@ -1,23 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    ~ Copyright 2024 The TensorFlow Authors. All Rights Reserved.
+    ~
+    ~ Licensed under the Apache License, Version 2.0 (the "License");
+    ~ you may not use this file except in compliance with the License.
+    ~ You may obtain a copy of the License at
+    ~
+    ~       http://www.apache.org/licenses/LICENSE-2.0
+    ~
+    ~ Unless required by applicable law or agreed to in writing, software
+    ~ distributed under the License is distributed on an "AS IS" BASIS,
+    ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    ~ See the License for the specific language governing permissions and
+    ~ limitations under the License.
+-->
 <resources>
-    <!-- Hint text displayed in the multi-line input field where the user enters text to be summarized. [CHAR_LIMIT=2000] -->
     <string name="app_name">MP Text Summarizer</string>
-    <!-- Hint text displayed in the multi-line input field where the user enters text to be summarized. [CHAR_LIMIT=2000] -->
-    <string name="hint_text">Enter text to summarize</string>
-    <!-- Label for the button that triggers the text summarization process. [CHAR LIMIT=NONE]-->
-    <string name="btn_summarize">Summarize</string>
-    <!-- Label for the button that triggers the text summarization process in streaming mode. [CHAR LIMIT=NONE] -->
-    <string name="btn_summarize_stream">Summarize (Stream)</string>
-    <!-- Label for the button that clears the input text and result. [CHAR LIMIT=NONE] -->
-    <string name="btn_clear">Clear</string>
-    <!-- Initial text displayed in the result area before any summarization has been performed. [CHAR LIMIT=2000]-->
-    <string name="result_text">Result will appear here</string>
-    <!-- Message displayed when the user tries to summarize empty text. [CHAR LIMIT=NONE]-->
-    <string name="text_empty">Please enter text</string>
-    <!-- Message displayed when the summarizer is initialized. [CHAR LIMIT=NONE]-->
-    <string name="summarizer_initialized">Summarizer initialized</string>
-    <!-- Message displayed when the user tries to summarize when summarizer is not initialized. [CHAR LIMIT=NONE]-->
-    <string name="summarizer_not_initialized">Summarizer is not initialized</string>
-    <!-- Label for the switch to toggle TLDR mode. [CHAR LIMIT=NONE]-->
-    <string name="tldr_mode">TLDR Mode</string>
+    <string name="hint_text">Enter text to summarize...</string>
+    <string name="btn_summarize">SUMMARIZE</string>
+    <string name="btn_stream">SUMMARIZE (STREAM)</string>
+    <string name="btn_clear">CLEAR</string>
+    <string name="label_result">Result:</string>
+    <string name="default_result">Result will appear here.</string>
 </resources>
