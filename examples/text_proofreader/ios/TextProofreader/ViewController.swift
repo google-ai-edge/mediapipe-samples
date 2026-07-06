@@ -60,7 +60,7 @@ class ViewController: UIViewController {
     inputTextView.layer.borderColor = UIColor.lightGray.cgColor
     inputTextView.layer.borderWidth = 1
     inputTextView.font = .systemFont(ofSize: 16)
-    inputTextView.text = "I has a apple. It are very good and i likes it. MediaPipe help me to build cool apps."
+    inputTextView.text = "MediaPipe help me to built AI--driven apps and I donnot have to write any low-levl machine lerning code myslf."
     stackView.addArrangedSubview(inputTextView)
     inputTextView.heightAnchor.constraint(equalToConstant: 150).isActive = true
 
