@@ -30,7 +30,8 @@ First, clone this Git repo onto your Raspberry Pi.
 Run this script to install the required dependencies and download the task file:
 
 ```
-cd mediapipe/examples/gesture_recognizer/raspberry_pi
+git clone https://github.com/google-ai-edge/mediapipe-samples.git
+cd mediapipe-samples/examples/gesture_recognizer/raspberry_pi
 sh setup.sh
 ```
 
