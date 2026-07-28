@@ -14,9 +14,23 @@
     ~ See the License for the specific language governing permissions and
     ~ limitations under the License.
 -->
-<resources>
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
-    </style>
-</resources>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.google.mediapipe.examples.textproofreader">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
