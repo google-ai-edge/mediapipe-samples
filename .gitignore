@@ -8,6 +8,8 @@
 
 # MediaPipe Task files
 *.tasks
+*.task
+*.litertlm
 
 # Swift
 

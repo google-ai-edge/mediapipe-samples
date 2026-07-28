@@ -1,0 +1,20 @@
+# Gradle files
+.gradle/
+build/
+
+# Local configuration file (SDK path, etc.)
+local.properties
+
+# IntelliJ IDEA files
+*.iml
+.idea/
+
+# macOS files
+.DS_Store
+
+# Android Studio captures
+captures/
+
+# Native build artifacts
+.externalNativeBuild/
+.cxx/

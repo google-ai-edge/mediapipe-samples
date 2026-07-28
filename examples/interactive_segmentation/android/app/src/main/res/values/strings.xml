@@ -24,4 +24,8 @@
     <string name="tv_toolbar">Toolbar</string>
     <string name="tv_import_from_gallery_description">Import an image from gallery</string>
     <string name="tv_take_a_picture_description">Open camera and take a picture</string>
+    <string name="brush_positive">Positive</string>
+    <string name="brush_negative">Negative</string>
+    <string name="brush_lasso">Lasso</string>
+    <string name="btn_clear_strokes">Clear Strokes</string>
 </resources>

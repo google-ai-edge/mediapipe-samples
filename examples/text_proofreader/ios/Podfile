@@ -1,0 +1,8 @@
+platform :ios, '15.0'
+
+target 'TextProofreader' do
+  use_frameworks!
+
+  pod 'MediaPipeTasksText'
+
+end
