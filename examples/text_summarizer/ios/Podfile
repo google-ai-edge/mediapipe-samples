@@ -1,0 +1,8 @@
+platform :ios, '15.0'
+
+target 'TextSummarizer' do
+  use_frameworks!
+
+  pod 'MediaPipeTasksText'
+
+end

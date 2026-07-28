@@ -1,0 +1,154 @@
+// Copyright 2026 The MediaPipe Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import UIKit
+import MediaPipeTasksText
+
+class ViewController: UIViewController {
+
+  private let titleLabel = UILabel()
+  private let inputTextView = UITextView()
+  private let modeSegmentedControl = UISegmentedControl(items: ["KeyPoints", "TLDR"])
+  private let summarizeButton = UIButton(type: .system)
+  private let streamButton = UIButton(type: .system)
+  private let outputTextView = UITextView()
+  private let activityIndicator = UIActivityIndicatorView(style: .large)
+
+  private var helper: TextSummarizerHelper?
+
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    view.backgroundColor = .white
+    setupUI()
+    initializeHelper()
+  }
+
+  private func setupUI() {
+    let stackView = UIStackView()
+    stackView.axis = .vertical
+    stackView.spacing = 10
+    stackView.translatesAutoresizingMaskIntoConstraints = false
+    view.addSubview(stackView)
+
+    NSLayoutConstraint.activate([
+      stackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+      stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+      stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+      stackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
+    ])
+
+    titleLabel.text = "Text Summarizer"
+    titleLabel.font = .boldSystemFont(ofSize: 24)
+    titleLabel.textAlignment = .center
+    stackView.addArrangedSubview(titleLabel)
+
+    let inputLabel = UILabel()
+    inputLabel.text = "Input Text:"
+    inputLabel.font = .systemFont(ofSize: 14)
+    stackView.addArrangedSubview(inputLabel)
+
+    inputTextView.layer.borderColor = UIColor.lightGray.cgColor
+    inputTextView.layer.borderWidth = 1
+    inputTextView.font = .systemFont(ofSize: 16)
+    inputTextView.text = "MediaPipe is a cross-platform framework for building multimodal applied machine learning pipelines. It provides various solutions like face detection, object detection, and now text summarization. This example shows how to use the new Text Summarizer API on iOS. The model used is a 200M parameter Gemma-based model quantized for on-device performance."
+    stackView.addArrangedSubview(inputTextView)
+    inputTextView.heightAnchor.constraint(equalToConstant: 150).isActive = true
+
+    modeSegmentedControl.selectedSegmentIndex = 0
+    modeSegmentedControl.addTarget(self, action: #selector(modeChanged), for: .valueChanged)
+    stackView.addArrangedSubview(modeSegmentedControl)
+
+    let buttonStack = UIStackView()
+    buttonStack.axis = .horizontal
+    buttonStack.distribution = .fillEqually
+    buttonStack.spacing = 10
+    
+    summarizeButton.setTitle("Summarize", for: .normal)
+    summarizeButton.addTarget(self, action: #selector(summarizeClicked), for: .touchUpInside)
+    buttonStack.addArrangedSubview(summarizeButton)
+
+    streamButton.setTitle("Stream", for: .normal)
+    streamButton.addTarget(self, action: #selector(streamClicked), for: .touchUpInside)
+    buttonStack.addArrangedSubview(streamButton)
+    
+    stackView.addArrangedSubview(buttonStack)
+
+    let outputLabel = UILabel()
+    outputLabel.text = "Summary:"
+    outputLabel.font = .systemFont(ofSize: 14)
+    stackView.addArrangedSubview(outputLabel)
+
+    outputTextView.layer.borderColor = UIColor.lightGray.cgColor
+    outputTextView.layer.borderWidth = 1
+    outputTextView.font = .systemFont(ofSize: 16)
+    outputTextView.isEditable = false
+    stackView.addArrangedSubview(outputTextView)
+
+    view.addSubview(activityIndicator)
+    activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+    NSLayoutConstraint.activate([
+      activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+      activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+    ])
+  }
+
+  private func initializeHelper() {
+    guard let modelPath = Bundle.main.path(forResource: "summarization_quant_200m_2modes", ofType: "litertlm") else {
+      print("Model not found")
+      return
+    }
+    let mode: TextSummarizerMode = modeSegmentedControl.selectedSegmentIndex == 0 ? .keyPoints : .tldr
+    helper = TextSummarizerHelper(modelPath: modelPath, mode: mode)
+  }
+
+  @objc private func modeChanged() {
+    initializeHelper()
+  }
+
+  @objc private func summarizeClicked() {
+    guard let text = inputTextView.text, !text.isEmpty else { return }
+    outputTextView.text = ""
+    activityIndicator.startAnimating()
+    
+    DispatchQueue.global(qos: .userInitiated).async {
+      let result = self.helper?.summarize(text: text)
+      DispatchQueue.main.async {
+        self.activityIndicator.stopAnimating()
+        self.outputTextView.text = result ?? "No result"
+      }
+    }
+  }
+
+  @objc private func streamClicked() {
+    guard let text = inputTextView.text, !text.isEmpty else { return }
+    outputTextView.text = ""
+    activityIndicator.startAnimating()
+
+    helper?.summarizeStreaming(text: text) { [weak self] chunk, done, error in
+      DispatchQueue.main.async {
+        if let error = error {
+          self?.outputTextView.text = "Error: \(error.localizedDescription)"
+          self?.activityIndicator.stopAnimating()
+          return
+        }
+        if let chunk = chunk {
+          self?.outputTextView.text += chunk
+        }
+        if done {
+          self?.activityIndicator.stopAnimating()
+        }
+      }
+    }
+  }
+}
