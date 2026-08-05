@@ -16,7 +16,7 @@ enum class Model(
     val topK: Int,
     val topP: Float,
 ) {
-    GEMMA3_1B_IT_CPU(
+    GEMMA_3_1B_IT_CPU(
         path = "/data/local/tmp/Gemma3-1B-IT_multi-prefill-seq_q8_ekv2048.task",
         url = "https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/Gemma3-1B-IT_multi-prefill-seq_q8_ekv2048.task",
         licenseUrl = "https://huggingface.co/litert-community/Gemma3-1B-IT",
