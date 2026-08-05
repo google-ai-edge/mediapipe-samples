@@ -18,8 +18,9 @@
     <string name="app_name">MP Text Summarizer</string>
     <string name="hint_text">Enter text to summarize...</string>
     <string name="btn_summarize">SUMMARIZE</string>
-    <string name="btn_stream">SUMMARIZE (STREAM)</string>
+    <string name="btn_summarize_stream">SUMMARIZE (STREAM)</string>
     <string name="btn_clear">CLEAR</string>
     <string name="label_result">Result:</string>
-    <string name="default_result">Result will appear here.</string>
+    <string name="result_text">Result will appear here.</string>
+    <string name="tldr_mode">TL;DR Mode</string>
 </resources>
