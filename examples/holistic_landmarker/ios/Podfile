@@ -1,0 +1,23 @@
+platform :ios, '15.0'
+
+target 'HolisticLandmarker' do
+  use_frameworks!
+
+  pod 'MediaPipeTasksVision', '0.10.35'
+
+end
+
+target 'HolisticLandmarkerTests' do
+  inherit! :search_paths
+end
+
+post_install do |installer|
+  installer.aggregate_targets.each do |target|
+    target.xcconfigs.each do |config_name, config_file|
+      paths = config_file.attributes['FRAMEWORK_SEARCH_PATHS'] || '$(inherited)'
+      paths = "#{paths} \"${PODS_XCFRAMEWORKS_BUILD_DIR}/MediaPipeTasksVision\" \"${PODS_XCFRAMEWORKS_BUILD_DIR}/MediaPipeTasksCommon\""
+      config_file.attributes['FRAMEWORK_SEARCH_PATHS'] = paths
+      config_file.save_as(Pathname.new(target.xcconfig_path(config_name)))
+    end
+  end
+end

@@ -1,0 +1,678 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		BF3499D62ACA646E007E6081 /* MediaLibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3499D22ACA646E007E6081 /* MediaLibraryViewController.swift */; };
+		BF3499D72ACA646E007E6081 /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3499D32ACA646E007E6081 /* CameraViewController.swift */; };
+		BF3499D82ACA646E007E6081 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3499D42ACA646E007E6081 /* RootViewController.swift */; };
+		BF3499D92ACA646E007E6081 /* BottomSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3499D52ACA646E007E6081 /* BottomSheetViewController.swift */; };
+		BF3499E22ACA6484007E6081 /* DefaultConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3499DB2ACA6484007E6081 /* DefaultConstants.swift */; };
+		BF3499E32ACA6484007E6081 /* InferenceConfigurationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3499DC2ACA6484007E6081 /* InferenceConfigurationManager.swift */; };
+		BF3499E42ACA6484007E6081 /* HolisticLandmarkerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3499DE2ACA6484007E6081 /* HolisticLandmarkerService.swift */; };
+		BF3499E52ACA6484007E6081 /* CameraFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3499DF2ACA6484007E6081 /* CameraFeedService.swift */; };
+		BF3499E62ACA6484007E6081 /* HolisticOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3499E12ACA6484007E6081 /* HolisticOverlay.swift */; };
+		BF3499E82ACA708D007E6081 /* HolisticLandmarkerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3499E72ACA708D007E6081 /* HolisticLandmarkerTests.swift */; };
+		BF3499EA2ACA720A007E6081 /* business-person.png in Resources */ = {isa = PBXBuildFile; fileRef = BF3499E92ACA720A007E6081 /* business-person.png */; };
+		BFD91ED62A74F2F300FD4649 /* holistic_landmarker.task in Resources */ = {isa = PBXBuildFile; fileRef = BFD91ED52A74F2F300FD4649 /* holistic_landmarker.task */; };
+		BFD91ED92A7889DF00FD4649 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BFD91ED82A7889DF00FD4649 /* Assets.xcassets */; };
+		BFEE41EB2A45351E00BA1A35 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFEE41EA2A45351E00BA1A35 /* AppDelegate.swift */; };
+		BFEE41ED2A45351E00BA1A35 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFEE41EC2A45351E00BA1A35 /* SceneDelegate.swift */; };
+		BFEE41F72A45351F00BA1A35 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BFEE41F52A45351F00BA1A35 /* LaunchScreen.storyboard */; };
+		BFEE42302A4542B400BA1A35 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BFEE422E2A4542B400BA1A35 /* Main.storyboard */; };
+		CC9DBE1CC48C4DB446229F58 /* Pods_HolisticLandmarker.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BEB757D4516FCE33E7F93E0B /* Pods_HolisticLandmarker.framework */; };
+		CDB9E639CD84F1DEE7F622D5 /* libPods-HolisticLandmarkerTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DC907E142B2A4A5ED6AD68C /* libPods-HolisticLandmarkerTests.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		BFEE41FE2A45351F00BA1A35 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BFEE41DF2A45351E00BA1A35 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BFEE41E62A45351E00BA1A35;
+			remoteInfo = HolisticLandmarker;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		40B88274C9701B9197F0726E /* Pods-HolisticLandmarkerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HolisticLandmarkerTests.release.xcconfig"; path = "Target Support Files/Pods-HolisticLandmarkerTests/Pods-HolisticLandmarkerTests.release.xcconfig"; sourceTree = "<group>"; };
+		5DC907E142B2A4A5ED6AD68C /* libPods-HolisticLandmarkerTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HolisticLandmarkerTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7D098A775C42220DE7F02EC0 /* Pods-HolisticLandmarkerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HolisticLandmarkerTests.debug.xcconfig"; path = "Target Support Files/Pods-HolisticLandmarkerTests/Pods-HolisticLandmarkerTests.debug.xcconfig"; sourceTree = "<group>"; };
+		BEB757D4516FCE33E7F93E0B /* Pods_HolisticLandmarker.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HolisticLandmarker.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		BF3499D22ACA646E007E6081 /* MediaLibraryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MediaLibraryViewController.swift; sourceTree = "<group>"; };
+		BF3499D32ACA646E007E6081 /* CameraViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
+		BF3499D42ACA646E007E6081 /* RootViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
+		BF3499D52ACA646E007E6081 /* BottomSheetViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BottomSheetViewController.swift; sourceTree = "<group>"; };
+		BF3499DB2ACA6484007E6081 /* DefaultConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultConstants.swift; sourceTree = "<group>"; };
+		BF3499DC2ACA6484007E6081 /* InferenceConfigurationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceConfigurationManager.swift; sourceTree = "<group>"; };
+		BF3499DE2ACA6484007E6081 /* HolisticLandmarkerService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HolisticLandmarkerService.swift; sourceTree = "<group>"; };
+		BF3499DF2ACA6484007E6081 /* CameraFeedService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraFeedService.swift; sourceTree = "<group>"; };
+		BF3499E12ACA6484007E6081 /* HolisticOverlay.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HolisticOverlay.swift; sourceTree = "<group>"; };
+		BF3499E72ACA708D007E6081 /* HolisticLandmarkerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HolisticLandmarkerTests.swift; sourceTree = "<group>"; };
+		BF3499E92ACA720A007E6081 /* business-person.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "business-person.png"; sourceTree = "<group>"; };
+		BFD91ED52A74F2F300FD4649 /* holistic_landmarker.task */ = {isa = PBXFileReference; lastKnownFileType = file; path = holistic_landmarker.task; sourceTree = "<group>"; };
+		BFD91ED82A7889DF00FD4649 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		BFEE41E72A45351E00BA1A35 /* HolisticLandmarker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HolisticLandmarker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BFEE41EA2A45351E00BA1A35 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		BFEE41EC2A45351E00BA1A35 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		BFEE41F62A45351F00BA1A35 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		BFEE41F82A45351F00BA1A35 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BFEE41FD2A45351F00BA1A35 /* HolisticLandmarkerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HolisticLandmarkerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BFEE422F2A4542B400BA1A35 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		E926CBA36E9A76BEFC7FB7DF /* Pods-HolisticLandmarker.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HolisticLandmarker.release.xcconfig"; path = "Target Support Files/Pods-HolisticLandmarker/Pods-HolisticLandmarker.release.xcconfig"; sourceTree = "<group>"; };
+		FD9F1289B507CF7CF326D7DB /* Pods-HolisticLandmarker.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HolisticLandmarker.debug.xcconfig"; path = "Target Support Files/Pods-HolisticLandmarker/Pods-HolisticLandmarker.debug.xcconfig"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BFEE41E42A45351E00BA1A35 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CC9DBE1CC48C4DB446229F58 /* Pods_HolisticLandmarker.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BFEE41FA2A45351F00BA1A35 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CDB9E639CD84F1DEE7F622D5 /* libPods-HolisticLandmarkerTests.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		227AD33CCBBBA0C0E45E8889 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				FD9F1289B507CF7CF326D7DB /* Pods-HolisticLandmarker.debug.xcconfig */,
+				E926CBA36E9A76BEFC7FB7DF /* Pods-HolisticLandmarker.release.xcconfig */,
+				7D098A775C42220DE7F02EC0 /* Pods-HolisticLandmarkerTests.debug.xcconfig */,
+				40B88274C9701B9197F0726E /* Pods-HolisticLandmarkerTests.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		287163CB4E8FDF046324D157 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				BEB757D4516FCE33E7F93E0B /* Pods_HolisticLandmarker.framework */,
+				5DC907E142B2A4A5ED6AD68C /* libPods-HolisticLandmarkerTests.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		BF3499DA2ACA6484007E6081 /* Configurations */ = {
+			isa = PBXGroup;
+			children = (
+				BF3499DB2ACA6484007E6081 /* DefaultConstants.swift */,
+				BF3499DC2ACA6484007E6081 /* InferenceConfigurationManager.swift */,
+			);
+			path = Configurations;
+			sourceTree = "<group>";
+		};
+		BF3499DD2ACA6484007E6081 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				BF3499DE2ACA6484007E6081 /* HolisticLandmarkerService.swift */,
+				BF3499DF2ACA6484007E6081 /* CameraFeedService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		BF3499E02ACA6484007E6081 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				BF3499E12ACA6484007E6081 /* HolisticOverlay.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		BFEE41DE2A45351E00BA1A35 = {
+			isa = PBXGroup;
+			children = (
+				BFEE41E92A45351E00BA1A35 /* HolisticLandmarker */,
+				BFEE42002A45351F00BA1A35 /* HolisticLandmarkerTests */,
+				BFEE41E82A45351E00BA1A35 /* Products */,
+				227AD33CCBBBA0C0E45E8889 /* Pods */,
+				287163CB4E8FDF046324D157 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		BFEE41E82A45351E00BA1A35 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BFEE41E72A45351E00BA1A35 /* HolisticLandmarker.app */,
+				BFEE41FD2A45351F00BA1A35 /* HolisticLandmarkerTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BFEE41E92A45351E00BA1A35 /* HolisticLandmarker */ = {
+			isa = PBXGroup;
+			children = (
+				BF3499DA2ACA6484007E6081 /* Configurations */,
+				BF3499DD2ACA6484007E6081 /* Services */,
+				BF3499E02ACA6484007E6081 /* Views */,
+				BFD91ED52A74F2F300FD4649 /* holistic_landmarker.task */,
+				BFEE42252A45395400BA1A35 /* ViewContoller */,
+				BFEE41EA2A45351E00BA1A35 /* AppDelegate.swift */,
+				BFEE41EC2A45351E00BA1A35 /* SceneDelegate.swift */,
+				BFEE41F52A45351F00BA1A35 /* LaunchScreen.storyboard */,
+				BFD91ED82A7889DF00FD4649 /* Assets.xcassets */,
+				BFEE422E2A4542B400BA1A35 /* Main.storyboard */,
+				BFEE41F82A45351F00BA1A35 /* Info.plist */,
+			);
+			path = HolisticLandmarker;
+			sourceTree = "<group>";
+		};
+		BFEE42002A45351F00BA1A35 /* HolisticLandmarkerTests */ = {
+			isa = PBXGroup;
+			children = (
+				BF3499E72ACA708D007E6081 /* HolisticLandmarkerTests.swift */,
+				BF3499E92ACA720A007E6081 /* business-person.png */,
+			);
+			path = HolisticLandmarkerTests;
+			sourceTree = "<group>";
+		};
+		BFEE42252A45395400BA1A35 /* ViewContoller */ = {
+			isa = PBXGroup;
+			children = (
+				BF3499D52ACA646E007E6081 /* BottomSheetViewController.swift */,
+				BF3499D32ACA646E007E6081 /* CameraViewController.swift */,
+				BF3499D22ACA646E007E6081 /* MediaLibraryViewController.swift */,
+				BF3499D42ACA646E007E6081 /* RootViewController.swift */,
+			);
+			path = ViewContoller;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BFEE41E62A45351E00BA1A35 /* HolisticLandmarker */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BFEE42112A45351F00BA1A35 /* Build configuration list for PBXNativeTarget "HolisticLandmarker" */;
+			buildPhases = (
+				F01E952EE51699A6F761D123 /* [CP] Check Pods Manifest.lock */,
+				BFD91ED72A74F31600FD4649 /* Download  models */,
+				BFEE41E32A45351E00BA1A35 /* Sources */,
+				BFEE41E42A45351E00BA1A35 /* Frameworks */,
+				BFEE41E52A45351E00BA1A35 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HolisticLandmarker;
+			productName = HolisticLandmarker;
+			productReference = BFEE41E72A45351E00BA1A35 /* HolisticLandmarker.app */;
+			productType = "com.apple.product-type.application";
+		};
+		BFEE41FC2A45351F00BA1A35 /* HolisticLandmarkerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BFEE42142A45351F00BA1A35 /* Build configuration list for PBXNativeTarget "HolisticLandmarkerTests" */;
+			buildPhases = (
+				8262D92BE4902008C2E5E89A /* [CP] Check Pods Manifest.lock */,
+				BFEE41F92A45351F00BA1A35 /* Sources */,
+				BFEE41FA2A45351F00BA1A35 /* Frameworks */,
+				BFEE41FB2A45351F00BA1A35 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BFEE41FF2A45351F00BA1A35 /* PBXTargetDependency */,
+			);
+			name = HolisticLandmarkerTests;
+			productName = HolisticLandmarkerTests;
+			productReference = BFEE41FD2A45351F00BA1A35 /* HolisticLandmarkerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BFEE41DF2A45351E00BA1A35 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1430;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					BFEE41E62A45351E00BA1A35 = {
+						CreatedOnToolsVersion = 14.3;
+					};
+					BFEE41FC2A45351F00BA1A35 = {
+						CreatedOnToolsVersion = 14.3;
+						LastSwiftMigration = 1430;
+						TestTargetID = BFEE41E62A45351E00BA1A35;
+					};
+				};
+			};
+			buildConfigurationList = BFEE41E22A45351E00BA1A35 /* Build configuration list for PBXProject "HolisticLandmarker" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = BFEE41DE2A45351E00BA1A35;
+			productRefGroup = BFEE41E82A45351E00BA1A35 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BFEE41E62A45351E00BA1A35 /* HolisticLandmarker */,
+				BFEE41FC2A45351F00BA1A35 /* HolisticLandmarkerTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BFEE41E52A45351E00BA1A35 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BFD91ED62A74F2F300FD4649 /* holistic_landmarker.task in Resources */,
+				BFEE42302A4542B400BA1A35 /* Main.storyboard in Resources */,
+				BFD91ED92A7889DF00FD4649 /* Assets.xcassets in Resources */,
+				BFEE41F72A45351F00BA1A35 /* LaunchScreen.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BFEE41FB2A45351F00BA1A35 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF3499EA2ACA720A007E6081 /* business-person.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		8262D92BE4902008C2E5E89A /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-HolisticLandmarkerTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		BFD91ED72A74F31600FD4649 /* Download  models */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download  models";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/RunScripts/download_models.sh\"\n";
+		};
+		F01E952EE51699A6F761D123 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-HolisticLandmarker-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BFEE41E32A45351E00BA1A35 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF3499D82ACA646E007E6081 /* RootViewController.swift in Sources */,
+				BF3499D92ACA646E007E6081 /* BottomSheetViewController.swift in Sources */,
+				BFEE41EB2A45351E00BA1A35 /* AppDelegate.swift in Sources */,
+				BF3499E42ACA6484007E6081 /* HolisticLandmarkerService.swift in Sources */,
+				BF3499E62ACA6484007E6081 /* HolisticOverlay.swift in Sources */,
+				BF3499E52ACA6484007E6081 /* CameraFeedService.swift in Sources */,
+				BF3499D72ACA646E007E6081 /* CameraViewController.swift in Sources */,
+				BF3499D62ACA646E007E6081 /* MediaLibraryViewController.swift in Sources */,
+				BF3499E22ACA6484007E6081 /* DefaultConstants.swift in Sources */,
+				BFEE41ED2A45351E00BA1A35 /* SceneDelegate.swift in Sources */,
+				BF3499E32ACA6484007E6081 /* InferenceConfigurationManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BFEE41F92A45351F00BA1A35 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF3499E82ACA708D007E6081 /* HolisticLandmarkerTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BFEE41FF2A45351F00BA1A35 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BFEE41E62A45351E00BA1A35 /* HolisticLandmarker */;
+			targetProxy = BFEE41FE2A45351F00BA1A35 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		BFEE41F52A45351F00BA1A35 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BFEE41F62A45351F00BA1A35 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		BFEE422E2A4542B400BA1A35 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BFEE422F2A4542B400BA1A35 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		BFEE420F2A45351F00BA1A35 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BFEE42102A45351F00BA1A35 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		BFEE42122A45351F00BA1A35 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = FD9F1289B507CF7CF326D7DB /* Pods-HolisticLandmarker.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HolisticLandmarker/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to get holistic landmarks that appear in the camera feed.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
+				IPHONEOS_DEPLOYMENT_TARGET = 15;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.holisticlandmarker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BFEE42132A45351F00BA1A35 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = E926CBA36E9A76BEFC7FB7DF /* Pods-HolisticLandmarker.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HolisticLandmarker/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to get holistic landmarks that appear in the camera feed.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
+				IPHONEOS_DEPLOYMENT_TARGET = 15;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.holisticlandmarker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		BFEE42152A45351F00BA1A35 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7D098A775C42220DE7F02EC0 /* Pods-HolisticLandmarkerTests.debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.holisticLandmarkerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HolisticLandmarker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/HolisticLandmarker";
+			};
+			name = Debug;
+		};
+		BFEE42162A45351F00BA1A35 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 40B88274C9701B9197F0726E /* Pods-HolisticLandmarkerTests.release.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.holisticLandmarkerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HolisticLandmarker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/HolisticLandmarker";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BFEE41E22A45351E00BA1A35 /* Build configuration list for PBXProject "HolisticLandmarker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BFEE420F2A45351F00BA1A35 /* Debug */,
+				BFEE42102A45351F00BA1A35 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BFEE42112A45351F00BA1A35 /* Build configuration list for PBXNativeTarget "HolisticLandmarker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BFEE42122A45351F00BA1A35 /* Debug */,
+				BFEE42132A45351F00BA1A35 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BFEE42142A45351F00BA1A35 /* Build configuration list for PBXNativeTarget "HolisticLandmarkerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BFEE42152A45351F00BA1A35 /* Debug */,
+				BFEE42162A45351F00BA1A35 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BFEE41DF2A45351E00BA1A35 /* Project object */;
+}
