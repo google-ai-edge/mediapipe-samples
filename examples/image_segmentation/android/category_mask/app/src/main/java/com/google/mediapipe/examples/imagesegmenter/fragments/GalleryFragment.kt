@@ -197,6 +197,7 @@ class GalleryFragment : Fragment(), ImageSegmenterHelper.SegmenterListener {
         imageSegmenterHelper = ImageSegmenterHelper(
             context = requireContext(),
             runningMode = RunningMode.IMAGE,
+            currentModel = viewModel.currentModel,
             currentDelegate = viewModel.currentDelegate,
             imageSegmenterListener = this
         )
