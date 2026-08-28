@@ -190,6 +190,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BF931ED92BBCF3B400844805 /* Build configuration list for PBXNativeTarget "ImageEmbedder" */;
 			buildPhases = (
+				59E83DF62E8981C7006036AD /* Download models */,
 				BEA7EF50C3B28FA50E4DE890 /* [CP] Check Pods Manifest.lock */,
 				BF931EAB2BBCF3AD00844805 /* Sources */,
 				BF931EAC2BBCF3AD00844805 /* Frameworks */,
@@ -285,6 +286,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		59E83DF62E8981C7006036AD /* Download models */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download models";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/RunScripts/download_models.sh\"\n";
+		};
 		BEA7EF50C3B28FA50E4DE890 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -516,6 +536,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ImageEmbedder/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to embedding the objects that appear in the camera feed.";
@@ -548,6 +569,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ImageEmbedder/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to embedding the objects that appear in the camera feed.";
