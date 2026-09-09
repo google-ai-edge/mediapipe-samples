@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1B292F8D4D0CDC5CF7F86CCF /* libPods-TextClassifierTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B02DF995463C6DA7C7CFB68 /* libPods-TextClassifierTests.a */; };
+		5EB8FE791AD12BF6233C3D00 /* MediaPipeTasksText in Frameworks */ = {isa = PBXBuildFile; productRef = 6C0DA659622262DED90D6FF9 /* MediaPipeTasksText */; };
 		BF2B2C012A302CDB00589A11 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2C002A302CDB00589A11 /* AppDelegate.swift */; };
 		BF2B2C032A302CDB00589A11 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2C022A302CDB00589A11 /* SceneDelegate.swift */; };
 		BF2B2C052A302CDB00589A11 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2C042A302CDB00589A11 /* ViewController.swift */; };
@@ -18,7 +18,6 @@
 		BF2B2C362A303ABF00589A11 /* TextClassifierHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2C322A303ABF00589A11 /* TextClassifierHelper.swift */; };
 		BF2B2C382A303ABF00589A11 /* average_word_classifier.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2C342A303ABF00589A11 /* average_word_classifier.tflite */; };
 		BF2B2C3C2A303B6800589A11 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2C3B2A303B6800589A11 /* Main.storyboard */; };
-		E97C9E6BBD4FD59920642614 /* Pods_TextClassifier.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 198A2FDFB11A06B20C00C36B /* Pods_TextClassifier.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,10 +31,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		198A2FDFB11A06B20C00C36B /* Pods_TextClassifier.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TextClassifier.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		47E931451A3684250A008CEA /* Pods-TextClassifierTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TextClassifierTests.release.xcconfig"; path = "Target Support Files/Pods-TextClassifierTests/Pods-TextClassifierTests.release.xcconfig"; sourceTree = "<group>"; };
-		4B02DF995463C6DA7C7CFB68 /* libPods-TextClassifierTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TextClassifierTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		645721017410A2630DFD7498 /* Pods-TextClassifier.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TextClassifier.release.xcconfig"; path = "Target Support Files/Pods-TextClassifier/Pods-TextClassifier.release.xcconfig"; sourceTree = "<group>"; };
 		7FC03EE32A57581C00867DCE /* download_models.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = download_models.sh; sourceTree = "<group>"; };
 		BF2B2BFD2A302CDB00589A11 /* TextClassifier.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TextClassifier.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF2B2C002A302CDB00589A11 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -50,8 +45,6 @@
 		BF2B2C322A303ABF00589A11 /* TextClassifierHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextClassifierHelper.swift; sourceTree = "<group>"; };
 		BF2B2C342A303ABF00589A11 /* average_word_classifier.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = average_word_classifier.tflite; sourceTree = "<group>"; };
 		BF2B2C3B2A303B6800589A11 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
-		C5F0A900F68C5C43E10DC7B7 /* Pods-TextClassifierTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TextClassifierTests.debug.xcconfig"; path = "Target Support Files/Pods-TextClassifierTests/Pods-TextClassifierTests.debug.xcconfig"; sourceTree = "<group>"; };
-		F133952296AEB6CAD74125F8 /* Pods-TextClassifier.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TextClassifier.debug.xcconfig"; path = "Target Support Files/Pods-TextClassifier/Pods-TextClassifier.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,7 +52,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E97C9E6BBD4FD59920642614 /* Pods_TextClassifier.framework in Frameworks */,
+				5EB8FE791AD12BF6233C3D00 /* MediaPipeTasksText in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -67,24 +60,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1B292F8D4D0CDC5CF7F86CCF /* libPods-TextClassifierTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		4B08085FFFF2ABF338220017 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				F133952296AEB6CAD74125F8 /* Pods-TextClassifier.debug.xcconfig */,
-				645721017410A2630DFD7498 /* Pods-TextClassifier.release.xcconfig */,
-				C5F0A900F68C5C43E10DC7B7 /* Pods-TextClassifierTests.debug.xcconfig */,
-				47E931451A3684250A008CEA /* Pods-TextClassifierTests.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
 		7FC03EE22A57580500867DCE /* RunScripts */ = {
 			isa = PBXGroup;
 			children = (
@@ -100,8 +81,6 @@
 				BF2B2BFF2A302CDB00589A11 /* TextClassifier */,
 				BF2B2C162A302CDD00589A11 /* TextClassifierTests */,
 				BF2B2BFE2A302CDB00589A11 /* Products */,
-				4B08085FFFF2ABF338220017 /* Pods */,
-				C11378A376FF8BF8D16ED177 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -147,15 +126,6 @@
 			path = Helper;
 			sourceTree = "<group>";
 		};
-		C11378A376FF8BF8D16ED177 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				198A2FDFB11A06B20C00C36B /* Pods_TextClassifier.framework */,
-				4B02DF995463C6DA7C7CFB68 /* libPods-TextClassifierTests.a */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -163,7 +133,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BF2B2C272A302CDD00589A11 /* Build configuration list for PBXNativeTarget "TextClassifier" */;
 			buildPhases = (
-				A075DE8F9C2BF76D1818134E /* [CP] Check Pods Manifest.lock */,
 				BF2B2C3A2A303AFD00589A11 /* Download ML models */,
 				BF2B2BF92A302CDB00589A11 /* Sources */,
 				BF2B2BFA2A302CDB00589A11 /* Frameworks */,
@@ -175,6 +144,9 @@
 			);
 			name = TextClassifier;
 			productName = TextClassificater;
+			packageProductDependencies = (
+				6C0DA659622262DED90D6FF9 /* MediaPipeTasksText */,
+			);
 			productReference = BF2B2BFD2A302CDB00589A11 /* TextClassifier.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -182,7 +154,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BF2B2C2A2A302CDD00589A11 /* Build configuration list for PBXNativeTarget "TextClassifierTests" */;
 			buildPhases = (
-				1194F5F441E2E25CA672CE2B /* [CP] Check Pods Manifest.lock */,
 				BF2B2C0F2A302CDD00589A11 /* Sources */,
 				BF2B2C102A302CDD00589A11 /* Frameworks */,
 				BF2B2C112A302CDD00589A11 /* Resources */,
@@ -225,6 +196,9 @@
 				Base,
 			);
 			mainGroup = BF2B2BF42A302CDB00589A11;
+			packageReferences = (
+				AF3AA1B267C6657E5E9697DB /* XCRemoteSwiftPackageReference "mediapipe" */,
+			);
 			productRefGroup = BF2B2BFE2A302CDB00589A11 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -258,50 +232,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		1194F5F441E2E25CA672CE2B /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-TextClassifierTests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		A075DE8F9C2BF76D1818134E /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-TextClassifier-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
 		BF2B2C3A2A303AFD00589A11 /* Download ML models */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -481,7 +411,6 @@
 		};
 		BF2B2C282A302CDD00589A11 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F133952296AEB6CAD74125F8 /* Pods-TextClassifier.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -514,7 +443,6 @@
 		};
 		BF2B2C292A302CDD00589A11 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 645721017410A2630DFD7498 /* Pods-TextClassifier.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -547,7 +475,6 @@
 		};
 		BF2B2C2B2A302CDD00589A11 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C5F0A900F68C5C43E10DC7B7 /* Pods-TextClassifierTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -568,7 +495,6 @@
 		};
 		BF2B2C2C2A302CDD00589A11 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 47E931451A3684250A008CEA /* Pods-TextClassifierTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -618,6 +544,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AF3AA1B267C6657E5E9697DB /* XCRemoteSwiftPackageReference "mediapipe" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google-ai-edge/mediapipe";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		6C0DA659622262DED90D6FF9 /* MediaPipeTasksText */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AF3AA1B267C6657E5E9697DB /* XCRemoteSwiftPackageReference "mediapipe" */;
+			productName = MediaPipeTasksText;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BF2B2BF52A302CDB00589A11 /* Project object */;
 }

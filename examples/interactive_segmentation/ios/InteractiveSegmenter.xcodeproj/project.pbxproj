@@ -7,12 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3411A9E72682892A5FF96F44 /* MediaPipeTasksVision in Frameworks */ = {isa = PBXBuildFile; productRef = 8528E5D4D5ABEE265F279AB1 /* MediaPipeTasksVision */; };
 		100000000000000000000102 /* InteractiveSegmenterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000101 /* InteractiveSegmenterApp.swift */; };
 		100000000000000000000104 /* InteractiveSegmenterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000103 /* InteractiveSegmenterView.swift */; };
 		100000000000000000000106 /* InteractiveSegmenterViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000105 /* InteractiveSegmenterViewModel.swift */; };
 		100000000000000000000111 /* interactive_segmentation.task in Resources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000110 /* interactive_segmentation.task */; };
 		100000000000000000000113 /* cats_and_dogs.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000112 /* cats_and_dogs.jpg */; };
-		900C7977F53CF9012B1E350A /* Pods_InteractiveSegmenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 56A56F12B8EEFBBA7D5BD4DF /* Pods_InteractiveSegmenter.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,9 +23,6 @@
 		100000000000000000000109 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		100000000000000000000110 /* interactive_segmentation.task */ = {isa = PBXFileReference; lastKnownFileType = file; path = interactive_segmentation.task; sourceTree = "<group>"; };
 		100000000000000000000112 /* cats_and_dogs.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = cats_and_dogs.jpg; sourceTree = "<group>"; };
-		3365BD7AEAA020E1182C8AFF /* Pods-InteractiveSegmenter.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InteractiveSegmenter.debug.xcconfig"; path = "Target Support Files/Pods-InteractiveSegmenter/Pods-InteractiveSegmenter.debug.xcconfig"; sourceTree = "<group>"; };
-		56A56F12B8EEFBBA7D5BD4DF /* Pods_InteractiveSegmenter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_InteractiveSegmenter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		7578714110D92417BAFD5768 /* Pods-InteractiveSegmenter.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InteractiveSegmenter.release.xcconfig"; path = "Target Support Files/Pods-InteractiveSegmenter/Pods-InteractiveSegmenter.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -33,7 +30,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				900C7977F53CF9012B1E350A /* Pods_InteractiveSegmenter.framework in Frameworks */,
+				3411A9E72682892A5FF96F44 /* MediaPipeTasksVision in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -45,8 +42,6 @@
 			children = (
 				100000000000000000000003 /* InteractiveSegmenter */,
 				100000000000000000000004 /* Products */,
-				100000000000000000000006 /* Pods */,
-				D534FDD3131593DFDDD4C74D /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -71,23 +66,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		100000000000000000000006 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				3365BD7AEAA020E1182C8AFF /* Pods-InteractiveSegmenter.debug.xcconfig */,
-				7578714110D92417BAFD5768 /* Pods-InteractiveSegmenter.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		D534FDD3131593DFDDD4C74D /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				56A56F12B8EEFBBA7D5BD4DF /* Pods_InteractiveSegmenter.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -95,7 +73,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 100000000000000000000304 /* Build configuration list for PBXNativeTarget "InteractiveSegmenter" */;
 			buildPhases = (
-				CCE04239FB1FDA0258533B0D /* [CP] Check Pods Manifest.lock */,
 				100000000000000000000202 /* Sources */,
 				100000000000000000000203 /* Frameworks */,
 				100000000000000000000204 /* Resources */,
@@ -106,6 +83,9 @@
 			);
 			name = InteractiveSegmenter;
 			productName = InteractiveSegmenter;
+			packageProductDependencies = (
+				8528E5D4D5ABEE265F279AB1 /* MediaPipeTasksVision */,
+			);
 			productReference = 100000000000000000000010 /* InteractiveSegmenter.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -133,6 +113,9 @@
 				Base,
 			);
 			mainGroup = 100000000000000000000002;
+			packageReferences = (
+				4A4B8E05DF2EE063076CE01F /* XCRemoteSwiftPackageReference "mediapipe" */,
+			);
 			productRefGroup = 100000000000000000000004 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -155,28 +138,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		CCE04239FB1FDA0258533B0D /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-InteractiveSegmenter-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -303,7 +264,6 @@
 		};
 		100000000000000000000305 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3365BD7AEAA020E1182C8AFF /* Pods-InteractiveSegmenter.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -328,7 +288,6 @@
 		};
 		100000000000000000000306 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7578714110D92417BAFD5768 /* Pods-InteractiveSegmenter.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -373,6 +332,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		4A4B8E05DF2EE063076CE01F /* XCRemoteSwiftPackageReference "mediapipe" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google-ai-edge/mediapipe";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8528E5D4D5ABEE265F279AB1 /* MediaPipeTasksVision */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4A4B8E05DF2EE063076CE01F /* XCRemoteSwiftPackageReference "mediapipe" */;
+			productName = MediaPipeTasksVision;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 100000000000000000000001 /* Project object */;
 }
