@@ -7,8 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		05F80D26699F307C3C6E05AB /* Pods_ImageSegmenterTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A89C5A44F11923E2CD6086BB /* Pods_ImageSegmenterTests.framework */; };
-		1FB4DB731718CFD48F6CCA1F /* Pods_ImageSegmenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB81BA1A32936BF6829D8CD6 /* Pods_ImageSegmenter.framework */; };
+		9CFA7462C7DACE0B8E5A47B9 /* MediaPipeTasksVision in Frameworks */ = {isa = PBXBuildFile; productRef = C9DA41538E895B62583165A7 /* MediaPipeTasksVision */; };
 		BF2D8E652B830C7B0050C3B6 /* deeplab_v3.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF2D8E642B830C7A0050C3B6 /* deeplab_v3.tflite */; };
 		BF6EBB4F2B1EB5BE00CD13FB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB4E2B1EB5BE00CD13FB /* AppDelegate.swift */; };
 		BF6EBB512B1EB5BE00CD13FB /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBB502B1EB5BE00CD13FB /* SceneDelegate.swift */; };
@@ -31,7 +30,6 @@
 		BF6EBBA22B20531800CD13FB /* SegmentedImageRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBBA12B20531800CD13FB /* SegmentedImageRenderer.swift */; };
 		BF6EBBA62B2070F000CD13FB /* RenderToMtlViewShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = BF6EBBA52B2070F000CD13FB /* RenderToMtlViewShaders.metal */; };
 		BF6EBBA82B20712600CD13FB /* selfie_segmenter.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF6EBBA72B20712600CD13FB /* selfie_segmenter.tflite */; };
-		FBCBDD23FAD8125B5F819751 /* libPods-ImageSegmenterUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D95B4C9DB808B140005D1F61 /* libPods-ImageSegmenterUITests.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,14 +50,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		00FE4AC67A3BC7929C07F88A /* Pods-ImageSegmenterUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageSegmenterUITests.release.xcconfig"; path = "Target Support Files/Pods-ImageSegmenterUITests/Pods-ImageSegmenterUITests.release.xcconfig"; sourceTree = "<group>"; };
-		082C9F953835AD674CDB4C7F /* Pods-ImageSegmenterUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageSegmenterUITests.debug.xcconfig"; path = "Target Support Files/Pods-ImageSegmenterUITests/Pods-ImageSegmenterUITests.debug.xcconfig"; sourceTree = "<group>"; };
-		1F44B4095124C60C8C521374 /* Pods-ImageSegmenter.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageSegmenter.release.xcconfig"; path = "Target Support Files/Pods-ImageSegmenter/Pods-ImageSegmenter.release.xcconfig"; sourceTree = "<group>"; };
-		3DD5C13A41F6755F985364BD /* Pods-ImageSegmenter.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageSegmenter.debug.xcconfig"; path = "Target Support Files/Pods-ImageSegmenter/Pods-ImageSegmenter.debug.xcconfig"; sourceTree = "<group>"; };
-		718FBD8F849AF3A5F7CD51A4 /* Pods-ImageSegmenter-ImageSegmenterUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageSegmenter-ImageSegmenterUITests.debug.xcconfig"; path = "Target Support Files/Pods-ImageSegmenter-ImageSegmenterUITests/Pods-ImageSegmenter-ImageSegmenterUITests.debug.xcconfig"; sourceTree = "<group>"; };
-		7FEBF7670100412F1C68BD87 /* Pods-ImageSegmenterTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageSegmenterTests.debug.xcconfig"; path = "Target Support Files/Pods-ImageSegmenterTests/Pods-ImageSegmenterTests.debug.xcconfig"; sourceTree = "<group>"; };
-		98B7F48961448745D60EAF71 /* Pods-ImageSegmenter-ImageSegmenterUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageSegmenter-ImageSegmenterUITests.release.xcconfig"; path = "Target Support Files/Pods-ImageSegmenter-ImageSegmenterUITests/Pods-ImageSegmenter-ImageSegmenterUITests.release.xcconfig"; sourceTree = "<group>"; };
-		A89C5A44F11923E2CD6086BB /* Pods_ImageSegmenterTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ImageSegmenterTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF2D8E642B830C7A0050C3B6 /* deeplab_v3.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = deeplab_v3.tflite; sourceTree = "<group>"; };
 		BF6EBB4B2B1EB5BE00CD13FB /* ImageSegmenter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImageSegmenter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF6EBB4E2B1EB5BE00CD13FB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -86,9 +76,6 @@
 		BF6EBBA12B20531800CD13FB /* SegmentedImageRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentedImageRenderer.swift; sourceTree = "<group>"; };
 		BF6EBBA52B2070F000CD13FB /* RenderToMtlViewShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = RenderToMtlViewShaders.metal; sourceTree = "<group>"; };
 		BF6EBBA72B20712600CD13FB /* selfie_segmenter.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = selfie_segmenter.tflite; sourceTree = "<group>"; };
-		CB81BA1A32936BF6829D8CD6 /* Pods_ImageSegmenter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ImageSegmenter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		D95B4C9DB808B140005D1F61 /* libPods-ImageSegmenterUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ImageSegmenterUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		E17D861DD2F87160038B0515 /* Pods-ImageSegmenterTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageSegmenterTests.release.xcconfig"; path = "Target Support Files/Pods-ImageSegmenterTests/Pods-ImageSegmenterTests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,7 +83,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1FB4DB731718CFD48F6CCA1F /* Pods_ImageSegmenter.framework in Frameworks */,
+				9CFA7462C7DACE0B8E5A47B9 /* MediaPipeTasksVision in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -104,7 +91,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				05F80D26699F307C3C6E05AB /* Pods_ImageSegmenterTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,28 +98,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FBCBDD23FAD8125B5F819751 /* libPods-ImageSegmenterUITests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		429F4DEBB7DA7662C280952A /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				3DD5C13A41F6755F985364BD /* Pods-ImageSegmenter.debug.xcconfig */,
-				1F44B4095124C60C8C521374 /* Pods-ImageSegmenter.release.xcconfig */,
-				718FBD8F849AF3A5F7CD51A4 /* Pods-ImageSegmenter-ImageSegmenterUITests.debug.xcconfig */,
-				98B7F48961448745D60EAF71 /* Pods-ImageSegmenter-ImageSegmenterUITests.release.xcconfig */,
-				7FEBF7670100412F1C68BD87 /* Pods-ImageSegmenterTests.debug.xcconfig */,
-				E17D861DD2F87160038B0515 /* Pods-ImageSegmenterTests.release.xcconfig */,
-				082C9F953835AD674CDB4C7F /* Pods-ImageSegmenterUITests.debug.xcconfig */,
-				00FE4AC67A3BC7929C07F88A /* Pods-ImageSegmenterUITests.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
 		BF6EBB422B1EB5BE00CD13FB = {
 			isa = PBXGroup;
 			children = (
@@ -141,8 +111,6 @@
 				BF6EBB642B1EB5BF00CD13FB /* ImageSegmenterTests */,
 				BF6EBB6E2B1EB5BF00CD13FB /* ImageSegmenterUITests */,
 				BF6EBB4C2B1EB5BE00CD13FB /* Products */,
-				429F4DEBB7DA7662C280952A /* Pods */,
-				CA201CA7C3CA7FC43CD98251 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -240,16 +208,6 @@
 			path = ViewContoller;
 			sourceTree = "<group>";
 		};
-		CA201CA7C3CA7FC43CD98251 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				CB81BA1A32936BF6829D8CD6 /* Pods_ImageSegmenter.framework */,
-				A89C5A44F11923E2CD6086BB /* Pods_ImageSegmenterTests.framework */,
-				D95B4C9DB808B140005D1F61 /* libPods-ImageSegmenterUITests.a */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -257,7 +215,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BF6EBB752B1EB5BF00CD13FB /* Build configuration list for PBXNativeTarget "ImageSegmenter" */;
 			buildPhases = (
-				16CD3DB75953570593C92185 /* [CP] Check Pods Manifest.lock */,
 				BF6EBBAB2B20749E00CD13FB /* Download model */,
 				BF6EBB472B1EB5BE00CD13FB /* Sources */,
 				BF6EBB482B1EB5BE00CD13FB /* Frameworks */,
@@ -269,6 +226,9 @@
 			);
 			name = ImageSegmenter;
 			productName = ImageSegmenter;
+			packageProductDependencies = (
+				C9DA41538E895B62583165A7 /* MediaPipeTasksVision */,
+			);
 			productReference = BF6EBB4B2B1EB5BE00CD13FB /* ImageSegmenter.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -276,7 +236,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BF6EBB782B1EB5BF00CD13FB /* Build configuration list for PBXNativeTarget "ImageSegmenterTests" */;
 			buildPhases = (
-				78AF909D807F31032449F052 /* [CP] Check Pods Manifest.lock */,
 				BF6EBB5D2B1EB5BF00CD13FB /* Sources */,
 				BF6EBB5E2B1EB5BF00CD13FB /* Frameworks */,
 				BF6EBB5F2B1EB5BF00CD13FB /* Resources */,
@@ -295,7 +254,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BF6EBB7B2B1EB5BF00CD13FB /* Build configuration list for PBXNativeTarget "ImageSegmenterUITests" */;
 			buildPhases = (
-				16FC60A11FF43663A314A8A9 /* [CP] Check Pods Manifest.lock */,
 				BF6EBB672B1EB5BF00CD13FB /* Sources */,
 				BF6EBB682B1EB5BF00CD13FB /* Frameworks */,
 				BF6EBB692B1EB5BF00CD13FB /* Resources */,
@@ -342,6 +300,9 @@
 				Base,
 			);
 			mainGroup = BF6EBB422B1EB5BE00CD13FB;
+			packageReferences = (
+				F8E6FDABE848CB37C801E012 /* XCRemoteSwiftPackageReference "mediapipe" */,
+			);
 			productRefGroup = BF6EBB4C2B1EB5BE00CD13FB /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -383,72 +344,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		16CD3DB75953570593C92185 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-ImageSegmenter-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		16FC60A11FF43663A314A8A9 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-ImageSegmenterUITests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		78AF909D807F31032449F052 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-ImageSegmenterTests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
 		BF6EBBAB2B20749E00CD13FB /* Download model */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -664,7 +559,6 @@
 		};
 		BF6EBB762B1EB5BF00CD13FB /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3DD5C13A41F6755F985364BD /* Pods-ImageSegmenter.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -700,7 +594,6 @@
 		};
 		BF6EBB772B1EB5BF00CD13FB /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1F44B4095124C60C8C521374 /* Pods-ImageSegmenter.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -736,7 +629,6 @@
 		};
 		BF6EBB792B1EB5BF00CD13FB /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7FEBF7670100412F1C68BD87 /* Pods-ImageSegmenterTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -757,7 +649,6 @@
 		};
 		BF6EBB7A2B1EB5BF00CD13FB /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E17D861DD2F87160038B0515 /* Pods-ImageSegmenterTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -778,7 +669,6 @@
 		};
 		BF6EBB7C2B1EB5BF00CD13FB /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 082C9F953835AD674CDB4C7F /* Pods-ImageSegmenterUITests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -797,7 +687,6 @@
 		};
 		BF6EBB7D2B1EB5BF00CD13FB /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 00FE4AC67A3BC7929C07F88A /* Pods-ImageSegmenterUITests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -854,6 +743,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		F8E6FDABE848CB37C801E012 /* XCRemoteSwiftPackageReference "mediapipe" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google-ai-edge/mediapipe";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C9DA41538E895B62583165A7 /* MediaPipeTasksVision */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F8E6FDABE848CB37C801E012 /* XCRemoteSwiftPackageReference "mediapipe" */;
+			productName = MediaPipeTasksVision;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BF6EBB432B1EB5BE00CD13FB /* Project object */;
 }

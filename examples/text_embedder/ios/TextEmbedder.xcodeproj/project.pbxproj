@@ -7,8 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		44EDAEC1D637A670E0BC69C8 /* libPods-TextEmbedderTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BE77C5E2E53AB9569D2353E0 /* libPods-TextEmbedderTests.a */; };
-		B414FB7826CD1BEC75823B47 /* Pods_TextEmbedder.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B357E7152939207A716B809C /* Pods_TextEmbedder.framework */; };
+		22362ECF776FA9DA38574EBC /* MediaPipeTasksText in Frameworks */ = {isa = PBXBuildFile; productRef = 746BAC19A6F02C1542432642 /* MediaPipeTasksText */; };
 		BF5EECD02ABC2F9300189276 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5EECCF2ABC2F9300189276 /* AppDelegate.swift */; };
 		BF5EECD22ABC2F9300189276 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5EECD12ABC2F9300189276 /* SceneDelegate.swift */; };
 		BF5EECD42ABC2F9300189276 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5EECD32ABC2F9300189276 /* ViewController.swift */; };
@@ -31,11 +30,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		3CC21B7C6C4FA2A8309C278E /* Pods-TextEmbedderTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TextEmbedderTests.debug.xcconfig"; path = "Target Support Files/Pods-TextEmbedderTests/Pods-TextEmbedderTests.debug.xcconfig"; sourceTree = "<group>"; };
-		653A06FDB650C47F622563BD /* Pods-TextEmbedderTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TextEmbedderTests.release.xcconfig"; path = "Target Support Files/Pods-TextEmbedderTests/Pods-TextEmbedderTests.release.xcconfig"; sourceTree = "<group>"; };
-		A9DFC4D96A2D6B75F13A87FC /* Pods-TextEmbedder.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TextEmbedder.debug.xcconfig"; path = "Target Support Files/Pods-TextEmbedder/Pods-TextEmbedder.debug.xcconfig"; sourceTree = "<group>"; };
-		B357E7152939207A716B809C /* Pods_TextEmbedder.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TextEmbedder.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		BE77C5E2E53AB9569D2353E0 /* libPods-TextEmbedderTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TextEmbedderTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF5EECCC2ABC2F9300189276 /* TextEmbedder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TextEmbedder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF5EECCF2ABC2F9300189276 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BF5EECD12ABC2F9300189276 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -48,7 +42,6 @@
 		BF5EECE62ABC2F9400189276 /* TextEmbedderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextEmbedderTests.swift; sourceTree = "<group>"; };
 		BF5EED002ABC32AE00189276 /* TextEmbedderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextEmbedderService.swift; sourceTree = "<group>"; };
 		BF5EED022AC2BBC800189276 /* universal_sentence_encoder.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = universal_sentence_encoder.tflite; sourceTree = "<group>"; };
-		CD84DB5B9BDD70E5ABBC2527 /* Pods-TextEmbedder.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TextEmbedder.release.xcconfig"; path = "Target Support Files/Pods-TextEmbedder/Pods-TextEmbedder.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,7 +49,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B414FB7826CD1BEC75823B47 /* Pods_TextEmbedder.framework in Frameworks */,
+				22362ECF776FA9DA38574EBC /* MediaPipeTasksText in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -64,32 +57,18 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				44EDAEC1D637A670E0BC69C8 /* libPods-TextEmbedderTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		9481D1C5681E3D9757C8B3F7 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				A9DFC4D96A2D6B75F13A87FC /* Pods-TextEmbedder.debug.xcconfig */,
-				CD84DB5B9BDD70E5ABBC2527 /* Pods-TextEmbedder.release.xcconfig */,
-				3CC21B7C6C4FA2A8309C278E /* Pods-TextEmbedderTests.debug.xcconfig */,
-				653A06FDB650C47F622563BD /* Pods-TextEmbedderTests.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
 		BF5EECC32ABC2F9300189276 = {
 			isa = PBXGroup;
 			children = (
 				BF5EECCE2ABC2F9300189276 /* TextEmbedder */,
 				BF5EECE52ABC2F9400189276 /* TextEmbedderTests */,
 				BF5EECCD2ABC2F9300189276 /* Products */,
-				9481D1C5681E3D9757C8B3F7 /* Pods */,
-				C5569BA06B5A8BDBC2D429FB /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -134,15 +113,6 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
-		C5569BA06B5A8BDBC2D429FB /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				B357E7152939207A716B809C /* Pods_TextEmbedder.framework */,
-				BE77C5E2E53AB9569D2353E0 /* libPods-TextEmbedderTests.a */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -150,7 +120,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BF5EECF62ABC2F9400189276 /* Build configuration list for PBXNativeTarget "TextEmbedder" */;
 			buildPhases = (
-				E21C532FC4D2912C90C8F519 /* [CP] Check Pods Manifest.lock */,
 				BF5EED042AC40EB100189276 /* Download mode */,
 				BF5EECC82ABC2F9300189276 /* Sources */,
 				BF5EECC92ABC2F9300189276 /* Frameworks */,
@@ -162,6 +131,9 @@
 			);
 			name = TextEmbedder;
 			productName = TextEmbedder;
+			packageProductDependencies = (
+				746BAC19A6F02C1542432642 /* MediaPipeTasksText */,
+			);
 			productReference = BF5EECCC2ABC2F9300189276 /* TextEmbedder.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -169,7 +141,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BF5EECF92ABC2F9400189276 /* Build configuration list for PBXNativeTarget "TextEmbedderTests" */;
 			buildPhases = (
-				CEC7F2C51EE6307BEDDD8A6C /* [CP] Check Pods Manifest.lock */,
 				BF5EECDE2ABC2F9400189276 /* Sources */,
 				BF5EECDF2ABC2F9400189276 /* Frameworks */,
 				BF5EECE02ABC2F9400189276 /* Resources */,
@@ -212,6 +183,9 @@
 				Base,
 			);
 			mainGroup = BF5EECC32ABC2F9300189276;
+			packageReferences = (
+				04E5518C8AB441091188FD7F /* XCRemoteSwiftPackageReference "mediapipe" */,
+			);
 			productRefGroup = BF5EECCD2ABC2F9300189276 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -261,50 +235,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"$SRCROOT/RunScripts/download_models.sh\"\n";
-		};
-		CEC7F2C51EE6307BEDDD8A6C /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-TextEmbedderTests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		E21C532FC4D2912C90C8F519 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-TextEmbedder-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -474,7 +404,6 @@
 		};
 		BF5EECF72ABC2F9400189276 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A9DFC4D96A2D6B75F13A87FC /* Pods-TextEmbedder.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -503,7 +432,6 @@
 		};
 		BF5EECF82ABC2F9400189276 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = CD84DB5B9BDD70E5ABBC2527 /* Pods-TextEmbedder.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -532,7 +460,6 @@
 		};
 		BF5EECFA2ABC2F9400189276 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3CC21B7C6C4FA2A8309C278E /* Pods-TextEmbedderTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -553,7 +480,6 @@
 		};
 		BF5EECFB2ABC2F9400189276 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 653A06FDB650C47F622563BD /* Pods-TextEmbedderTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -603,6 +529,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		04E5518C8AB441091188FD7F /* XCRemoteSwiftPackageReference "mediapipe" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google-ai-edge/mediapipe";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		746BAC19A6F02C1542432642 /* MediaPipeTasksText */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 04E5518C8AB441091188FD7F /* XCRemoteSwiftPackageReference "mediapipe" */;
+			productName = MediaPipeTasksText;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BF5EECC42ABC2F9300189276 /* Project object */;
 }

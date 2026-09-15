@@ -7,8 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		390980DAF1C0BF696F2F9034 /* libPods-HandLandmarkerTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6A5255B9766F2DC5A4177BEC /* libPods-HandLandmarkerTests.a */; };
-		BE623C897110F7E0442419C4 /* Pods_HandLandmarker.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C35377F7CB8DB927779D1AD /* Pods_HandLandmarker.framework */; };
+		42E1B688CEB230027286EDB6 /* MediaPipeTasksVision in Frameworks */ = {isa = PBXBuildFile; productRef = F46FB5714FD7A18B379FAB6D /* MediaPipeTasksVision */; };
 		BF5EEC682AB7EBB500189276 /* thumbs-up.png in Resources */ = {isa = PBXBuildFile; fileRef = BF5EEC672AB7EBB500189276 /* thumbs-up.png */; };
 		BF5EECA72AB7FFB600189276 /* hand_landmarker.task in Resources */ = {isa = PBXBuildFile; fileRef = BF5EECA62AB7FFB600189276 /* hand_landmarker.task */; };
 		BFCDAE252AAEB2A700EC4371 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCDAE242AAEB2A700EC4371 /* AppDelegate.swift */; };
@@ -39,11 +38,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		0BC8870F177D4B0E156D0440 /* Pods-HandLandmarkerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HandLandmarkerTests.release.xcconfig"; path = "Target Support Files/Pods-HandLandmarkerTests/Pods-HandLandmarkerTests.release.xcconfig"; sourceTree = "<group>"; };
-		1E80675CBEC6C300C36D39CD /* Pods-HandLandmarker.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HandLandmarker.release.xcconfig"; path = "Target Support Files/Pods-HandLandmarker/Pods-HandLandmarker.release.xcconfig"; sourceTree = "<group>"; };
-		5C35377F7CB8DB927779D1AD /* Pods_HandLandmarker.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HandLandmarker.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		6A5255B9766F2DC5A4177BEC /* libPods-HandLandmarkerTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HandLandmarkerTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		B19658A239090768FF9A5F9F /* Pods-HandLandmarker.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HandLandmarker.debug.xcconfig"; path = "Target Support Files/Pods-HandLandmarker/Pods-HandLandmarker.debug.xcconfig"; sourceTree = "<group>"; };
 		BF5EEC672AB7EBB500189276 /* thumbs-up.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "thumbs-up.png"; sourceTree = "<group>"; };
 		BF5EECA62AB7FFB600189276 /* hand_landmarker.task */ = {isa = PBXFileReference; lastKnownFileType = file; path = hand_landmarker.task; sourceTree = "<group>"; };
 		BFCDAE212AAEB2A700EC4371 /* HandLandmarker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HandLandmarker.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -64,7 +58,6 @@
 		BFCDAE5D2AAEB82C00EC4371 /* HandLandmarkerService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HandLandmarkerService.swift; sourceTree = "<group>"; };
 		BFCDAE5F2AAEB82C00EC4371 /* DefaultConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultConstants.swift; sourceTree = "<group>"; };
 		BFCDAE602AAEB82C00EC4371 /* InferenceConfigurationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InferenceConfigurationManager.swift; sourceTree = "<group>"; };
-		D6309757C0B73AC4C4CE0B6E /* Pods-HandLandmarkerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HandLandmarkerTests.debug.xcconfig"; path = "Target Support Files/Pods-HandLandmarkerTests/Pods-HandLandmarkerTests.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,7 +65,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BE623C897110F7E0442419C4 /* Pods_HandLandmarker.framework in Frameworks */,
+				42E1B688CEB230027286EDB6 /* MediaPipeTasksVision in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -80,41 +73,18 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				390980DAF1C0BF696F2F9034 /* libPods-HandLandmarkerTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		5192FF35E5B729E5C4F6FC34 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				B19658A239090768FF9A5F9F /* Pods-HandLandmarker.debug.xcconfig */,
-				1E80675CBEC6C300C36D39CD /* Pods-HandLandmarker.release.xcconfig */,
-				D6309757C0B73AC4C4CE0B6E /* Pods-HandLandmarkerTests.debug.xcconfig */,
-				0BC8870F177D4B0E156D0440 /* Pods-HandLandmarkerTests.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		74E1882A27B0590FA659A466 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				5C35377F7CB8DB927779D1AD /* Pods_HandLandmarker.framework */,
-				6A5255B9766F2DC5A4177BEC /* libPods-HandLandmarkerTests.a */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		BFCDAE182AAEB2A700EC4371 = {
 			isa = PBXGroup;
 			children = (
 				BFCDAE232AAEB2A700EC4371 /* HandLandmarker */,
 				BFCDAE3A2AAEB2A800EC4371 /* HandLandmarkerTests */,
 				BFCDAE222AAEB2A700EC4371 /* Products */,
-				5192FF35E5B729E5C4F6FC34 /* Pods */,
-				74E1882A27B0590FA659A466 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -198,7 +168,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BFCDAE4B2AAEB2A800EC4371 /* Build configuration list for PBXNativeTarget "HandLandmarker" */;
 			buildPhases = (
-				7A7FE6070D4D8E43FA2501E9 /* [CP] Check Pods Manifest.lock */,
 				BF5EECA52AB7FEDB00189276 /* Download model */,
 				BFCDAE1D2AAEB2A700EC4371 /* Sources */,
 				BFCDAE1E2AAEB2A700EC4371 /* Frameworks */,
@@ -210,6 +179,9 @@
 			);
 			name = HandLandmarker;
 			productName = HandLandmarker;
+			packageProductDependencies = (
+				F46FB5714FD7A18B379FAB6D /* MediaPipeTasksVision */,
+			);
 			productReference = BFCDAE212AAEB2A700EC4371 /* HandLandmarker.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -217,7 +189,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BFCDAE4E2AAEB2A800EC4371 /* Build configuration list for PBXNativeTarget "HandLandmarkerTests" */;
 			buildPhases = (
-				21E52BA9D743DF66BA6974EB /* [CP] Check Pods Manifest.lock */,
 				BFCDAE332AAEB2A800EC4371 /* Sources */,
 				BFCDAE342AAEB2A800EC4371 /* Frameworks */,
 				BFCDAE352AAEB2A800EC4371 /* Resources */,
@@ -260,6 +231,9 @@
 				Base,
 			);
 			mainGroup = BFCDAE182AAEB2A700EC4371;
+			packageReferences = (
+				ECCEB17E659F8FEDCEFC56D9 /* XCRemoteSwiftPackageReference "mediapipe" */,
+			);
 			productRefGroup = BFCDAE222AAEB2A700EC4371 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -293,50 +267,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		21E52BA9D743DF66BA6974EB /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-HandLandmarkerTests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		7A7FE6070D4D8E43FA2501E9 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-HandLandmarker-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
 		BF5EECA52AB7FEDB00189276 /* Download model */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -530,7 +460,6 @@
 		};
 		BFCDAE4C2AAEB2A800EC4371 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B19658A239090768FF9A5F9F /* Pods-HandLandmarker.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -561,7 +490,6 @@
 		};
 		BFCDAE4D2AAEB2A800EC4371 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1E80675CBEC6C300C36D39CD /* Pods-HandLandmarker.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -592,7 +520,6 @@
 		};
 		BFCDAE4F2AAEB2A800EC4371 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D6309757C0B73AC4C4CE0B6E /* Pods-HandLandmarkerTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -613,7 +540,6 @@
 		};
 		BFCDAE502AAEB2A800EC4371 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0BC8870F177D4B0E156D0440 /* Pods-HandLandmarkerTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -663,6 +589,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		ECCEB17E659F8FEDCEFC56D9 /* XCRemoteSwiftPackageReference "mediapipe" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google-ai-edge/mediapipe";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F46FB5714FD7A18B379FAB6D /* MediaPipeTasksVision */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = ECCEB17E659F8FEDCEFC56D9 /* XCRemoteSwiftPackageReference "mediapipe" */;
+			productName = MediaPipeTasksVision;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BFCDAE192AAEB2A700EC4371 /* Project object */;
 }

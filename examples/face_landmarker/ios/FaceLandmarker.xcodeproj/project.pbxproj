@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C1BCDCFFE3DDB04F00A7C29E /* MediaPipeTasksVision in Frameworks */ = {isa = PBXBuildFile; productRef = 24A30CC7CE3C51015426F73E /* MediaPipeTasksVision */; };
 		BF3499D62ACA646E007E6081 /* MediaLibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3499D22ACA646E007E6081 /* MediaLibraryViewController.swift */; };
 		BF3499D72ACA646E007E6081 /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3499D32ACA646E007E6081 /* CameraViewController.swift */; };
 		BF3499D82ACA646E007E6081 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3499D42ACA646E007E6081 /* RootViewController.swift */; };
@@ -24,8 +25,6 @@
 		BFEE41ED2A45351E00BA1A35 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFEE41EC2A45351E00BA1A35 /* SceneDelegate.swift */; };
 		BFEE41F72A45351F00BA1A35 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BFEE41F52A45351F00BA1A35 /* LaunchScreen.storyboard */; };
 		BFEE42302A4542B400BA1A35 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BFEE422E2A4542B400BA1A35 /* Main.storyboard */; };
-		CC9DBE1CC48C4DB446229F58 /* Pods_FaceLandmarker.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BEB757D4516FCE33E7F93E0B /* Pods_FaceLandmarker.framework */; };
-		CDB9E639CD84F1DEE7F622D5 /* libPods-FaceLandmarkerTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DC907E142B2A4A5ED6AD68C /* libPods-FaceLandmarkerTests.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,10 +38,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		40B88274C9701B9197F0726E /* Pods-FaceLandmarkerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FaceLandmarkerTests.release.xcconfig"; path = "Target Support Files/Pods-FaceLandmarkerTests/Pods-FaceLandmarkerTests.release.xcconfig"; sourceTree = "<group>"; };
-		5DC907E142B2A4A5ED6AD68C /* libPods-FaceLandmarkerTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-FaceLandmarkerTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		7D098A775C42220DE7F02EC0 /* Pods-FaceLandmarkerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FaceLandmarkerTests.debug.xcconfig"; path = "Target Support Files/Pods-FaceLandmarkerTests/Pods-FaceLandmarkerTests.debug.xcconfig"; sourceTree = "<group>"; };
-		BEB757D4516FCE33E7F93E0B /* Pods_FaceLandmarker.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_FaceLandmarker.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF3499D22ACA646E007E6081 /* MediaLibraryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MediaLibraryViewController.swift; sourceTree = "<group>"; };
 		BF3499D32ACA646E007E6081 /* CameraViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
 		BF3499D42ACA646E007E6081 /* RootViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
@@ -63,8 +58,6 @@
 		BFEE41F82A45351F00BA1A35 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BFEE41FD2A45351F00BA1A35 /* FaceLandmarkerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FaceLandmarkerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BFEE422F2A4542B400BA1A35 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		E926CBA36E9A76BEFC7FB7DF /* Pods-FaceLandmarker.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FaceLandmarker.release.xcconfig"; path = "Target Support Files/Pods-FaceLandmarker/Pods-FaceLandmarker.release.xcconfig"; sourceTree = "<group>"; };
-		FD9F1289B507CF7CF326D7DB /* Pods-FaceLandmarker.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FaceLandmarker.debug.xcconfig"; path = "Target Support Files/Pods-FaceLandmarker/Pods-FaceLandmarker.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,7 +65,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CC9DBE1CC48C4DB446229F58 /* Pods_FaceLandmarker.framework in Frameworks */,
+				C1BCDCFFE3DDB04F00A7C29E /* MediaPipeTasksVision in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -80,33 +73,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CDB9E639CD84F1DEE7F622D5 /* libPods-FaceLandmarkerTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		227AD33CCBBBA0C0E45E8889 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				FD9F1289B507CF7CF326D7DB /* Pods-FaceLandmarker.debug.xcconfig */,
-				E926CBA36E9A76BEFC7FB7DF /* Pods-FaceLandmarker.release.xcconfig */,
-				7D098A775C42220DE7F02EC0 /* Pods-FaceLandmarkerTests.debug.xcconfig */,
-				40B88274C9701B9197F0726E /* Pods-FaceLandmarkerTests.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		287163CB4E8FDF046324D157 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				BEB757D4516FCE33E7F93E0B /* Pods_FaceLandmarker.framework */,
-				5DC907E142B2A4A5ED6AD68C /* libPods-FaceLandmarkerTests.a */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		BF3499DA2ACA6484007E6081 /* Configurations */ = {
 			isa = PBXGroup;
 			children = (
@@ -139,8 +111,6 @@
 				BFEE41E92A45351E00BA1A35 /* FaceLandmarker */,
 				BFEE42002A45351F00BA1A35 /* FaceLandmarkerTests */,
 				BFEE41E82A45351E00BA1A35 /* Products */,
-				227AD33CCBBBA0C0E45E8889 /* Pods */,
-				287163CB4E8FDF046324D157 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -198,7 +168,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BFEE42112A45351F00BA1A35 /* Build configuration list for PBXNativeTarget "FaceLandmarker" */;
 			buildPhases = (
-				F01E952EE51699A6F761D123 /* [CP] Check Pods Manifest.lock */,
 				BFD91ED72A74F31600FD4649 /* Download  models */,
 				BFEE41E32A45351E00BA1A35 /* Sources */,
 				BFEE41E42A45351E00BA1A35 /* Frameworks */,
@@ -210,6 +179,9 @@
 			);
 			name = FaceLandmarker;
 			productName = FaceLandmarker;
+			packageProductDependencies = (
+				24A30CC7CE3C51015426F73E /* MediaPipeTasksVision */,
+			);
 			productReference = BFEE41E72A45351E00BA1A35 /* FaceLandmarker.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -217,7 +189,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BFEE42142A45351F00BA1A35 /* Build configuration list for PBXNativeTarget "FaceLandmarkerTests" */;
 			buildPhases = (
-				8262D92BE4902008C2E5E89A /* [CP] Check Pods Manifest.lock */,
 				BFEE41F92A45351F00BA1A35 /* Sources */,
 				BFEE41FA2A45351F00BA1A35 /* Frameworks */,
 				BFEE41FB2A45351F00BA1A35 /* Resources */,
@@ -261,6 +232,9 @@
 				Base,
 			);
 			mainGroup = BFEE41DE2A45351E00BA1A35;
+			packageReferences = (
+				7B78E3C46AF186F931162B48 /* XCRemoteSwiftPackageReference "mediapipe" */,
+			);
 			productRefGroup = BFEE41E82A45351E00BA1A35 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -294,28 +268,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		8262D92BE4902008C2E5E89A /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-FaceLandmarkerTests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
 		BFD91ED72A74F31600FD4649 /* Download  models */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -333,28 +285,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"$SRCROOT/RunScripts/download_models.sh\"\n";
-		};
-		F01E952EE51699A6F761D123 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-FaceLandmarker-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -531,7 +461,6 @@
 		};
 		BFEE42122A45351F00BA1A35 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = FD9F1289B507CF7CF326D7DB /* Pods-FaceLandmarker.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -565,7 +494,6 @@
 		};
 		BFEE42132A45351F00BA1A35 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E926CBA36E9A76BEFC7FB7DF /* Pods-FaceLandmarker.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -599,7 +527,6 @@
 		};
 		BFEE42152A45351F00BA1A35 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7D098A775C42220DE7F02EC0 /* Pods-FaceLandmarkerTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -622,7 +549,6 @@
 		};
 		BFEE42162A45351F00BA1A35 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 40B88274C9701B9197F0726E /* Pods-FaceLandmarkerTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -673,6 +599,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		7B78E3C46AF186F931162B48 /* XCRemoteSwiftPackageReference "mediapipe" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google-ai-edge/mediapipe";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		24A30CC7CE3C51015426F73E /* MediaPipeTasksVision */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7B78E3C46AF186F931162B48 /* XCRemoteSwiftPackageReference "mediapipe" */;
+			productName = MediaPipeTasksVision;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BFEE41DF2A45351E00BA1A35 /* Project object */;
 }

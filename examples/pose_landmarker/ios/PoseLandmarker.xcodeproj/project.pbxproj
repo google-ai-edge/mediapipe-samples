@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		35A24A324986D563A8483F9D /* Pods_PoseLandmarker.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A70819727B1AFD6C7312E5E7 /* Pods_PoseLandmarker.framework */; };
+		947B5F741DBFCD1A5B29E8F4 /* MediaPipeTasksVision in Frameworks */ = {isa = PBXBuildFile; productRef = E306F94B57A116134D1C761F /* MediaPipeTasksVision */; };
 		BF49F8F12BA81E6E0075959B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF49F8F02BA81E6E0075959B /* AppDelegate.swift */; };
 		BF49F8F82BA81E6E0075959B /* Base in Resources */ = {isa = PBXBuildFile; fileRef = BF49F8F72BA81E6E0075959B /* Base */; };
 		BF49F8FA2BA81E6F0075959B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF49F8F92BA81E6F0075959B /* Assets.xcassets */; };
@@ -27,7 +27,6 @@
 		BF49F93C2BA834D50075959B /* pose_landmarker_heavy.task in Resources */ = {isa = PBXBuildFile; fileRef = BF49F93A2BA834D50075959B /* pose_landmarker_heavy.task */; };
 		BF49F93D2BA834D50075959B /* pose_landmarker_full.task in Resources */ = {isa = PBXBuildFile; fileRef = BF49F93B2BA834D50075959B /* pose_landmarker_full.task */; };
 		BFE134132BA930040092BF4E /* test_image.jpg in Resources */ = {isa = PBXBuildFile; fileRef = BFE134122BA930040092BF4E /* test_image.jpg */; };
-		FA59FA5268D0C1CD91481592 /* libPods-PoseLandmarkerTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9AA2A96F11E3A326401F36F2 /* libPods-PoseLandmarkerTests.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -41,12 +40,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		61DA9B9B143F9041F5EBF658 /* Pods-PoseLandmarker.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PoseLandmarker.debug.xcconfig"; path = "Target Support Files/Pods-PoseLandmarker/Pods-PoseLandmarker.debug.xcconfig"; sourceTree = "<group>"; };
-		69E7C22BC4E120CAF1F43A65 /* Pods-PoseLandmarkerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PoseLandmarkerTests.release.xcconfig"; path = "Target Support Files/Pods-PoseLandmarkerTests/Pods-PoseLandmarkerTests.release.xcconfig"; sourceTree = "<group>"; };
-		7B1F143B63E1903E1398857D /* Pods-PoseLandmarkerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PoseLandmarkerTests.debug.xcconfig"; path = "Target Support Files/Pods-PoseLandmarkerTests/Pods-PoseLandmarkerTests.debug.xcconfig"; sourceTree = "<group>"; };
-		9AA2A96F11E3A326401F36F2 /* libPods-PoseLandmarkerTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-PoseLandmarkerTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		A70819727B1AFD6C7312E5E7 /* Pods_PoseLandmarker.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PoseLandmarker.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		B88D37123CF1372789AE8286 /* Pods-PoseLandmarker.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PoseLandmarker.release.xcconfig"; path = "Target Support Files/Pods-PoseLandmarker/Pods-PoseLandmarker.release.xcconfig"; sourceTree = "<group>"; };
 		BF49F8ED2BA81E6E0075959B /* PoseLandmarker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PoseLandmarker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF49F8F02BA81E6E0075959B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BF49F8F72BA81E6E0075959B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -76,7 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				35A24A324986D563A8483F9D /* Pods_PoseLandmarker.framework in Frameworks */,
+				947B5F741DBFCD1A5B29E8F4 /* MediaPipeTasksVision in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,41 +77,18 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FA59FA5268D0C1CD91481592 /* libPods-PoseLandmarkerTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		024AE8DDCB5455B073BDCB6E /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				A70819727B1AFD6C7312E5E7 /* Pods_PoseLandmarker.framework */,
-				9AA2A96F11E3A326401F36F2 /* libPods-PoseLandmarkerTests.a */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		96E5B5D2B03BA2484C9C6B99 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				61DA9B9B143F9041F5EBF658 /* Pods-PoseLandmarker.debug.xcconfig */,
-				B88D37123CF1372789AE8286 /* Pods-PoseLandmarker.release.xcconfig */,
-				7B1F143B63E1903E1398857D /* Pods-PoseLandmarkerTests.debug.xcconfig */,
-				69E7C22BC4E120CAF1F43A65 /* Pods-PoseLandmarkerTests.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
 		BF49F8E42BA81E6E0075959B = {
 			isa = PBXGroup;
 			children = (
 				BF49F8EF2BA81E6E0075959B /* PoseLandmarker */,
 				BF49F9062BA81E700075959B /* PoseLandmarkerTests */,
 				BF49F8EE2BA81E6E0075959B /* Products */,
-				96E5B5D2B03BA2484C9C6B99 /* Pods */,
-				024AE8DDCB5455B073BDCB6E /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -204,7 +174,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BF49F9172BA81E700075959B /* Build configuration list for PBXNativeTarget "PoseLandmarker" */;
 			buildPhases = (
-				E287F09DD63ACAD418F5F3CD /* [CP] Check Pods Manifest.lock */,
 				BF49F93E2BA83A910075959B /* Download models */,
 				BF49F8E92BA81E6E0075959B /* Sources */,
 				BF49F8EA2BA81E6E0075959B /* Frameworks */,
@@ -216,6 +185,9 @@
 			);
 			name = PoseLandmarker;
 			productName = PoseLandmarker;
+			packageProductDependencies = (
+				E306F94B57A116134D1C761F /* MediaPipeTasksVision */,
+			);
 			productReference = BF49F8ED2BA81E6E0075959B /* PoseLandmarker.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -223,7 +195,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BF49F91A2BA81E700075959B /* Build configuration list for PBXNativeTarget "PoseLandmarkerTests" */;
 			buildPhases = (
-				88746BBACE513A1A750EFB1B /* [CP] Check Pods Manifest.lock */,
 				BF49F8FF2BA81E700075959B /* Sources */,
 				BF49F9002BA81E700075959B /* Frameworks */,
 				BF49F9012BA81E700075959B /* Resources */,
@@ -266,6 +237,9 @@
 				Base,
 			);
 			mainGroup = BF49F8E42BA81E6E0075959B;
+			packageReferences = (
+				F98846FC06BD235927F6B692 /* XCRemoteSwiftPackageReference "mediapipe" */,
+			);
 			productRefGroup = BF49F8EE2BA81E6E0075959B /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -301,28 +275,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		88746BBACE513A1A750EFB1B /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-PoseLandmarkerTests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
 		BF49F93E2BA83A910075959B /* Download models */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -341,28 +293,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"$SRCROOT/RunScripts/download_models.sh\"\n";
-		};
-		E287F09DD63ACAD418F5F3CD /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-PoseLandmarker-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -546,7 +476,6 @@
 		};
 		BF49F9182BA81E700075959B /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 61DA9B9B143F9041F5EBF658 /* Pods-PoseLandmarker.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -580,7 +509,6 @@
 		};
 		BF49F9192BA81E700075959B /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B88D37123CF1372789AE8286 /* Pods-PoseLandmarker.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -614,7 +542,6 @@
 		};
 		BF49F91B2BA81E700075959B /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7B1F143B63E1903E1398857D /* Pods-PoseLandmarkerTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -637,7 +564,6 @@
 		};
 		BF49F91C2BA81E700075959B /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 69E7C22BC4E120CAF1F43A65 /* Pods-PoseLandmarkerTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -689,6 +615,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		F98846FC06BD235927F6B692 /* XCRemoteSwiftPackageReference "mediapipe" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google-ai-edge/mediapipe";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E306F94B57A116134D1C761F /* MediaPipeTasksVision */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F98846FC06BD235927F6B692 /* XCRemoteSwiftPackageReference "mediapipe" */;
+			productName = MediaPipeTasksVision;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BF49F8E52BA81E6E0075959B /* Project object */;
 }
