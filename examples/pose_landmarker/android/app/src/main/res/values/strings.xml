@@ -45,6 +45,8 @@
     <string name="label_num_poses">Number of Poses</string>
     <string name="label_delegate">Delegate</string>
     <string name="label_models">Model</string>
+    <string name="label_desensitize_mode">Desensitize Mode (Mosaic Background)</string>
+    <string name="desc_desensitize_switch">Switch to desensitize mode to hide raw camera details</string>
 
     <string-array name="delegate_spinner_titles">
         <item>CPU</item>
