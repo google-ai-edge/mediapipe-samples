@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="password-container">
+        <h2>Enter Password to Join</h2>
+        <input type="password" id="password-input" placeholder="Password">
+        <button id="password-submit">Join</button>
+        <p id="error-message" class="hidden">Wrong password. Please try again.</p>
+    </div>
+
+    <div id="chat-container" class="hidden">
+        <div id="chat-header">
+            <h2>Chat Room</h2>
+            <div id="background-controls">
+                <label for="bg-color">Change BG:</label>
+                <input type="color" id="bg-color" value="#ffffff">
+            </div>
+        </div>
+        <ul id="messages"></ul>
+        <form id="form" action="">
+            <input id="input" autocomplete="off" placeholder="Type a message..." /><button>Send</button>
+        </form>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
