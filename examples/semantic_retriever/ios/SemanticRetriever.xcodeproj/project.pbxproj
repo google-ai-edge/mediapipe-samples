@@ -1,0 +1,350 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A0000001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000001 /* AppDelegate.swift */; };
+		A0000002 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002 /* SceneDelegate.swift */; };
+		A0000003 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000003 /* ViewController.swift */; };
+		A0000004 /* SemanticRetrieverHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000004 /* SemanticRetrieverHelper.swift */; };
+		A0000008 /* embeddinggemma-2-text-vision-440m.litertlm in Resources */ = {isa = PBXBuildFile; fileRef = A1000008 /* embeddinggemma-2-text-vision-440m.litertlm */; };
+		A0000009 /* images in Resources */ = {isa = PBXBuildFile; fileRef = A1000009 /* images */; };
+		A000000B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A100000B /* Assets.xcassets */; };
+		A000000A /* MediaPipeTasksRetrieval in Frameworks */ = {isa = PBXBuildFile; productRef = A900000A /* MediaPipeTasksRetrieval */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A1000001 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		A1000002 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		A1000003 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		A1000004 /* SemanticRetrieverHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticRetrieverHelper.swift; sourceTree = "<group>"; };
+		A1000005 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A1000006 /* download_models.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = download_models.sh; path = RunScripts/download_models.sh; sourceTree = "<group>"; };
+		A1000007 /* SemanticRetriever.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SemanticRetriever.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1000008 /* embeddinggemma-2-text-vision-440m.litertlm */ = {isa = PBXFileReference; lastKnownFileType = file; path = embeddinggemma-2-text-vision-440m.litertlm; sourceTree = "<group>"; };
+		A1000009 /* images */ = {isa = PBXFileReference; lastKnownFileType = folder; path = images; sourceTree = "<group>"; };
+		A100000B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A2000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A000000A /* MediaPipeTasksRetrieval in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A3000001 = {
+			isa = PBXGroup;
+			children = (
+				A3000002 /* SemanticRetriever */,
+				A3000003 /* RunScripts */,
+				A3000004 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A3000002 /* SemanticRetriever */ = {
+			isa = PBXGroup;
+			children = (
+				A1000001 /* AppDelegate.swift */,
+				A1000002 /* SceneDelegate.swift */,
+				A1000003 /* ViewController.swift */,
+				A1000004 /* SemanticRetrieverHelper.swift */,
+				A1000005 /* Info.plist */,
+				A100000B /* Assets.xcassets */,
+				A1000009 /* images */,
+				A1000008 /* embeddinggemma-2-text-vision-440m.litertlm */,
+			);
+			path = SemanticRetriever;
+			sourceTree = "<group>";
+		};
+		A3000003 /* RunScripts */ = {
+			isa = PBXGroup;
+			children = (
+				A1000006 /* download_models.sh */,
+			);
+			name = RunScripts;
+			sourceTree = "<group>";
+		};
+		A3000004 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A1000007 /* SemanticRetriever.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A4000001 /* SemanticRetriever */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A5000001 /* Build configuration list for PBXNativeTarget "SemanticRetriever" */;
+			buildPhases = (
+				A6000001 /* Download models */,
+				A6000002 /* Sources */,
+				A2000001 /* Frameworks */,
+				A6000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SemanticRetriever;
+			packageProductDependencies = (
+				A900000A /* MediaPipeTasksRetrieval */,
+			);
+			productName = SemanticRetriever;
+			productReference = A1000007 /* SemanticRetriever.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A7000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1430;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					A4000001 = {
+						CreatedOnToolsVersion = 14.3;
+					};
+				};
+			};
+			buildConfigurationList = A5000002 /* Build configuration list for PBXProject "SemanticRetriever" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A3000001;
+			packageReferences = (
+				A8000001 /* XCRemoteSwiftPackageReference "mediapipe" */,
+			);
+			productRefGroup = A3000004 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A4000001 /* SemanticRetriever */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A6000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A0000009 /* images in Resources */,
+				A000000B /* Assets.xcassets in Resources */,
+				A0000008 /* embeddinggemma-2-text-vision-440m.litertlm in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		A6000001 /* Download models */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download models";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/SemanticRetriever/embeddinggemma-2-text-vision-440m.litertlm",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/RunScripts/download_models.sh\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A6000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A0000001 /* AppDelegate.swift in Sources */,
+				A0000002 /* SceneDelegate.swift in Sources */,
+				A0000003 /* ViewController.swift in Sources */,
+				A0000004 /* SemanticRetrieverHelper.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A8000101 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A8000102 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A8000103 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = SemanticRetriever/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.semanticretriever;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A8000104 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = SemanticRetriever/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.semanticretriever;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A5000001 /* Build configuration list for PBXNativeTarget "SemanticRetriever" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A8000103 /* Debug */,
+				A8000104 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A5000002 /* Build configuration list for PBXProject "SemanticRetriever" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A8000101 /* Debug */,
+				A8000102 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A8000001 /* XCRemoteSwiftPackageReference "mediapipe" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google-ai-edge/mediapipe";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A900000A /* MediaPipeTasksRetrieval */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A8000001 /* XCRemoteSwiftPackageReference "mediapipe" */;
+			productName = MediaPipeTasksRetrieval;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = A7000001 /* Project object */;
+}
