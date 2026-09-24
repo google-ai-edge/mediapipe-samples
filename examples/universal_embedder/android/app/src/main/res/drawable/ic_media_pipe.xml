@@ -1,0 +1,39 @@
+<!-- The MediaPipe mark, extracted from media_pipe_banner.xml without the wordmark. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="88"
+    android:viewportHeight="88">
+  <group
+      android:translateX="-32"
+      android:translateY="-32">
+  <path
+      android:pathData="M88,48C92.42,48 96,44.42 96,40C96,35.58 92.42,32 88,32C83.58,32 80,35.58 80,40C80,44.42 83.58,48 88,48Z"
+      android:fillColor="#129EAF"
+      android:fillType="evenOdd"/>
+  <path
+      android:pathData="M48,88C48,83.58 44.42,80 40,80C35.58,80 32,83.58 32,88V112C32,116.42 35.58,120 40,120C44.42,120 48,116.42 48,112V88Z"
+      android:fillColor="#129EAF"
+      android:fillType="evenOdd"/>
+  <path
+      android:pathData="M48,64V40C48,35.58 44.42,32 40,32C35.58,32 32,35.58 32,40V64C32,68.42 35.58,72 40,72C44.42,72 48,68.42 48,64Z"
+      android:fillColor="#129EAF"
+      android:fillType="evenOdd"/>
+  <path
+      android:pathData="M72,88V40C72,35.58 68.42,32 64,32C59.58,32 56,35.58 56,40V88C56,92.42 59.58,96 64,96C68.42,96 72,92.42 72,88Z"
+      android:fillColor="#129EAF"
+      android:fillType="evenOdd"/>
+  <path
+      android:pathData="M120,112V40C120,35.58 116.42,32 112,32C107.58,32 104,35.58 104,40V112C104,116.42 107.58,120 112,120C116.42,120 120,116.42 120,112Z"
+      android:fillColor="#129EAF"
+      android:fillType="evenOdd"/>
+  <path
+      android:pathData="M96,112V64C96,59.58 92.42,56 88,56C83.58,56 80,59.58 80,64V112C80,116.42 83.58,120 88,120C92.42,120 96,116.42 96,112Z"
+      android:fillColor="#129EAF"
+      android:fillType="evenOdd"/>
+  <path
+      android:pathData="M64,120C68.42,120 72,116.42 72,112C72,107.58 68.42,104 64,104C59.58,104 56,107.58 56,112C56,116.42 59.58,120 64,120Z"
+      android:fillColor="#129EAF"
+      android:fillType="evenOdd"/>
+  </group>
+</vector>
