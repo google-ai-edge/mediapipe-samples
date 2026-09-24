@@ -1,0 +1,51 @@
+/*
+ * Copyright 2025 The MediaPipe Authors. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *             http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Placeholder for automatic model provisioning.
+//
+// EmbeddingGemma V2 (.litertlm) is not published to a public endpoint yet, so for now the
+// model has to be placed in app/src/main/assets manually:
+//
+//     app/src/main/assets/embedding_gemma_v2_q4c_multisig.litertlm
+//
+// Once the model is available on Hugging Face, fill in HF_MODEL_URL below and uncomment the
+// `preBuild.dependsOn` line at the bottom. Gradle will then fetch it at build time and the
+// checked-in copy can be dropped from the repo (it is ~470 MB).
+
+ext {
+    ASSET_DIR = projectDir.toString() + '/src/main/assets'
+    EMBEDDING_MODEL = 'embedding_gemma_v2_q4c_multisig.litertlm'
+
+    // TODO(mediapipe): point this at the public Hugging Face resolve URL once the model ships,
+    // e.g. 'https://huggingface.co/google/embeddinggemma-v2/resolve/main/' + EMBEDDING_MODEL
+    HF_MODEL_URL = ''
+}
+
+task downloadEmbeddingModel(type: Download) {
+    // Guards against running with an empty placeholder URL.
+    onlyIf { !project.ext.HF_MODEL_URL.isEmpty() }
+
+    src project.ext.HF_MODEL_URL
+    dest project.ext.ASSET_DIR + '/' + project.ext.EMBEDDING_MODEL
+    overwrite false
+
+    doFirst {
+        println "Downloading ${project.ext.EMBEDDING_MODEL} from Hugging Face…"
+    }
+}
+
+// TODO(mediapipe): uncomment once HF_MODEL_URL is set.
+// preBuild.dependsOn downloadEmbeddingModel
