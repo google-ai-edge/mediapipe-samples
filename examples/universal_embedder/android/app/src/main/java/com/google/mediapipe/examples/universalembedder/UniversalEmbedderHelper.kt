@@ -1,7 +1,24 @@
+/*
+ * Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.google.mediapipe.examples.universalembedder
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.os.ParcelFileDescriptor
 import android.util.Log
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.components.containers.Embedding
@@ -10,13 +27,14 @@ import com.google.mediapipe.tasks.core.Delegate
 import com.google.mediapipe.tasks.retrieval.universalembedder.UniversalEmbedder
 import com.google.mediapipe.tasks.retrieval.universalembedder.UniversalEmbedderOptions
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.FileOutputStream
 
 /** An embedding plus how long it took to produce. */
 data class EmbeddingRun(val embedding: Embedding, val millis: Long)
 
 /**
- * Thin wrapper around [UniversalEmbedder].
+ * Thin wrapper around [UniversalEmbedder] ([MODEL_URL]).
  *
  * The embedder maps text, images and audio into a single shared vector space, which is what makes
  * cross-modal comparison ("does this sentence describe this picture?") possible.
@@ -38,29 +56,41 @@ class UniversalEmbedderHelper(private val context: Context) {
         embedder?.close()
         embedder = null
 
-        // The LiteRT JNI layer opens the model by absolute path, so it cannot be read straight out
-        // of the APK's assets; copy it into filesDir on first launch.
+        // Copy the model from APK assets into filesDir on first launch so we can open a standalone
+        // ParcelFileDescriptor for BaseOptions.setModelAssetFileDescriptor.
         val modelFile = File(context.filesDir, MODEL_NAME)
         if (!modelFile.exists()) {
             Log.i(TAG, "Copying $MODEL_NAME from assets to filesDir…")
-            context.assets.open(MODEL_NAME).use { input ->
-                FileOutputStream(modelFile).use { output -> input.copyTo(output) }
+            try {
+                context.assets.open(MODEL_NAME).use { input ->
+                    FileOutputStream(modelFile).use { output -> input.copyTo(output) }
+                }
+            } catch (e: FileNotFoundException) {
+                throw IllegalStateException(
+                    "Model $MODEL_NAME not found in assets. Download it from $MODEL_URL and " +
+                        "place it in app/src/main/assets/$MODEL_NAME.",
+                    e
+                )
             }
         }
 
         val delegate = if (useGpu) Delegate.GPU else Delegate.CPU
-        val options = UniversalEmbedderOptions.builder()
-            .setBaseOptions(BaseOptions.builder().setModelAssetPath(modelFile.absolutePath).build())
-            // Delegates are per-modality: the text tower encodes strings, the vision tower images.
-            .setTextDelegate(delegate)
-            .setVisionDelegate(delegate)
-            .setCacheDir(context.cacheDir.absolutePath)
-            // Embeddings are unit length, so a dot product is the cosine similarity.
-            .setL2Normalize(true)
-            .build()
-
         val startedAt = System.currentTimeMillis()
-        embedder = UniversalEmbedder.createFromOptions(context, options)
+        embedder =
+            ParcelFileDescriptor.open(modelFile, ParcelFileDescriptor.MODE_READ_ONLY).use { pfd ->
+                val options = UniversalEmbedderOptions.builder()
+                    .setBaseOptions(
+                        BaseOptions.builder()
+                            .setModelAssetFileDescriptor(pfd.fd)
+                            .setDelegate(delegate)
+                            .build()
+                    )
+                    .setCacheDir(context.cacheDir.absolutePath)
+                    .setL2Normalize(true)
+                    .build()
+
+                UniversalEmbedder.createFromOptions(context, options)
+            }
         currentlyOnGpu = useGpu
         Log.i(TAG, "Embedder ready on $delegate in ${System.currentTimeMillis() - startedAt}ms")
     }
@@ -88,6 +118,8 @@ class UniversalEmbedderHelper(private val context: Context) {
     companion object {
         private const val TAG = "UniversalEmbedder"
         private const val MODEL_NAME = "embedding_gemma_v2_q4c_multisig.litertlm"
+        private const val MODEL_URL =
+            "https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm"
 
         /** Cosine similarity, in [-1, 1]. Identical inputs score 1. */
         fun similarity(a: Embedding, b: Embedding): Double =

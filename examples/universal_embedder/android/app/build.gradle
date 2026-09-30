@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'androidx.navigation.safeargs'
+    id 'de.undercouch.download'
 }
 
 android {
@@ -42,6 +43,9 @@ android {
         noCompress 'tflite', 'litertlm'
     }
 }
+
+// Fetches the embedding model at build time.
+apply from: 'download.gradle'
 
 dependencies {
     implementation 'androidx.core:core-ktx:1.8.0'

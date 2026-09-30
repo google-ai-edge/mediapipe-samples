@@ -1,5 +1,23 @@
+/*
+ * Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.google.mediapipe.examples.semanticretriever
 
+import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
@@ -20,9 +38,9 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
-import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.progressindicator.LinearProgressIndicator
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.google.mediapipe.tasks.retrieval.semanticretriever.RetrievalResult
@@ -157,7 +175,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun runSearch() {
         if (isBusy) {
-            Toast.makeText(this, "Busy — wait for the current step to finish", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this,
+                "Busy — wait for the current step to finish",
+                Toast.LENGTH_SHORT
+            ).show()
             return
         }
         val query = etQuery.text?.toString().orEmpty().trim()
@@ -216,7 +238,8 @@ class MainActivity : AppCompatActivity() {
         storeJob?.cancel()
         setIndexed(false)
         val accelerator = if (useGpu) "GPU" else "CPU"
-        setBusy(true, "Loading ${if (useAppSearch) "AppSearch" else "SQLite"} on $accelerator…")
+        val storeName = if (useAppSearch) "AppSearch" else "SQLite"
+        setBusy(true, "Loading $storeName on $accelerator…")
         etQuery.setText("")
         progressIndex.visibility = View.GONE
         progressIndex.progress = 0
@@ -235,7 +258,7 @@ class MainActivity : AppCompatActivity() {
                     // Start from a known-empty store without deleting files under a live store.
                     retriever.clear(sampleImages.map { it.substringBefore(".") })
                 }
-                setBusy(false, "Ready · ${if (useAppSearch) "AppSearch" else "SQLite"} on $accelerator · store is empty")
+                setBusy(false, "Ready · $storeName on $accelerator · store is empty")
                 setIndexed(false)
             } catch (e: Exception) {
                 Log.e("MainActivity", "Error opening store", e)
@@ -258,18 +281,25 @@ class MainActivity : AppCompatActivity() {
             try {
                 sampleImages.forEachIndexed { index, imageName ->
                     val id = imageName.substringBefore(".")
-                    tvStatus.text = "Embedding ${index + 1}/${sampleImages.size}: ${id.replace('_', ' ')}"
+                    val label = id.replace('_', ' ')
+                    tvStatus.text = "Embedding ${index + 1}/${sampleImages.size}: $label"
                     progressIndex.setProgressCompat(index * 100 / sampleImages.size, true)
                     withContext(retrieverDispatcher) {
-                        retriever.embedImage(id, Uri.parse("file:///android_asset/images/$imageName"))
+                        val assetUri = Uri.parse("file:///android_asset/images/$imageName")
+                        retriever.embedImage(id, assetUri)
                     }
                     Log.d("MainActivity", "Embedded $id")
                 }
                 val seconds = (System.currentTimeMillis() - started) / 1000.0
+                val accelerator = if (useGpu) "GPU" else "CPU"
                 progressIndex.setProgressCompat(100, true)
                 // Let the bar finish animating, then tuck it away again.
                 progressIndex.postDelayed({ progressIndex.visibility = View.GONE }, 600)
-                setBusy(false, "Indexed ${sampleImages.size} images in %.1fs on ${if (useGpu) "GPU" else "CPU"} · ready to search".format(seconds))
+                setBusy(
+                    false,
+                    "Indexed ${sampleImages.size} images in %.1fs on $accelerator · ready to search"
+                        .format(seconds)
+                )
                 setIndexed(true)
             } catch (e: Exception) {
                 Log.e("MainActivity", "Error embedding", e)
@@ -325,7 +355,7 @@ class ResultsAdapter : RecyclerView.Adapter<ResultsAdapter.ResultViewHolder>() {
 
     // Assets never change at runtime, so a tiny in-memory cache is all we need. Decoding
     // directly from assets also avoids stale entries from an image loader's disk cache.
-    private val bitmapCache = object : LruCache<String, android.graphics.Bitmap>(16) {}
+    private val bitmapCache = object : LruCache<String, Bitmap>(16) {}
 
     fun setResults(newResults: List<RetrievalResult>) {
         results.clear()
@@ -353,7 +383,7 @@ class ResultsAdapter : RecyclerView.Adapter<ResultsAdapter.ResultViewHolder>() {
         holder.ivResult.setImageBitmap(loadAsset(holder.itemView.context, "images/$id.jpg"))
     }
 
-    private fun loadAsset(context: android.content.Context, path: String): android.graphics.Bitmap? {
+    private fun loadAsset(context: Context, path: String): Bitmap? {
         bitmapCache.get(path)?.let { return it }
         return try {
             val options = BitmapFactory.Options().apply { inSampleSize = 4 }

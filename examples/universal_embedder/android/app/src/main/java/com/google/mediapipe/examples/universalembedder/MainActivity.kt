@@ -1,3 +1,19 @@
+/*
+ * Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.google.mediapipe.examples.universalembedder
 
 import android.graphics.Bitmap
@@ -80,8 +96,12 @@ class MainActivity : AppCompatActivity() {
         tvVectorInfo = findViewById(R.id.tvVectorInfo)
         pbSimilarity = findViewById(R.id.pbSimilarity)
 
-        slotA = InputSlot(findViewById(R.id.slotA), getString(R.string.slot_a)) { invalidateResult() }
-        slotB = InputSlot(findViewById(R.id.slotB), getString(R.string.slot_b)) { invalidateResult() }
+        slotA = InputSlot(findViewById(R.id.slotA), getString(R.string.slot_a)) {
+            invalidateResult()
+        }
+        slotB = InputSlot(findViewById(R.id.slotB), getString(R.string.slot_b)) {
+            invalidateResult()
+        }
 
         // A text/image pairing out of the box, so the cross-modal point lands immediately.
         slotA.setText("a yellow piece of fruit")
@@ -137,10 +157,12 @@ class MainActivity : AppCompatActivity() {
         job = uiScope.launch {
             try {
                 val runA = withContext(embedderDispatcher) { embed(inputA) }
-                slotA.showInfo("${inputA.label} · ${runA.embedding.floatEmbedding().size}d · ${runA.millis}ms")
+                val dimsA = runA.embedding.floatEmbedding().size
+                slotA.showInfo("${inputA.label} · ${dimsA}d · ${runA.millis}ms")
 
                 val runB = withContext(embedderDispatcher) { embed(inputB) }
-                slotB.showInfo("${inputB.label} · ${runB.embedding.floatEmbedding().size}d · ${runB.millis}ms")
+                val dimsB = runB.embedding.floatEmbedding().size
+                slotB.showInfo("${inputB.label} · ${dimsB}d · ${runB.millis}ms")
 
                 val similarity = UniversalEmbedderHelper.similarity(runA.embedding, runB.embedding)
                 showResult(similarity, runA.embedding, runB.embedding, runA.millis + runB.millis)
@@ -165,10 +187,12 @@ class MainActivity : AppCompatActivity() {
         cardResult.visibility = View.VISIBLE
         tvSimilarity.text = "%.4f".format(similarity)
         // Cosine similarity is in [-1, 1]; map onto the 0-100 bar.
-        pbSimilarity.setProgressCompat((((similarity + 1) / 2) * 100).toInt().coerceIn(0, 100), true)
+        val progress = (((similarity + 1) / 2) * 100).toInt().coerceIn(0, 100)
+        pbSimilarity.setProgressCompat(progress, true)
         // Show both vectors: the score above is the angle between exactly these two.
         tvVectorInfo.text = "A ${preview(embeddingA)}\nB ${preview(embeddingB)}"
-        setBusy(false, "Embedded both inputs in ${totalMillis}ms on ${if (useGpu) "GPU" else "CPU"}")
+        val accelerator = if (useGpu) "GPU" else "CPU"
+        setBusy(false, "Embedded both inputs in ${totalMillis}ms on $accelerator")
     }
 
     /** First few dimensions of an embedding, e.g. `[-0.010, +0.026, …] 768d`. */

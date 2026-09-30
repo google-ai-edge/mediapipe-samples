@@ -1,7 +1,24 @@
+/*
+ * Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.google.mediapipe.examples.semanticretriever
 
 import android.content.Context
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import android.util.Log
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
@@ -14,13 +31,14 @@ import com.google.mediapipe.tasks.retrieval.semanticretriever.SemanticRetrieverC
 import com.google.mediapipe.tasks.retrieval.universalembedder.UniversalEmbedder
 import com.google.mediapipe.tasks.retrieval.universalembedder.UniversalEmbedderOptions
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.FileOutputStream
 
 /**
  * Owns the embedding engine and the currently selected vector store.
  *
- * The [UniversalEmbedder] wraps a ~470 MB LiteRT model, so it is created exactly once and kept
- * alive for the lifetime of the helper. Switching vector stores only swaps the cheap
+ * The [UniversalEmbedder] wraps a ~470 MB LiteRT-LM model ([MODEL_URL]), so it is created exactly
+ * once and kept alive for the lifetime of the helper. Switching vector stores only swaps the cheap
  * [SemanticRetriever] / [VectorStore] pair on top of that same embedder — tearing the engine down
  * and standing a second one up would either fail to mmap the model file or leave callers holding a
  * closed engine.
@@ -52,37 +70,46 @@ class SemanticRetrieverHelper(private val context: Context) {
             universalEmbedder = null
         }
 
-        // The LiteRT JNI layer opens the model by absolute path, so it cannot be read straight out
-        // of the APK's assets; copy it into filesDir on first launch.
+        // Copy the model from APK assets into filesDir on first launch so we can open a standalone
+        // ParcelFileDescriptor for BaseOptions.setModelAssetFileDescriptor.
         val modelFile = File(context.filesDir, MODEL_NAME)
         if (!modelFile.exists()) {
             Log.i(TAG, "Copying $MODEL_NAME from assets to filesDir…")
-            context.assets.open(MODEL_NAME).use { input ->
-                FileOutputStream(modelFile).use { output ->
-                    input.copyTo(output)
+            try {
+                context.assets.open(MODEL_NAME).use { input ->
+                    FileOutputStream(modelFile).use { output ->
+                        input.copyTo(output)
+                    }
                 }
+            } catch (e: FileNotFoundException) {
+                throw IllegalStateException(
+                    "Model $MODEL_NAME not found in assets. Download it from $MODEL_URL and " +
+                        "place it in app/src/main/assets/$MODEL_NAME.",
+                    e
+                )
             }
             Log.i(TAG, "Model copied (${modelFile.length()} bytes).")
         }
 
-        val baseOptions = BaseOptions.builder()
-            .setModelAssetPath(modelFile.absolutePath)
-            .build()
-
-        // Delegates are per-modality: the text tower encodes queries, the vision tower encodes
-        // images. Both are pushed onto the same accelerator here.
         val delegate = if (useGpu) Delegate.GPU else Delegate.CPU
-        val embedderOptions = UniversalEmbedderOptions.builder()
-            .setBaseOptions(baseOptions)
-            .setTextDelegate(delegate)
-            .setVisionDelegate(delegate)
-            .setCacheDir(context.cacheDir.absolutePath)
-            .build()
-
         val startedAt = System.currentTimeMillis()
-        universalEmbedder = UniversalEmbedder.createFromOptions(context, embedderOptions)
+        universalEmbedder =
+            ParcelFileDescriptor.open(modelFile, ParcelFileDescriptor.MODE_READ_ONLY).use { pfd ->
+                val baseOptions = BaseOptions.builder()
+                    .setModelAssetFileDescriptor(pfd.fd)
+                    .setDelegate(delegate)
+                    .build()
+
+                val embedderOptions = UniversalEmbedderOptions.builder()
+                    .setBaseOptions(baseOptions)
+                    .setCacheDir(context.cacheDir.absolutePath)
+                    .build()
+
+                UniversalEmbedder.createFromOptions(context, embedderOptions)
+            }
         currentlyOnGpu = useGpu
-        Log.i(TAG, "Embedding engine ready on $delegate in ${System.currentTimeMillis() - startedAt}ms")
+        val elapsed = System.currentTimeMillis() - startedAt
+        Log.i(TAG, "Embedding engine ready on $delegate in ${elapsed}ms")
     }
 
     /**
@@ -139,6 +166,8 @@ class SemanticRetrieverHelper(private val context: Context) {
     private companion object {
         const val TAG = "SemanticRetriever"
         const val MODEL_NAME = "embedding_gemma_v2_q4c_multisig.litertlm"
+        const val MODEL_URL =
+            "https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm"
         const val DB_NAME = "semantic_db"
     }
 }

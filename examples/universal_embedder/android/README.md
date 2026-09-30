@@ -23,14 +23,20 @@ Measured on a Pixel-class device with an Adreno 750:
 ### API in a nutshell
 
 ```kotlin
-val options = UniversalEmbedderOptions.builder()
-    .setBaseOptions(BaseOptions.builder().setModelAssetPath(modelPath).build())
-    .setTextDelegate(Delegate.GPU)    // per-modality accelerators
-    .setVisionDelegate(Delegate.GPU)
-    .setL2Normalize(true)
-    .build()
+val embedder =
+    ParcelFileDescriptor.open(modelFile, ParcelFileDescriptor.MODE_READ_ONLY).use { pfd ->
+        val options = UniversalEmbedderOptions.builder()
+            .setBaseOptions(
+                BaseOptions.builder()
+                    .setModelAssetFileDescriptor(pfd.fd)
+                    .setDelegate(Delegate.GPU)
+                    .build()
+            )
+            .setL2Normalize(true)
+            .build()
 
-val embedder = UniversalEmbedder.createFromOptions(context, options)
+        UniversalEmbedder.createFromOptions(context, options)
+    }
 
 val text = embedder.embedText("a yellow piece of fruit").embeddings().first()
 val image = embedder.embedImage(BitmapImageBuilder(bitmap).build()).embeddings().first()
@@ -59,15 +65,19 @@ that is unstable on some Qualcomm drivers.
 
 ### Model
 
-The app expects the EmbeddingGemma V2 LiteRT-LM model at:
+The app uses the [EmbeddingGemma 2 LiteRT-LM model][model-url] at:
 
 ```
 app/src/main/assets/embedding_gemma_v2_q4c_multisig.litertlm
 ```
 
-The model is not yet published to a public endpoint, so it has to be placed there manually. On
-first launch it is copied from assets into `filesDir`, because the LiteRT JNI layer opens it by
-absolute path.
+`app/download.gradle` automatically downloads the model from
+<https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm> at build time.
+If the model is not yet live at that URL or requires authentication, download it manually and place
+it at the path above.
+
+On first launch the model is copied from assets into `filesDir` and opened via a
+`ParcelFileDescriptor` passed to `BaseOptions.setModelAssetFileDescriptor`.
 
 ### Building
 
@@ -83,3 +93,5 @@ absolute path.
 
 *   `examples/semantic_retriever` builds on the same embedder, adding a vector store and
     retrieval on top of it for semantic image search.
+
+[model-url]: https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm

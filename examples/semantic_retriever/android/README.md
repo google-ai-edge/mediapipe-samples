@@ -32,18 +32,20 @@ This application should be run on a physical Android device (arm64).
 
 ### Model
 
-The app expects the EmbeddingGemma V2 LiteRT-LM model at:
+The app uses the [EmbeddingGemma 2 LiteRT-LM model][model-url] at:
 
 ```
 app/src/main/assets/embedding_gemma_v2_q4c_multisig.litertlm
 ```
 
-The model is not yet published to a public endpoint, so it has to be placed there manually. Once
-it is available on Hugging Face, `app/download.gradle` can fetch it at build time — set
-`HF_MODEL_URL` and uncomment the `preBuild.dependsOn downloadEmbeddingModel` line.
+`app/download.gradle` automatically downloads the model from
+<https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm> at build time.
+If the model is not yet live at that URL or requires authentication, download it manually and place
+it at the path above.
 
-On first launch the model is copied from assets into `filesDir`, because the LiteRT JNI layer
-opens it by absolute path. Expect a few seconds of load time on the first start.
+On first launch the model is copied from assets into `filesDir` and opened via a
+`ParcelFileDescriptor` passed to `BaseOptions.setModelAssetFileDescriptor`. Expect a few seconds of
+load time on the first start.
 
 ### Building
 
@@ -61,3 +63,5 @@ opens it by absolute path. Expect a few seconds of load time on the first start.
 2.  Tap **Index 10 sample images** and wait for the progress bar to complete (~15s).
 3.  Type a query, or tap one of the suggestion chips, to retrieve the closest images ranked by
     cosine similarity.
+
+[model-url]: https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm
