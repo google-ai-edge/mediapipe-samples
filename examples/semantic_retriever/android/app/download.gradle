@@ -15,16 +15,18 @@
  */
 
 // Automatic model provisioning from Hugging Face:
-// https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm
+// - Text (270M): https://huggingface.co/litert-community/embeddinggemma-2-text-270m-litert-lm/resolve/main/embeddinggemma-2-text-270m.litertlm
+// - Text + Vision (440M): https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm/resolve/main/embeddinggemma-2-text-vision-440m.litertlm
+// - Multimodal (740M): https://huggingface.co/litert-community/embeddinggemma-2-740m-litert-lm/resolve/main/embeddinggemma-2-740m.litertlm
 //
 // If the model is not yet available at the public endpoint or requires authentication, place it
 // in app/src/main/assets manually:
 //
-//     app/src/main/assets/embedding_gemma_v2_q4c_multisig.litertlm
+//     app/src/main/assets/embeddinggemma-2-text-vision-440m.litertlm
 
 ext {
     ASSET_DIR = projectDir.toString() + '/src/main/assets'
-    EMBEDDING_MODEL = 'embedding_gemma_v2_q4c_multisig.litertlm'
+    EMBEDDING_MODEL = 'embeddinggemma-2-text-vision-440m.litertlm'
     HF_MODEL_URL = 'https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm/resolve/main/' + EMBEDDING_MODEL
 }
 

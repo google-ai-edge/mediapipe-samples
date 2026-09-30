@@ -117,9 +117,10 @@ class UniversalEmbedderHelper(private val context: Context) {
 
     companion object {
         private const val TAG = "UniversalEmbedder"
-        private const val MODEL_NAME = "embedding_gemma_v2_q4c_multisig.litertlm"
+        private const val MODEL_NAME = "embeddinggemma-2-text-vision-440m.litertlm"
         private const val MODEL_URL =
-            "https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm"
+            "https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm/" +
+                "resolve/main/embeddinggemma-2-text-vision-440m.litertlm"
 
         /** Cosine similarity, in [-1, 1]. Identical inputs score 1. */
         fun similarity(a: Embedding, b: Embedding): Double =

@@ -65,16 +65,25 @@ that is unstable on some Qualcomm drivers.
 
 ### Model
 
-The app uses the [EmbeddingGemma 2 LiteRT-LM model][model-url] at:
+The app uses the [EmbeddingGemma 2 (Text + Vision 440M) LiteRT-LM model][model-url] at:
 
 ```
-app/src/main/assets/embedding_gemma_v2_q4c_multisig.litertlm
+app/src/main/assets/embeddinggemma-2-text-vision-440m.litertlm
 ```
 
 `app/download.gradle` automatically downloads the model from
-<https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm> at build time.
-If the model is not yet live at that URL or requires authentication, download it manually and place
-it at the path above.
+<https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm/resolve/main/embeddinggemma-2-text-vision-440m.litertlm>
+at build time. If the model is not yet live at that URL or requires authentication, download it
+manually and place it at the path above.
+
+Available EmbeddingGemma 2 LiteRT-LM models:
+
+*   **Text (270M)**:
+    <https://huggingface.co/litert-community/embeddinggemma-2-text-270m-litert-lm/resolve/main/embeddinggemma-2-text-270m.litertlm>
+*   **Text + Vision (440M)**:
+    <https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm/resolve/main/embeddinggemma-2-text-vision-440m.litertlm>
+*   **Multimodal (740M)**:
+    <https://huggingface.co/litert-community/embeddinggemma-2-740m-litert-lm/resolve/main/embeddinggemma-2-740m.litertlm>
 
 On first launch the model is copied from assets into `filesDir` and opened via a
 `ParcelFileDescriptor` passed to `BaseOptions.setModelAssetFileDescriptor`.
@@ -94,4 +103,4 @@ On first launch the model is copied from assets into `filesDir` and opened via a
 *   `examples/semantic_retriever` builds on the same embedder, adding a vector store and
     retrieval on top of it for semantic image search.
 
-[model-url]: https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm
+[model-url]: https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm/resolve/main/embeddinggemma-2-text-vision-440m.litertlm

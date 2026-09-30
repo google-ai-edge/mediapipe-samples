@@ -165,9 +165,10 @@ class SemanticRetrieverHelper(private val context: Context) {
 
     private companion object {
         const val TAG = "SemanticRetriever"
-        const val MODEL_NAME = "embedding_gemma_v2_q4c_multisig.litertlm"
+        const val MODEL_NAME = "embeddinggemma-2-text-vision-440m.litertlm"
         const val MODEL_URL =
-            "https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm"
+            "https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm/" +
+                "resolve/main/embeddinggemma-2-text-vision-440m.litertlm"
         const val DB_NAME = "semantic_db"
     }
 }
