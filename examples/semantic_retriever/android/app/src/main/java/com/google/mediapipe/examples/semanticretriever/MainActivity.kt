@@ -88,7 +88,7 @@ class MainActivity : AppCompatActivity() {
     private var storeJob: Job? = null
 
     private var useAppSearch = true
-    private var useGpu = false
+    private var useGpu = true
 
     private val sampleImages = listOf(
         "red_apple.jpg",

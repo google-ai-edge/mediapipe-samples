@@ -59,7 +59,7 @@ class SemanticRetrieverHelper(private val context: Context) {
     /**
      * Loads the embedding model. Safe to call repeatedly; the engine is only built the first time.
      */
-    fun prepareEmbedder(useGpu: Boolean = false) {
+    fun prepareEmbedder(useGpu: Boolean = true) {
         if (universalEmbedder != null && currentlyOnGpu == useGpu) return
 
         // The accelerator is baked into the engine, so changing it means rebuilding it.
@@ -137,6 +137,7 @@ class SemanticRetrieverHelper(private val context: Context) {
             .addProvider(embedder.provider)
 
         semanticRetriever = SemanticRetriever.createFromComponents(context, components)
+        semanticRetriever.insert
         Log.i(TAG, "Opened ${if (useAppSearch) "AppSearch" else "SQLite"} vector store.")
     }
 

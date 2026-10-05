@@ -39,6 +39,7 @@
             android:id="@+id/switchGpu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:checked="true"
             android:minHeight="0dp"
             android:text="@string/accel_gpu"
             android:textColor="@android:color/white"

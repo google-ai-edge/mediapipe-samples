@@ -76,7 +76,7 @@ class MainActivity : AppCompatActivity() {
     private var job: Job? = null
 
     private var isBusy = false
-    private var useGpu = false
+    private var useGpu = true
 
     private val sampleImages = listOf(
         "red_apple.jpg", "yellow_banana.jpg", "cute_cat.jpg", "fast_car.jpg", "green_tree.jpg",
