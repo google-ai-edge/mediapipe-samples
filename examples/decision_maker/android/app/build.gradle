@@ -1,0 +1,58 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'de.undercouch.download'
+}
+
+android {
+    namespace 'com.google.mediapipe.examples.decisionmaker'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.google.mediapipe.examples.decisionmaker"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    buildFeatures {
+        viewBinding true
+    }
+    androidResources {
+        noCompress 'task'
+        noCompress 'tflite'
+        noCompress 'litertlm'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+
+    // MediaPipe Decision Task Library - Using local version from mavenLocal()
+    implementation 'com.google.mediapipe:tasks-decision:1.1.0'
+}
+
+// Download the models into the assets directory.
+project.ext.ASSET_DIR = projectDir.toString() + '/src/main/assets'
+apply from: 'download_models.gradle'

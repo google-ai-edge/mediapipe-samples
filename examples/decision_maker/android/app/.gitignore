@@ -1,0 +1,3 @@
+/build
+# Models are downloaded at build time by download_models.gradle.
+/src/main/assets/

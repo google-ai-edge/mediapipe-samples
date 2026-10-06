@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    ~ Copyright 2026 The MediaPipe Authors. All Rights Reserved.
+    ~
+    ~ Licensed under the Apache License, Version 2.0 (the "License");
+    ~ you may not use this file except in compliance with the License.
+    ~ You may obtain a copy of the License at
+    ~
+    ~       http://www.apache.org/licenses/LICENSE-2.0
+    ~
+    ~ Unless required by applicable law or agreed to in writing, software
+    ~ distributed under the License is distributed on an "AS IS" BASIS,
+    ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    ~ See the License for the specific language governing permissions and
+    ~ limitations under the License.
+-->
+<resources>
+    <color name="mp_color_primary">#007F8B</color>
+    <color name="mp_color_primary_variant">#12B5CB</color>
+    <color name="mp_color_primary_dark">#00676D</color>
+    <color name="mp_color_secondary">#FBBC04</color>
+    <color name="mp_color_secondary_variant">#F9AB00</color>
+    <color name="mp_color_error">#B00020</color>
+    <color name="toolbar_background">#E0E0E0</color>
+    <color name="bottom_sheet_background">#FFFFFF</color>
+    <color name="input_background">#F5F5F5</color>
+    <color name="label_text_color">#5F6368</color>
+    <color name="title_text_color">#202124</color>
+    <color name="card_stroke">#DADCE0</color>
+    <color name="badge_background">#E0F2F1</color>
+    <color name="sheet_handle">#C4C7C5</color>
+    <color name="sheet_divider">#E0E0E0</color>
+    <color name="result_track">#E6EEEF</color>
+    <color name="result_bar_muted">#9AA0A6</color>
+</resources>
