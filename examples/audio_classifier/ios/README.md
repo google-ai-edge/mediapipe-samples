@@ -6,7 +6,6 @@ This sample app demonstrates how to use the MediaPipe Audio Classifier Task on i
 
 -   A physical iOS device (iPhone or iPad) with iOS 15.0 or later (microphone required for live audio streaming).
 -   Xcode 14.1 or later.
--   CocoaPods installed.
 
 ## Setup
 
@@ -16,16 +15,12 @@ This sample app demonstrates how to use the MediaPipe Audio Classifier Task on i
     sh RunScripts/download_models.sh
     ```
 
-2.  **Install dependencies:**
-    Run CocoaPods in the `ios` directory:
-    ```bash
-    pod install
-    ```
+2.  **Open the project:**
+    Open `AudioClassifier.xcodeproj` in Xcode. Xcode will automatically resolve
+    and download the Swift Package dependencies from
+    `https://github.com/google-ai-edge/mediapipe`.
 
-3.  **Open the project:**
-    Open `AudioClassifier.xcworkspace` in Xcode.
-
-4.  **Run the app:**
+3.  **Run the app:**
     Select your physical iOS device as the target and build and run the app. Grant microphone permissions when prompted.
 
 ## How it works
