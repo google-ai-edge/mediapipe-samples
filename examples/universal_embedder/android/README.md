@@ -82,7 +82,7 @@ Available EmbeddingGemma 2 LiteRT-LM models:
     <https://huggingface.co/litert-community/embeddinggemma-2-text-270m-litert-lm/resolve/main/embeddinggemma-2-text-270m.litertlm>
 *   **Text + Vision (440M)**:
     <https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm/resolve/main/embeddinggemma-2-text-vision-440m.litertlm>
-*   **Multimodal (740M)**:
+*   **Text + Vision + Audio (740M)**:
     <https://huggingface.co/litert-community/embeddinggemma-2-740m-litert-lm/resolve/main/embeddinggemma-2-740m.litertlm>
 
 On first launch the model is copied from assets into `filesDir` and opened via a

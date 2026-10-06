@@ -17,7 +17,7 @@
 // Automatic model provisioning from Hugging Face:
 // - Text (270M): https://huggingface.co/litert-community/embeddinggemma-2-text-270m-litert-lm/resolve/main/embeddinggemma-2-text-270m.litertlm
 // - Text + Vision (440M): https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm/resolve/main/embeddinggemma-2-text-vision-440m.litertlm
-// - Multimodal (740M): https://huggingface.co/litert-community/embeddinggemma-2-740m-litert-lm/resolve/main/embeddinggemma-2-740m.litertlm
+// - Text + Vision + Audio (740M): https://huggingface.co/litert-community/embeddinggemma-2-740m-litert-lm/resolve/main/embeddinggemma-2-740m.litertlm
 //
 // If the model is not yet available at the public endpoint or requires authentication, place it
 // in app/src/main/assets manually:
