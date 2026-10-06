@@ -1,0 +1,350 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D0000001 /* DecisionMakerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000001 /* DecisionMakerApp.swift */; };
+		D0000002 /* DecisionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000002 /* DecisionView.swift */; };
+		D0000003 /* DecisionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000003 /* DecisionViewModel.swift */; };
+		D0000004 /* DecisionHighCardinalityPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000004 /* DecisionHighCardinalityPresets.swift */; };
+		D000000C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D1000006 /* Assets.xcassets */; };
+		D000000D /* embedding_gemma_v2_fake.litertlm in Resources */ = {isa = PBXBuildFile; fileRef = D100000D /* embedding_gemma_v2_fake.litertlm */; };
+		D000000E /* embeddinggemma-2-text-vision-440m.litertlm in Resources */ = {isa = PBXBuildFile; fileRef = D100000E /* embeddinggemma-2-text-vision-440m.litertlm */; };
+		D000000A /* MediaPipeTasksDecision in Frameworks */ = {isa = PBXBuildFile; productRef = D900000A /* MediaPipeTasksDecision */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		D1000001 /* DecisionMakerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecisionMakerApp.swift; sourceTree = "<group>"; };
+		D1000002 /* DecisionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecisionView.swift; sourceTree = "<group>"; };
+		D1000003 /* DecisionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecisionViewModel.swift; sourceTree = "<group>"; };
+		D1000004 /* DecisionHighCardinalityPresets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecisionHighCardinalityPresets.swift; sourceTree = "<group>"; };
+		D1000005 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D1000006 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D1000007 /* DecisionMaker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DecisionMaker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D1000008 /* download_models.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = download_models.sh; sourceTree = "<group>"; };
+		D100000D /* embedding_gemma_v2_fake.litertlm */ = {isa = PBXFileReference; lastKnownFileType = file; path = embedding_gemma_v2_fake.litertlm; sourceTree = "<group>"; };
+		D100000E /* embeddinggemma-2-text-vision-440m.litertlm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "embeddinggemma-2-text-vision-440m.litertlm"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D6000004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D000000A /* MediaPipeTasksDecision in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D3000001 = {
+			isa = PBXGroup;
+			children = (
+				D3000002 /* DecisionMaker */,
+				D3000003 /* RunScripts */,
+				D3000004 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D3000002 /* DecisionMaker */ = {
+			isa = PBXGroup;
+			children = (
+				D1000001 /* DecisionMakerApp.swift */,
+				D1000002 /* DecisionView.swift */,
+				D1000003 /* DecisionViewModel.swift */,
+				D1000004 /* DecisionHighCardinalityPresets.swift */,
+				D1000005 /* Info.plist */,
+				D1000006 /* Assets.xcassets */,
+				D100000D /* embedding_gemma_v2_fake.litertlm */,
+				D100000E /* embeddinggemma-2-text-vision-440m.litertlm */,
+			);
+			path = DecisionMaker;
+			sourceTree = "<group>";
+		};
+		D3000003 /* RunScripts */ = {
+			isa = PBXGroup;
+			children = (
+				D1000008 /* download_models.sh */,
+			);
+			path = RunScripts;
+			sourceTree = "<group>";
+		};
+		D3000004 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D1000007 /* DecisionMaker.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D4000001 /* DecisionMaker */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D5000001 /* Build configuration list for PBXNativeTarget "DecisionMaker" */;
+			buildPhases = (
+				D6000001 /* Download models */,
+				D6000002 /* Sources */,
+				D6000004 /* Frameworks */,
+				D6000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DecisionMaker;
+			packageProductDependencies = (
+				D900000A /* MediaPipeTasksDecision */,
+			);
+			productName = DecisionMaker;
+			productReference = D1000007 /* DecisionMaker.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D7000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					D4000001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = D5000002 /* Build configuration list for PBXProject "DecisionMaker" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = D3000001;
+			packageReferences = (
+				D8000001 /* XCRemoteSwiftPackageReference "mediapipe" */,
+			);
+			productRefGroup = D3000004 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D4000001 /* DecisionMaker */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D6000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D000000C /* Assets.xcassets in Resources */,
+				D000000D /* embedding_gemma_v2_fake.litertlm in Resources */,
+				D000000E /* embeddinggemma-2-text-vision-440m.litertlm in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		D6000001 /* Download models */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download models";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/DecisionMaker/embeddinggemma-2-text-vision-440m.litertlm",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/RunScripts/download_models.sh\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D6000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D0000001 /* DecisionMakerApp.swift in Sources */,
+				D0000002 /* DecisionView.swift in Sources */,
+				D0000003 /* DecisionViewModel.swift in Sources */,
+				D0000004 /* DecisionHighCardinalityPresets.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		D8000101 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		D8000102 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		D8000103 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = DecisionMaker/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.decisionmaker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		D8000104 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = DecisionMaker/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.decisionmaker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D5000001 /* Build configuration list for PBXNativeTarget "DecisionMaker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D8000103 /* Debug */,
+				D8000104 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D5000002 /* Build configuration list for PBXProject "DecisionMaker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D8000101 /* Debug */,
+				D8000102 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D8000001 /* XCRemoteSwiftPackageReference "mediapipe" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google-ai-edge/mediapipe";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D900000A /* MediaPipeTasksDecision */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D8000001 /* XCRemoteSwiftPackageReference "mediapipe" */;
+			productName = MediaPipeTasksDecision;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = D7000001 /* Project object */;
+}
