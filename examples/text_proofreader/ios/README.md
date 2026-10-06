@@ -6,7 +6,6 @@ This sample app demonstrates how to use the MediaPipe Text Proofreader Task on i
 
 -   A physical iOS device (iPhone or iPad) with iOS 15.0 or later.
 -   Xcode 14.1 or later.
--   CocoaPods installed.
 
 ## Setup
 
@@ -16,16 +15,12 @@ This sample app demonstrates how to use the MediaPipe Text Proofreader Task on i
     sh RunScripts/download_models.sh
     ```
 
-2.  **Install dependencies:**
-    Run the following command in the `ios` directory to install the required CocoaPods.
-    ```bash
-    pod install
-    ```
+2.  **Open the project:**
+    Open `TextProofreader.xcodeproj` in Xcode. Xcode will automatically resolve
+    and download the Swift Package dependencies from
+    `https://github.com/google-ai-edge/mediapipe`.
 
-3.  **Open the project:**
-    Open the `TextProofreader.xcworkspace` file in Xcode.
-
-4.  **Run the app:**
+3.  **Run the app:**
     Select your physical iOS device as the target and run the app.
 
 ## How it works

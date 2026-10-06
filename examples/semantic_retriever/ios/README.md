@@ -52,7 +52,7 @@ simulator has no Metal accelerator for LiteRT and silently falls back to XNNPack
 *   A physical iOS device running iOS 15.0 or later (recommended), or the iOS simulator.
 
 The MediaPipe dependency is resolved with Swift Package Manager from
-`https://github.com/google-ai-edge/mediapipe`; no `pod install` step is needed.
+`https://github.com/google-ai-edge/mediapipe`.
 `MediaPipeTasksRetrieval` requires MediaPipe 1.1.0 or newer.
 
 ### Model
