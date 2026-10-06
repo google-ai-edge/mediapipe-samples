@@ -137,7 +137,6 @@ class SemanticRetrieverHelper(private val context: Context) {
             .addProvider(embedder.provider)
 
         semanticRetriever = SemanticRetriever.createFromComponents(context, components)
-        semanticRetriever.insert
         Log.i(TAG, "Opened ${if (useAppSearch) "AppSearch" else "SQLite"} vector store.")
     }
 
