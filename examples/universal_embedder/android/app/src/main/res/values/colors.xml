@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    ~ Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+    ~
+    ~ Licensed under the Apache License, Version 2.0 (the "License");
+    ~ you may not use this file except in compliance with the License.
+    ~ You may obtain a copy of the License at
+    ~
+    ~       http://www.apache.org/licenses/LICENSE-2.0
+    ~
+    ~ Unless required by applicable law or agreed to in writing, software
+    ~ distributed under the License is distributed on an "AS IS" BASIS,
+    ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    ~ See the License for the specific language governing permissions and
+    ~ limitations under the License.
+-->
+
+<resources>
+    <color name="mp_color_primary">#007F8B</color>
+    <color name="mp_color_primary_variant">#12B5CB</color>
+    <color name="mp_color_primary_dark">#00676D</color>
+    <color name="mp_color_error">#B00020</color>
+    <color name="icActive">#FFFFFFFF</color>
+    <color name="icFocused">#DDFFFFFF</color>
+    <color name="icPressed">#AAFFFFFF</color>
+
+    <!-- Semantic Retriever sample palette -->
+    <color name="app_background">#F2F4F5</color>
+    <color name="surface">#FFFFFFFF</color>
+    <color name="surface_muted">#EDF3F4</color>
+    <color name="on_surface">#1B2426</color>
+    <color name="on_surface_muted">#5F6E71</color>
+    <color name="score_track">#DCE6E8</color>
+    <color name="thumb_stroke">#00000000</color>
+</resources>

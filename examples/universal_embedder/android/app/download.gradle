@@ -1,0 +1,45 @@
+/*
+ * Copyright 2025 The MediaPipe Authors. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *             http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Automatic model provisioning from Hugging Face:
+// - Text (270M): https://huggingface.co/litert-community/embeddinggemma-2-text-270m-litert-lm/resolve/main/embeddinggemma-2-text-270m.litertlm
+// - Text + Vision (440M): https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm/resolve/main/embeddinggemma-2-text-vision-440m.litertlm
+// - Text + Vision + Audio (740M): https://huggingface.co/litert-community/embeddinggemma-2-740m-litert-lm/resolve/main/embeddinggemma-2-740m.litertlm
+//
+// If the model is not yet available at the public endpoint or requires authentication, place it
+// in app/src/main/assets manually:
+//
+//     app/src/main/assets/embeddinggemma-2-text-vision-440m.litertlm
+
+ext {
+    ASSET_DIR = projectDir.toString() + '/src/main/assets'
+    EMBEDDING_MODEL = 'embeddinggemma-2-text-vision-440m.litertlm'
+    HF_MODEL_URL = 'https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm/resolve/main/' + EMBEDDING_MODEL
+}
+
+task downloadEmbeddingModel(type: Download) {
+    onlyIf { !project.ext.HF_MODEL_URL.isEmpty() }
+
+    src project.ext.HF_MODEL_URL
+    dest project.ext.ASSET_DIR + '/' + project.ext.EMBEDDING_MODEL
+    overwrite false
+
+    doFirst {
+        println "Downloading ${project.ext.EMBEDDING_MODEL} from ${project.ext.HF_MODEL_URL}…"
+    }
+}
+
+preBuild.dependsOn downloadEmbeddingModel

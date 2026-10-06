@@ -1,0 +1,20 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        maven {
+            url uri('/Users/mrschmidt/Downloads/m2repository')
+        }
+        mavenLocal()
+        google()
+        mavenCentral()
+    }
+}
+rootProject.name = "MP Semantic Retriever"
+include ':app'

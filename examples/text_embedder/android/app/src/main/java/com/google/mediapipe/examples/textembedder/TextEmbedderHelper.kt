@@ -26,7 +26,7 @@ import com.google.mediapipe.tasks.text.textembedder.TextEmbedder.TextEmbedderOpt
 
 class TextEmbedderHelper(
     private val context: Context,
-    var currentDelegate: Int = DELEGATE_CPU,
+    var currentDelegate: Int = DELEGATE_GPU,
     var currentModel: Int = MODEL_MOBILE_BERT,
     var listener: EmbedderListener? = null
 ) {
