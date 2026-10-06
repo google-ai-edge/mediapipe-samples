@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    ~ Copyright 2026 The MediaPipe Authors. All Rights Reserved.
+    ~
+    ~ Licensed under the Apache License, Version 2.0 (the "License");
+    ~ you may not use this file except in compliance with the License.
+    ~ You may obtain a copy of the License at
+    ~
+    ~       http://www.apache.org/licenses/LICENSE-2.0
+    ~
+    ~ Unless required by applicable law or agreed to in writing, software
+    ~ distributed under the License is distributed on an "AS IS" BASIS,
+    ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    ~ See the License for the specific language governing permissions and
+    ~ limitations under the License.
+-->
+<resources>
+    <string name="app_name">Decision Maker</string>
+
+    <string name="alt_bottom_sheet_handle">Settings sheet, tap to expand or collapse</string>
+
+    <string name="label_settings">Settings</string>
+    <string name="label_inference_time">Inference</string>
+    <string name="inference_time_placeholder">– ms</string>
+    <string name="label_delegate">Delegate</string>
+    <string name="label_models">ML Model</string>
+
+    <string name="tab_boolean">Boolean</string>
+    <string name="tab_choice">Choice</string>
+    <string name="tab_score">Score</string>
+
+    <string name="label_input_text">Input text</string>
+    <string name="label_condition">Condition</string>
+    <string name="label_instructions">Instructions</string>
+
+    <string name="title_options">Options</string>
+    <string name="helper_options">The model picks the option that best matches the input text.</string>
+    <string name="hint_option_key">Option key</string>
+    <string name="btn_add_option">Add option</string>
+
+    <string name="title_rubric">Rubric levels</string>
+    <string name="helper_rubric">Order from lowest (1) to highest. Short, concrete descriptions give more accurate scores.</string>
+    <string name="hint_level_label">Level name</string>
+    <string name="btn_add_level">Add level</string>
+
+    <string name="hint_description">Description (optional)</string>
+    <string name="cd_remove_item">Remove</string>
+    <string name="toast_need_items">Add at least two items with a name.</string>
+    <string name="toast_need_input">Enter some input text first.</string>
+    <string name="toast_gpu_fallback">GPU delegate failed, using CPU.</string>
+
+    <string name="label_result">Result</string>
+    <string name="result_most_likely">Most likely: %1$s</string>
+    <string name="result_threshold">Yes when P(yes) ≥ %1$.2f</string>
+    <string name="title_threshold">Threshold</string>
+    <string name="helper_threshold">Answer Yes when the Yes probability is at least this value.</string>
+    <string name="result_yes">Yes</string>
+    <string name="result_no">No</string>
+
+    <string name="btn_evaluate">Evaluate</string>
+    <string name="tv_result_placeholder">Edit the question, then tap Evaluate.</string>
+    <string name="tv_loading_model">Loading model…</string>
+
+    <string name="delegate_cpu">CPU</string>
+    <string name="delegate_gpu">GPU</string>
+
+    <!-- Must match the order of DecisionMakerHelper.MODEL_* constants. -->
+    <string-array name="models_spinner_titles">
+        <item>EmbeddingGemma 270M</item>
+        <item>Laya S256</item>
+        <item>GLiNER S256</item>
+    </string-array>
+</resources>
