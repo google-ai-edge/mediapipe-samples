@@ -2,7 +2,7 @@
 
 ## Overview
 
-This web sample evaluates a piece of text against a question, entirely in the
+Our web sample evaluates a piece of text against a question, entirely in the
 browser. It uses the MediaPipe Tasks Decision library
 ([`@mediapipe/tasks-decision`](https://www.npmjs.com/package/@mediapipe/tasks-decision))
 with the Laya S256 model by default.
@@ -33,6 +33,8 @@ You can switch between the CPU and GPU delegates, or upload your own model
 
 ## Running the demo
 
-Web demos are hosted in the [MediaPipe Sample Web](https://github.com/google-ai-edge/mediapipe-samples-web/) repository.
+Web demos are hosted in a the
+[MediaPipe Sample Web](https://github.com/google-ai-edge/mediapipe-samples-web/)
+repository.
 
 [View the demo](https://google-ai-edge.github.io/mediapipe-samples-web/#/decision/decision_maker)
