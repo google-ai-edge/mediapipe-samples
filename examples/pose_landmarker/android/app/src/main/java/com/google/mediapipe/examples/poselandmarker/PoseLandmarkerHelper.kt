@@ -48,6 +48,10 @@ class PoseLandmarkerHelper(
     // If the Pose Landmarker will not change, a lazy val would be preferable.
     private var poseLandmarker: PoseLandmarker? = null
 
+    // Cache the most recent rotated frame bitmap for desensitized background rendering
+    @Volatile
+    private var lastInputBitmap: Bitmap? = null
+
     init {
         setupPoseLandmarker()
     }
@@ -55,6 +59,7 @@ class PoseLandmarkerHelper(
     fun clearPoseLandmarker() {
         poseLandmarker?.close()
         poseLandmarker = null
+        lastInputBitmap = null
     }
 
     // Return running status of PoseLandmarkerHelper
@@ -193,6 +198,9 @@ class PoseLandmarkerHelper(
         )
 
         // Convert the input Bitmap object to an MPImage object to run inference
+        // Cache the current frame for desensitized background rendering
+        lastInputBitmap = rotatedBitmap
+
         val mpImage = BitmapImageBuilder(rotatedBitmap).build()
 
         detectAsync(mpImage, frameTime)
@@ -348,7 +356,8 @@ class PoseLandmarkerHelper(
                 listOf(result),
                 inferenceTime,
                 input.height,
-                input.width
+                input.width,
+                lastInputBitmap
             )
         )
     }
@@ -382,6 +391,8 @@ class PoseLandmarkerHelper(
         val inferenceTime: Long,
         val inputImageHeight: Int,
         val inputImageWidth: Int,
+        // Raw frame used to render the desensitized mosaic background
+        val inputBitmap: Bitmap? = null
     )
 
     interface LandmarkerListener {

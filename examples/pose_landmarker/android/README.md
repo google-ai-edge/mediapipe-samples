@@ -39,3 +39,22 @@ This application should be run on a physical Android device to take advantage of
 
 Downloading, extraction, and placing the models into the *assets* folder is
 managed automatically by the **download.gradle** file.
+## Desensitize Mode
+
+The demo includes a **Desensitize Mode** toggle in the bottom settings sheet for privacy-sensitive scenarios (e.g. medical, fitness coaching, tele-rehabilitation). When enabled:
+
+1. The raw camera preview (`PreviewView`) is hidden.
+2. The background is replaced with a **pixelated mosaic** of the live frame (downscaled to 8% then drawn back upscaled with bitmap filtering disabled), plus a semi-transparent dark scrim. This preserves body silhouette and motion for the skeleton overlay while fully obscuring face and clothing details.
+3. The pose skeleton is drawn on top, aligned 1:1 with the mosaic background (both use the same `scaleFactor` and `FILL_START` alignment as the original `PreviewView`).
+
+### Usage
+
+1. Open the bottom settings sheet.
+2. Toggle **"Desensitize Mode (Mosaic Background)"** at the bottom.
+3. Toggle off to return to the raw RGB preview with skeleton overlay.
+
+### Implementation notes
+
+- `OverlayView` gains a `RenderMode` enum (`RGB_OVERLAY` / `DESENSITIZED`). The mode is toggled at runtime without rebinding the camera.
+- `PoseLandmarkerHelper` caches the most recent rotated frame bitmap (`lastInputBitmap`) and exposes it via `ResultBundle.inputBitmap` so `OverlayView` can render the mosaic background.
+- Mosaic strength is controlled by `OverlayView.mosaicScale` (default `0.08f`). Lower values produce coarser blocks (stronger desensitization).

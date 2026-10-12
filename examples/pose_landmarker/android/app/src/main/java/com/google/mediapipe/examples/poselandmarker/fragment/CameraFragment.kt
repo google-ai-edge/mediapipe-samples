@@ -31,10 +31,12 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.Camera
 import androidx.camera.core.AspectRatio
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.Navigation
+import com.google.mediapipe.examples.poselandmarker.OverlayView
 import com.google.mediapipe.examples.poselandmarker.PoseLandmarkerHelper
 import com.google.mediapipe.examples.poselandmarker.MainViewModel
 import com.google.mediapipe.examples.poselandmarker.R
@@ -261,6 +263,18 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                     /* no op */
                 }
             }
+
+        // Desensitize mode toggle: hide raw preview and render mosaic background + skeleton
+        fragmentCameraBinding.bottomSheetLayout.switchDesensitize.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                fragmentCameraBinding.overlay.renderMode = OverlayView.RenderMode.DESENSITIZED
+                // Hide raw RGB preview so the original camera feed is not visible
+                fragmentCameraBinding.viewFinder.visibility = View.INVISIBLE
+            } else {
+                fragmentCameraBinding.overlay.renderMode = OverlayView.RenderMode.RGB_OVERLAY
+                fragmentCameraBinding.viewFinder.visibility = View.VISIBLE
+            }
+        }
     }
 
     // Update the values displayed in the bottom sheet. Reset Poselandmarker
@@ -389,7 +403,8 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                     resultBundle.results.first(),
                     resultBundle.inputImageHeight,
                     resultBundle.inputImageWidth,
-                    RunningMode.LIVE_STREAM
+                    RunningMode.LIVE_STREAM,
+                    resultBundle.inputBitmap
                 )
 
                 // Force a redraw
