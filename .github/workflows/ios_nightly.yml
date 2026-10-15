@@ -1,0 +1,98 @@
+name: iOS Nightly Build Test
+
+on:
+  schedule:
+    # Run every day at 02:00 UTC (nightly)
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      example:
+        description: 'Specific iOS example to test (or "all")'
+        required: false
+        default: 'all'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.example || 'all' }}
+  cancel-in-progress: true
+
+jobs:
+  detect-examples:
+    name: Auto-detect iOS Examples
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.detect.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Detect iOS Examples
+        id: detect
+        run: |
+          MATRIX_JSON=$(python3 .github/scripts/detect_ios_examples.py --example "${{ inputs.example || 'all' }}")
+          echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
+
+  build-ios:
+    name: Build iOS Sample (${{ matrix.name }})
+    needs: detect-examples
+    runs-on: macos-14
+    timeout-minutes: 45
+
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.detect-examples.outputs.matrix) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show Xcode Version
+        run: xcodebuild -version
+
+      - name: Cache Swift Package Manager dependencies
+        if: ${{ !matrix.has_podfile }}
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/org.swift.swiftpm
+            DerivedData/SourcePackages
+          key: ${{ runner.os }}-spm-${{ matrix.name }}-${{ hashFiles(format('{0}/{1}/project.pbxproj', matrix.path, matrix.project)) }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      - name: Cache CocoaPods dependencies
+        if: ${{ matrix.has_podfile }}
+        uses: actions/cache@v4
+        with:
+          path: ${{ matrix.path }}/Pods
+          key: ${{ runner.os }}-pods-${{ matrix.name }}-${{ hashFiles(format('{0}/Podfile.lock', matrix.path)) }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Install CocoaPods dependencies
+        if: ${{ matrix.has_podfile }}
+        working-directory: ${{ matrix.path }}
+        run: pod install --repo-update
+
+      - name: Stub models referenced by Xcode build system
+        run: python3 .github/scripts/stub_ios_models.py "${{ matrix.path }}/${{ matrix.project }}"
+
+      - name: Build iOS Application (${{ matrix.name }})
+        working-directory: ${{ matrix.path }}
+        run: |
+          if [ "${{ matrix.has_podfile }}" = "true" ]; then
+            WORKSPACE_NAME="${{ matrix.project }}"
+            WORKSPACE_NAME="${WORKSPACE_NAME%.xcodeproj}.xcworkspace"
+            TARGET_FLAG="-workspace $WORKSPACE_NAME"
+          else
+            TARGET_FLAG="-project ${{ matrix.project }}"
+          fi
+
+          xcodebuild build \
+            $TARGET_FLAG \
+            -scheme "${{ matrix.scheme }}" \
+            -destination "generic/platform=iOS" \
+            -configuration Debug \
+            -derivedDataPath "${{ github.workspace }}/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
