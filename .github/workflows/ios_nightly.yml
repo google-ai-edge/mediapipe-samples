@@ -47,7 +47,7 @@ jobs:
   build-ios:
     name: Build iOS Sample (${{ matrix.name }})
     needs: detect-examples
-    runs-on: macos-14
+    runs-on: macos-15
     permissions:
       contents: read
     timeout-minutes: 45
