@@ -10,6 +10,10 @@ on:
         description: 'Specific iOS example to test (or "all")'
         required: false
         default: 'all'
+  pull_request:
+    paths:
+      - '.github/workflows/ios_nightly.yml'
+      - '.github/scripts/**'
 
 permissions:
   contents: read
