@@ -11,6 +11,9 @@ on:
         required: false
         default: 'all'
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.example || 'all' }}
   cancel-in-progress: true
@@ -19,22 +22,30 @@ jobs:
   detect-examples:
     name: Auto-detect iOS Examples
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       matrix: ${{ steps.detect.outputs.matrix }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Detect iOS Examples
         id: detect
+        env:
+          INPUT_EXAMPLE: ${{ inputs.example || 'all' }}
         run: |
-          MATRIX_JSON=$(python3 .github/scripts/detect_ios_examples.py --example "${{ inputs.example || 'all' }}")
-          echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
+          MATRIX_JSON=$(python3 .github/scripts/detect_ios_examples.py --example "$INPUT_EXAMPLE")
+          echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
 
   build-ios:
     name: Build iOS Sample (${{ matrix.name }})
     needs: detect-examples
     runs-on: macos-14
+    permissions:
+      contents: read
     timeout-minutes: 45
 
     strategy:
@@ -43,14 +54,16 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Show Xcode Version
         run: xcodebuild -version
 
       - name: Cache Swift Package Manager dependencies
         if: ${{ !matrix.has_podfile }}
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: |
             ~/Library/Caches/org.swift.swiftpm
@@ -61,7 +74,7 @@ jobs:
 
       - name: Cache CocoaPods dependencies
         if: ${{ matrix.has_podfile }}
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ${{ matrix.path }}/Pods
           key: ${{ runner.os }}-pods-${{ matrix.name }}-${{ hashFiles(format('{0}/Podfile.lock', matrix.path)) }}
@@ -74,25 +87,31 @@ jobs:
         run: pod install --repo-update
 
       - name: Stub models referenced by Xcode build system
-        run: python3 .github/scripts/stub_ios_models.py "${{ matrix.path }}/${{ matrix.project }}"
+        env:
+          EXAMPLE_PATH: ${{ matrix.path }}
+          EXAMPLE_PROJECT: ${{ matrix.project }}
+        run: python3 .github/scripts/stub_ios_models.py "$EXAMPLE_PATH/$EXAMPLE_PROJECT"
 
       - name: Build iOS Application (${{ matrix.name }})
         working-directory: ${{ matrix.path }}
+        env:
+          HAS_PODFILE: ${{ matrix.has_podfile }}
+          PROJECT: ${{ matrix.project }}
+          SCHEME: ${{ matrix.scheme }}
         run: |
-          if [ "${{ matrix.has_podfile }}" = "true" ]; then
-            WORKSPACE_NAME="${{ matrix.project }}"
-            WORKSPACE_NAME="${WORKSPACE_NAME%.xcodeproj}.xcworkspace"
+          if [ "$HAS_PODFILE" = "true" ]; then
+            WORKSPACE_NAME="${PROJECT%.xcodeproj}.xcworkspace"
             TARGET_FLAG="-workspace $WORKSPACE_NAME"
           else
-            TARGET_FLAG="-project ${{ matrix.project }}"
+            TARGET_FLAG="-project $PROJECT"
           fi
 
           xcodebuild build \
             $TARGET_FLAG \
-            -scheme "${{ matrix.scheme }}" \
+            -scheme "$SCHEME" \
             -destination "generic/platform=iOS" \
             -configuration Debug \
-            -derivedDataPath "${{ github.workspace }}/DerivedData" \
+            -derivedDataPath "$GITHUB_WORKSPACE/DerivedData" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY=""
