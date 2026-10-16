@@ -1,0 +1,81 @@
+name: Android Nightly Build Test
+
+on:
+  schedule:
+    # Run every day at 02:30 UTC (nightly)
+    - cron: '30 2 * * *'
+  workflow_dispatch:
+    inputs:
+      example:
+        description: 'Specific Android example to test (or "all")'
+        required: false
+        default: 'all'
+  pull_request:
+    paths:
+      - '.github/workflows/android_nightly.yml'
+      - '.github/scripts/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.example || 'all' }}
+  cancel-in-progress: true
+
+jobs:
+  detect-examples:
+    name: Auto-detect Android Examples
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      matrix: ${{ steps.detect.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Detect Android Examples
+        id: detect
+        env:
+          INPUT_EXAMPLE: ${{ inputs.example || 'all' }}
+        run: |
+          MATRIX_JSON=$(python3 .github/scripts/detect_android_examples.py --example "$INPUT_EXAMPLE")
+          echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
+
+  build-android:
+    name: Build Android Sample (${{ matrix.name }})
+    needs: detect-examples
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.detect-examples.outputs.matrix) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Stub models referenced by Gradle download tasks
+        env:
+          EXAMPLE_PATH: ${{ matrix.path }}
+        run: python3 .github/scripts/stub_android_models.py "$EXAMPLE_PATH"
+
+      - name: Build Android Application (${{ matrix.name }})
+        working-directory: ${{ matrix.path }}
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
