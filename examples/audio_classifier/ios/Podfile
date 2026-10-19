@@ -1,8 +1,0 @@
-platform :ios, '15.0'
-
-target 'AudioClassifier' do
-  use_frameworks!
-
-  pod 'MediaPipeTasksAudio'
-
-end

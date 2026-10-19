@@ -29,7 +29,7 @@ class TextProofreaderHelper {
   func proofread(text: String) -> TextProofreaderResult? {
     guard let textProofreader = textProofreader else { return nil }
     do {
-      return try textProofreader.proofread(text)
+      return try textProofreader.proofread(text: text)
     } catch {
       print("Proofreading error: \(error)")
       return nil
@@ -42,7 +42,7 @@ class TextProofreaderHelper {
       return
     }
     do {
-      try textProofreader.proofreadStreaming(text) { result, error in
+      try textProofreader.proofreadStreaming(text: text) { result, error in
         completion(result?.chunk, result?.done ?? false, error)
       }
     } catch {

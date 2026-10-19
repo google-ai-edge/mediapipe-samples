@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		065FC3102FF4544A00D4F505 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 065FC30F2FF4544A00D4F505 /* AudioToolbox.framework */; };
-		520462C441528002E6B354FC /* Pods_TextSummarizer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EACBA30056BD377579F64ECE /* Pods_TextSummarizer.framework */; };
+		A1B2C3D4E5F60718293A4B81 /* MediaPipeTasksText in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D4E5F60718293A4B82 /* MediaPipeTasksText */; };
 		F0000001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000001 /* AppDelegate.swift */; };
 		F0000002 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000002 /* SceneDelegate.swift */; };
 		F0000003 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000003 /* ViewController.swift */; };
@@ -18,9 +18,6 @@
 
 /* Begin PBXFileReference section */
 		065FC30F2FF4544A00D4F505 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
-		A09198BD134F6AB61DFE211A /* Pods-TextSummarizer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TextSummarizer.debug.xcconfig"; path = "Target Support Files/Pods-TextSummarizer/Pods-TextSummarizer.debug.xcconfig"; sourceTree = "<group>"; };
-		B718C13CC977063864A76053 /* Pods-TextSummarizer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TextSummarizer.release.xcconfig"; path = "Target Support Files/Pods-TextSummarizer/Pods-TextSummarizer.release.xcconfig"; sourceTree = "<group>"; };
-		EACBA30056BD377579F64ECE /* Pods_TextSummarizer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TextSummarizer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F1000001 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F1000002 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		F1000003 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -37,7 +34,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				065FC3102FF4544A00D4F505 /* AudioToolbox.framework in Frameworks */,
-				520462C441528002E6B354FC /* Pods_TextSummarizer.framework in Frameworks */,
+				A1B2C3D4E5F60718293A4B81 /* MediaPipeTasksText in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -48,18 +45,8 @@
 			isa = PBXGroup;
 			children = (
 				065FC30F2FF4544A00D4F505 /* AudioToolbox.framework */,
-				EACBA30056BD377579F64ECE /* Pods_TextSummarizer.framework */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		DEF1109EF02305C27E0F7B46 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				A09198BD134F6AB61DFE211A /* Pods-TextSummarizer.debug.xcconfig */,
-				B718C13CC977063864A76053 /* Pods-TextSummarizer.release.xcconfig */,
-			);
-			path = Pods;
 			sourceTree = "<group>";
 		};
 		F3000001 = {
@@ -68,7 +55,6 @@
 				F3000002 /* TextSummarizer */,
 				F3000003,
 				F3000004 /* Products */,
-				DEF1109EF02305C27E0F7B46 /* Pods */,
 				86C4C3B73AA3A276AF06029E /* Frameworks */,
 			);
 			sourceTree = "<group>";
@@ -108,7 +94,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F5000001 /* Build configuration list for PBXNativeTarget "TextSummarizer" */;
 			buildPhases = (
-				4CFF4C8A8BFF34232AD8FD89 /* [CP] Check Pods Manifest.lock */,
 				F6000001 /* Download models */,
 				F6000002 /* Sources */,
 				F2000001 /* Frameworks */,
@@ -119,6 +104,9 @@
 			dependencies = (
 			);
 			name = TextSummarizer;
+			packageProductDependencies = (
+				A1B2C3D4E5F60718293A4B82 /* MediaPipeTasksText */,
+			);
 			productName = TextSummarizer;
 			productReference = F1000007 /* TextSummarizer.app */;
 			productType = "com.apple.product-type.application";
@@ -146,6 +134,9 @@
 				Base,
 			);
 			mainGroup = F3000001;
+			packageReferences = (
+				A1B2C3D4E5F60718293A4B80 /* XCRemoteSwiftPackageReference "mediapipe" */,
+			);
 			productRefGroup = F3000004 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -167,28 +158,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		4CFF4C8A8BFF34232AD8FD89 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-TextSummarizer-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
 		F6000001 /* Download models */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -301,7 +270,6 @@
 		};
 		F8000003 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A09198BD134F6AB61DFE211A /* Pods-TextSummarizer.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
@@ -319,7 +287,6 @@
 		};
 		F8000004 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B718C13CC977063864A76053 /* Pods-TextSummarizer.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
@@ -357,6 +324,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A1B2C3D4E5F60718293A4B80 /* XCRemoteSwiftPackageReference "mediapipe" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google-ai-edge/mediapipe";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A1B2C3D4E5F60718293A4B82 /* MediaPipeTasksText */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1B2C3D4E5F60718293A4B80 /* XCRemoteSwiftPackageReference "mediapipe" */;
+			productName = MediaPipeTasksText;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F7000001 /* Project object */;
 }
