@@ -95,8 +95,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     // MediaPipe Library
-    implementation ('com.google.mediapipe:tasks-vision:1.0.0') {
-        exclude group: 'com.google.protobuf', module: 'protobuf-javalite'
-    }
+    implementation ('com.google.mediapipe:tasks-vision:1.1.1')
     implementation 'com.google.protobuf:protobuf-java:3.25.5'
 }
