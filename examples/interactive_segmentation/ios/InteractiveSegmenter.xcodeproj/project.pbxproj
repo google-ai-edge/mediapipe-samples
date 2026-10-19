@@ -73,6 +73,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 100000000000000000000304 /* Build configuration list for PBXNativeTarget "InteractiveSegmenter" */;
 			buildPhases = (
+				100000000000000000000201 /* Download models */,
 				100000000000000000000202 /* Sources */,
 				100000000000000000000203 /* Frameworks */,
 				100000000000000000000204 /* Resources */,
@@ -138,6 +139,24 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		100000000000000000000201 /* Download models */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download models";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/RunScripts/download_models.sh\"\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
