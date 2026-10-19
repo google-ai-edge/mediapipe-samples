@@ -7,7 +7,6 @@
 *.tflite
 
 # MediaPipe Task files
-*.tasks
 *.task
 *.litertlm
 *.wav
