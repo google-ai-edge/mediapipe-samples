@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		065FC3122FFC10F400D4F505 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 065FC3112FFC10F400D4F505 /* AudioToolbox.framework */; };
-		4CB4ED3D9A36B16852E06A95 /* Pods_AudioClassifier.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2BF9DD8B06D53C08BDD3BECE /* Pods_AudioClassifier.framework */; };
+		A1B2C3D4E5F60718293A4B51 /* MediaPipeTasksAudio in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D4E5F60718293A4B52 /* MediaPipeTasksAudio */; };
 		F0000001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000001 /* AppDelegate.swift */; };
 		F0000002 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000002 /* SceneDelegate.swift */; };
 		F0000003 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000003 /* ViewController.swift */; };
@@ -18,10 +18,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		03B72A321CD29FE739FB7045 /* Pods-AudioClassifier.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudioClassifier.release.xcconfig"; path = "Target Support Files/Pods-AudioClassifier/Pods-AudioClassifier.release.xcconfig"; sourceTree = "<group>"; };
 		065FC3112FFC10F400D4F505 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
-		2BF9DD8B06D53C08BDD3BECE /* Pods_AudioClassifier.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AudioClassifier.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		4B2A2D69078603964E77AD60 /* Pods-AudioClassifier.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudioClassifier.debug.xcconfig"; path = "Target Support Files/Pods-AudioClassifier/Pods-AudioClassifier.debug.xcconfig"; sourceTree = "<group>"; };
 		F1000001 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F1000002 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		F1000003 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -39,7 +36,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				065FC3122FFC10F400D4F505 /* AudioToolbox.framework in Frameworks */,
-				4CB4ED3D9A36B16852E06A95 /* Pods_AudioClassifier.framework in Frameworks */,
+				A1B2C3D4E5F60718293A4B51 /* MediaPipeTasksAudio in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -50,18 +47,8 @@
 			isa = PBXGroup;
 			children = (
 				065FC3112FFC10F400D4F505 /* AudioToolbox.framework */,
-				2BF9DD8B06D53C08BDD3BECE /* Pods_AudioClassifier.framework */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		664BDB7F4F25DEC530F6D007 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				4B2A2D69078603964E77AD60 /* Pods-AudioClassifier.debug.xcconfig */,
-				03B72A321CD29FE739FB7045 /* Pods-AudioClassifier.release.xcconfig */,
-			);
-			path = Pods;
 			sourceTree = "<group>";
 		};
 		F3000001 = {
@@ -70,7 +57,6 @@
 				F3000002 /* AudioClassifier */,
 				F3000003,
 				F3000004 /* Products */,
-				664BDB7F4F25DEC530F6D007 /* Pods */,
 				4BAD5A4F28871B5B0EEAF441 /* Frameworks */,
 			);
 			sourceTree = "<group>";
@@ -111,7 +97,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F5000001 /* Build configuration list for PBXNativeTarget "AudioClassifier" */;
 			buildPhases = (
-				364B5C7C186C7B5F1A47807F /* [CP] Check Pods Manifest.lock */,
 				F6000001 /* Download models */,
 				F6000002 /* Sources */,
 				F2000001 /* Frameworks */,
@@ -122,6 +107,9 @@
 			dependencies = (
 			);
 			name = AudioClassifier;
+			packageProductDependencies = (
+				A1B2C3D4E5F60718293A4B52 /* MediaPipeTasksAudio */,
+			);
 			productName = AudioClassifier;
 			productReference = F1000007 /* AudioClassifier.app */;
 			productType = "com.apple.product-type.application";
@@ -149,6 +137,9 @@
 				Base,
 			);
 			mainGroup = F3000001;
+			packageReferences = (
+				A1B2C3D4E5F60718293A4B50 /* XCRemoteSwiftPackageReference "mediapipe" */,
+			);
 			productRefGroup = F3000004 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -171,28 +162,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		364B5C7C186C7B5F1A47807F /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-AudioClassifier-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
 		F6000001 /* Download models */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -305,7 +274,6 @@
 		};
 		F8000003 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4B2A2D69078603964E77AD60 /* Pods-AudioClassifier.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
@@ -323,7 +291,6 @@
 		};
 		F8000004 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 03B72A321CD29FE739FB7045 /* Pods-AudioClassifier.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
@@ -361,6 +328,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A1B2C3D4E5F60718293A4B50 /* XCRemoteSwiftPackageReference "mediapipe" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google-ai-edge/mediapipe";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A1B2C3D4E5F60718293A4B52 /* MediaPipeTasksAudio */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1B2C3D4E5F60718293A4B50 /* XCRemoteSwiftPackageReference "mediapipe" */;
+			productName = MediaPipeTasksAudio;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F7000001 /* Project object */;
 }
