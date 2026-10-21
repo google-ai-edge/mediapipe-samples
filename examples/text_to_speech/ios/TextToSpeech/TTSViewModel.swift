@@ -37,7 +37,7 @@ public struct PresetPhrase: Identifiable, Hashable, Sendable {
 
 @MainActor
 public final class TTSViewModel: ObservableObject {
-  @Published public var textToSynthesize: String = ""
+  @Published public var textToSynthesize: String = "Hello, welcome to MediaPipe TTS."
   @Published public var selectedVoice: String = "af_heart"
   @Published public var availableVoices: [VoiceInfo] = []
   @Published public var statusMessage: String = "Initializing..."
@@ -127,12 +127,17 @@ public final class TTSViewModel: ObservableObject {
   }
 
   private func getModelPath() -> String {
-    if let bundlePath = Bundle.main.path(forResource: "kokoro_acoustic_int8", ofType: "litertlm")
+    if let bundlePath = Bundle.main.path(forResource: "kokoro_int8_gpu", ofType: "litertlm")
+      ?? Bundle.main.path(forResource: "kokoro_acoustic_int8", ofType: "litertlm")
       ?? Bundle.main.path(forResource: "kokoro", ofType: "litertlm") {
       return bundlePath
     }
     #if os(iOS)
       let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+      let fullPathGpu = documentsURL.appendingPathComponent("kokoro_int8_gpu.litertlm").path
+      if FileManager.default.fileExists(atPath: fullPathGpu) {
+        return fullPathGpu
+      }
       let fullPath = documentsURL.appendingPathComponent("kokoro_acoustic_int8.litertlm").path
       if FileManager.default.fileExists(atPath: fullPath) {
         return fullPath
@@ -141,6 +146,10 @@ public final class TTSViewModel: ObservableObject {
     #else
       let modelsDir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(
         "models")
+      let pathGpu = modelsDir.appendingPathComponent("kokoro_int8_gpu.litertlm").path
+      if FileManager.default.fileExists(atPath: pathGpu) {
+        return pathGpu
+      }
       let path1 = modelsDir.appendingPathComponent("kokoro_acoustic_int8.litertlm").path
       let path2 = modelsDir.appendingPathComponent("kokoro.litertlm").path
       if FileManager.default.fileExists(atPath: path1) {
