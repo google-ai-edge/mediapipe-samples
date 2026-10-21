@@ -1,0 +1,33 @@
+<!--
+    ~ Copyright 2026 The MediaPipe Authors. All Rights Reserved.
+    ~
+    ~ Licensed under the Apache License, Version 2.0 (the "License");
+    ~ you may not use this file except in compliance with the License.
+    ~ You may obtain a copy of the License at
+    ~
+    ~       http://www.apache.org/licenses/LICENSE-2.0
+    ~
+    ~ Unless required by applicable law or agreed to in writing, software
+    ~ distributed under the License is distributed on an "AS IS" BASIS,
+    ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    ~ See the License for the specific language governing permissions and
+    ~ limitations under the License.
+-->
+<resources>
+    <string name="app_name" translatable="false">MediaPipe AudioTranscriber</string>
+    <string name="subtitle" translatable="false">On-Device Speech Recognition</string>
+    <string name="model_label_format" translatable="false">Model: %1$s</string>
+    <string name="status_ready" translatable="false">Ready</string>
+    <string name="status_listening" translatable="false">Listening...</string>
+    <string name="status_finalized" translatable="false">Recording finalized</string>
+    <string name="status_cleared" translatable="false">Cleared</string>
+    <string name="status_permission_denied" translatable="false">Microphone permission denied</string>
+    <string name="audio_level_label" translatable="false">Input Level</string>
+    <string name="transcript_title" translatable="false">Transcript</string>
+    <string name="live_badge" translatable="false">[Live]</string>
+    <string name="empty_transcript_prompt" translatable="false">Tap Start Recording and speak into the microphone to begin real-time on-device transcription.</string>
+    <string name="start_recording" translatable="false">Start Recording</string>
+    <string name="stop_recording" translatable="false">Stop Recording</string>
+    <string name="clear_all" translatable="false">Clear All</string>
+    <string name="load_model" translatable="false">Load Model…</string>
+</resources>

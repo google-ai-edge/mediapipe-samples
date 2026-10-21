@@ -21,3 +21,7 @@ captures/
 
 # Model Files
 *.litertlm
+
+# Local build artifacts in libs
+app/libs/*.aar
+app/libs/*.jar

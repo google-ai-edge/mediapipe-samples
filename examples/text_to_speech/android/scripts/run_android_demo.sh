@@ -95,7 +95,10 @@ fi
 # 1. Device detection
 # ---------------------------------------------------------------------------
 if [[ -z "${SERIAL}" ]]; then
-  mapfile -t DEVICES < <(adb devices | awk '$2 == "device" { print $1 }')
+  DEVICES=()
+  while IFS= read -r dev; do
+    [[ -n "$dev" ]] && DEVICES+=("$dev")
+  done < <(adb devices | awk '$2 == "device" { print $1 }')
   if [[ ${#DEVICES[@]} -eq 0 ]]; then
     die "No Android device connected. Please connect a device with USB debugging enabled or start an emulator."
   elif [[ ${#DEVICES[@]} -gt 1 ]]; then

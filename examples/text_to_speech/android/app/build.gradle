@@ -31,6 +31,7 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
+        freeCompilerArgs += ['-Xskip-metadata-version-check']
     }
 
     androidResources {
@@ -47,7 +48,11 @@ dependencies {
 
     // MediaPipe Tasks Audio library (providing TextToSpeech task)
     // Resolved from mavenLocal() or repository
-    implementation 'com.google.mediapipe:tasks-audio:latest.release'
+    if (file('libs/tasks_audio.aar').exists()) {
+        implementation 'com.google.mediapipe:tasks-core:latest.release'
+    } else {
+        implementation 'com.google.mediapipe:tasks-audio:latest.release'
+    }
 }
 
 // Download models into the assets directory if configured.

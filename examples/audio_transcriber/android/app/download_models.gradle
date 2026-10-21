@@ -1,0 +1,15 @@
+// Parakeet TDT 0.6B v3 streaming speech recognition model.
+// Push the model directly to the device external files directory (recommended):
+//   adb push parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm /sdcard/Android/data/com.google.mediapipe.tasks.examples.audiotranscriber/files/
+//
+// Or download and bundle into the APK assets by running:
+//   ./gradlew downloadParakeetModel
+//
+task downloadParakeetModel(type: Download) {
+    String modelUrl = project.findProperty('PARAKEET_MODEL_URL') ?: System.getenv('PARAKEET_MODEL_URL') ?: 'https://huggingface.co/litert-community/parakeet-tdt-0.6b-v3/resolve/main/parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm'
+    if (!modelUrl.isEmpty()) {
+        src modelUrl
+        dest project.ext.ASSET_DIR + '/parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm'
+        overwrite false
+    }
+}

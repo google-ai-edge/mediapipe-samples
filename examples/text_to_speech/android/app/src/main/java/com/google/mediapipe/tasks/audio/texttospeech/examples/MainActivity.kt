@@ -386,20 +386,26 @@ class MainActivity : Activity() {
             "Run scripts/run_android_demo.sh, or: " +
             "adb push ~/models/$MODEL_FILE_NAME ${(getExternalFilesDir(null) ?: filesDir).absolutePath}/$MODEL_FILE_NAME"
         }
-        val options =
+        val buildOptions: (Delegate) -> TextToSpeechOptions = { delegate ->
           TextToSpeechOptions(
             baseOptions =
               BaseOptions.builder()
                 .setModelAssetPath(modelFile.absolutePath)
-                .setDelegate(Delegate.GPU)
+                .setDelegate(delegate)
                 .build(),
             defaultVoiceId = DEFAULT_VOICE,
             speakingRate = 1.0f,
             targetBucket = targetBucket,
             cacheDirectory = cacheDir.absolutePath,
           )
+        }
         val loadStart = SystemClock.elapsedRealtime()
-        val engine = TextToSpeech.create(options)
+        val engine = try {
+          TextToSpeech.create(buildOptions(Delegate.GPU))
+        } catch (e: Exception) {
+          log("GPU delegate unavailable ($e); falling back to CPU.")
+          TextToSpeech.create(buildOptions(Delegate.CPU))
+        }
         val loadMs = SystemClock.elapsedRealtime() - loadStart
         val loadedVoices = engine.listVoices()
         check(loadedVoices.isNotEmpty()) { "The model reported no voices." }
