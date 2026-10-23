@@ -19,10 +19,10 @@ The demo uses the Parakeet TDT 0.6B v3 stateful 5-second quantized model:
 Download URL:
 https://huggingface.co/litert-community/parakeet-tdt-0.6b-v3/blob/main/parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm
 
-### Download Script
-Run the download script to fetch the model into the app assets directory:
+### Download Script via Gradle
+Downloading and placing the model into the app's *assets* directory is managed by **download_model.gradle**:
 ```bash
-sh RunScripts/download_models.sh
+./gradlew downloadParakeetModel
 ```
 
 ### Pushing the Model via ADB (Recommended)

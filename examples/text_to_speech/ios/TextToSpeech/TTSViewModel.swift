@@ -95,10 +95,17 @@ public final class TTSViewModel: ObservableObject {
         return
       }
 
+      #if targetEnvironment(simulator)
+        // Simulator Metal compute lacks required argument buffer / residency features for Kokoro kernels.
+        let defaultDelegate: TTSHardwareDelegate = .cpu
+      #else
+        let defaultDelegate: TTSHardwareDelegate = .gpu
+      #endif
+
       let options = TextToSpeechOptions(
         baseOptions: TTSBaseOptions(
           modelAssetPath: modelPath,
-          delegate: .gpu
+          delegate: defaultDelegate
         ),
         defaultVoiceId: "af_heart",
         speakingRate: 1.0

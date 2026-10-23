@@ -13,5 +13,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "MP Audio Transcriber"
+rootProject.name = "Audio Transcriber"
 include ':app'

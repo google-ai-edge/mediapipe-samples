@@ -1,27 +1,19 @@
-# Gradle files
-.gradle/
-build/
-
-# Local configuration file (SDK path, etc.)
-local.properties
-
-# IntelliJ IDEA files
 *.iml
-.idea/
-
-# macOS files
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
 .DS_Store
-
-# Android Studio captures
-captures/
-
-# Native build artifacts
-.externalNativeBuild/
-.cxx/
-
-# Model Files
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+.kotlin
 *.litertlm
-
-# Local build artifacts in libs
 app/libs/*.aar
 app/libs/*.jar
