@@ -14,7 +14,17 @@ This sample app demonstrates on-device speech synthesis using the MediaPipe Task
 
 ## Model Setup
 
-The demo requires the Kokoro-82M LiteRT-LM model bundle (`kokoro.litertlm` or `kokoro_acoustic_int8.litertlm`).
+The demo requires a Kokoro-82M LiteRT-LM model bundle from the [LiteRT Kokoro-82M Hugging Face repository](https://huggingface.co/litert-community/Kokoro-82M).
+
+### Choosing the Right Model Variant
+
+| Model Bundle | Recommended Target | Delegate | Description |
+|---|---|---|---|
+| **`kokoro_int8_gpu_fp16.litertlm`** ⭐ | **Physical Android Device** | **GPU** | **Recommended for devices**. Vocoder convolutions run natively on OpenCL in FP16. Fast (RTF ~0.12) with minimal peak RAM (~350 MB). *Note: running this model on CPU causes audible high-pitched quantization overtones.* |
+| **`kokoro_int8_fp16.litertlm`** | **Android Emulator & CPU** | **CPU** | **Recommended for emulator / CPU**. Contains explicit dequantization ops for XNNPACK, producing clean audio on CPU without quantization harmonics (~700–850 MB peak RAM). |
+
+> **Note on Emulator vs. Device:**
+> The Android Emulator does not provide guest OpenCL compute drivers, so LiteRT's GPU delegate automatically falls back to CPU (XNNPACK). When testing on an Android emulator, use `kokoro_int8_fp16.litertlm` to avoid vocoder quantization noise.
 
 The app automatically searches for the model in the following locations:
 1. App's external files directory: `/sdcard/Android/data/com.google.mediapipe.tasks.audio.texttospeech.examples/files/kokoro.litertlm`

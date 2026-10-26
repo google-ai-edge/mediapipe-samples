@@ -43,6 +43,16 @@ public final class TTSAudioPlayer: @unchecked Sendable {
     self.enableSpeakerOutput = enableSpeakerOutput
     #if canImport(AVFoundation)
       if enableSpeakerOutput {
+        #if os(iOS)
+          do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playback, mode: .default, options: [])
+            try session.setActive(true)
+            print("AVAudioSession configured for playback successfully")
+          } catch {
+            print("Failed to configure AVAudioSession: \(error)")
+          }
+        #endif
         let engine = AVAudioEngine()
         let node = AVAudioPlayerNode()
         engine.attach(node)
@@ -96,9 +106,9 @@ public final class TTSAudioPlayer: @unchecked Sendable {
         }
         pcmBuffer.frameLength = AVAudioFrameCount(result.samples.count)
         if let channelData = pcmBuffer.floatChannelData?[0] {
-          result.samples.withUnsafeBufferPointer { src in
-            guard let base = src.baseAddress else { return }
-            channelData.update(from: base, count: result.samples.count)
+          for i in 0..<result.samples.count {
+            let s = result.samples[i]
+            channelData[i] = (s.isNaN || s.isInfinite) ? 0.0 : max(-1.0, min(1.0, s))
           }
           node.scheduleBuffer(pcmBuffer) {
             completion?()

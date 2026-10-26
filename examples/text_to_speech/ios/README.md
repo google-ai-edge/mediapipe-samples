@@ -50,15 +50,25 @@ The MediaPipe dependency is resolved automatically via Swift Package Manager (SP
 
 ### Model Setup
 
-The app requires the Kokoro-82M LiteRT-LM model bundle (`kokoro.litertlm` or `kokoro_acoustic_int8.litertlm`).
+The app requires a Kokoro-82M LiteRT-LM model bundle from the [LiteRT Kokoro-82M Hugging Face repository](https://huggingface.co/litert-community/Kokoro-82M).
+
+#### Choosing the Right Model Variant
+
+| Model Bundle | Recommended Target | Delegate | Description |
+|---|---|---|---|
+| **`kokoro_int8_gpu_fp16.litertlm`** ⭐ | **Physical iOS Device** | **GPU** (`.gpu`) | **Recommended for devices**. Vocoder convolutions run natively on Metal in FP16. Fast (RTF ~0.12) with minimal peak RAM (~350 MB). *Note: running this model on CPU causes audible high-pitched quantization overtones.* |
+| **`kokoro_int8_fp16.litertlm`** | **iOS Simulator & CPU** | **CPU** (`.cpu`) | **Recommended for simulator / CPU**. Contains explicit dequantization ops for XNNPACK, producing clean audio on CPU without quantization harmonics (~700–850 MB peak RAM). |
+
+> **Note on Simulator vs. Device:**
+> Apple's iOS Simulator does not support the Metal compute pipeline features (argument buffer residency) required by LiteRT's GPU delegate, so the simulator always runs on the CPU delegate. When testing on a simulator, use `kokoro_int8_fp16.litertlm` to avoid vocoder quantization noise.
 
 The app automatically searches for the model in:
-1. The app bundle (`TextToSpeech/kokoro.litertlm`)
+1. The app bundle (`TextToSpeech/kokoro_int8_gpu_fp16.litertlm` or `kokoro.litertlm`)
 2. The app's `Documents` directory (on iOS device)
-3. `~/models/kokoro.litertlm` (on macOS / simulator)
+3. `~/models/kokoro_int8_gpu_fp16.litertlm` or `~/models/kokoro.litertlm` (on macOS / simulator)
 
 To bundle the model with the app:
-1. Place `kokoro.litertlm` into the `TextToSpeech/` directory.
+1. Place the chosen `.litertlm` file into the `TextToSpeech/` directory.
 2. Ensure it is added to the Xcode target under **Build Phases > Copy Bundle Resources**.
 
 ### Building

@@ -96,7 +96,6 @@ public final class TTSViewModel: ObservableObject {
       }
 
       #if targetEnvironment(simulator)
-        // Simulator Metal compute lacks required argument buffer / residency features for Kokoro kernels.
         let defaultDelegate: TTSHardwareDelegate = .cpu
       #else
         let defaultDelegate: TTSHardwareDelegate = .gpu
@@ -127,14 +126,16 @@ public final class TTSViewModel: ObservableObject {
         selectedVoice = filteredVoices.first?.voiceId ?? "af_heart"
       }
 
-      statusMessage = "Kokoro initialized. Voices: \(availableVoices.count)"
+      let modelFilename = (modelPath as NSString).lastPathComponent
+      statusMessage = "Kokoro (\(modelFilename)). Voices: \(availableVoices.count)"
     } catch {
       statusMessage = "Init error: \(error.localizedDescription)"
     }
   }
 
   private func getModelPath() -> String {
-    if let bundlePath = Bundle.main.path(forResource: "kokoro_int8_gpu", ofType: "litertlm")
+    if let bundlePath = Bundle.main.path(forResource: "kokoro_int8_gpu_fp16", ofType: "litertlm")
+      ?? Bundle.main.path(forResource: "kokoro_int8_gpu", ofType: "litertlm")
       ?? Bundle.main.path(forResource: "kokoro_acoustic_int8", ofType: "litertlm")
       ?? Bundle.main.path(forResource: "kokoro", ofType: "litertlm") {
       return bundlePath
@@ -191,15 +192,32 @@ public final class TTSViewModel: ObservableObject {
           options: SynthesisOptions(voiceId: selectedVoice)
         )
         guard !Task.isCancelled && self.synthesisTask == task else { return }
+        var hasNaN = false
+        var minVal: Float = .infinity
+        var maxVal: Float = -.infinity
+        for s in result.samples {
+          if s.isNaN || s.isInfinite { hasNaN = true }
+          else {
+            if s < minVal { minVal = s }
+            if s > maxVal { maxVal = s }
+          }
+        }
+        print("Synthesized: \(result.samples.count) samples at \(result.sampleRateHz) Hz. min=\(minVal), max=\(maxVal), hasNaN=\(hasNaN)")
         player.enqueue(result) {
           Task { @MainActor in
             guard self.isPlaying else { return }
             self.isPlaying = false
-            self.statusMessage = "Ready"
+            self.statusMessage = String(
+              format: "Ready (%d samples, [%.2f, %.2f], NaN=%@)",
+              result.samples.count,
+              minVal.isInfinite ? 0 : minVal,
+              maxVal.isInfinite ? 0 : maxVal,
+              hasNaN ? "YES" : "NO"
+            )
           }
         }
         isPlaying = true
-        statusMessage = "Synthesis completed. Playing..."
+        statusMessage = "Playing (\(result.samples.count) samples)..."
       } catch is CancellationError {
         if self.synthesisTask == task {
           statusMessage = "Synthesis cancelled"

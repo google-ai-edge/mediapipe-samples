@@ -13,6 +13,7 @@
 		T0000004 /* TTSAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = T1000004 /* TTSAudioPlayer.swift */; };
 		T000000C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = T1000006 /* Assets.xcassets */; };
 		T000000D /* kokoro.litertlm in Resources */ = {isa = PBXBuildFile; fileRef = T100000D /* kokoro.litertlm */; };
+		T000000E /* kokoro_int8_gpu_fp16.litertlm in Resources */ = {isa = PBXBuildFile; fileRef = T100000E /* kokoro_int8_gpu_fp16.litertlm */; };
 		T000000A /* MediaPipeTasksAudioTTS in Frameworks */ = {isa = PBXBuildFile; productRef = T900000A /* MediaPipeTasksAudioTTS */; };
 /* End PBXBuildFile section */
 
@@ -26,6 +27,7 @@
 		T1000007 /* TextToSpeech.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TextToSpeech.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		T1000008 /* download_models.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = download_models.sh; sourceTree = "<group>"; };
 		T100000D /* kokoro.litertlm */ = {isa = PBXFileReference; lastKnownFileType = file; path = kokoro.litertlm; sourceTree = "<group>"; };
+		T100000E /* kokoro_int8_gpu_fp16.litertlm */ = {isa = PBXFileReference; lastKnownFileType = file; path = kokoro_int8_gpu_fp16.litertlm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +61,7 @@
 				T1000005 /* Info.plist */,
 				T1000006 /* Assets.xcassets */,
 				T100000D /* kokoro.litertlm */,
+				T100000E /* kokoro_int8_gpu_fp16.litertlm */,
 			);
 			path = TextToSpeech;
 			sourceTree = "<group>";
@@ -146,6 +149,7 @@
 			files = (
 				T000000C /* Assets.xcassets in Resources */,
 				T000000D /* kokoro.litertlm in Resources */,
+				T000000E /* kokoro_int8_gpu_fp16.litertlm in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
