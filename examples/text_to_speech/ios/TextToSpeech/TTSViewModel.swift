@@ -15,7 +15,9 @@
 import Foundation
 import SwiftUI
 
-#if canImport(MediaPipeTasksAudioTTS)
+#if canImport(MediaPipeTasksAudio)
+  import MediaPipeTasksAudio
+#elseif canImport(MediaPipeTasksAudioTTS)
   import MediaPipeTasksAudioTTS
 #elseif canImport(MediaPipeTTS)
   import MediaPipeTTS
@@ -142,6 +144,17 @@ public final class TTSViewModel: ObservableObject {
     }
     #if os(iOS)
       let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+      #if targetEnvironment(simulator)
+        let preferredNames = ["kokoro_int8_fp16.litertlm", "kokoro_int8_gpu_fp16.litertlm"]
+      #else
+        let preferredNames = ["kokoro_int8_gpu_fp16.litertlm", "kokoro_int8_fp16.litertlm"]
+      #endif
+      for name in preferredNames {
+        let path = documentsURL.appendingPathComponent(name).path
+        if FileManager.default.fileExists(atPath: path) {
+          return path
+        }
+      }
       let fullPathGpu = documentsURL.appendingPathComponent("kokoro_int8_gpu.litertlm").path
       if FileManager.default.fileExists(atPath: fullPathGpu) {
         return fullPathGpu
@@ -154,6 +167,12 @@ public final class TTSViewModel: ObservableObject {
     #else
       let modelsDir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(
         "models")
+      for name in ["kokoro_int8_gpu_fp16.litertlm", "kokoro_int8_fp16.litertlm"] {
+        let path = modelsDir.appendingPathComponent(name).path
+        if FileManager.default.fileExists(atPath: path) {
+          return path
+        }
+      }
       let pathGpu = modelsDir.appendingPathComponent("kokoro_int8_gpu.litertlm").path
       if FileManager.default.fileExists(atPath: pathGpu) {
         return pathGpu

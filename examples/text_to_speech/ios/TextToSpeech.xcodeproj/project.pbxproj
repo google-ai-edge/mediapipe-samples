@@ -14,7 +14,7 @@
 		T000000C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = T1000006 /* Assets.xcassets */; };
 		T000000D /* kokoro.litertlm in Resources */ = {isa = PBXBuildFile; fileRef = T100000D /* kokoro.litertlm */; };
 		T000000E /* kokoro_int8_gpu_fp16.litertlm in Resources */ = {isa = PBXBuildFile; fileRef = T100000E /* kokoro_int8_gpu_fp16.litertlm */; };
-		T000000A /* MediaPipeTasksAudioTTS in Frameworks */ = {isa = PBXBuildFile; productRef = T900000A /* MediaPipeTasksAudioTTS */; };
+		T000000A /* MediaPipeTasksAudio in Frameworks */ = {isa = PBXBuildFile; productRef = T900000A /* MediaPipeTasksAudio */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,7 +35,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				T000000A /* MediaPipeTasksAudioTTS in Frameworks */,
+				T000000A /* MediaPipeTasksAudio in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -100,7 +100,7 @@
 			);
 			name = TextToSpeech;
 			packageProductDependencies = (
-				T900000A /* MediaPipeTasksAudioTTS */,
+				T900000A /* MediaPipeTasksAudio */,
 			);
 			productName = TextToSpeech;
 			productReference = T1000007 /* TextToSpeech.app */;
@@ -339,10 +339,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		T900000A /* MediaPipeTasksAudioTTS */ = {
+		T900000A /* MediaPipeTasksAudio */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = T8000001 /* XCRemoteSwiftPackageReference "mediapipe" */;
-			productName = MediaPipeTasksAudioTTS;
+			productName = MediaPipeTasksAudio;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

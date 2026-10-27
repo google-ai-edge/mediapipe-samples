@@ -14,7 +14,7 @@ The Text-to-Speech API enables low-latency, on-device audio generation from text
 ### API in a Nutshell
 
 ```swift
-import MediaPipeTasksAudioTTS
+import MediaPipeTasksAudio
 
 // 1. Initialize TextToSpeech engine
 let options = TextToSpeechOptions(
@@ -46,7 +46,7 @@ for try await chunk in tts.synthesizeStream("Hello world!", options: SynthesisOp
 *   Xcode 15.0 or later.
 *   iOS 16.0 or later (physical device recommended for GPU acceleration, or simulator).
 
-The MediaPipe dependency is resolved automatically via Swift Package Manager (SPM) using `MediaPipeTasksAudioTTS`.
+The MediaPipe dependency is resolved automatically via Swift Package Manager (SPM) using `MediaPipeTasksAudio`.
 
 ### Model Setup
 

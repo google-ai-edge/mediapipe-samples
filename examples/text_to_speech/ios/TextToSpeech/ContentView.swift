@@ -14,7 +14,9 @@
 
 import SwiftUI
 
-#if canImport(MediaPipeTasksAudioTTS)
+#if canImport(MediaPipeTasksAudio)
+  import MediaPipeTasksAudio
+#elseif canImport(MediaPipeTasksAudioTTS)
   import MediaPipeTasksAudioTTS
 #elseif canImport(MediaPipeTTS)
   import MediaPipeTTS
