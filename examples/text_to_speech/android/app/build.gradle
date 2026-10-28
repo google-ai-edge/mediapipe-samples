@@ -1,0 +1,60 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'de.undercouch.download'
+}
+
+android {
+    namespace 'com.google.mediapipe.tasks.audio.texttospeech.examples'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.google.mediapipe.tasks.audio.texttospeech.examples"
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+        freeCompilerArgs += ['-Xskip-metadata-version-check']
+    }
+
+    androidResources {
+        noCompress 'litertlm'
+        noCompress 'task'
+        noCompress 'tflite'
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+
+    // MediaPipe Tasks Audio library (providing TextToSpeech task)
+    // Resolved from mavenLocal() or repository
+    if (file('libs/tasks_audio.aar').exists()) {
+        implementation 'com.google.mediapipe:tasks-core:latest.release'
+    } else {
+        implementation 'com.google.mediapipe:tasks-audio:latest.release'
+    }
+}
+
+// Download models into the assets directory if configured.
+project.ext.ASSET_DIR = projectDir.toString() + '/src/main/assets'
+apply from: 'download_models.gradle'
