@@ -69,11 +69,10 @@ jobs:
         if: ${{ !matrix.has_podfile }}
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
-          path: |
-            ~/Library/Caches/org.swift.swiftpm
-            DerivedData/SourcePackages
+          path: ~/Library/Caches/org.swift.swiftpm
           key: ${{ runner.os }}-spm-${{ matrix.name }}-${{ hashFiles(format('{0}/{1}/project.pbxproj', matrix.path, matrix.project)) }}
           restore-keys: |
+            ${{ runner.os }}-spm-${{ matrix.name }}-
             ${{ runner.os }}-spm-
 
       - name: Cache CocoaPods dependencies
@@ -83,7 +82,7 @@ jobs:
           path: ${{ matrix.path }}/Pods
           key: ${{ runner.os }}-pods-${{ matrix.name }}-${{ hashFiles(format('{0}/Podfile.lock', matrix.path)) }}
           restore-keys: |
-            ${{ runner.os }}-pods-
+            ${{ runner.os }}-pods-${{ matrix.name }}-
 
       - name: Install CocoaPods dependencies
         if: ${{ matrix.has_podfile }}
