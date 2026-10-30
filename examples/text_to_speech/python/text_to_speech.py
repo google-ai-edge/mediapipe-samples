@@ -64,7 +64,6 @@ def create_tts(
             model_asset_path=model_path, delegate=Delegate[delegate_name]
         ),
         default_voice_id='af_heart',
-        default_locale='en-US',
         speaking_rate=speaking_rate,
         # Compiled kernels and weights are cached here for faster startup.
         cache_directory=os.path.join(
@@ -92,10 +91,6 @@ def main() -> None:
   )
   parser.add_argument(
       '--voice', default='af_heart', help='Voice ID, see --list_voices.'
-  )
-  parser.add_argument(
-      '--locale',
-      help="Locale of the text. Defaults to the selected voice's locale.",
   )
   parser.add_argument(
       '--speaking_rate', type=float, default=1.0, help='1.0 is normal speed.'
@@ -127,14 +122,11 @@ def main() -> None:
       return
     if args.voice not in voices:
       parser.error(f'Unknown voice {args.voice!r}, see --list_voices.')
-    locale = args.locale or voices[args.voice].locale
 
     start = time.perf_counter()
     if args.stream:
       chunks = []
-      for chunk in tts.synthesize_stream(
-          args.text, voice_id=args.voice, locale=locale
-      ):
+      for chunk in tts.synthesize_stream(args.text, voice_id=args.voice):
         elapsed = time.perf_counter() - start
         print(
             f'[{elapsed * 1000:5.0f} ms] chunk {chunk.chunk_index}:'
@@ -145,7 +137,7 @@ def main() -> None:
       sample_rate = chunks[0].sample_rate_hz
       word_timestamps = [w for chunk in chunks for w in chunk.word_timestamps]
     else:
-      result = tts.synthesize(args.text, voice_id=args.voice, locale=locale)
+      result = tts.synthesize(args.text, voice_id=args.voice)
       samples, sample_rate = result.samples, result.sample_rate_hz
       word_timestamps = result.word_timestamps
     latency = time.perf_counter() - start
