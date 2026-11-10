@@ -45,7 +45,8 @@ class TextEmbedderHelperTest {
             "Quantum mechanics describes how subatomic particles behave at atomic scales."
         private const val EXPECTED_MOBILE_BERT_SIMILARITY = 0.9899
         private const val EXPECTED_MOBILE_BERT_DIMS = 512
-        private const val EXPECTED_AVERAGE_WORD_DIMS = 16
+        private const val EXPECTED_USE_SIMILARITY = 0.7682
+        private const val EXPECTED_USE_DIMS = 100
     }
 
     @Test
@@ -66,7 +67,6 @@ class TextEmbedderHelperTest {
         try {
             assertTrue("MobileBERT failed to initialize", helper.isReady)
 
-            // Warmup + golden related pair
             val related =
                 recorder.measure("compare_related_ms") {
                     helper.compare(TEXT_TEST_ONE, TEXT_TEST_TWO)
@@ -83,15 +83,22 @@ class TextEmbedderHelperTest {
             )
             assertEquals(EXPECTED_MOBILE_BERT_DIMS, related.dimensions)
 
-            // Identical text similarity should be ~1.0
             val identical = helper.compare(TEXT_TEST_ONE, TEXT_TEST_ONE)!!
-            EmbeddingMetrics.assertSimilarityClose(1.0, identical.similarity, tolerance = 1e-4, label = "mobileBert.identical")
+            EmbeddingMetrics.assertSimilarityClose(
+                1.0,
+                identical.similarity,
+                tolerance = 1e-4,
+                label = "mobileBert.identical",
+            )
 
-            // Symmetry check
             val reversed = helper.compare(TEXT_TEST_TWO, TEXT_TEST_ONE)!!
-            EmbeddingMetrics.assertSimilarityClose(related.similarity, reversed.similarity, tolerance = 1e-5, label = "mobileBert.symmetry")
+            EmbeddingMetrics.assertSimilarityClose(
+                related.similarity,
+                reversed.similarity,
+                tolerance = 1e-5,
+                label = "mobileBert.symmetry",
+            )
 
-            // Unrelated pair must rank meaningfully below related pair
             val unrelated = helper.compare(TEXT_TEST_ONE, TEXT_UNRELATED)!!
             Log.i(TAG, "MobileBERT unrelated=$unrelated")
             assertTrue(
@@ -99,7 +106,6 @@ class TextEmbedderHelperTest {
                 related.similarity > unrelated.similarity + 0.10,
             )
 
-            // Verify shipped example presets produce sensible similarity ranking
             val presetsById = DefaultPresets.associateBy { it.id }
             val similarPreset = presetsById.getValue("similar")
             val unrelatedPreset = presetsById.getValue("unrelated")
@@ -116,7 +122,6 @@ class TextEmbedderHelperTest {
                 unrelatedPresetScore < 0.50,
             )
 
-            // Raw vector sanity + record 5 steady-state comparisons for report-only timing
             val emb = helper.embed(TEXT_TEST_ONE)!!
             assertTrue(EmbeddingMetrics.l2Norm(emb.floatEmbedding()) > 0.0)
             repeat(5) {
@@ -131,10 +136,10 @@ class TextEmbedderHelperTest {
     }
 
     @Test
-    fun averageWord_embeddingQualityAndRanking() {
+    fun universalSentenceEncoder_embeddingQualityAndRanking() {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
-        val recorder = LatencyRecorder("text_embedder_average_word")
-        recorder.putMetadata("model", TextEmbedderHelper.MODEL_AVERAGE_WORD_PATH)
+        val recorder = LatencyRecorder("text_embedder_universal_sentence_encoder")
+        recorder.putMetadata("model", TextEmbedderHelper.MODEL_UNIVERSAL_SENTENCE_ENCODER_PATH)
         recorder.putMetadata("delegate", "CPU")
 
         val helper =
@@ -142,11 +147,11 @@ class TextEmbedderHelperTest {
                 TextEmbedderHelper(
                     context = context,
                     currentDelegate = TextEmbedderHelper.DELEGATE_CPU,
-                    currentModel = TextEmbedderHelper.MODEL_AVERAGE_WORD,
+                    currentModel = TextEmbedderHelper.MODEL_UNIVERSAL_SENTENCE_ENCODER,
                 )
             }
         try {
-            assertTrue("AverageWord failed to initialize", helper.isReady)
+            assertTrue("Universal Sentence Encoder failed to initialize", helper.isReady)
 
             val related =
                 recorder.measure("compare_related_ms") {
@@ -154,13 +159,35 @@ class TextEmbedderHelperTest {
                 }!!
             val unrelated = helper.compare(TEXT_TEST_ONE, TEXT_UNRELATED)!!
             val identical = helper.compare(TEXT_TEST_ONE, TEXT_TEST_ONE)!!
-            Log.i(TAG, "AverageWord related=$related unrelated=$unrelated")
+            Log.i(TAG, "USE related=$related unrelated=$unrelated")
 
+            EmbeddingMetrics.assertSimilarityClose(
+                expected = EXPECTED_USE_SIMILARITY,
+                actual = related.similarity,
+                tolerance = 0.02,
+                label = "use.daNang",
+            )
             assertEquals(1.0, identical.similarity, 1e-4)
-            assertEquals(EXPECTED_AVERAGE_WORD_DIMS, related.dimensions)
+            assertEquals(EXPECTED_USE_DIMS, related.dimensions)
             assertTrue(
-                "Expected related (${related.similarity}) > unrelated (${unrelated.similarity})",
-                related.similarity > unrelated.similarity,
+                "Expected related (${related.similarity}) > unrelated (${unrelated.similarity}) + 0.20",
+                related.similarity > unrelated.similarity + 0.20,
+            )
+
+            val presetsById = DefaultPresets.associateBy { it.id }
+            val similarPreset = presetsById.getValue("similar")
+            val unrelatedPreset = presetsById.getValue("unrelated")
+            val similarPresetScore =
+                helper.compare(similarPreset.firstText, similarPreset.secondText)!!.similarity
+            val unrelatedPresetScore =
+                helper.compare(unrelatedPreset.firstText, unrelatedPreset.secondText)!!.similarity
+            assertTrue(
+                "Expected USE preset 'similar' ($similarPresetScore) > 0.90",
+                similarPresetScore > 0.90,
+            )
+            assertTrue(
+                "Expected USE preset 'unrelated' ($unrelatedPresetScore) < 0.65",
+                unrelatedPresetScore < 0.65,
             )
 
             repeat(5) {

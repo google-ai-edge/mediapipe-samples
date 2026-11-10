@@ -123,20 +123,29 @@ class TextEmbedderUiTest {
     }
 
     @Test
-    fun switchModelInSettings_runsAverageWordEndToEnd() {
+    fun switchModelInSettings_runsUniversalEncoderEndToEnd() {
         waitForCompareReady()
 
         composeRule.onNodeWithTag("settings_button").performClick()
         composeRule.onNodeWithTag("settings_sheet").assertIsDisplayed()
-        composeRule.onNodeWithTag("option_Model_Average Word").performClick()
+        composeRule.onNodeWithTag("option_Model_Universal").performClick()
         composeRule.onNodeWithTag("settings_done_button").performClick()
 
-        composeRule.onNodeWithTag("top_bar_subtitle").assertTextContains("Average Word · CPU")
+        composeRule.onNodeWithTag("top_bar_subtitle").assertTextContains("Universal · 100d")
         waitForCompareReady()
-        composeRule.onNodeWithTag("compare_button").assertIsEnabled().performScrollTo().performClick()
 
-        val score = waitForResultCard()
-        assertTrue("Expected valid Average Word similarity score, got $score", score in -1.0..1.0)
-        composeRule.onNodeWithTag("metric_dimensions").assertTextContains("16d", substring = true)
+        composeRule.onNodeWithTag("preset_similar").performClick()
+        composeRule.onNodeWithTag("compare_button").assertIsEnabled().performScrollTo().performClick()
+        val similarScore = waitForResultCard()
+        assertTrue("Expected high USE similarity for Similar preset, got $similarScore", similarScore > 0.90)
+        composeRule.onNodeWithTag("metric_dimensions").assertTextContains("100d", substring = true)
+
+        composeRule.onNodeWithTag("preset_unrelated").performClick()
+        composeRule.onNodeWithTag("compare_button").assertIsEnabled().performScrollTo().performClick()
+        val unrelatedScore = waitForResultCard()
+        assertTrue(
+            "Expected USE Similar ($similarScore) > Unrelated ($unrelatedScore) + 0.25",
+            similarScore > unrelatedScore + 0.25,
+        )
     }
 }

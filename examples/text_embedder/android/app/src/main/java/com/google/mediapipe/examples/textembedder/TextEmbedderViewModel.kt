@@ -30,22 +30,24 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-enum class EmbedderModel(val index: Int, val displayName: String, val description: String) {
+enum class EmbedderModel(
+    val index: Int,
+    val displayName: String,
+    val dimensions: Int,
+    val description: String,
+) {
     MOBILE_BERT(
         index = TextEmbedderHelper.MODEL_MOBILE_BERT,
         displayName = "MobileBERT",
+        dimensions = 512,
         description = "Contextual 512d transformer embeddings for full sentences",
     ),
-    AVERAGE_WORD(
-        index = TextEmbedderHelper.MODEL_AVERAGE_WORD,
-        displayName = "Average Word",
-        description = "Fast lightweight 16d word-average embeddings",
+    UNIVERSAL_SENTENCE_ENCODER(
+        index = TextEmbedderHelper.MODEL_UNIVERSAL_SENTENCE_ENCODER,
+        displayName = "Universal",
+        dimensions = 100,
+        description = "Universal Sentence Encoder · fast 100d sentence embeddings",
     ),
-}
-
-enum class EmbedderDelegate(val index: Int, val displayName: String) {
-    CPU(TextEmbedderHelper.DELEGATE_CPU, "CPU"),
-    GPU(TextEmbedderHelper.DELEGATE_GPU, "GPU"),
 }
 
 data class TextPairPreset(
@@ -59,13 +61,11 @@ data class TextEmbedderUiState(
     val firstText: String = DefaultPresets.first().firstText,
     val secondText: String = DefaultPresets.first().secondText,
     val model: EmbedderModel = EmbedderModel.MOBILE_BERT,
-    val delegate: EmbedderDelegate = EmbedderDelegate.CPU,
     val isModelLoading: Boolean = true,
     val isComparing: Boolean = false,
     val isReady: Boolean = false,
     val result: TextEmbedderHelper.ResultBundle? = null,
     val errorMessage: String? = null,
-    val errorIsGpuFallback: Boolean = false,
 ) {
     val isBusy: Boolean
         get() = isModelLoading || isComparing
@@ -132,7 +132,6 @@ class TextEmbedderViewModel(appContext: Context) : ViewModel() {
                         isComparing = false,
                         isReady = false,
                         errorMessage = error,
-                        errorIsGpuFallback = errorCode == TextEmbedderHelper.GPU_ERROR,
                     )
                 }
             }
@@ -172,24 +171,6 @@ class TextEmbedderViewModel(appContext: Context) : ViewModel() {
         prepareEmbedder()
     }
 
-    fun selectDelegate(delegate: EmbedderDelegate) {
-        if (_uiState.value.delegate == delegate) return
-        _uiState.update { it.copy(delegate = delegate, result = null) }
-        prepareEmbedder()
-    }
-
-    fun switchToCpuAndRetry() {
-        _uiState.update {
-            it.copy(
-                delegate = EmbedderDelegate.CPU,
-                errorMessage = null,
-                errorIsGpuFallback = false,
-                result = null,
-            )
-        }
-        prepareEmbedder()
-    }
-
     fun retryInitialization() {
         prepareEmbedder()
     }
@@ -199,7 +180,7 @@ class TextEmbedderViewModel(appContext: Context) : ViewModel() {
         if (!snapshot.canCompare) return
 
         activeJob?.cancel()
-        _uiState.update { it.copy(isComparing = true, errorMessage = null, errorIsGpuFallback = false) }
+        _uiState.update { it.copy(isComparing = true, errorMessage = null) }
         activeJob =
             viewModelScope.launch {
                 val bundle =
@@ -213,7 +194,6 @@ class TextEmbedderViewModel(appContext: Context) : ViewModel() {
                         it.copy(
                             isComparing = false,
                             errorMessage = "Embedder is not initialized.",
-                            errorIsGpuFallback = false,
                         )
                     }
                 }
@@ -222,14 +202,12 @@ class TextEmbedderViewModel(appContext: Context) : ViewModel() {
 
     private fun prepareEmbedder() {
         val targetModel = _uiState.value.model
-        val targetDelegate = _uiState.value.delegate
         activeJob?.cancel()
         _uiState.update {
             it.copy(
                 isModelLoading = true,
                 isReady = false,
                 errorMessage = null,
-                errorIsGpuFallback = false,
             )
         }
         activeJob =
@@ -241,14 +219,14 @@ class TextEmbedderViewModel(appContext: Context) : ViewModel() {
                             val created =
                                 TextEmbedderHelper(
                                     context = context,
-                                    currentDelegate = targetDelegate.index,
+                                    currentDelegate = TextEmbedderHelper.DELEGATE_CPU,
                                     currentModel = targetModel.index,
                                     listener = listener,
                                 )
                             helper = created
                             created.isReady
                         } else {
-                            existing.currentDelegate = targetDelegate.index
+                            existing.currentDelegate = TextEmbedderHelper.DELEGATE_CPU
                             existing.currentModel = targetModel.index
                             existing.setupTextEmbedder()
                         }

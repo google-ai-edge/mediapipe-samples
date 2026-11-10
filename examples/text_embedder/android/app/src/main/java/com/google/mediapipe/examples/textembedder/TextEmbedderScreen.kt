@@ -91,8 +91,7 @@ fun TextEmbedderScreen(
     onApplyPreset: (TextPairPreset) -> Unit,
     onCompare: () -> Unit,
     onSelectModel: (EmbedderModel) -> Unit,
-    onSelectDelegate: (EmbedderDelegate) -> Unit,
-    onRecoverFromError: () -> Unit,
+    onRetryInitialization: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showSettings by rememberSaveable { mutableStateOf(false) }
@@ -103,7 +102,7 @@ fun TextEmbedderScreen(
         topBar = {
             MediaPipeTopBar(
                 title = stringResource(R.string.app_name),
-                subtitle = "${uiState.model.displayName} · ${uiState.delegate.displayName}",
+                subtitle = "${uiState.model.displayName} · ${uiState.model.dimensions}d",
                 onSettingsClick = { showSettings = true },
                 settingsContentDescription = stringResource(R.string.cd_open_settings),
             )
@@ -115,8 +114,8 @@ fun TextEmbedderScreen(
                     .padding(innerPadding)
                     .imePadding()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             AnimatedVisibility(
                 visible = uiState.errorMessage != null,
@@ -126,15 +125,8 @@ fun TextEmbedderScreen(
                 uiState.errorMessage?.let { message ->
                     StatusErrorBanner(
                         message = message,
-                        actionLabel =
-                            stringResource(
-                                if (uiState.errorIsGpuFallback) {
-                                    R.string.action_use_cpu
-                                } else {
-                                    R.string.action_retry
-                                }
-                            ),
-                        onAction = onRecoverFromError,
+                        actionLabel = stringResource(R.string.action_retry),
+                        onAction = onRetryInitialization,
                     )
                 }
             }
@@ -184,7 +176,7 @@ fun TextEmbedderScreen(
                 uiState.result?.let { result ->
                     SimilarityResultCard(
                         result = result,
-                        delegateName = uiState.delegate.displayName,
+                        modelName = uiState.model.displayName,
                     )
                 }
             }
@@ -200,10 +192,8 @@ fun TextEmbedderScreen(
         ) {
             SettingsSheetContent(
                 selectedModel = uiState.model,
-                selectedDelegate = uiState.delegate,
                 isBusy = uiState.isBusy,
                 onSelectModel = onSelectModel,
-                onSelectDelegate = onSelectDelegate,
                 onDismiss = { showSettings = false },
             )
         }
@@ -376,7 +366,7 @@ private fun CompareButton(uiState: TextEmbedderUiState, onClick: () -> Unit) {
 @Composable
 private fun SimilarityResultCard(
     result: TextEmbedderHelper.ResultBundle,
-    delegateName: String,
+    modelName: String,
 ) {
     val barTarget = result.similarity.toFloat().coerceIn(0f, 1f)
     val animatedProgress by animateFloatAsState(targetValue = barTarget, label = "similarityBar")
@@ -408,8 +398,8 @@ private fun SimilarityResultCard(
         modifier = Modifier.fillMaxWidth().testTag("result_card"),
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -467,19 +457,19 @@ private fun SimilarityResultCard(
                 MetadataBadge(
                     label = stringResource(R.string.label_inference_time),
                     value = "${result.inferenceTime} ms",
-                    modifier = Modifier.weight(1f).testTag("metric_inference_time"),
+                    modifier = Modifier.weight(0.95f).testTag("metric_inference_time"),
                 )
                 if (result.dimensions > 0) {
                     MetadataBadge(
                         label = stringResource(R.string.label_dimensions),
                         value = "${result.dimensions}d",
-                        modifier = Modifier.weight(1f).testTag("metric_dimensions"),
+                        modifier = Modifier.weight(0.95f).testTag("metric_dimensions"),
                     )
                 }
                 MetadataBadge(
-                    label = stringResource(R.string.label_delegate),
-                    value = delegateName,
-                    modifier = Modifier.weight(1f),
+                    label = stringResource(R.string.label_models),
+                    value = modelName,
+                    modifier = Modifier.weight(1.25f),
                 )
             }
         }
@@ -489,14 +479,11 @@ private fun SimilarityResultCard(
 @Composable
 private fun SettingsSheetContent(
     selectedModel: EmbedderModel,
-    selectedDelegate: EmbedderDelegate,
     isBusy: Boolean,
     onSelectModel: (EmbedderModel) -> Unit,
-    onSelectDelegate: (EmbedderDelegate) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val models = EmbedderModel.entries
-    val delegates = EmbedderDelegate.entries
 
     Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp),
@@ -523,19 +510,27 @@ private fun SettingsSheetContent(
             )
         }
 
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            SegmentedOptionRow(
-                label = stringResource(R.string.label_delegate),
-                options = delegates.map { it.displayName },
-                selectedIndex = delegates.indexOf(selectedDelegate),
-                enabled = !isBusy,
-                onSelect = { idx -> onSelectDelegate(delegates[idx]) },
-            )
-            Text(
-                text = stringResource(R.string.delegate_hint),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+        Surface(
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            shape = RoundedCornerShape(14.dp),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.label_accelerator_cpu),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = stringResource(R.string.delegate_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
 
         FilledTonalButton(

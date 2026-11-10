@@ -30,12 +30,11 @@
     <string name="similarity_low">Low similarity</string>
     <string name="label_inference_time">Inference</string>
     <string name="label_dimensions">Dimensions</string>
-    <string name="label_delegate">Delegate</string>
     <string name="label_models">Model</string>
-    <string name="settings_title">Model &amp; Hardware</string>
-    <string name="delegate_hint">CPU is recommended for text embedding models.</string>
+    <string name="settings_title">Model Settings</string>
+    <string name="label_accelerator_cpu">Accelerator: CPU</string>
+    <string name="delegate_hint">Text embedding models run on CPU (TFLite GPU delegate is not supported for these graphs).</string>
     <string name="action_done">Done</string>
-    <string name="action_use_cpu">Use CPU</string>
     <string name="action_retry">Retry</string>
     <string name="cd_open_settings">Open model and hardware settings</string>
     <string name="cd_clear_text">Clear text</string>

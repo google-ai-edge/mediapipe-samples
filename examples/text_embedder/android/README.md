@@ -6,7 +6,7 @@ This Android app compares the semantic similarity of two text inputs on-device
 using the MediaPipe `TextEmbedder` task, with a choice of
 [MobileBERT](https://storage.googleapis.com/mediapipe-models/text_embedder/bert_embedder/float32/1/bert_embedder.tflite)
 or
-[Average Word](https://storage.googleapis.com/mediapipe-models/text_embedder/average_word_embedder/float32/1/average_word_embedder.tflite)
+[Universal Sentence Encoder](https://storage.googleapis.com/mediapipe-models/text_embedder/universal_sentence_encoder/float32/1/universal_sentence_encoder.tflite)
 embedding models.
 
 ![Text Embedder Demo](textembedder.png?raw=true "Text Embedder Demo")

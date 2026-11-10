@@ -64,7 +64,8 @@ class TextEmbedderHelper(
         }
         when (currentModel) {
             MODEL_MOBILE_BERT -> baseOptionsBuilder.setModelAssetPath(MODEL_MOBILE_BERT_PATH)
-            MODEL_AVERAGE_WORD -> baseOptionsBuilder.setModelAssetPath(MODEL_AVERAGE_WORD_PATH)
+            MODEL_UNIVERSAL_SENTENCE_ENCODER ->
+                baseOptionsBuilder.setModelAssetPath(MODEL_UNIVERSAL_SENTENCE_ENCODER_PATH)
             else -> {
                 listener?.onError("Unsupported model index: $currentModel")
                 return false
@@ -136,9 +137,9 @@ class TextEmbedderHelper(
         const val DELEGATE_CPU = 0
         const val DELEGATE_GPU = 1
         const val MODEL_MOBILE_BERT = 0
-        const val MODEL_AVERAGE_WORD = 1
+        const val MODEL_UNIVERSAL_SENTENCE_ENCODER = 1
         const val MODEL_MOBILE_BERT_PATH = "mobile_bert.tflite"
-        const val MODEL_AVERAGE_WORD_PATH = "average_word.tflite"
+        const val MODEL_UNIVERSAL_SENTENCE_ENCODER_PATH = "universal_sentence_encoder.tflite"
         const val OTHER_ERROR = 0
         const val GPU_ERROR = 1
         private const val TAG = "TextEmbedderHelper"

@@ -135,11 +135,7 @@ jobs:
           disable-animations: true
           disable-spellchecker: true
           working-directory: examples/text_embedder/android
-          script: |
-            ./gradlew :app:connectedDebugAndroidTest \
-              -PmediapipeVersion="$MP_VERSION" \
-              -PrequireLocalMediapipeRepo=true \
-              --no-daemon --stacktrace
+          script: ./gradlew :app:connectedDebugAndroidTest -PmediapipeVersion="$MP_VERSION" -PrequireLocalMediapipeRepo=true --no-daemon --stacktrace
 
   verify-published:
     name: Verify Published Binaries (${{ inputs.mediapipe_version }})

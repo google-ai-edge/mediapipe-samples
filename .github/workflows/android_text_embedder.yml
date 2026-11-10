@@ -90,16 +90,7 @@ jobs:
           script: |
             adb logcat -c || true
             ./gradlew :app:connectedDebugAndroidTest --no-daemon --stacktrace
-            mkdir -p ../../../build/latency_reports
-            adb logcat -d -s LatencyRecorder | python3 -c '
-            import os, re, sys
-            out = "../../../build/latency_reports"
-            for line in sys.stdin:
-                m = re.search(r"LATENCY_REPORT\s+([A-Za-z0-9_.-]+):\s*(\{.*\})\s*$", line)
-                if m:
-                    with open(os.path.join(out, f"{m.group(1)}.json"), "w") as f:
-                        f.write(m.group(2) + "\n")
-            '
+            adb logcat -d -s LatencyRecorder | python3 ../../../.github/scripts/extract_latency_reports.py ../../../build/latency_reports
 
       - name: Upload report-only latency JSON
         if: always()

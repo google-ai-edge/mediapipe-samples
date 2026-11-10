@@ -46,14 +46,7 @@ class MainActivity : ComponentActivity() {
                     onApplyPreset = embedderViewModel::applyPreset,
                     onCompare = embedderViewModel::compare,
                     onSelectModel = embedderViewModel::selectModel,
-                    onSelectDelegate = embedderViewModel::selectDelegate,
-                    onRecoverFromError = {
-                        if (uiState.errorIsGpuFallback) {
-                            embedderViewModel.switchToCpuAndRetry()
-                        } else {
-                            embedderViewModel.retryInitialization()
-                        }
-                    },
+                    onRetryInitialization = embedderViewModel::retryInitialization,
                 )
             }
         }

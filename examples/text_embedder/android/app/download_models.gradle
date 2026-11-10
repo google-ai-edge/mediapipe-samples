@@ -31,8 +31,8 @@ def sha256Hex = { File file ->
 def mobileBertFile = file(project.ext.ASSET_DIR + '/mobile_bert.tflite')
 def mobileBertSha256 = '02ae6279faf86c2cd4ff18f61876c878bcc0b572b472f0678897a184c4ac7ef6'
 
-def averageWordFile = file(project.ext.ASSET_DIR + '/average_word.tflite')
-def averageWordSha256 = '2f4e0cda2e33a46a593024c5a59f9a3d1af530a2b90dca290a820d72d255f946'
+def useFile = file(project.ext.ASSET_DIR + '/universal_sentence_encoder.tflite')
+def useSha256 = '89ad3c74175dd8caa398cc22b657296d94302d20c525c12b58b29420f7249749'
 
 task downloadMobileBertModel(type: Download) {
     src 'https://storage.googleapis.com/mediapipe-models/text_embedder/bert_embedder/float32/1/bert_embedder.tflite'
@@ -48,26 +48,26 @@ task downloadMobileBertModel(type: Download) {
     }
 }
 
-task downloadAverageWordModel(type: Download) {
-    src 'https://storage.googleapis.com/mediapipe-models/text_embedder/average_word_embedder/float32/1/average_word_embedder.tflite'
-    dest project.ext.ASSET_DIR + '/average_word.tflite'
+task downloadUniversalSentenceEncoderModel(type: Download) {
+    src 'https://storage.googleapis.com/mediapipe-models/text_embedder/universal_sentence_encoder/float32/1/universal_sentence_encoder.tflite'
+    dest project.ext.ASSET_DIR + '/universal_sentence_encoder.tflite'
     overwrite false
-    onlyIf { !averageWordFile.exists() }
+    onlyIf { !useFile.exists() }
     doLast {
-        def actual = sha256Hex(averageWordFile)
-        if (actual != averageWordSha256) {
-            averageWordFile.delete()
-            throw new GradleException("Checksum mismatch for average_word.tflite: expected $averageWordSha256, got $actual")
+        def actual = sha256Hex(useFile)
+        if (actual != useSha256) {
+            useFile.delete()
+            throw new GradleException("Checksum mismatch for universal_sentence_encoder.tflite: expected $useSha256, got $actual")
         }
     }
 }
 
 task verifyModels {
-    dependsOn downloadMobileBertModel, downloadAverageWordModel
+    dependsOn downloadMobileBertModel, downloadUniversalSentenceEncoderModel
     doLast {
         [
             [mobileBertFile, mobileBertSha256, 'mobile_bert.tflite'],
-            [averageWordFile, averageWordSha256, 'average_word.tflite'],
+            [useFile, useSha256, 'universal_sentence_encoder.tflite'],
         ].each { entry ->
             File f = entry[0]
             String expected = entry[1]
@@ -83,4 +83,4 @@ task verifyModels {
     }
 }
 
-preBuild.dependsOn downloadMobileBertModel, downloadAverageWordModel
+preBuild.dependsOn downloadMobileBertModel, downloadUniversalSentenceEncoderModel
