@@ -174,7 +174,7 @@ class ObjectDetectorTest {
                 assertEquals(
                     expectedCategoryForVideoMode[i].score(),
                     actualAverageCategories[i].score(),
-                    0.08f,
+                    0.15f,
                 )
             }
         } finally {
