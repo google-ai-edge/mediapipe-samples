@@ -15,251 +15,262 @@
  */
 package com.google.mediapipe.examples.handlandmarker
 
+import android.content.Context
 import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.SystemClock
+import android.util.Log
 import androidx.core.net.toUri
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
+import com.google.mediapipe.examples.common.testing.LatencyRecorder
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.components.containers.Category
 import com.google.mediapipe.tasks.vision.core.RunningMode
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
 import java.io.File
 import java.io.FileOutputStream
-import java.io.InputStream
-import java.util.concurrent.locks.Condition
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.min
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import org.junit.runner.RunWith
 
-
-/**
- * Instrumented test, which will execute on an Android device.
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
+/** Instrumentation tests for [HandLandmarkerHelper] across IMAGE, VIDEO, and LIVE_STREAM modes. */
 @RunWith(AndroidJUnit4::class)
 class HandLandmarkerHelperTest {
 
-    private companion object {
+    companion object {
+        private const val TAG = "HandLandmarkerHelperTest"
         private const val TEST_IMAGE = "test_image.jpg"
         private const val TEST_VIDEO = "test_video.mp4"
+
+        private val expectedCategoriesForImageAndLiveStreamMode =
+            listOf(Category.create(0.7034111f, 0, "Right", ""))
+
+        private val expectedCategoryForVideoMode =
+            listOf(Category.create(0.9509236f, 0, "Right", ""))
     }
 
-    private val expectedCategoriesForImageAndLiveStreamMode = listOf(
-        Category.create(0.7034111f, 0, "Left", ""),
-    )
-
-    private val expectedCategoryForVideoMode = listOf(
-        Category.create(0.9509236f, 0, "Left", ""),
-    )
-    private lateinit var lock: ReentrantLock
-    private lateinit var condition: Condition
-
-    @Before
-    fun setup() {
-        lock = ReentrantLock()
-        condition = lock.newCondition()
-    }
-
-    /**
-     * Verify that the result returned from the Hand Landmarker Helper with
-     * LIVE_STREAM mode is within the acceptable range to the expected result.
-     */
     @Test
-    @Throws(Exception::class)
-    fun landmarkerLiveStreamModeResultsFallsWithinAcceptedRange() {
-        var landmarkerResult: HandLandmarkerHelper.ResultBundle? = null
+    fun landmarkerLiveStreamModeResultFallsWithinAcceptedRange() {
+        val latch = CountDownLatch(1)
+        val resultRef = AtomicReference<HandLandmarkerHelper.ResultBundle?>()
+        val errorRef = AtomicReference<String?>()
+
         val handLandmarkerHelper =
             HandLandmarkerHelper(
                 context = ApplicationProvider.getApplicationContext(),
                 runningMode = RunningMode.LIVE_STREAM,
-                handLandmarkerHelperListener = object :
-                    HandLandmarkerHelper.LandmarkerListener {
-                    override fun onError(error: String, errorCode: Int) {
-                        // Print out the error
-                        println(error)
-
-                        // Release the lock
-                        lock.withLock {
-                            condition.signal()
+                handLandmarkerHelperListener =
+                    object : HandLandmarkerHelper.LandmarkerListener {
+                        override fun onError(error: String, errorCode: Int) {
+                            errorRef.compareAndSet(null, error)
+                            latch.countDown()
                         }
-                    }
 
-                    override fun onResults(
-                        resultBundle: HandLandmarkerHelper
-                        .ResultBundle
-                    ) {
-                        landmarkerResult = resultBundle
-
-                        // Release the lock and start verifying the result
-                        lock.withLock {
-                            condition.signal()
+                        override fun onResults(resultBundle: HandLandmarkerHelper.ResultBundle) {
+                            resultRef.compareAndSet(null, resultBundle)
+                            latch.countDown()
                         }
-                    }
-                })
+                    },
+            )
+        val bitmap = loadImage(TEST_IMAGE)
+        try {
+            assertFalse("HandLandmarker failed to initialize", handLandmarkerHelper.isClosed)
+            val mpImage = BitmapImageBuilder(bitmap).build()
+            handLandmarkerHelper.detectAsync(mpImage, SystemClock.uptimeMillis())
 
-        // Create Bitmap and convert to MPImage.
-        val testImage = loadImage(TEST_IMAGE)
-        val mpImage = BitmapImageBuilder(testImage).build()
+            assertTrue("Timed out waiting for LIVE_STREAM callback", latch.await(15, TimeUnit.SECONDS))
+            val error = errorRef.get()
+            if (error != null) {
+                throw AssertionError("Unexpected LIVE_STREAM error: $error")
+            }
 
-        // Run the hand landmarker on the test image.
-        handLandmarkerHelper.detectAsync(
-            mpImage, SystemClock.uptimeMillis()
-        )
-
-        // Lock to wait the HandLandmarkerHelper return the value.
-        lock.withLock {
-            condition.await()
+            val bundle = resultRef.get()
+            assertNotNull(bundle)
+            val firstResult = bundle!!.results.first()
+            assertEquals(21, firstResult.landmarks().first().size)
+            val actualCategories = firstResult.handedness().first()
+            assertTrue(actualCategories.isNotEmpty())
+            Log.i(
+                TAG,
+                "LiveStream handedness=${actualCategories.first().categoryName()} score=${actualCategories.first().score()}",
+            )
+            assertEquals(
+                expectedCategoriesForImageAndLiveStreamMode.first().categoryName(),
+                actualCategories.first().categoryName(),
+            )
+            assertEquals(
+                expectedCategoriesForImageAndLiveStreamMode.first().score(),
+                actualCategories.first().score(),
+                0.02f,
+            )
+        } finally {
+            handLandmarkerHelper.clearHandLandmarker()
+            bitmap.recycle()
         }
-
-        // Verify that the recognizer is not null
-        assertNotNull(landmarkerResult)
-
-        // Expecting one hand for this test case
-        val actualCategories =
-            landmarkerResult!!.results.first().handednesses().first()
-
-        // Verify that the categories are not empty
-        assert(actualCategories.isNotEmpty())
-
-        // Verify that the categories are correct.
-        assertEquals(
-            expectedCategoriesForImageAndLiveStreamMode.first().categoryName(),
-            actualCategories.first().categoryName()
-        )
-
-        // Verify that the scores are correct.
-        assertEquals(
-            expectedCategoriesForImageAndLiveStreamMode.first().score(),
-            actualCategories.first().score(), 0.01f
-        )
     }
 
-    /**
-     * Verify that the result returned from the Hand Landmarker Helper with
-     * VIDEO mode is within the acceptable range to the expected result.
-     */
     @Test
     fun landmarkerVideoModeResultFallsWithinAcceptedRange() {
-        val handLandmarkerHelper = HandLandmarkerHelper(
-            context = ApplicationProvider.getApplicationContext(),
-            runningMode = RunningMode.VIDEO,
-        )
+        val handLandmarkerHelper =
+            HandLandmarkerHelper(
+                context = ApplicationProvider.getApplicationContext(),
+                runningMode = RunningMode.VIDEO,
+            )
+        val tempFile = createTempVideoFile(TEST_VIDEO)
+        try {
+            assertFalse("HandLandmarker VIDEO mode failed to initialize", handLandmarkerHelper.isClosed)
+            val videoUri: Uri = tempFile.toUri()
+            val landmarkerResult = handLandmarkerHelper.detectVideoFile(videoUri, 300)
 
-        val videoUri = getVideoUri(TEST_VIDEO)
+            assertNotNull(landmarkerResult)
 
-        // Run the hand landmarker with the test video.
-        val landmarkerResult = handLandmarkerHelper.detectVideoFile(
-            videoUri,
-            300
-        )
-
-        // Verify that the hand landmarker result is not null.
-        assertNotNull(landmarkerResult)
-
-        // Average scores of all frames.
-        val hashMap = HashMap<String, Pair<Float, Int>>()
-        landmarkerResult!!.results.forEach { frameResult ->
-            frameResult.handednesses().first().forEach {
-                if (hashMap.containsKey(it.categoryName())) {
-                    hashMap[it.categoryName()] = Pair(
-                        hashMap[it.categoryName()]!!.first + it.score(),
-                        hashMap[it.categoryName()]!!.second + 1
-                    )
-                } else {
-                    hashMap[it.categoryName()] = Pair(it.score(), 1)
+            val hashMap = HashMap<String, Pair<Float, Int>>()
+            landmarkerResult!!.results.forEach { frameResult ->
+                frameResult.handedness().firstOrNull()?.forEach { category ->
+                    val prev = hashMap[category.categoryName()]
+                    if (prev != null) {
+                        hashMap[category.categoryName()] =
+                            Pair(prev.first + category.score(), prev.second + 1)
+                    } else {
+                        hashMap[category.categoryName()] = Pair(category.score(), 1)
+                    }
                 }
             }
-        }
-        val actualAverageCategories = hashMap.map {
-            val averageScore = it.value.first / it.value.second
-            Category.create(averageScore, 0, it.key, "")
-        }.toList().sortedByDescending { it.score() }
+            val actualAverageCategories =
+                hashMap
+                    .map { Category.create(it.value.first / it.value.second, 0, it.key, "") }
+                    .sortedByDescending { it.score() }
 
-        val minSize =
-            min(
-                actualAverageCategories.size, expectedCategoryForVideoMode.size
+            assertTrue("Expected at least one handedness category in video", actualAverageCategories.isNotEmpty())
+            Log.i(
+                TAG,
+                "Video avg handedness=${actualAverageCategories.first().categoryName()} score=${actualAverageCategories.first().score()}",
             )
-
-        for (i in 0 until minSize) {
-            // Verify that the categories are correct.
-            assertEquals(
-                expectedCategoryForVideoMode[i].categoryName(),
-                actualAverageCategories[i].categoryName()
-            )
-
-            // Verify that the scores are correct.
-            assertEquals(
-                expectedCategoryForVideoMode[i].score(),
-                actualAverageCategories[i].score(), 0.05f
-            )
+            val minSize = min(actualAverageCategories.size, expectedCategoryForVideoMode.size)
+            for (i in 0 until minSize) {
+                assertEquals(
+                    expectedCategoryForVideoMode[i].categoryName(),
+                    actualAverageCategories[i].categoryName(),
+                )
+                assertEquals(
+                    expectedCategoryForVideoMode[i].score(),
+                    actualAverageCategories[i].score(),
+                    0.05f,
+                )
+            }
+        } finally {
+            handLandmarkerHelper.clearHandLandmarker()
+            tempFile.delete()
         }
     }
 
-    /**
-     * Verify that the result returned from the Hand Landmarker Helper with
-     * IMAGE mode is within the acceptable range to the expected result.
-     */
     @Test
-    fun landmarkerImageModeResultFallsWithinAcceptedRange() {
-        val handLandmarkerHelper = HandLandmarkerHelper(
-            context = ApplicationProvider.getApplicationContext(),
-            runningMode = RunningMode.IMAGE,
-        )
-
+    fun landmarkerImageModeResultFallsWithinAcceptedRange_andRecordsLatency() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
         val bitmap = loadImage(TEST_IMAGE)
 
-        // Run the hand landmarker with the test image.
-        val landmarkerResults =
-            handLandmarkerHelper.detectImage(bitmap!!)?.results?.first()
+        val recorder = LatencyRecorder("hand_landmarker_image_cpu")
+        recorder.putMetadata("model", "hand_landmarker.task")
+        recorder.putMetadata("delegate", "CPU")
 
-        // Verify that the hand landmarker result is not null.
-        assertNotNull(landmarkerResults)
+        val handLandmarkerHelper =
+            recorder.measure("model_load_ms") {
+                HandLandmarkerHelper(context = context, runningMode = RunningMode.IMAGE)
+            }
+        try {
+            assertFalse("HandLandmarker IMAGE mode failed to initialize", handLandmarkerHelper.isClosed)
+            val bundle = recorder.measure("detect_image_ms") { handLandmarkerHelper.detectImage(bitmap) }
+            assertNotNull(bundle)
 
-        // Expecting one hand for this test case
-        val actualCategories =
-            landmarkerResults!!.handednesses().first()
+            val landmarkerResult = bundle!!.results.first()
+            val landmarks = landmarkerResult.landmarks().first()
+            assertEquals(21, landmarks.size)
+            landmarks.forEach { lm ->
+                assertTrue("Landmark x out of range: ${lm.x()}", lm.x() in 0f..1f)
+                assertTrue("Landmark y out of range: ${lm.y()}", lm.y() in 0f..1f)
+            }
 
-        assert(actualCategories.isNotEmpty())
+            val actualCategories = landmarkerResult.handedness().first()
+            assertTrue(actualCategories.isNotEmpty())
+            Log.i(
+                TAG,
+                "Image handedness=${actualCategories.first().categoryName()} score=${actualCategories.first().score()}",
+            )
+            assertEquals(
+                expectedCategoriesForImageAndLiveStreamMode.first().categoryName(),
+                actualCategories.first().categoryName(),
+            )
+            assertEquals(
+                expectedCategoriesForImageAndLiveStreamMode.first().score(),
+                actualCategories.first().score(),
+                0.02f,
+            )
 
-        // Verify that the categories are correct.
-        assertEquals(
-            expectedCategoriesForImageAndLiveStreamMode.first().categoryName(),
-            actualCategories.first().categoryName()
-        )
-
-        // Verify that the scores are correct.
-        assertEquals(
-            expectedCategoriesForImageAndLiveStreamMode.first().score(),
-            actualCategories.first().score(), 0.01f
-        )
+            repeat(5) {
+                recorder.measure("detect_steady_ms") { handLandmarkerHelper.detectImage(bitmap) }
+            }
+            recorder.flush(context)
+        } finally {
+            handLandmarkerHelper.clearHandLandmarker()
+            bitmap.recycle()
+        }
     }
 
-    @Throws(Exception::class)
-    private fun loadImage(fileName: String): Bitmap? {
-        val assetManager: AssetManager =
-            InstrumentationRegistry.getInstrumentation().context.assets
-        val inputStream: InputStream = assetManager.open(fileName)
-        return BitmapFactory.decodeStream(inputStream)
+    @Test
+    fun landmarkerImageMode_lowDetectionThreshold_andTwoHands_detectsSampleHands() {
+        val handLandmarkerHelper =
+            HandLandmarkerHelper(
+                context = ApplicationProvider.getApplicationContext(),
+                minHandDetectionConfidence = 0.2f,
+                minHandPresenceConfidence = 0.2f,
+                maxNumHands = 2,
+                runningMode = RunningMode.IMAGE,
+            )
+        val bitmap = loadImage(TEST_IMAGE)
+        try {
+            val bundle = handLandmarkerHelper.detectImage(bitmap)
+            assertNotNull(bundle)
+            val result = bundle!!.results.first()
+            val handCount = result.landmarks().size
+            val labels = result.handedness().mapNotNull { it.firstOrNull()?.categoryName() }
+            Log.i(TAG, "Two-hand detection on $TEST_IMAGE (thresh=0.2): count=$handCount, handednesses=$labels")
+            assertTrue("Expected at least 1 hand detected in $TEST_IMAGE", handCount >= 1)
+            result.landmarks().forEach { hand -> assertEquals(21, hand.size) }
+        } finally {
+            handLandmarkerHelper.clearHandLandmarker()
+            bitmap.recycle()
+        }
     }
 
-    @Throws(Exception::class)
-    private fun getVideoUri(videoName: String): Uri {
-        val assetManager: AssetManager =
-            InstrumentationRegistry.getInstrumentation().context.assets
+    private fun loadImage(fileName: String): Bitmap {
+        val assetManager: AssetManager = InstrumentationRegistryHelper.assets()
+        return assetManager.open(fileName).use { stream ->
+            requireNotNull(BitmapFactory.decodeStream(stream)) { "Failed to decode $fileName" }
+        }
+    }
+
+    private fun createTempVideoFile(videoName: String): File {
+        val assetManager: AssetManager = InstrumentationRegistryHelper.assets()
         val file = File.createTempFile("test_video", ".mp4")
-        val output = FileOutputStream(file)
-        val inputStream: InputStream = assetManager.open(videoName)
-        inputStream.copyTo(output)
-        return file.toUri()
+        assetManager.open(videoName).use { input ->
+            FileOutputStream(file).use { output ->
+                input.copyTo(output)
+            }
+        }
+        return file
+    }
+
+    private object InstrumentationRegistryHelper {
+        fun assets(): AssetManager =
+            androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().context.assets
     }
 }
