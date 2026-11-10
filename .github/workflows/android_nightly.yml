@@ -30,6 +30,7 @@ jobs:
       contents: read
     outputs:
       matrix: ${{ steps.detect.outputs.matrix }}
+      test_matrix: ${{ steps.detect.outputs.test_matrix }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -42,7 +43,9 @@ jobs:
           INPUT_EXAMPLE: ${{ inputs.example || 'all' }}
         run: |
           MATRIX_JSON=$(python3 .github/scripts/detect_android_examples.py --example "$INPUT_EXAMPLE")
+          TEST_MATRIX_JSON=$(python3 .github/scripts/detect_android_examples.py --require-common-testing --example "$INPUT_EXAMPLE")
           echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
+          echo "test_matrix=$TEST_MATRIX_JSON" >> "$GITHUB_OUTPUT"
 
   build-android:
     name: Build Android Sample (${{ matrix.name }})
@@ -81,12 +84,16 @@ jobs:
           ./gradlew assembleDebug --no-daemon --stacktrace
 
   test-android:
-    name: Real-Model Tests (text_embedder)
-    if: inputs.example == '' || inputs.example == 'all' || inputs.example == 'text_embedder'
+    name: Real-Model Tests (${{ matrix.name }})
+    needs: detect-examples
+    if: needs.detect-examples.outputs.test_matrix != '{"include":[]}'
     runs-on: macos-15-intel
     permissions:
       contents: read
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.detect-examples.outputs.test_matrix) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -103,17 +110,19 @@ jobs:
       - name: Cache verified model assets
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
-          path: examples/text_embedder/android/app/src/main/assets
-          key: text-embedder-models-${{ hashFiles('examples/text_embedder/android/app/download_models.gradle') }}
+          path: ${{ matrix.path }}/app/src/main/assets
+          key: ${{ matrix.slug }}-models-${{ hashFiles(format('{0}/app/download*.gradle*', matrix.path)) }}
 
       - name: Download and verify real models
-        working-directory: examples/text_embedder/android
+        working-directory: ${{ matrix.path }}
         run: |
           chmod +x ./gradlew
           ./gradlew :app:verifyModels :android-common:testing:testDebugUnitTest --no-daemon --stacktrace
 
       - name: Run instrumented quality & UI tests
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        env:
+          WORKSPACE_ROOT: ${{ github.workspace }}
         with:
           api-level: 34
           target: aosp_atd
@@ -123,27 +132,31 @@ jobs:
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
           disable-spellchecker: true
-          working-directory: examples/text_embedder/android
+          working-directory: ${{ matrix.path }}
           script: |
             adb logcat -c || true
             ./gradlew :app:connectedDebugAndroidTest --no-daemon --stacktrace
-            adb logcat -d -s LatencyRecorder | python3 ../../../.github/scripts/extract_latency_reports.py ../../../build/latency_reports
+            adb logcat -d -s LatencyRecorder | python3 "$WORKSPACE_ROOT/.github/scripts/extract_latency_reports.py" "$WORKSPACE_ROOT/build/latency_reports"
 
       - name: Upload report-only latency JSON
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: nightly-text-embedder-latency
+          name: nightly-${{ matrix.slug }}-latency
           path: build/latency_reports/**
           if-no-files-found: ignore
 
   canary-latest-mediapipe:
-    name: Canary Latest MediaPipe (text_embedder)
-    if: inputs.example == '' || inputs.example == 'all' || inputs.example == 'text_embedder'
+    name: Canary Latest MediaPipe (${{ matrix.name }})
+    needs: detect-examples
+    if: needs.detect-examples.outputs.test_matrix != '{"include":[]}'
     runs-on: macos-15-intel
     permissions:
       contents: read
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.detect-examples.outputs.test_matrix) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -157,7 +170,7 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Resolve latest published tasks-text version
+      - name: Resolve latest published MediaPipe tasks-text version
         id: latest
         run: |
           LATEST=$(curl -fsSL https://dl.google.com/dl/android/maven2/com/google/mediapipe/tasks-text/maven-metadata.xml \
@@ -168,11 +181,11 @@ jobs:
       - name: Cache verified model assets
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
-          path: examples/text_embedder/android/app/src/main/assets
-          key: text-embedder-models-${{ hashFiles('examples/text_embedder/android/app/download_models.gradle') }}
+          path: ${{ matrix.path }}/app/src/main/assets
+          key: ${{ matrix.slug }}-models-${{ hashFiles(format('{0}/app/download*.gradle*', matrix.path)) }}
 
       - name: Download and verify real models
-        working-directory: examples/text_embedder/android
+        working-directory: ${{ matrix.path }}
         run: |
           chmod +x ./gradlew
           ./gradlew :app:verifyModels --no-daemon --stacktrace
@@ -190,5 +203,5 @@ jobs:
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
           disable-spellchecker: true
-          working-directory: examples/text_embedder/android
+          working-directory: ${{ matrix.path }}
           script: ./gradlew :app:connectedDebugAndroidTest -PmediapipeVersion="$CANARY_VERSION" --no-daemon --stacktrace
