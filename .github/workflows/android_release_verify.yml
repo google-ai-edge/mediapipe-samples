@@ -220,46 +220,58 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Update shared version catalog
+      - name: Update MediaPipe versions in self-contained catalogs
         env:
           MP_VERSION: ${{ inputs.mediapipe_version }}
         run: |
           python3 - <<'EOF'
-          import os, re
-          path = "android-common/gradle/libs.versions.toml"
+          import glob, os, re
+
           ver = os.environ["MP_VERSION"]
-          with open(path, encoding="utf-8") as f:
-              text = f.read()
-          updated = re.sub(
-              r'^(mediapipeTasks[A-Za-z]+\s*=\s*)"[^"]+"',
-              rf'\1"{ver}"',
-              text,
-              flags=re.MULTILINE,
+          catalog_paths = sorted(
+              set(
+                  (["android-common/gradle/libs.versions.toml"] if os.path.isfile("android-common/gradle/libs.versions.toml") else [])
+                  + glob.glob("examples/*/android/gradle/libs.versions.toml")
+                  + glob.glob("examples/*/android/*/gradle/libs.versions.toml")
+              )
           )
-          with open(path, "w", encoding="utf-8") as f:
-              f.write(updated)
+          changed = []
+          for path in catalog_paths:
+              with open(path, encoding="utf-8") as f:
+                  text = f.read()
+              updated = re.sub(
+                  r'^(mediapipeTasks[A-Za-z]+\s*=\s*)"[^"]+"',
+                  rf'\1"{ver}"',
+                  text,
+                  flags=re.MULTILINE,
+              )
+              if updated != text:
+                  with open(path, "w", encoding="utf-8") as f:
+                      f.write(updated)
+                  changed.append(path)
+          print("Updated catalogs:", changed)
           EOF
-          git diff android-common/gradle/libs.versions.toml
+          git diff -- '**/libs.versions.toml' 'android-common/gradle/libs.versions.toml'
 
       - name: Create Pull Request
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MP_VERSION: ${{ inputs.mediapipe_version }}
         run: |
-          if git diff --quiet android-common/gradle/libs.versions.toml; then
-            echo "Version catalog is already at $MP_VERSION."
+          if git diff --quiet -- '**/libs.versions.toml' 'android-common/gradle/libs.versions.toml'; then
+            echo "All version catalogs are already at $MP_VERSION."
             exit 0
           fi
           BRANCH="chore/android-mediapipe-${MP_VERSION}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -B "$BRANCH"
-          git add android-common/gradle/libs.versions.toml
+          git add '**/libs.versions.toml' 'android-common/gradle/libs.versions.toml'
           git commit -m "Update MediaPipe Android tasks to ${MP_VERSION}"
           AUTH_HEADER=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')
           git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${AUTH_HEADER}" push --force-with-lease origin "$BRANCH"
           gh pr create \
             --title "Update MediaPipe Android tasks to ${MP_VERSION}" \
-            --body "Automated version bump of \`android-common/gradle/libs.versions.toml\` to MediaPipe \`${MP_VERSION}\`." \
+            --body "Automated version bump of Android \`gradle/libs.versions.toml\` catalogs to MediaPipe \`${MP_VERSION}\`." \
             --head "$BRANCH" \
             --base main || gh pr edit "$BRANCH" --title "Update MediaPipe Android tasks to ${MP_VERSION}"

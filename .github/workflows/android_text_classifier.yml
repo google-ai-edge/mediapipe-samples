@@ -67,7 +67,7 @@ jobs:
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: examples/text_classification/android/app/src/main/assets
-          key: text-classifier-models-${{ hashFiles('examples/text_classification/android/app/download_model.gradle') }}
+          key: text-classifier-models-${{ hashFiles('examples/text_classification/android/app/download_model.gradle.kts') }}
 
       - name: Download and verify real models
         working-directory: examples/text_classification/android

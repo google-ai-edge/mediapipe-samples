@@ -67,7 +67,7 @@ jobs:
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: examples/text_embedder/android/app/src/main/assets
-          key: text-embedder-models-${{ hashFiles('examples/text_embedder/android/app/download_models.gradle') }}
+          key: text-embedder-models-${{ hashFiles('examples/text_embedder/android/app/download_models.gradle.kts') }}
 
       - name: Download and verify real models
         working-directory: examples/text_embedder/android

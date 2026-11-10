@@ -12,8 +12,8 @@ embedding models.
 ![Text Embedder Demo](textembedder.png?raw=true "Text Embedder Demo")
 
 Models are downloaded automatically during Gradle build via
-`app/download_models.gradle` with SHA-256 checksum verification (`./gradlew verifyModels`).
-Shared dependency versions, Material 3 UI components, and test utilities live in
+`app/download_models.gradle.kts` with SHA-256 checksum verification (`./gradlew verifyModels`).
+Shared Material 3 UI components and test utilities live in
 [`android-common/`](../../../android-common).
 
 ## Build and run
@@ -27,7 +27,7 @@ Shared dependency versions, Material 3 UI components, and test utilities live in
 
 1. Open `examples/text_embedder/android` in Android Studio.
 2. Wait for Gradle sync to finish (dependencies are resolved from
-   `android-common/gradle/libs.versions.toml`).
+   `gradle/libs.versions.toml`).
 3. Click **Run** to deploy to your device or emulator.
 
 ### Building and testing from the command line

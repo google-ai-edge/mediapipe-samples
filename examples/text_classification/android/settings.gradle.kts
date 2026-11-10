@@ -29,16 +29,11 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
     }
-    versionCatalogs {
-        libs {
-            from(files("../../../android-common/gradle/libs.versions.toml"))
-        }
-    }
 }
 
 rootProject.name = "Text Classifier"
-include ':app'
-include ':android-common:ui'
-project(':android-common:ui').projectDir = file('../../../android-common/ui')
-include ':android-common:testing'
-project(':android-common:testing').projectDir = file('../../../android-common/testing')
+include(":app")
+include(":android-common:ui")
+project(":android-common:ui").projectDir = file("../../../android-common/ui")
+include(":android-common:testing")
+project(":android-common:testing").projectDir = file("../../../android-common/testing")
