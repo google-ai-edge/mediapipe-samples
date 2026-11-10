@@ -16,8 +16,8 @@
 
 package com.google.mediapipe.examples.common.ui
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -40,6 +40,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
@@ -58,58 +62,75 @@ fun MediaPipeTopBar(
     settingsContentDescription: String = "Model & hardware settings",
     actions: @Composable RowScope.() -> Unit = {},
 ) {
-    TopAppBar(
-        colors =
-            TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-                titleContentColor = MaterialTheme.colorScheme.onSurface,
-            ),
-        title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_media_pipe),
-                    contentDescription = null,
-                    modifier = Modifier.size(28.dp),
+    Box(
+        modifier =
+            Modifier.fillMaxWidth().drawBehind {
+                drawRect(
+                    brush =
+                        Brush.linearGradient(
+                            colors = listOf(MediaPipeTealDark, MediaPipeTealVariant),
+                            start = Offset.Zero,
+                            end = Offset(size.width, size.height),
+                        )
                 )
-                Column {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+            }
+    ) {
+        TopAppBar(
+            colors =
+                TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    titleContentColor = Color.White,
+                    actionIconContentColor = Color.White,
+                ),
+            title = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_media_pipe),
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(28.dp),
                     )
-                    if (!subtitle.isNullOrBlank()) {
+                    Column {
                         Text(
-                            text = subtitle,
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            text = title,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.testTag("top_bar_subtitle"),
+                        )
+                        if (!subtitle.isNullOrBlank()) {
+                            Text(
+                                text = subtitle,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color.White.copy(alpha = 0.88f),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.testTag("top_bar_subtitle"),
+                            )
+                        }
+                    }
+                }
+            },
+            actions = {
+                actions()
+                if (onSettingsClick != null) {
+                    IconButton(
+                        onClick = onSettingsClick,
+                        modifier = Modifier.testTag("settings_button"),
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_tune),
+                            contentDescription = settingsContentDescription,
+                            tint = Color.White,
                         )
                     }
                 }
-            }
-        },
-        actions = {
-            actions()
-            if (onSettingsClick != null) {
-                IconButton(
-                    onClick = onSettingsClick,
-                    modifier = Modifier.testTag("settings_button"),
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_tune),
-                        contentDescription = settingsContentDescription,
-                    )
-                }
-            }
-        },
-    )
+            },
+        )
+    }
 }
 
 /** Inline Material 3 error banner with an optional recovery action (e.g., switching to CPU). */
