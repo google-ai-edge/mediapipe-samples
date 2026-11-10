@@ -35,7 +35,7 @@ jobs:
     name: Verify Staged Binaries (${{ inputs.mediapipe_version }})
     if: inputs.mode == 'verify-staged'
     environment: release-verification
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     timeout-minutes: 30
     permissions:
       contents: read
@@ -61,25 +61,53 @@ jobs:
           persist-credentials: false
 
       - name: Authenticate to Google Cloud (Workload Identity Federation)
+        id: auth
         uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
         with:
           workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
-
-      - name: Set up gcloud
-        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a711d045035b3b1440c9c10db # v3.0.1
+          token_format: 'access_token'
 
       - name: Fetch, verify, and unpack Maven bundle into local ~/.m2/repository
         env:
           GCS_URI: ${{ inputs.gcs_bundle_uri }}
           BUNDLE_SHA: ${{ inputs.bundle_sha256 }}
+          GCS_TOKEN: ${{ steps.auth.outputs.access_token }}
         run: |
-          BUNDLE_ZIP="$(mktemp -t mediapipe-bundle-XXXXXX.zip)"
-          gcloud storage cp "$GCS_URI" "$BUNDLE_ZIP"
-          echo "${BUNDLE_SHA}  ${BUNDLE_ZIP}" | sha256sum -c -
-          mkdir -p "$HOME/.m2/repository"
-          unzip -oq "$BUNDLE_ZIP" -d "$HOME/.m2/repository"
-          rm -f "$BUNDLE_ZIP"
+          python3 - <<'EOF'
+          import hashlib, os, subprocess, tempfile, urllib.parse, urllib.request, zipfile
+
+          gcs_uri = os.environ["GCS_URI"]
+          expected_sha = os.environ["BUNDLE_SHA"].lower()
+          token = os.environ["GCS_TOKEN"]
+
+          without_scheme = gcs_uri[len("gs://"):]
+          bucket, obj = without_scheme.split("/", 1)
+          url = (
+              f"https://storage.googleapis.com/storage/v1/b/"
+              f"{urllib.parse.quote(bucket, safe='')}/o/"
+              f"{urllib.parse.quote(obj, safe='')}?alt=media"
+          )
+
+          m2_dir = os.path.expanduser("~/.m2/repository")
+          os.makedirs(m2_dir, exist_ok=True)
+          with tempfile.TemporaryDirectory() as tmp:
+              zip_path = os.path.join(tmp, "bundle.zip")
+              req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
+              with urllib.request.urlopen(req, timeout=300) as resp, open(zip_path, "wb") as out:
+                  h = hashlib.sha256()
+                  while True:
+                      chunk = resp.read(1024 * 1024)
+                      if not chunk:
+                          break
+                      h.update(chunk)
+                      out.write(chunk)
+              actual_sha = h.hexdigest().lower()
+              if actual_sha != expected_sha:
+                  raise SystemExit(f"SHA-256 mismatch: expected {expected_sha}, got {actual_sha}")
+              with zipfile.ZipFile(zip_path) as zf:
+                  zf.extractall(m2_dir)
+          EOF
 
       - name: Set up JDK 17
         uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
@@ -93,24 +121,19 @@ jobs:
           chmod +x ./gradlew
           ./gradlew :app:verifyModels --no-daemon --stacktrace
 
-      - name: Enable KVM group permissions
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-          test -w /dev/kvm
-
       - name: Run quality & UI tests enforcing local Maven artifacts
-        uses: reactivecircus/android-emulator-runner@e93c997dcab69054e999e3924af3d21c4a736e13 # v2.9.0
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         env:
           MP_VERSION: ${{ inputs.mediapipe_version }}
         with:
           api-level: 35
           target: google_apis
-          arch: x86_64
+          arch: arm64-v8a
           profile: pixel_6
+          disk-size: 8G
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
+          disable-spellchecker: true
           working-directory: examples/text_embedder/android
           script: |
             ./gradlew :app:connectedDebugAndroidTest \
@@ -121,7 +144,7 @@ jobs:
   verify-published:
     name: Verify Published Binaries (${{ inputs.mediapipe_version }})
     if: inputs.mode == 'verify-published'
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     timeout-minutes: 30
     permissions:
       contents: read
@@ -150,24 +173,19 @@ jobs:
           chmod +x ./gradlew
           ./gradlew :app:verifyModels --no-daemon --stacktrace
 
-      - name: Enable KVM group permissions
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-          test -w /dev/kvm
-
       - name: Run quality & UI tests against published version
-        uses: reactivecircus/android-emulator-runner@e93c997dcab69054e999e3924af3d21c4a736e13 # v2.9.0
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         env:
           MP_VERSION: ${{ inputs.mediapipe_version }}
         with:
           api-level: 35
           target: google_apis
-          arch: x86_64
+          arch: arm64-v8a
           profile: pixel_6
+          disk-size: 8G
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
+          disable-spellchecker: true
           working-directory: examples/text_embedder/android
           script: ./gradlew :app:connectedDebugAndroidTest -PmediapipeVersion="$MP_VERSION" --no-daemon --stacktrace
 
@@ -187,6 +205,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Update shared version catalog
         env:
@@ -224,7 +244,8 @@ jobs:
           git checkout -B "$BRANCH"
           git add android-common/gradle/libs.versions.toml
           git commit -m "Update MediaPipe Android tasks to ${MP_VERSION}"
-          git push --force-with-lease origin "$BRANCH"
+          AUTH_HEADER=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${AUTH_HEADER}" push --force-with-lease origin "$BRANCH"
           gh pr create \
             --title "Update MediaPipe Android tasks to ${MP_VERSION}" \
             --body "Automated version bump of \`android-common/gradle/libs.versions.toml\` to MediaPipe \`${MP_VERSION}\`." \

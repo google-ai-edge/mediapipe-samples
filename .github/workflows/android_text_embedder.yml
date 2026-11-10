@@ -48,7 +48,7 @@ jobs:
 
   instrumented-real-model-tests:
     name: Real-Model Quality & UI Tests
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     timeout-minutes: 30
     steps:
       - name: Checkout repository
@@ -75,30 +75,25 @@ jobs:
           chmod +x ./gradlew
           ./gradlew :app:verifyModels --no-daemon --stacktrace
 
-      - name: Enable KVM group permissions
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-          test -w /dev/kvm
-
       - name: Run instrumented quality & UI tests
-        uses: reactivecircus/android-emulator-runner@e93c997dcab69054e999e3924af3d21c4a736e13 # v2.9.0
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         with:
           api-level: 35
           target: google_apis
-          arch: x86_64
+          arch: arm64-v8a
           profile: pixel_6
+          disk-size: 8G
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
+          disable-spellchecker: true
           working-directory: examples/text_embedder/android
           script: |
             adb logcat -c || true
             ./gradlew :app:connectedDebugAndroidTest --no-daemon --stacktrace
-            mkdir -p ../../build/latency_reports
+            mkdir -p ../../../build/latency_reports
             adb logcat -d -s LatencyRecorder | python3 -c '
             import os, re, sys
-            out = "../../build/latency_reports"
+            out = "../../../build/latency_reports"
             for line in sys.stdin:
                 m = re.search(r"LATENCY_REPORT\s+([A-Za-z0-9_.-]+):\s*(\{.*\})\s*$", line)
                 if m:
