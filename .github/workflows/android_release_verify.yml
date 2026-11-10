@@ -123,16 +123,20 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Point sample catalog at staged MediaPipe version (resolved via mavenLocal)
+        env:
+          MP_VERSION: ${{ inputs.mediapipe_version }}
+          EXAMPLE_PATH: ${{ matrix.path }}
+        run: python3 .github/scripts/bump_mediapipe_version.py "$MP_VERSION" "$EXAMPLE_PATH"
+
       - name: Download and verify real models
         working-directory: ${{ matrix.path }}
         run: |
           chmod +x ./gradlew
           ./gradlew :app:verifyModels --no-daemon --stacktrace
 
-      - name: Run quality & UI tests enforcing local Maven artifacts
+      - name: Run quality & UI tests using staged Maven artifacts
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
-        env:
-          MP_VERSION: ${{ inputs.mediapipe_version }}
         with:
           api-level: 34
           target: aosp_atd
@@ -143,7 +147,7 @@ jobs:
           disable-animations: true
           disable-spellchecker: true
           working-directory: ${{ matrix.path }}
-          script: ./gradlew :app:connectedDebugAndroidTest -PmediapipeVersion="$MP_VERSION" -PrequireLocalMediapipeRepo=true --no-daemon --stacktrace
+          script: ./gradlew :app:connectedDebugAndroidTest --no-daemon --stacktrace
 
   verify-published:
     name: Verify Published (${{ matrix.name }} · ${{ inputs.mediapipe_version }})
@@ -179,6 +183,12 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
+      - name: Point sample catalog at published MediaPipe version
+        env:
+          MP_VERSION: ${{ inputs.mediapipe_version }}
+          EXAMPLE_PATH: ${{ matrix.path }}
+        run: python3 .github/scripts/bump_mediapipe_version.py "$MP_VERSION" "$EXAMPLE_PATH"
+
       - name: Download and verify real models
         working-directory: ${{ matrix.path }}
         run: |
@@ -187,8 +197,6 @@ jobs:
 
       - name: Run quality & UI tests against published version
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
-        env:
-          MP_VERSION: ${{ inputs.mediapipe_version }}
         with:
           api-level: 34
           target: aosp_atd
@@ -199,7 +207,7 @@ jobs:
           disable-animations: true
           disable-spellchecker: true
           working-directory: ${{ matrix.path }}
-          script: ./gradlew :app:connectedDebugAndroidTest -PmediapipeVersion="$MP_VERSION" --no-daemon --stacktrace
+          script: ./gradlew :app:connectedDebugAndroidTest --no-daemon --stacktrace
 
   open-update-pr:
     name: Open Version Bump PR (${{ inputs.mediapipe_version }})
@@ -224,33 +232,7 @@ jobs:
         env:
           MP_VERSION: ${{ inputs.mediapipe_version }}
         run: |
-          python3 - <<'EOF'
-          import glob, os, re
-
-          ver = os.environ["MP_VERSION"]
-          catalog_paths = sorted(
-              set(
-                  (["android-common/gradle/libs.versions.toml"] if os.path.isfile("android-common/gradle/libs.versions.toml") else [])
-                  + glob.glob("examples/*/android/gradle/libs.versions.toml")
-                  + glob.glob("examples/*/android/*/gradle/libs.versions.toml")
-              )
-          )
-          changed = []
-          for path in catalog_paths:
-              with open(path, encoding="utf-8") as f:
-                  text = f.read()
-              updated = re.sub(
-                  r'^(mediapipeTasks[A-Za-z]+\s*=\s*)"[^"]+"',
-                  rf'\1"{ver}"',
-                  text,
-                  flags=re.MULTILINE,
-              )
-              if updated != text:
-                  with open(path, "w", encoding="utf-8") as f:
-                      f.write(updated)
-                  changed.append(path)
-          print("Updated catalogs:", changed)
-          EOF
+          python3 .github/scripts/bump_mediapipe_version.py "$MP_VERSION" --all
           git diff -- '**/libs.versions.toml' 'android-common/gradle/libs.versions.toml'
 
       - name: Create Pull Request
