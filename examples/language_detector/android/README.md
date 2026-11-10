@@ -2,44 +2,42 @@
 
 ### Overview
 
-This sample will accept text entered into a field and classify it as a detected language with a provided confidence score.
-
-These instructions walk you through building and running the demo on an Android
-device.
-
-The model file is downloaded via Gradle scripts when you build and run the
-app. You don't need to do any steps to download TFLite models into the project
-explicitly.
-
+This Android app detects the language of input text on-device across 100+ languages
+using the MediaPipe `LanguageDetector` task and displays ranked BCP-47 language codes
+and confidence scores.
 
 ![Language Detector Demo](language_detector.png?raw=true "Language Detector Demo")
 
-## Build the demo using Android Studio
+The model is downloaded automatically during Gradle build via
+`app/download_model.gradle` with SHA-256 checksum verification (`./gradlew verifyModels`).
+Shared dependency versions, Material 3 UI components, and test utilities live in
+[`android-common/`](../../../android-common).
+
+## Build and run
 
 ### Prerequisites
 
-* The **[Android Studio](https://developer.android.com/studio/index.html)** IDE.
-  This sample has been tested on Android Studio Chipmunk.
+* **[Android Studio](https://developer.android.com/studio/index.html)** (JDK 17 or newer).
+* An Android device or emulator running API level 24 (Android 7.0) or higher.
 
-* A physical or emulated Android device with a minimum OS version of SDK 21
-  (Android 5.0) with developer mode enabled. The process of enabling
-  developer mode may vary by device.
+### Building from Android Studio
 
-### Building
+1. Open `examples/language_detector/android` in Android Studio.
+2. Wait for Gradle sync to finish (dependencies are resolved from
+   `android-common/gradle/libs.versions.toml`).
+3. Click **Run** to deploy to your device or emulator.
 
-* Open Android Studio. From the Welcome screen, select Open an existing
-    Android Studio project.
+### Building and testing from the command line
 
-* From the Open File or Project window that appears, navigate to and select
-    the mediapipe/examples/language_detector/android directory.
-    Click OK.
+```bash
+cd examples/language_detector/android
 
-* If it asks you to do a Gradle Sync, click OK.
+# Download and verify model checksums, build the debug APK, and run unit tests
+./gradlew :app:verifyModels :app:assembleDebug :android-common:testing:testDebugUnitTest
 
-* With your Android device connected developer mode
-    enabled, click on the green Run arrow in Android Studio.
+# Run real-model quality and end-to-end Compose UI tests on a connected device/emulator
+./gradlew :app:connectedDebugAndroidTest
 
-### Models used
-
-Downloading, extraction, and placing the models into the assets folder is
-managed automatically by the download_model.gradle file.
+# Test against a specific MediaPipe Tasks version (canary / release verification)
+./gradlew :app:connectedDebugAndroidTest -PmediapipeVersion=1.2.2
+```

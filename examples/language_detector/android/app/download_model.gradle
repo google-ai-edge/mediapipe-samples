@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+ * Copyright 2026 The MediaPipe Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *             http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,10 +14,48 @@
  * limitations under the License.
  */
 
+import java.security.MessageDigest
+
+def sha256Hex = { File file ->
+    def digest = MessageDigest.getInstance('SHA-256')
+    file.withInputStream { is ->
+        byte[] buf = new byte[8192]
+        int read
+        while ((read = is.read(buf)) > 0) {
+            digest.update(buf, 0, read)
+        }
+    }
+    digest.digest().collect { String.format('%02x', it) }.join('')
+}
+
+def modelFile = file(project.ext.ASSET_DIR + '/detection_model.tflite')
+def modelSha256 = '7db4f23dfe1ad8966b050b419a865da451143fd43eb6b606a256aadeeb1e5417'
+
 task downloadModel(type: Download) {
     src 'https://storage.googleapis.com/mediapipe-models/language_detector/language_detector/float32/1/language_detector.tflite'
     dest project.ext.ASSET_DIR + '/detection_model.tflite'
     overwrite false
+    onlyIf { !modelFile.exists() }
+    doLast {
+        def actual = sha256Hex(modelFile)
+        if (actual != modelSha256) {
+            modelFile.delete()
+            throw new GradleException("Checksum mismatch for detection_model.tflite: expected $modelSha256, got $actual")
+        }
+    }
+}
+
+task verifyModels {
+    dependsOn downloadModel
+    doLast {
+        if (!modelFile.exists() || modelFile.length() == 0L) {
+            throw new GradleException("Model detection_model.tflite is missing or empty (stubbed?). Delete it and re-run to download.")
+        }
+        def actual = sha256Hex(modelFile)
+        if (actual != modelSha256) {
+            throw new GradleException("Checksum mismatch for detection_model.tflite: expected $modelSha256, got $actual")
+        }
+    }
 }
 
 preBuild.dependsOn downloadModel
