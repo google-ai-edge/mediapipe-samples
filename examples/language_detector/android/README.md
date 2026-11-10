@@ -37,7 +37,4 @@ cd examples/language_detector/android
 
 # Run real-model quality and end-to-end Compose UI tests on a connected device/emulator
 ./gradlew :app:connectedDebugAndroidTest
-
-# Test against a specific MediaPipe Tasks version (canary / release verification)
-./gradlew :app:connectedDebugAndroidTest -PmediapipeVersion=1.2.2
 ```
