@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    ~ Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+    ~ Copyright 2026 The MediaPipe Authors. All Rights Reserved.
     ~
     ~ Licensed under the Apache License, Version 2.0 (the "License");
     ~ you may not use this file except in compliance with the License.
@@ -15,37 +15,34 @@
     ~ limitations under the License.
 -->
 <resources>
-    <string name="app_name">MediaPipe Object Detection</string>
-
-    <string name="alt_bottom_sheet_chevron">Bottom sheet expandable indicator</string>
-
-    <string name="alt_bottom_sheet_max_results_button_minus">Decreasing maxium detected results
-        button</string>
-    <string name="alt_bottom_sheet_max_results_button_plus">Increasing maxium detected results
-        button</string>
-    <string name="alt_bottom_sheet_threshold_button_minus">Decreasing threshold of detected object
-        results button</string>
-    <string name="alt_bottom_sheet_threshold_button_plus">Increasing threshold of detected object
-        results button</string>
-
-    <string name="label_inference_time">Inference Time</string>
-    <string name="label_fps">Frames per Second</string>
-    <string name="label_confidence_threshold">Threshold</string>
-    <string name="label_max_results">Max Results</string>
-    <string name="label_delegate">Delegate</string>
-    <string name="label_models">ML Model</string>
+    <string name="app_name">Object Detector</string>
     <string name="menu_camera">Camera</string>
     <string name="menu_gallery">Gallery</string>
-    <string name="tv_gallery_placeholder">Click + to add an image or a video
-        to begin running the object detection.</string>
 
-    <string-array name="delegate_spinner_titles">
-        <item>CPU</item>
-        <item>GPU</item>
-    </string-array>
+    <string name="camera_permission_title">Camera access needed</string>
+    <string name="camera_permission_body">Grant camera permission to detect objects live, or switch to Gallery to inspect photos and videos.</string>
+    <string name="action_grant_camera">Allow camera</string>
+    <string name="action_switch_camera">Switch camera</string>
+    <string name="camera_lens_front">Front</string>
+    <string name="camera_lens_back">Back</string>
 
-    <string-array name="models_spinner_titles">
-        <item>EfficientDet Lite0</item>
-        <item>EfficientDet Lite2</item>
-    </string-array>
+    <string name="gallery_empty_title">Detect objects in media</string>
+    <string name="gallery_empty_body">Try the bundled dining scene or pick an image or video from your device.</string>
+    <string name="action_try_sample">Try sample</string>
+    <string name="action_pick_media">Pick media</string>
+    <string name="status_detecting">Detecting objects…</string>
+
+    <string name="label_inference_time">Inference</string>
+    <string name="label_objects">Objects</string>
+    <string name="label_top_object">Top object</string>
+    <string name="label_model">Model</string>
+    <string name="label_delegate">Delegate</string>
+    <string name="label_max_results">Max results</string>
+    <string name="label_confidence_threshold">Confidence threshold</string>
+
+    <string name="settings_title">Detector settings</string>
+    <string name="cd_open_settings">Model and hardware settings</string>
+    <string name="action_done">Done</string>
+    <string name="action_use_cpu">Use CPU</string>
+    <string name="action_retry">Retry</string>
 </resources>
