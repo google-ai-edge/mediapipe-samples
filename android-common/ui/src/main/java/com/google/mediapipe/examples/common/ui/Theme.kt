@@ -17,7 +17,6 @@
 package com.google.mediapipe.examples.common.ui
 
 import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -31,87 +30,93 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
+internal val MediaPipeTealPrimary = Color(0xFF007F8B)
+internal val MediaPipeTealVariant = Color(0xFF12B5CB)
+internal val MediaPipeTealDark = Color(0xFF00676D)
+
 private val MediaPipeLightColorScheme =
     lightColorScheme(
-        primary = Color(0xFF006973),
+        primary = MediaPipeTealPrimary,
         onPrimary = Color(0xFFFFFFFF),
-        primaryContainer = Color(0xFF9AF0FA),
-        onPrimaryContainer = Color(0xFF001F23),
-        secondary = Color(0xFF4A6366),
+        primaryContainer = Color(0xFFD6F1F4),
+        onPrimaryContainer = Color(0xFF004F56),
+        secondary = MediaPipeTealDark,
         onSecondary = Color(0xFFFFFFFF),
-        secondaryContainer = Color(0xFFCDE7EB),
-        onSecondaryContainer = Color(0xFF051F22),
-        tertiary = Color(0xFF505E7D),
+        secondaryContainer = Color(0xFFE0F2F4),
+        onSecondaryContainer = Color(0xFF004D54),
+        tertiary = MediaPipeTealVariant,
         onTertiary = Color(0xFFFFFFFF),
-        tertiaryContainer = Color(0xFFD7E2FF),
-        onTertiaryContainer = Color(0xFF0B1B36),
-        error = Color(0xFFBA1A1A),
+        tertiaryContainer = Color(0xFFD0F4F9),
+        onTertiaryContainer = Color(0xFF003B44),
+        error = Color(0xFFB00020),
         onError = Color(0xFFFFFFFF),
-        errorContainer = Color(0xFFFFDAD6),
-        onErrorContainer = Color(0xFF410002),
-        background = Color(0xFFF5FAFB),
-        onBackground = Color(0xFF171D1E),
-        surface = Color(0xFFF5FAFB),
-        onSurface = Color(0xFF171D1E),
-        surfaceVariant = Color(0xFFDAE4E6),
-        onSurfaceVariant = Color(0xFF3F484A),
-        outline = Color(0xFF6F797A),
-        outlineVariant = Color(0xFFBEC8CA),
+        errorContainer = Color(0xFFFCD8DF),
+        onErrorContainer = Color(0xFF690010),
+        background = Color(0xFFF2F4F5),
+        onBackground = Color(0xFF1B2426),
+        surface = Color(0xFFFFFFFF),
+        onSurface = Color(0xFF1B2426),
+        surfaceVariant = Color(0xFFEDF3F4),
+        onSurfaceVariant = Color(0xFF5F6E71),
+        outline = Color(0xFF7D8E91),
+        outlineVariant = Color(0xFFDCE6E8),
         surfaceContainerLowest = Color(0xFFFFFFFF),
-        surfaceContainerLow = Color(0xFFEFF5F5),
-        surfaceContainer = Color(0xFFE9EFF0),
-        surfaceContainerHigh = Color(0xFFE3E9EA),
-        surfaceContainerHighest = Color(0xFFDDE4E4),
+        surfaceContainerLow = Color(0xFFFFFFFF),
+        surfaceContainer = Color(0xFFEDF3F4),
+        surfaceContainerHigh = Color(0xFFEDF3F4),
+        surfaceContainerHighest = Color(0xFFDCE6E8),
     )
 
 private val MediaPipeDarkColorScheme =
     darkColorScheme(
-        primary = Color(0xFF7DD4DF),
-        onPrimary = Color(0xFF00363C),
-        primaryContainer = Color(0xFF004F56),
-        onPrimaryContainer = Color(0xFF9AF0FA),
-        secondary = Color(0xFFB1CBCF),
-        onSecondary = Color(0xFF1C3438),
-        secondaryContainer = Color(0xFF334B4E),
-        onSecondaryContainer = Color(0xFFCDE7EB),
-        tertiary = Color(0xFFB8C6EA),
-        onTertiary = Color(0xFF21304C),
-        tertiaryContainer = Color(0xFF384664),
-        onTertiaryContainer = Color(0xFFD7E2FF),
+        primary = MediaPipeTealVariant,
+        onPrimary = Color(0xFF002B30),
+        primaryContainer = Color(0xFF005C63),
+        onPrimaryContainer = Color(0xFFB8F3FA),
+        secondary = Color(0xFF8CD3DC),
+        onSecondary = Color(0xFF00353B),
+        secondaryContainer = Color(0xFF17444A),
+        onSecondaryContainer = Color(0xFFCCEBF0),
+        tertiary = Color(0xFF7ADCEE),
+        onTertiary = Color(0xFF00363E),
+        tertiaryContainer = Color(0xFF004F59),
+        onTertiaryContainer = Color(0xFFC4F3FB),
         error = Color(0xFFFFB4AB),
         onError = Color(0xFF690005),
         errorContainer = Color(0xFF93000A),
         onErrorContainer = Color(0xFFFFDAD6),
         background = Color(0xFF0E1415),
-        onBackground = Color(0xFFDEE3E4),
-        surface = Color(0xFF0E1415),
-        onSurface = Color(0xFFDEE3E4),
-        surfaceVariant = Color(0xFF3F484A),
-        onSurfaceVariant = Color(0xFFBEC8CA),
-        outline = Color(0xFF899294),
-        outlineVariant = Color(0xFF3F484A),
-        surfaceContainerLowest = Color(0xFF090F10),
-        surfaceContainerLow = Color(0xFF171D1E),
-        surfaceContainer = Color(0xFF1B2122),
-        surfaceContainerHigh = Color(0xFF252B2C),
-        surfaceContainerHighest = Color(0xFF303637),
+        onBackground = Color(0xFFE3ECED),
+        surface = Color(0xFF151C1E),
+        onSurface = Color(0xFFE3ECED),
+        surfaceVariant = Color(0xFF263234),
+        onSurfaceVariant = Color(0xFF9FB0B3),
+        outline = Color(0xFF6B7B7E),
+        outlineVariant = Color(0xFF283436),
+        surfaceContainerLowest = Color(0xFF0B1011),
+        surfaceContainerLow = Color(0xFF161F21),
+        surfaceContainer = Color(0xFF1C2628),
+        surfaceContainerHigh = Color(0xFF212D2F),
+        surfaceContainerHighest = Color(0xFF2B383B),
     )
 
 /**
- * Shared Material 3 theme for MediaPipe Android sample apps.
+ * Shared Material 3 theme for MediaPipe Android sample apps aligned with the Semantic Retriever
+ * teal palette (`#007F8B` / `#12B5CB` / `#00676D`).
  *
- * Uses dynamic color on Android 12+ when enabled and falls back to a Material 3 light/dark
- * palette built around the MediaPipe teal brand color.
+ * Brand colors are used consistently by default (`dynamicColor = false`) so every MediaPipe sample
+ * shares a cohesive visual identity across devices; callers may opt into Android 12+ wallpaper
+ * dynamic color by setting `dynamicColor = true`.
  */
 @Composable
 fun MediaPipeTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colorScheme =
         when {
-            dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            dynamicColor && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S -> {
                 val context = LocalContext.current
                 if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
             }
@@ -124,7 +129,8 @@ fun MediaPipeTheme(
         SideEffect {
             val window = (view.context as? Activity)?.window ?: return@SideEffect
             val insetsController = WindowCompat.getInsetsController(window, view)
-            insetsController.isAppearanceLightStatusBars = !darkTheme
+            // The top app bar uses a dark-to-bright MediaPipe teal gradient in both modes.
+            insetsController.isAppearanceLightStatusBars = false
             insetsController.isAppearanceLightNavigationBars = !darkTheme
         }
     }

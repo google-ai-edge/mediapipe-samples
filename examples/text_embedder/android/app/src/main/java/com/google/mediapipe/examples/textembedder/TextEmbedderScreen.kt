@@ -448,6 +448,7 @@ private fun SimilarityResultCard(
                 progress = { animatedProgress },
                 modifier = Modifier.fillMaxWidth().height(10.dp).clip(CircleShape),
                 trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                drawStopIndicator = {},
             )
 
             Row(
