@@ -35,7 +35,7 @@ jobs:
     name: Verify Staged Binaries (${{ inputs.mediapipe_version }})
     if: inputs.mode == 'verify-staged'
     environment: release-verification
-    runs-on: macos-latest
+    runs-on: macos-15-intel
     timeout-minutes: 30
     permissions:
       contents: read
@@ -126,9 +126,9 @@ jobs:
         env:
           MP_VERSION: ${{ inputs.mediapipe_version }}
         with:
-          api-level: 35
-          target: google_apis
-          arch: arm64-v8a
+          api-level: 34
+          target: aosp_atd
+          arch: x86_64
           profile: pixel_6
           disk-size: 8G
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
@@ -144,7 +144,7 @@ jobs:
   verify-published:
     name: Verify Published Binaries (${{ inputs.mediapipe_version }})
     if: inputs.mode == 'verify-published'
-    runs-on: macos-latest
+    runs-on: macos-15-intel
     timeout-minutes: 30
     permissions:
       contents: read
@@ -178,9 +178,9 @@ jobs:
         env:
           MP_VERSION: ${{ inputs.mediapipe_version }}
         with:
-          api-level: 35
-          target: google_apis
-          arch: arm64-v8a
+          api-level: 34
+          target: aosp_atd
+          arch: x86_64
           profile: pixel_6
           disk-size: 8G
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim

@@ -48,7 +48,7 @@ jobs:
 
   instrumented-real-model-tests:
     name: Real-Model Quality & UI Tests
-    runs-on: macos-latest
+    runs-on: macos-15-intel
     timeout-minutes: 30
     steps:
       - name: Checkout repository
@@ -78,9 +78,9 @@ jobs:
       - name: Run instrumented quality & UI tests
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         with:
-          api-level: 35
-          target: google_apis
-          arch: arm64-v8a
+          api-level: 34
+          target: aosp_atd
+          arch: x86_64
           profile: pixel_6
           disk-size: 8G
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
