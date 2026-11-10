@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    ~ Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+    ~ Copyright 2026 The MediaPipe Authors. All Rights Reserved.
     ~
     ~ Licensed under the Apache License, Version 2.0 (the "License");
     ~ you may not use this file except in compliance with the License.
@@ -16,16 +16,24 @@
 -->
 <resources>
     <string name="app_name">Interactive Segmentation</string>
-    <string name="show_image">Show Image</string>
-    <string name="tv_screen_description">Take a picture or pick from gallery</string>
-    <string name="tv_add_image">Add Image</string>
-    <string name="btn_take_a_picture">Take a picture</string>
-    <string name="btn_import_from_gallery">Import from gallery</string>
-    <string name="tv_toolbar">Toolbar</string>
-    <string name="tv_import_from_gallery_description">Import an image from gallery</string>
-    <string name="tv_take_a_picture_description">Open camera and take a picture</string>
+    <string name="subtitle_magic_touch">MagicTouch · Draw strokes to segment</string>
+
+    <string name="empty_title">Select or capture a photo</string>
+    <string name="empty_body">Try the bundled sample image or pick a photo, then draw positive, negative, or lasso strokes to isolate an object.</string>
+
+    <string name="action_try_sample">Try sample</string>
+    <string name="action_pick_image">Pick photo</string>
+    <string name="action_take_photo">Camera</string>
+    <string name="action_clear_strokes">Clear</string>
+    <string name="action_undo_stroke">Undo</string>
+    <string name="action_retry">Retry</string>
+
     <string name="brush_positive">Positive</string>
     <string name="brush_negative">Negative</string>
     <string name="brush_lasso">Lasso</string>
-    <string name="btn_clear_strokes">Clear Strokes</string>
+
+    <string name="label_inference_time">Inference</string>
+    <string name="label_strokes">Strokes</string>
+    <string name="label_coverage">Selected</string>
+    <string name="status_segmenting">Segmenting…</string>
 </resources>

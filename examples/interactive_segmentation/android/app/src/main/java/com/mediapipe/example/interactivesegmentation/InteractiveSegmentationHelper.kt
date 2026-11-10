@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *             http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,125 +18,158 @@ package com.mediapipe.example.interactivesegmentation
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.os.SystemClock
 import android.util.Log
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.ByteBufferExtractor
-import com.google.mediapipe.framework.image.MPImage
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.vision.interactivesegmenter.InteractiveSegmenter
 import com.google.mediapipe.tasks.vision.interactivesegmenter.InteractiveSegmenterOptions
 import com.google.mediapipe.tasks.vision.interactivesegmenter.Stroke
-import java.nio.ByteBuffer
+import kotlin.math.roundToInt
 
+/**
+ * Helper that wraps [InteractiveSegmenter] lifecycle, image binding, and stroke-based interactive
+ * segmentation inference.
+ */
 class InteractiveSegmentationHelper(
-    private val context: Context,
-    private val listener: InteractiveSegmentationListener
+    val context: Context,
+    var listener: InteractiveSegmentationListener? = null,
 ) {
-
     private var interactiveSegmenter: InteractiveSegmenter? = null
-    private var inputImage: Bitmap? = null
+
+    /** Duration of the most recent successful [setupInteractiveSegmenter] call, in milliseconds. */
+    @Volatile
+    var setupDurationMs: Long = 0L
+        private set
+
+    val isClosed: Boolean
+        get() = interactiveSegmenter == null
 
     init {
         setupInteractiveSegmenter()
     }
 
-    fun clear() {
+    fun clearInteractiveSegmenter() {
         interactiveSegmenter?.close()
         interactiveSegmenter = null
     }
 
-    private fun setupInteractiveSegmenter() {
-        val baseOptionBuilder = BaseOptions.builder()
-            .setModelAssetPath(MP_INTERACTIVE_SEGMENTATION_MODEL)
-
-        try {
-            val baseOptions = baseOptionBuilder.build()
-            val optionsBuilder =
+    /** Initializes [InteractiveSegmenter] using the bundled MagicTouch task model. */
+    fun setupInteractiveSegmenter(): Boolean {
+        clearInteractiveSegmenter()
+        val startTime = SystemClock.uptimeMillis()
+        return try {
+            val baseOptions =
+                BaseOptions.builder()
+                    .setModelAssetPath(MP_INTERACTIVE_SEGMENTATION_MODEL)
+                    .build()
+            val options =
                 InteractiveSegmenterOptions.builder()
                     .setBaseOptions(baseOptions)
-
-            val options = optionsBuilder.build()
-            interactiveSegmenter =
-                InteractiveSegmenter.createFromOptions(context, options)
-
-        } catch (e: IllegalStateException) {
-            listener.onError(
-                "Interactive segmentation failed to initialize. See error logs for details"
-            )
-            Log.e(
-                TAG,
-                "MP Task Vision failed to load the task with error: " + e.message
-            )
-        } catch (e: RuntimeException) {
-            listener.onError(
-                "Interactive segmentation failed to initialize. See error logs for details"
-            )
-            Log.e(
-                TAG,
-                "MP Task Vision failed to load the task with error: " + e.message
-            )
+                    .build()
+            interactiveSegmenter = InteractiveSegmenter.createFromOptions(context, options)
+            setupDurationMs = SystemClock.uptimeMillis() - startTime
+            true
+        } catch (e: Exception) {
+            val message = e.message ?: e.javaClass.simpleName
+            listener?.onError("Interactive segmenter failed to initialize: $message")
+            Log.e(TAG, "Interactive segmenter failed to initialize: $message", e)
+            false
         }
     }
 
-    /**
-     * Prepares input bitmap for segmentation
-     */
+    /** Sets the target image for subsequent [segment] calls. */
     fun setInputImage(bitmap: Bitmap) {
-        inputImage = bitmap
+        val segmenter = interactiveSegmenter ?: return
+        val argbBitmap =
+            if (bitmap.config == Bitmap.Config.ARGB_8888) bitmap
+            else bitmap.copy(Bitmap.Config.ARGB_8888, false)
         try {
-            interactiveSegmenter?.setImage(BitmapImageBuilder(bitmap).build())
+            val mpImage = BitmapImageBuilder(argbBitmap).build()
+            segmenter.setImage(mpImage)
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to set image on segmenter: " + e.message)
+            listener?.onError("Failed to set input image: ${e.message}")
+            Log.e(TAG, "Failed to set input image", e)
+        } finally {
+            if (argbBitmap !== bitmap) argbBitmap.recycle()
         }
     }
 
-    fun isInputImageAssigned(): Boolean {
-        return inputImage != null
-    }
+    /** Runs interactive segmentation for [strokes] against the currently bound image. */
+    fun segment(strokes: List<Stroke>): ResultBundle? {
+        val segmenter = interactiveSegmenter
+        if (segmenter == null) {
+            listener?.onError("Interactive segmenter is not initialized.")
+            return null
+        }
+        if (strokes.isEmpty()) {
+            listener?.onResults(null)
+            return null
+        }
+        return try {
+            val startTime = SystemClock.uptimeMillis()
+            val resultImage = segmenter.segment(strokes)
+            val inferenceTimeMs = SystemClock.uptimeMillis() - startTime
 
-    /**
-     * Runs segmentation on an image using provided strokes
-     */
-    fun segment(strokes: List<Stroke>) {
-        if (inputImage == null || interactiveSegmenter == null) return
-        try {
-            val mpImage = interactiveSegmenter?.segment(strokes) ?: return
-            val buffer = ByteBufferExtractor.extract(mpImage).asFloatBuffer()
-            val width = mpImage.width
-            val height = mpImage.height
-            val pixels = IntArray(width * height)
-            buffer.rewind()
-            val floatArray = FloatArray(width * height)
-            buffer.get(floatArray)
-            for (i in 0 until width * height) {
-                val bufferValue = floatArray[i]
-                val alpha = (bufferValue * 255).toInt()
-                pixels[i] = Color.argb(alpha, 255, 255, 255)
+            val width = resultImage.width
+            val height = resultImage.height
+            val floatBuffer = ByteBufferExtractor.extract(resultImage).asFloatBuffer()
+            val capacity = floatBuffer.capacity()
+            val pixels = IntArray(capacity)
+            var selectedCount = 0
+
+            for (i in 0 until capacity) {
+                val conf = floatBuffer.get(i)
+                if (conf >= FOREGROUND_THRESHOLD) {
+                    selectedCount++
+                    pixels[i] = SELECTED_OVERLAY_COLOR
+                } else {
+                    pixels[i] = Color.TRANSPARENT
+                }
             }
-            val maskBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-            maskBitmap.setPixels(pixels, 0, width, 0, 0, width, height)
-            
-            val resultBundle = ResultBundle(maskBitmap, width, height)
-            listener.onResults(resultBundle)
-        } catch (e: Exception) {
-            listener.onError("Segmentation failed: " + e.message)
-        }
-    }
 
-    companion object {
-        private const val TAG = "InteractiveSegmentationHelper"
-        private const val MP_INTERACTIVE_SEGMENTATION_MODEL =
-            "interactive_segmentation.task"
+            val maskBitmap = Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888)
+            val selectedPercent =
+                if (capacity > 0) ((selectedCount * 100f) / capacity).roundToInt() else 0
+
+            val bundle =
+                ResultBundle(
+                    maskBitmap = maskBitmap,
+                    maskWidth = width,
+                    maskHeight = height,
+                    selectedPercent = selectedPercent,
+                    inferenceTimeMs = inferenceTimeMs,
+                )
+            listener?.onResults(bundle)
+            bundle
+        } catch (e: Exception) {
+            val message = e.message ?: e.javaClass.simpleName
+            listener?.onError("Segmentation failed: $message")
+            Log.e(TAG, "Segmentation failed", e)
+            null
+        }
     }
 
     data class ResultBundle(
         val maskBitmap: Bitmap,
         val maskWidth: Int,
-        val maskHeight: Int
+        val maskHeight: Int,
+        val selectedPercent: Int = 0,
+        val inferenceTimeMs: Long = 0L,
     )
 
     interface InteractiveSegmentationListener {
         fun onError(error: String)
         fun onResults(result: ResultBundle?)
+    }
+
+    companion object {
+        const val TAG = "InteractiveSegmentHelper"
+        const val SAMPLE_IMAGE_ASSET = "sample_interactive.jpg"
+        const val MP_INTERACTIVE_SEGMENTATION_MODEL = "interactive_segmentation.task"
+
+        private const val FOREGROUND_THRESHOLD = 0.5f
+        private val SELECTED_OVERLAY_COLOR = Color.argb(135, 0, 172, 193)
     }
 }

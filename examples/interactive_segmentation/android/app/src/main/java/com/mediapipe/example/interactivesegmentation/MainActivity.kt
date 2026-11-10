@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *             http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,203 +15,87 @@
  */
 package com.mediapipe.example.interactivesegmentation
 
-import android.graphics.Bitmap
-import android.graphics.ImageDecoder
+import android.content.Context
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
-import android.view.View
-import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.FileProvider
-import com.mediapipe.example.interactivesegmentation.databinding.ActivityMainBinding
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.mediapipe.examples.common.ui.MediaPipeTheme
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class MainActivity : AppCompatActivity(), InteractiveSegmentationHelper.InteractiveSegmentationListener {
-
-    private lateinit var activityMainBinding: ActivityMainBinding
-    private lateinit var interactiveSegmentationHelper: InteractiveSegmentationHelper
-    private var isAllFabsVisible = false
-    private var pictureUri: Uri? = null
-
-    private val takePictureLauncher =
-        registerForActivityResult(ActivityResultContracts.TakePicture()) { isSuccess ->
-            if (isSuccess && pictureUri != null) {
-                val bitmap = pictureUri!!.toBitmap()
-                activityMainBinding.imgSegmentation.setImageBitmap(bitmap)
-                interactiveSegmentationHelper.setInputImage(bitmap)
-                activityMainBinding.overlapView.clearAll()
-                activityMainBinding.overlapView.isInteractionEnabled = true
-            }
-
-            if (isAllFabsVisible) {
-                fabsStateChange(false)
-                isAllFabsVisible = false
-            }
-            activityMainBinding.tvDescription.visibility =
-                if (isSuccess) View.GONE else View.VISIBLE
-        }
-
-    private val pickImageLauncher =
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            uri?.toBitmap()?.let { bitmap ->
-                activityMainBinding.imgSegmentation.setImageBitmap(bitmap)
-                interactiveSegmentationHelper.setInputImage(bitmap)
-                activityMainBinding.overlapView.clearAll()
-                activityMainBinding.overlapView.isInteractionEnabled = true
-            }
-
-            if (isAllFabsVisible) {
-                fabsStateChange(false)
-                isAllFabsVisible = false
-            }
-            activityMainBinding.tvDescription.visibility =
-                if (uri != null) View.GONE else View.VISIBLE
-        }
-
+/** Main activity for the MediaPipe Interactive Segmentation sample app. */
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        activityMainBinding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(activityMainBinding.root)
+        enableEdgeToEdge()
+        setContent {
+            MediaPipeTheme {
+                val context = LocalContext.current
+                val segmenterViewModel: InteractiveSegmentationViewModel =
+                    viewModel(
+                        factory =
+                            InteractiveSegmentationViewModel.factory(context.applicationContext)
+                    )
+                val uiState by segmenterViewModel.uiState.collectAsStateWithLifecycle()
+                var pendingPhotoUri by remember { mutableStateOf<Uri?>(null) }
 
-        interactiveSegmentationHelper = InteractiveSegmentationHelper(
-            this,
-            this
-        )
+                val pickImageLauncher =
+                    rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
+                        uri ->
+                        if (uri != null) {
+                            segmenterViewModel.loadImageUri(uri)
+                        }
+                    }
 
-        fabsStateChange(false)
-        initListener()
-    }
+                val takePhotoLauncher =
+                    rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) {
+                        success ->
+                        val captured = pendingPhotoUri
+                        if (success && captured != null) {
+                            segmenterViewModel.loadImageUri(captured)
+                        }
+                    }
 
-    private fun clearOverlapResult() {
-        activityMainBinding.overlapView.clearAll()
-        activityMainBinding.imgSegmentation.setImageBitmap(null)
-        activityMainBinding.overlapView.isInteractionEnabled = false
-    }
-
-    private fun initListener() {
-        activityMainBinding.addFab.setOnClickListener {
-            isAllFabsVisible = if (!isAllFabsVisible) {
-                fabsStateChange(true)
-                true
-            } else {
-                fabsStateChange(false)
-                false
-            }
-        }
-
-        activityMainBinding.takePicture.setOnClickListener {
-            clearOverlapResult()
-            pictureUri = getImageUri()
-            pictureUri?.let {
-                takePictureLauncher.launch(it)
-            }
-        }
-
-        activityMainBinding.pickPicture.setOnClickListener {
-            clearOverlapResult()
-            pickImageLauncher.launch("image/*")
-        }
-
-        activityMainBinding.toggleBrushGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (isChecked) {
-                when (checkedId) {
-                    R.id.btnPositive -> activityMainBinding.overlapView.currentBrushMode = AppBrushMode.POSITIVE
-                    R.id.btnNegative -> activityMainBinding.overlapView.currentBrushMode = AppBrushMode.NEGATIVE
-                    R.id.btnLasso -> activityMainBinding.overlapView.currentBrushMode = AppBrushMode.LASSO
-                }
-            }
-        }
-
-        activityMainBinding.btnClearStrokes.setOnClickListener {
-            activityMainBinding.overlapView.clearAll()
-        }
-
-        activityMainBinding.overlapView.onStrokesUpdatedListener = { strokes ->
-            interactiveSegmentationHelper.segment(strokes)
-        }
-    }
-
-    private fun fabsStateChange(isStateShow: Boolean) {
-        if (isStateShow) {
-            with(activityMainBinding) {
-                takePicture.show()
-                pickPicture.show()
-                tvPickImageDescription.visibility = View.VISIBLE
-                tvTakePictureDescription.visibility = View.VISIBLE
-                addFab.extend()
-            }
-        } else {
-            with(activityMainBinding) {
-                takePicture.hide()
-                pickPicture.hide()
-                tvPickImageDescription.visibility = View.GONE
-                tvTakePictureDescription.visibility = View.GONE
-                addFab.shrink()
+                InteractiveSegmentationScreen(
+                    uiState = uiState,
+                    onSelectBrushMode = segmenterViewModel::selectBrushMode,
+                    onAddStroke = segmenterViewModel::addStroke,
+                    onUndoStroke = segmenterViewModel::undoLastStroke,
+                    onClearStrokes = segmenterViewModel::clearStrokes,
+                    onTrySample = segmenterViewModel::loadSampleImage,
+                    onPickImage = { pickImageLauncher.launch(arrayOf("image/*")) },
+                    onTakePhoto = {
+                        val uri = createTempPhotoUri(context)
+                        pendingPhotoUri = uri
+                        takePhotoLauncher.launch(uri)
+                    },
+                    onRetryInitialization = segmenterViewModel::retryInitialization,
+                )
             }
         }
     }
 
-    private fun getImageUri(): Uri {
-        val filePicture = File(
-            cacheDir.path + File.separator + "JPEG_" + SimpleDateFormat(
-                "yyyyMMdd_HHmmss",
-                Locale.getDefault()
-            ).format(Date()) + ".jpg"
-        )
-
+    private fun createTempPhotoUri(context: Context): Uri {
+        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+        val photoFile = File(context.cacheDir, "JPEG_$timestamp.jpg")
         return FileProvider.getUriForFile(
-            this,
-            applicationContext.packageName + ".fileprovider",
-            filePicture
+            context,
+            "${context.packageName}.fileprovider",
+            photoFile,
         )
-    }
-
-    private fun showError(errorMessage: String) {
-        Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
-    }
-
-    private fun Uri.toBitmap(): Bitmap {
-        val maxWidth = 512f
-        var bitmap = if (Build.VERSION.SDK_INT < 28) {
-            @Suppress("DEPRECATION")
-            MediaStore.Images.Media.getBitmap(contentResolver, this)
-        } else {
-            val source = ImageDecoder.createSource(contentResolver, this)
-            ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
-                decoder.isMutableRequired = true
-            }
-        }
-        if (bitmap.width > maxWidth) {
-            val scaleFactor = maxWidth / bitmap.width
-            bitmap = Bitmap.createScaledBitmap(
-                bitmap,
-                (bitmap.width * scaleFactor).toInt(),
-                (bitmap.height * scaleFactor).toInt(),
-                false
-            )
-        }
-        return if (bitmap.config == Bitmap.Config.ARGB_8888) {
-            bitmap
-        } else {
-            bitmap.copy(Bitmap.Config.ARGB_8888, true)
-        }
-    }
-
-    override fun onError(error: String) {
-        showError(error)
-    }
-
-    override fun onResults(result: InteractiveSegmentationHelper.ResultBundle?) {
-        result?.let {
-            activityMainBinding.overlapView.setMaskResult(it.maskBitmap)
-        } ?: kotlin.run {
-            activityMainBinding.overlapView.setMaskResult(null)
-        }
     }
 }
