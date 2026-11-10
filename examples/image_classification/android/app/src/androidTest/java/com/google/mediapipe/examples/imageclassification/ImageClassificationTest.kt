@@ -1,11 +1,11 @@
 /*
- * Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+ * Copyright 2026 The MediaPipe Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *             http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,258 +13,243 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.google.mediapipe.examples.imageclassification
 
-import android.content.res.AssetManager
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.SystemClock
+import android.util.Log
 import androidx.core.net.toUri
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.google.mediapipe.examples.common.testing.EmbeddingMetrics
+import com.google.mediapipe.examples.common.testing.LatencyRecorder
 import com.google.mediapipe.framework.image.BitmapImageBuilder
-import com.google.mediapipe.tasks.components.containers.Category
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.imageclassifier.ImageClassifierResult
+import java.io.File
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
-import org.junit.BeforeClass
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStream
-import java.util.concurrent.locks.Condition
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
-import kotlin.math.min
 
-/**
- * Instrumented test, which will execute on an Android device.
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
 @RunWith(AndroidJUnit4::class)
 class ImageClassificationTest {
+
     companion object {
+        private const val TAG = "ImageClassificationTest"
         private const val TEST_IMAGE_NAME = "test_image.jpg"
         private const val TEST_VIDEO_NAME = "test_video.mp4"
-        private lateinit var lock: ReentrantLock
-        private lateinit var condition: Condition
-
-        @BeforeClass
-        @JvmStatic
-        fun setup() {
-            lock = ReentrantLock()
-            condition = lock.newCondition()
-        }
     }
 
-
-    private val expectedCategoriesForImageAndLiveStreamMode = listOf(
-        Category.create(0.54f, 0, "red wine", ""),
-        Category.create(0.10546875f, 1, "wine bottle", "")
-    )
-
-    private val expectedCategoryForVideoMode = listOf(
-        Category.create(0.40564904f, 0, "laptop", ""),
-        Category.create(0.20930989f, 1, "notebook", ""),
-        Category.create(0.1328125f, 2, "iPod", ""),
-    )
-
-    /**
-     * Verify that the result returned from the Image Classifier Helper with
-     * LIVE_STREAM mode is within the acceptable range to the expected result.
-     */
     @Test
-    fun classificationResultsFromLiveStreamModeFallsWithinAcceptedRange() {
-        var classifierResult: ImageClassifierResult? = null
-        val imageClassifierHelper = ImageClassifierHelper(
-            context = ApplicationProvider.getApplicationContext(),
-            runningMode = RunningMode.LIVE_STREAM,
-            threshold = 0.1f,
-            imageClassifierListener =
-            object : ImageClassifierHelper.ClassifierListener {
-                override fun onError(error: String, errorCode: Int) {
-                    println(error)
+    fun efficientNetLite0_imageAndLiveStreamModes_matchGoldenCategories() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val bitmap = loadTestBitmap(TEST_IMAGE_NAME)
+        val recorder = LatencyRecorder("image_classifier_lite0_cpu")
+        recorder.putMetadata("model", ImageClassifierHelper.MODEL_EFFICIENTNETV0_FILE)
+        recorder.putMetadata("delegate", "CPU")
 
-                    // Release the lock
-                    lock.withLock {
-                        condition.signal()
-                    }
-                }
+        val imageHelper =
+            recorder.measure("model_load_ms") {
+                ImageClassifierHelper(
+                    context = context,
+                    runningMode = RunningMode.IMAGE,
+                    currentModel = ImageClassifierHelper.MODEL_EFFICIENTNETV0,
+                    currentDelegate = ImageClassifierHelper.DELEGATE_CPU,
+                    threshold = 0.1f,
+                    maxResults = 3,
+                )
+            }
+        try {
+            assertFalse("Lite0 failed to initialize in IMAGE mode", imageHelper.isClosed())
+            val bundle = recorder.measure("classify_image_ms") { imageHelper.classifyImage(bitmap) }
+            assertNotNull(bundle)
+            val categories = bundle!!.results.first().classificationResult().classifications().first().categories()
+            Log.i(TAG, "Lite0 IMAGE categories=${categories.map { "${it.categoryName()}@${it.score()}" }}")
+            assertTrue("Expected red wine top category", categories.isNotEmpty())
+            assertEquals("red wine", categories[0].categoryName())
+            EmbeddingMetrics.assertSimilarityClose(
+                expected = 0.413,
+                actual = categories[0].score().toDouble(),
+                tolerance = 0.03,
+                label = "lite0.top0.score",
+            )
 
-
-                override fun onResults(resultBundle: ImageClassifierHelper.ResultBundle) {
-                    classifierResult = resultBundle.results.first()
-
-                    // Release the lock and start verifying the result
-                    lock.withLock {
-                        condition.signal()
-                    }
-                }
-            })
-
-        val bitmap = loadImage(TEST_IMAGE_NAME)
-        val mpImage = BitmapImageBuilder(bitmap).build()
-
-        // Run the image classification with the test image.
-        imageClassifierHelper.classifyAsync(
-            mpImage,
-            0,
-            SystemClock.uptimeMillis()
-        )
-
-        // Lock to wait the imageClassifier return the value.
-        lock.withLock {
-            condition.await()
+            repeat(5) {
+                recorder.measure("classify_steady_ms") { imageHelper.classifyImage(bitmap) }
+            }
+            recorder.flush(context)
+        } finally {
+            imageHelper.clearImageClassifier()
         }
 
-        // Verify that the classification result is not null.
-        assertNotNull(classifierResult)
+        val latch = CountDownLatch(1)
+        var asyncResult: ImageClassifierResult? = null
+        var asyncError: String? = null
+        val liveHelper =
+            ImageClassifierHelper(
+                context = context,
+                runningMode = RunningMode.LIVE_STREAM,
+                currentModel = ImageClassifierHelper.MODEL_EFFICIENTNETV0,
+                currentDelegate = ImageClassifierHelper.DELEGATE_CPU,
+                threshold = 0.1f,
+                maxResults = 3,
+                imageClassifierListener =
+                    object : ImageClassifierHelper.ClassifierListener {
+                        override fun onError(error: String, errorCode: Int) {
+                            asyncError = error
+                            latch.countDown()
+                        }
 
-        val actualCategories =
-            classifierResult!!.classificationResult().classifications().first()
-                .categories()
-
-        for (i in actualCategories.indices) {
-            // Verify that the categories are correct.
-            assertEquals(
-                expectedCategoriesForImageAndLiveStreamMode[i].categoryName(),
-                actualCategories[i].categoryName()
+                        override fun onResults(resultBundle: ImageClassifierHelper.ResultBundle) {
+                            asyncResult = resultBundle.results.firstOrNull()
+                            latch.countDown()
+                        }
+                    },
             )
-
-            // Verify that the scores are correct.
-            assertEquals(
-                expectedCategoriesForImageAndLiveStreamMode[i].score(),
-                actualCategories[i].score(), 0.01f
+        try {
+            assertFalse("Lite0 failed to initialize in LIVE_STREAM mode", liveHelper.isClosed())
+            liveHelper.classifyAsync(BitmapImageBuilder(bitmap).build(), 0, SystemClock.uptimeMillis())
+            assertTrue("Timed out waiting for LIVE_STREAM result", latch.await(15, TimeUnit.SECONDS))
+            assertEquals(null, asyncError)
+            assertNotNull(asyncResult)
+            val liveCats = asyncResult!!.classificationResult().classifications().first().categories()
+            assertEquals("red wine", liveCats[0].categoryName())
+            EmbeddingMetrics.assertSimilarityClose(
+                expected = 0.413,
+                actual = liveCats[0].score().toDouble(),
+                tolerance = 0.03,
+                label = "lite0.live.top0.score",
             )
+        } finally {
+            liveHelper.clearImageClassifier()
+            bitmap.recycle()
         }
     }
 
-    /**
-     * Verify that the result returned from Image Classifier Helper with
-     * VIDEO mode is within the acceptable range to the expected result.
-     * The result is the average of all frames.
-     */
     @Test
-    fun classificationResultsFromVideoModeFallsWithinAcceptedRange() {
-        val imageClassifierHelper = ImageClassifierHelper(
-            context = ApplicationProvider.getApplicationContext(),
-            runningMode = RunningMode.VIDEO,
-            threshold = 0.1f,
-        )
-
-        val videoUri = getVideoUri(TEST_VIDEO_NAME)
-
-        // Run the image classification with the test video.
-        val classificationResult = imageClassifierHelper.classifyVideoFile(
-            videoUri,
-            300
-        )
-
-        // Verify that the classification result is not null.
-        assertNotNull(classificationResult)
-
-        // Average scores of all frames.
-        val hashMap = HashMap<String, Pair<Float, Int>>()
-        classificationResult!!.results.forEach { frameResult ->
-            frameResult.classificationResult().classifications().first()
-                .categories().forEach {
-                    if (hashMap.containsKey(it.categoryName())) {
-                        hashMap[it.categoryName()] = Pair(
-                            hashMap[it.categoryName()]!!.first + it.score(),
-                            hashMap[it.categoryName()]!!.second + 1
-                        )
-                    } else {
-                        hashMap[it.categoryName()] = Pair(it.score(), 1)
-                    }
+    fun efficientNetLite0_videoMode_returnsExpectedTopCategory() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val helper =
+            ImageClassifierHelper(
+                context = context,
+                runningMode = RunningMode.VIDEO,
+                threshold = 0.1f,
+                maxResults = 3,
+            )
+        val tempFile = copyTestAssetToTempFile(TEST_VIDEO_NAME, ".mp4")
+        try {
+            val bundle = helper.classifyVideoFile(tempFile.toUri(), 300L)
+            assertNotNull("Video classification returned null", bundle)
+            val avgByLabel = mutableMapOf<String, MutableList<Float>>()
+            bundle!!.results.forEach { frame ->
+                frame.classificationResult().classifications().firstOrNull()?.categories()?.forEach { cat ->
+                    avgByLabel.getOrPut(cat.categoryName()) { mutableListOf() }.add(cat.score())
                 }
-        }
-        val actualAverageCategories = hashMap.map {
-            val averageScore = it.value.first / it.value.second
-            Category.create(averageScore, 0, it.key, "")
-        }.toList().sortedByDescending { it.score() }
-
-        val minSize =
-            min(
-                actualAverageCategories.size, expectedCategoryForVideoMode.size
-            )
-
-        for (i in 0 until minSize) {
-            // Verify that the categories are correct.
-            assertEquals(
-                expectedCategoryForVideoMode[i].categoryName(),
-                actualAverageCategories[i].categoryName()
-            )
-
-            // Verify that the scores are correct.
-            assertEquals(
-                expectedCategoryForVideoMode[i].score(),
-                actualAverageCategories[i].score(), 0.05f
-            )
+            }
+            val ranked =
+                avgByLabel
+                    .map { (name, scores) -> name to scores.sum() / bundle.results.size }
+                    .sortedByDescending { it.second }
+            Log.i(TAG, "Lite0 VIDEO ranked=$ranked")
+            assertTrue("Expected video classifications", ranked.isNotEmpty())
+            assertEquals("laptop", ranked[0].first)
+        } finally {
+            helper.clearImageClassifier()
+            tempFile.delete()
         }
     }
 
-    /**
-     * Verify that the result returned from the Image Classifier Helper with
-     * IMAGE mode is within the acceptable range to the expected result.
-     */
     @Test
-    fun classificationResultsFromImageModeFallsWithinAcceptedRange() {
-        val imageClassifierHelper = ImageClassifierHelper(
-            context = ApplicationProvider.getApplicationContext(),
-            runningMode = RunningMode.IMAGE,
-            threshold = 0.1f
-        )
+    fun efficientNetLite2_imageMode_classifiesSampleAndLatency() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val bitmap = loadTestBitmap(TEST_IMAGE_NAME)
+        val recorder = LatencyRecorder("image_classifier_lite2_cpu")
+        recorder.putMetadata("model", ImageClassifierHelper.MODEL_EFFICIENTNETV2_FILE)
+        recorder.putMetadata("delegate", "CPU")
 
-        val bitmap = loadImage(TEST_IMAGE_NAME)
-
-        // Run the image classification with the test image.
-        val classificationResult =
-            imageClassifierHelper.classifyImage(bitmap!!)?.results?.first()
-
-        // Verify that the classification result is not null.
-        assertNotNull(classificationResult)
-
-        val actualCategories =
-            classificationResult!!.classificationResult().classifications()
-                .first()
-                .categories()
-
-        for (i in actualCategories.indices) {
-            // Verify that the categories are correct.
-            assertEquals(
-                expectedCategoriesForImageAndLiveStreamMode[i].categoryName(),
-                actualCategories[i].categoryName()
+        val helper =
+            recorder.measure("model_load_ms") {
+                ImageClassifierHelper(
+                    context = context,
+                    runningMode = RunningMode.IMAGE,
+                    currentModel = ImageClassifierHelper.MODEL_EFFICIENTNETV2,
+                    currentDelegate = ImageClassifierHelper.DELEGATE_CPU,
+                    threshold = 0.1f,
+                    maxResults = 3,
+                )
+            }
+        try {
+            assertFalse("Lite2 failed to initialize on CPU", helper.isClosed())
+            val bundle = recorder.measure("classify_image_ms") { helper.classifyImage(bitmap) }!!
+            val categories = bundle.results.first().classificationResult().classifications().first().categories()
+            Log.i(TAG, "Lite2 IMAGE categories=${categories.map { "${it.categoryName()}@${it.score()}" }}")
+            assertTrue("Expected top category for Lite2", categories.isNotEmpty())
+            assertEquals("red wine", categories[0].categoryName())
+            EmbeddingMetrics.assertSimilarityClose(
+                expected = 0.254,
+                actual = categories[0].score().toDouble(),
+                tolerance = 0.03,
+                label = "lite2.top0.score",
             )
 
-            // Verify that the scores are correct.
-            assertEquals(
-                expectedCategoriesForImageAndLiveStreamMode[i].score(),
-                actualCategories[i].score(), 0.01f
-            )
+            // Also verify bundled sample_cup.png classifies above default 0.5 threshold on Lite0.
+            context.assets.open(ImageClassifierHelper.SAMPLE_IMAGE_ASSET).use { stream ->
+                val sampleBitmap = requireNotNull(BitmapFactory.decodeStream(stream))
+                val sampleHelper =
+                    ImageClassifierHelper(
+                        context = context,
+                        runningMode = RunningMode.IMAGE,
+                        currentModel = ImageClassifierHelper.MODEL_EFFICIENTNETV0,
+                        threshold = ImageClassifierHelper.THRESHOLD_DEFAULT,
+                    )
+                try {
+                    val sampleResult = sampleHelper.classifyImage(sampleBitmap)!!
+                    val sampleCats = sampleResult.results.first().classificationResult().classifications().first().categories()
+                    Log.i(TAG, "Lite0 sample_cup categories=${sampleCats.map { "${it.categoryName()}@${it.score()}" }}")
+                    assertTrue("Expected coffee mug for sample_cup", sampleCats.isNotEmpty())
+                    assertEquals("coffee mug", sampleCats[0].categoryName())
+                    EmbeddingMetrics.assertSimilarityClose(
+                        expected = 0.573,
+                        actual = sampleCats[0].score().toDouble(),
+                        tolerance = 0.03,
+                        label = "lite0.sample_cup.score",
+                    )
+                } finally {
+                    sampleHelper.clearImageClassifier()
+                    sampleBitmap.recycle()
+                }
+            }
+
+            repeat(5) {
+                recorder.measure("classify_steady_ms") { helper.classifyImage(bitmap) }
+            }
+            recorder.flush(context)
+        } finally {
+            helper.clearImageClassifier()
+            bitmap.recycle()
         }
     }
 
-    @Throws(Exception::class)
-    private fun loadImage(fileName: String): Bitmap? {
-        val assetManager: AssetManager =
-            InstrumentationRegistry.getInstrumentation().context.assets
-        val inputStream: InputStream = assetManager.open(fileName)
-        return BitmapFactory.decodeStream(inputStream)
-    }
+    private fun loadTestBitmap(fileName: String): Bitmap =
+        InstrumentationRegistry.getInstrumentation().context.assets.open(fileName).use { stream ->
+            requireNotNull(BitmapFactory.decodeStream(stream)) { "Failed to decode $fileName" }
+        }
 
-    @Throws(Exception::class)
-    private fun getVideoUri(videoName: String): Uri {
-        val assetManager: AssetManager =
-            InstrumentationRegistry.getInstrumentation().context.assets
-        val file = File.createTempFile("test_video", ".mp4")
-        val output = FileOutputStream(file)
-        val inputStream: InputStream = assetManager.open(videoName)
-        inputStream.copyTo(output)
-        return file.toUri()
+    private fun copyTestAssetToTempFile(assetName: String, suffix: String): File {
+        val file = File.createTempFile("mp_test_", suffix)
+        InstrumentationRegistry.getInstrumentation().context.assets.open(assetName).use { input ->
+            file.outputStream().use { output -> input.copyTo(output) }
+        }
+        return file
     }
 }

@@ -1,11 +1,11 @@
 /*
- * Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+ * Copyright 2026 The MediaPipe Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *             http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,6 +33,10 @@ import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.imageclassifier.ImageClassifier
 import com.google.mediapipe.tasks.vision.imageclassifier.ImageClassifierResult
 
+/**
+ * Helper that wraps [ImageClassifier] lifecycle, model/delegate/threshold options, and
+ * image/video/camera inference.
+ */
 class ImageClassifierHelper(
     var threshold: Float = THRESHOLD_DEFAULT,
     var maxResults: Int = MAX_RESULTS_DEFAULT,
@@ -40,311 +44,230 @@ class ImageClassifierHelper(
     var currentModel: Int = MODEL_EFFICIENTNETV0,
     var runningMode: RunningMode = RunningMode.IMAGE,
     val context: Context,
-    val imageClassifierListener: ClassifierListener? = null
+    var imageClassifierListener: ClassifierListener? = null,
 ) {
-
-    // For this example this needs to be a var so it can be reset on changes. If the ImageClassifier
-    // will not change, a lazy val would be preferable.
     private var imageClassifier: ImageClassifier? = null
+
+    /** Duration of the most recent successful [setupImageClassifier] call, in milliseconds. */
+    @Volatile
+    var setupDurationMs: Long = 0L
+        private set
 
     init {
         setupImageClassifier()
     }
 
-    // Classifier must be closed when creating a new one to avoid returning results to a
-    // non-existent object
     fun clearImageClassifier() {
         imageClassifier?.close()
         imageClassifier = null
     }
 
-    // Return running status of image classifier helper
-    fun isClosed(): Boolean {
-        return imageClassifier == null
-    }
+    fun isClosed(): Boolean = imageClassifier == null
 
-    // Initialize the image classifier using current settings on the
-    // thread that is using it. CPU can be used with detectors
-    // that are created on the main thread and used on a background thread, but
-    // the GPU delegate needs to be used on the thread that initialized the
-    // classifier
-    fun setupImageClassifier() {
-        val baseOptionsBuilder = BaseOptions.builder()
-        when (currentDelegate) {
-            DELEGATE_CPU -> {
-                baseOptionsBuilder.setDelegate(Delegate.CPU)
-            }
-
-            DELEGATE_GPU -> {
-                baseOptionsBuilder.setDelegate(Delegate.GPU)
-            }
-        }
+    /**
+     * Initializes [ImageClassifier] on the calling thread. When using [DELEGATE_GPU], callers
+     * should invoke this on the same thread that submits frames.
+     */
+    fun setupImageClassifier(): Boolean {
+        clearImageClassifier()
+        val startTime = SystemClock.uptimeMillis()
 
         val modelName =
             when (currentModel) {
-                MODEL_EFFICIENTNETV0 -> "efficientnet-lite0.tflite"
-                MODEL_EFFICIENTNETV2 -> "efficientnet-lite2.tflite"
-                else -> "efficientnet-lite0.tflite"
-            }
-
-        baseOptionsBuilder.setModelAssetPath(modelName)
-
-        // Check if runningMode is consistent with imageClassifierListener
-        when (runningMode) {
-            RunningMode.LIVE_STREAM -> {
-                if (imageClassifierListener == null) {
-                    throw IllegalStateException(
-                        "imageClassifierListener must be set when runningMode is LIVE_STREAM."
-                    )
+                MODEL_EFFICIENTNETV0 -> MODEL_EFFICIENTNETV0_FILE
+                MODEL_EFFICIENTNETV2 -> MODEL_EFFICIENTNETV2_FILE
+                else -> {
+                    imageClassifierListener?.onError("Unsupported model index: $currentModel")
+                    return false
                 }
             }
 
+        val baseOptionsBuilder = BaseOptions.builder().setModelAssetPath(modelName)
+        when (currentDelegate) {
+            DELEGATE_CPU -> baseOptionsBuilder.setDelegate(Delegate.CPU)
+            DELEGATE_GPU -> baseOptionsBuilder.setDelegate(Delegate.GPU)
             else -> {
-                // no-op
+                imageClassifierListener?.onError("Unsupported delegate index: $currentDelegate")
+                return false
             }
         }
 
-        try {
-            val baseOptions = baseOptionsBuilder.build()
+        if (runningMode == RunningMode.LIVE_STREAM && imageClassifierListener == null) {
+            throw IllegalStateException(
+                "imageClassifierListener must be set when runningMode is LIVE_STREAM."
+            )
+        }
+
+        return try {
             val optionsBuilder =
                 ImageClassifier.ImageClassifierOptions.builder()
+                    .setBaseOptions(baseOptionsBuilder.build())
                     .setScoreThreshold(threshold)
                     .setMaxResults(maxResults)
                     .setRunningMode(runningMode)
-                    .setBaseOptions(baseOptions)
 
             if (runningMode == RunningMode.LIVE_STREAM) {
-                optionsBuilder.setResultListener(this::returnLivestreamResult)
-                optionsBuilder.setErrorListener(this::returnLivestreamError)
+                optionsBuilder
+                    .setResultListener(this::returnLivestreamResult)
+                    .setErrorListener(this::returnLivestreamError)
             }
-            val options = optionsBuilder.build()
-            imageClassifier =
-                ImageClassifier.createFromOptions(context, options)
+
+            imageClassifier = ImageClassifier.createFromOptions(context, optionsBuilder.build())
+            setupDurationMs = SystemClock.uptimeMillis() - startTime
+            true
         } catch (e: IllegalStateException) {
-            imageClassifierListener?.onError(
-                "Image classifier failed to initialize. See error logs for details"
-            )
-            Log.e(
-                TAG,
-                "Image classifier failed to load model with error: " + e.message
-            )
+            val detail = e.message ?: "IllegalStateException"
+            imageClassifierListener?.onError("Image classifier failed to initialize: $detail")
+            Log.e(TAG, "Image classifier failed to load model with error: $detail", e)
+            false
         } catch (e: RuntimeException) {
-            // This occurs if the model being used does not support GPU
+            val detail = e.message ?: "RuntimeException"
+            val errorCode = if (currentDelegate == DELEGATE_GPU) GPU_ERROR else OTHER_ERROR
             imageClassifierListener?.onError(
-                "Image classifier failed to initialize. See error logs for " +
-                        "details", GPU_ERROR
+                if (errorCode == GPU_ERROR) {
+                    "This model or device does not support GPU acceleration."
+                } else {
+                    "Image classifier failed to initialize: $detail"
+                },
+                errorCode,
             )
-            Log.e(
-                TAG,
-                "Image classifier failed to load model with error: " + e.message
-            )
+            Log.e(TAG, "Image classifier failed to load model with error: $detail", e)
+            false
         }
     }
 
-    // Runs image classification on live streaming cameras frame-by-frame and
-    // returns the results asynchronously to the caller.
+    /** Runs image classification asynchronously on a CameraX RGBA_8888 [ImageProxy] frame. */
     fun classifyLiveStreamFrame(imageProxy: ImageProxy) {
         if (runningMode != RunningMode.LIVE_STREAM) {
+            imageProxy.close()
             throw IllegalArgumentException(
-                "Attempting to call classifyLiveStreamFrame" +
-                        " while not using RunningMode.LIVE_STREAM"
+                "Attempting to call classifyLiveStreamFrame while not using RunningMode.LIVE_STREAM"
             )
         }
 
         val frameTime = SystemClock.uptimeMillis()
-        val bitmapBuffer =
-            Bitmap.createBitmap(
-                imageProxy.width,
-                imageProxy.height,
-                Bitmap.Config.ARGB_8888
-            )
+        val rotationDegrees: Int
+        val bitmapBuffer: Bitmap
 
-        imageProxy.use {
-            bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer)
+        imageProxy.use { proxy ->
+            rotationDegrees = proxy.imageInfo.rotationDegrees
+            bitmapBuffer = Bitmap.createBitmap(proxy.width, proxy.height, Bitmap.Config.ARGB_8888)
+            bitmapBuffer.copyPixelsFromBuffer(proxy.planes[0].buffer)
         }
-        imageProxy.close()
+
         val mpImage = BitmapImageBuilder(bitmapBuffer).build()
-        classifyAsync(mpImage, imageProxy.imageInfo.rotationDegrees, frameTime)
+        classifyAsync(mpImage, rotationDegrees, frameTime)
     }
 
-    // Run object detection using MediaPipe Object Detector API
     @VisibleForTesting
     fun classifyAsync(mpImage: MPImage, imageDegree: Int, frameTime: Long) {
         val imageProcessingOptions =
-            ImageProcessingOptions.builder().setRotationDegrees(imageDegree)
-                .build()
-        // As we're using running mode LIVE_STREAM, the classification result will
-        // be returned in returnLivestreamResult function
-        imageClassifier?.classifyAsync(
-            mpImage,
-            imageProcessingOptions,
-            frameTime
-        )
+            ImageProcessingOptions.builder().setRotationDegrees(imageDegree).build()
+        imageClassifier?.classifyAsync(mpImage, imageProcessingOptions, frameTime)
     }
 
-    // Accepted a Bitmap and runs image classification inference on it to
-    // return results back to the caller
+    /** Classifies a static [Bitmap], converting to ARGB_8888 if needed. */
     fun classifyImage(image: Bitmap): ResultBundle? {
         if (runningMode != RunningMode.IMAGE) {
             throw IllegalArgumentException(
-                "Attempting to call classifyImage" +
-                        " while not using RunningMode.IMAGE"
+                "Attempting to call classifyImage while not using RunningMode.IMAGE"
             )
         }
+        val classifier = imageClassifier ?: return null
 
-        if (imageClassifier == null) return null
+        val argbImage =
+            if (image.config == Bitmap.Config.ARGB_8888) image
+            else image.copy(Bitmap.Config.ARGB_8888, false)
 
-        // Inference time is the difference between the system time at the start and finish of the
-        // process
         val startTime = SystemClock.uptimeMillis()
-
-        // Convert the input Bitmap object to an MPImage object to run inference
-        val mpImage = BitmapImageBuilder(image).build()
-
-        // Run image classification using MediaPipe Image Classifier API
-        imageClassifier?.classify(mpImage)?.also { classificationResults ->
-            val inferenceTimeMs = SystemClock.uptimeMillis() - startTime
-            return ResultBundle(listOf(classificationResults), inferenceTimeMs)
+        val mpImage = BitmapImageBuilder(argbImage).build()
+        val classificationResult = classifier.classify(mpImage)
+        val inferenceTimeMs = SystemClock.uptimeMillis() - startTime
+        return if (classificationResult != null) {
+            ResultBundle(listOf(classificationResult), inferenceTimeMs, setupDurationMs)
+        } else {
+            imageClassifierListener?.onError("Image classifier failed to classify.")
+            null
         }
-
-        // If imageClassifier?.classify() returns null, this is likely an error. Returning null
-        // to indicate this.
-        imageClassifierListener?.onError(
-            "Image classifier failed to classify."
-        )
-        return null
     }
 
-    // Accepts the URI for a video file loaded from the user's gallery and attempts to run
-    // image classification inference on the video. This process will evaluate
-    // every frame in the video and attach the results to a bundle that will
-    // be returned.
-    fun classifyVideoFile(
-        videoUri: Uri,
-        inferenceIntervalMs: Long
-    ): ResultBundle? {
+    /** Classifies sampled frames from the video at [videoUri]. */
+    fun classifyVideoFile(videoUri: Uri, inferenceIntervalMs: Long): ResultBundle? {
         if (runningMode != RunningMode.VIDEO) {
             throw IllegalArgumentException(
-                "Attempting to call classifyVideoFile" +
-                        " while not using RunningMode.VIDEO"
+                "Attempting to call classifyVideoFile while not using RunningMode.VIDEO"
             )
         }
+        val classifier = imageClassifier ?: return null
 
-        if (imageClassifier == null) return null
-
-        // Inference time is the difference between the system time at the start and finish of the
-        // process
         val startTime = SystemClock.uptimeMillis()
-
-        var didErrorOccurred = false
-
-        // Load frames from the video and run the image classification model.
+        var didErrorOccur = false
         val retriever = MediaMetadataRetriever()
-        retriever.setDataSource(context, videoUri)
-        val videoLengthMs =
-            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                ?.toLong()
-
-        // Note: We need to read width/height from frame instead of getting the width/height
-        // of the video directly because MediaRetriever returns frames that are smaller than the
-        // actual dimension of the video file.
-        val firstFrame = retriever.getFrameAtTime(0)
-        val width = firstFrame?.width
-        val height = firstFrame?.height
-
-        // If the video is invalid, returns a null classification result
-        if ((videoLengthMs == null) || (width == null) || (height == null)) return null
-
-        // Next, we'll get one frame every frameInterval ms, then run
-        // classification on these frames.
         val resultList = mutableListOf<ImageClassifierResult>()
-        val numberOfFrameToRead = videoLengthMs.div(inferenceIntervalMs)
+        val frameCount: Long
 
-        for (i in 0..numberOfFrameToRead) {
-            val timestampMs = i * inferenceIntervalMs // ms
+        try {
+            retriever.setDataSource(context, videoUri)
+            val videoLengthMs =
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
+            val firstFrame = retriever.getFrameAtTime(0)
+            if (videoLengthMs == null || firstFrame == null) {
+                return null
+            }
+            frameCount = (videoLengthMs / inferenceIntervalMs).coerceAtLeast(1L)
 
-            retriever
-                .getFrameAtTime(
-                    timestampMs * 1000, // convert from ms to micro-s
-                    MediaMetadataRetriever.OPTION_CLOSEST
-                )
-                ?.let { frame ->
-                    // Convert the video frame to ARGB_8888 which is required by the MediaPipe
-                    val argb8888Frame =
+            for (i in 0..frameCount) {
+                val timestampMs = i * inferenceIntervalMs
+                val frame = retriever.getFrameAtTime(timestampMs * 1000L, MediaMetadataRetriever.OPTION_CLOSEST)
+                if (frame != null) {
+                    val argbFrame =
                         if (frame.config == Bitmap.Config.ARGB_8888) frame
                         else frame.copy(Bitmap.Config.ARGB_8888, false)
-
-                    // Convert the input Bitmap object to an MPImage object to run inference
-                    val mpImage = BitmapImageBuilder(argb8888Frame).build()
-
-                    // Run image classification using MediaPipe Image Classifier
-                    // API
-                    imageClassifier?.classifyForVideo(mpImage, timestampMs)
-                        ?.let { classificationResult ->
-                            resultList.add(classificationResult)
-                        }
-                        ?: {
-                            didErrorOccurred = true
-                            imageClassifierListener?.onError(
-                                "ResultBundle could not be " +
-                                        "returned" +
-                                        " in classifyVideoFile"
-                            )
-                        }
-                }
-                ?: run {
-                    didErrorOccurred = true
+                    val mpImage = BitmapImageBuilder(argbFrame).build()
+                    val result = classifier.classifyForVideo(mpImage, timestampMs)
+                    if (result != null) {
+                        resultList.add(result)
+                    } else {
+                        didErrorOccur = true
+                        imageClassifierListener?.onError(
+                            "ResultBundle could not be returned in classifyVideoFile"
+                        )
+                    }
+                } else {
+                    didErrorOccur = true
                     imageClassifierListener?.onError(
-                        "Frame at specified time could not be" +
-                                " retrieved when classifying in video."
+                        "Frame at specified time could not be retrieved when classifying in video."
                     )
                 }
+            }
+        } finally {
+            retriever.release()
         }
-
-        retriever.release()
 
         val inferenceTimePerFrameMs =
-            (SystemClock.uptimeMillis() - startTime).div(numberOfFrameToRead)
+            ((SystemClock.uptimeMillis() - startTime) / (frameCount + 1L)).coerceAtLeast(0L)
 
-        return if (didErrorOccurred) {
+        return if (didErrorOccur) {
             null
         } else {
-            ResultBundle(resultList, inferenceTimePerFrameMs)
+            ResultBundle(resultList, inferenceTimePerFrameMs, setupDurationMs)
         }
     }
 
-    // MPImage isn't necessary for this example, but the listener requires it
-    private fun returnLivestreamResult(
-        result: ImageClassifierResult,
-        image: MPImage
-    ) {
-
+    private fun returnLivestreamResult(result: ImageClassifierResult, @Suppress("UNUSED_PARAMETER") image: MPImage) {
         val finishTimeMs = SystemClock.uptimeMillis()
-
         val inferenceTime = finishTimeMs - result.timestampMs()
-
-        imageClassifierListener?.onResults(
-            ResultBundle(
-                listOf(result),
-                inferenceTime
-            )
-        )
+        imageClassifierListener?.onResults(ResultBundle(listOf(result), inferenceTime, setupDurationMs))
     }
 
-    // Return errors thrown during classification to this
-    // ImageClassifierHelper's caller
     private fun returnLivestreamError(error: RuntimeException) {
-        imageClassifierListener?.onError(
-            error.message ?: "An unknown error has occurred"
-        )
+        imageClassifierListener?.onError(error.message ?: "An unknown error has occurred")
     }
 
-
-    // Wraps results from inference, the time it takes for inference to be
-    // performed.
     data class ResultBundle(
         val results: List<ImageClassifierResult>,
         val inferenceTime: Long,
+        val loadTimeMs: Long = 0L,
     )
 
     companion object {
@@ -352,16 +275,19 @@ class ImageClassifierHelper(
         const val DELEGATE_GPU = 1
         const val MODEL_EFFICIENTNETV0 = 0
         const val MODEL_EFFICIENTNETV2 = 1
+        const val MODEL_EFFICIENTNETV0_FILE = "efficientnet-lite0.tflite"
+        const val MODEL_EFFICIENTNETV2_FILE = "efficientnet-lite2.tflite"
+        const val SAMPLE_IMAGE_ASSET = "sample_cup.png"
         const val MAX_RESULTS_DEFAULT = 3
         const val THRESHOLD_DEFAULT = 0.5F
         const val OTHER_ERROR = 0
         const val GPU_ERROR = 1
-
-        private const val TAG = "ImageClassifierHelper"
+        const val TAG = "ImageClassifierHelper"
     }
 
     interface ClassifierListener {
         fun onError(error: String, errorCode: Int = OTHER_ERROR)
+
         fun onResults(resultBundle: ResultBundle)
     }
 }
