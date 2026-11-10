@@ -1,0 +1,232 @@
+name: Android Release Verify & Update
+
+on:
+  workflow_dispatch:
+    inputs:
+      mediapipe_version:
+        description: 'MediaPipe Tasks version to verify or bump to (e.g. 1.3.0-rc1 or 1.3.0)'
+        required: true
+        type: string
+      mode:
+        description: 'Action to run'
+        required: true
+        default: 'verify-published'
+        type: choice
+        options:
+          - verify-staged
+          - verify-published
+          - open-update-pr
+      gcs_bundle_uri:
+        description: 'gs://bucket/path/maven-bundle.zip (required for verify-staged)'
+        required: false
+        default: ''
+        type: string
+      bundle_sha256:
+        description: 'Expected SHA-256 hex digest of the staged zip (required for verify-staged)'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  verify-staged:
+    name: Verify Staged Binaries (${{ inputs.mediapipe_version }})
+    if: inputs.mode == 'verify-staged'
+    environment: release-verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Validate inputs and GCP environment configuration
+        env:
+          MP_VERSION: ${{ inputs.mediapipe_version }}
+          GCS_URI: ${{ inputs.gcs_bundle_uri }}
+          BUNDLE_SHA: ${{ inputs.bundle_sha256 }}
+          WIF_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          WIF_SA: ${{ vars.GCP_SERVICE_ACCOUNT }}
+        run: |
+          [[ "$MP_VERSION" =~ ^[A-Za-z0-9._+-]+$ ]] || { echo "Invalid mediapipe_version"; exit 1; }
+          [[ "$GCS_URI" =~ ^gs://[A-Za-z0-9._/-]+\.zip$ ]] || { echo "Invalid gcs_bundle_uri"; exit 1; }
+          [[ "$BUNDLE_SHA" =~ ^[0-9a-fA-F]{64}$ ]] || { echo "Invalid bundle_sha256"; exit 1; }
+          [ -n "$WIF_PROVIDER" ] || { echo "Missing release-verification env var GCP_WORKLOAD_IDENTITY_PROVIDER"; exit 1; }
+          [ -n "$WIF_SA" ] || { echo "Missing release-verification env var GCP_SERVICE_ACCOUNT"; exit 1; }
+
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Authenticate to Google Cloud (Workload Identity Federation)
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a711d045035b3b1440c9c10db # v3.0.1
+
+      - name: Fetch, verify, and unpack Maven bundle into local ~/.m2/repository
+        env:
+          GCS_URI: ${{ inputs.gcs_bundle_uri }}
+          BUNDLE_SHA: ${{ inputs.bundle_sha256 }}
+        run: |
+          BUNDLE_ZIP="$(mktemp -t mediapipe-bundle-XXXXXX.zip)"
+          gcloud storage cp "$GCS_URI" "$BUNDLE_ZIP"
+          echo "${BUNDLE_SHA}  ${BUNDLE_ZIP}" | sha256sum -c -
+          mkdir -p "$HOME/.m2/repository"
+          unzip -oq "$BUNDLE_ZIP" -d "$HOME/.m2/repository"
+          rm -f "$BUNDLE_ZIP"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Download and verify real models
+        working-directory: examples/text_embedder/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :app:verifyModels --no-daemon --stacktrace
+
+      - name: Enable KVM group permissions
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          test -w /dev/kvm
+
+      - name: Run quality & UI tests enforcing local Maven artifacts
+        uses: reactivecircus/android-emulator-runner@e93c997dcab69054e999e3924af3d21c4a736e13 # v2.9.0
+        env:
+          MP_VERSION: ${{ inputs.mediapipe_version }}
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: true
+          working-directory: examples/text_embedder/android
+          script: |
+            ./gradlew :app:connectedDebugAndroidTest \
+              -PmediapipeVersion="$MP_VERSION" \
+              -PrequireLocalMediapipeRepo=true \
+              --no-daemon --stacktrace
+
+  verify-published:
+    name: Verify Published Binaries (${{ inputs.mediapipe_version }})
+    if: inputs.mode == 'verify-published'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Validate version input
+        env:
+          MP_VERSION: ${{ inputs.mediapipe_version }}
+        run: |
+          [[ "$MP_VERSION" =~ ^[A-Za-z0-9._+-]+$ ]] || { echo "Invalid mediapipe_version"; exit 1; }
+
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Download and verify real models
+        working-directory: examples/text_embedder/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :app:verifyModels --no-daemon --stacktrace
+
+      - name: Enable KVM group permissions
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          test -w /dev/kvm
+
+      - name: Run quality & UI tests against published version
+        uses: reactivecircus/android-emulator-runner@e93c997dcab69054e999e3924af3d21c4a736e13 # v2.9.0
+        env:
+          MP_VERSION: ${{ inputs.mediapipe_version }}
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: true
+          working-directory: examples/text_embedder/android
+          script: ./gradlew :app:connectedDebugAndroidTest -PmediapipeVersion="$MP_VERSION" --no-daemon --stacktrace
+
+  open-update-pr:
+    name: Open Version Bump PR (${{ inputs.mediapipe_version }})
+    if: inputs.mode == 'open-update-pr'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Validate version input
+        env:
+          MP_VERSION: ${{ inputs.mediapipe_version }}
+        run: |
+          [[ "$MP_VERSION" =~ ^[A-Za-z0-9._+-]+$ ]] || { echo "Invalid mediapipe_version"; exit 1; }
+
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Update shared version catalog
+        env:
+          MP_VERSION: ${{ inputs.mediapipe_version }}
+        run: |
+          python3 - <<'EOF'
+          import os, re
+          path = "android-common/gradle/libs.versions.toml"
+          ver = os.environ["MP_VERSION"]
+          with open(path, encoding="utf-8") as f:
+              text = f.read()
+          updated = re.sub(
+              r'^(mediapipeTasks[A-Za-z]+\s*=\s*)"[^"]+"',
+              rf'\1"{ver}"',
+              text,
+              flags=re.MULTILINE,
+          )
+          with open(path, "w", encoding="utf-8") as f:
+              f.write(updated)
+          EOF
+          git diff android-common/gradle/libs.versions.toml
+
+      - name: Create Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MP_VERSION: ${{ inputs.mediapipe_version }}
+        run: |
+          if git diff --quiet android-common/gradle/libs.versions.toml; then
+            echo "Version catalog is already at $MP_VERSION."
+            exit 0
+          fi
+          BRANCH="chore/android-mediapipe-${MP_VERSION}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add android-common/gradle/libs.versions.toml
+          git commit -m "Update MediaPipe Android tasks to ${MP_VERSION}"
+          git push --force-with-lease origin "$BRANCH"
+          gh pr create \
+            --title "Update MediaPipe Android tasks to ${MP_VERSION}" \
+            --body "Automated version bump of \`android-common/gradle/libs.versions.toml\` to MediaPipe \`${MP_VERSION}\`." \
+            --head "$BRANCH" \
+            --base main || gh pr edit "$BRANCH" --title "Update MediaPipe Android tasks to ${MP_VERSION}"

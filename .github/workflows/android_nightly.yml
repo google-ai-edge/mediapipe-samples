@@ -79,3 +79,135 @@ jobs:
         run: |
           chmod +x ./gradlew
           ./gradlew assembleDebug --no-daemon --stacktrace
+
+  test-android:
+    name: Real-Model Tests (text_embedder)
+    if: inputs.example == '' || inputs.example == 'all' || inputs.example == 'text_embedder'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Cache verified model assets
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: examples/text_embedder/android/app/src/main/assets
+          key: text-embedder-models-${{ hashFiles('examples/text_embedder/android/app/download_models.gradle') }}
+
+      - name: Download and verify real models
+        working-directory: examples/text_embedder/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :app:verifyModels :android-common:testing:testDebugUnitTest --no-daemon --stacktrace
+
+      - name: Enable KVM group permissions
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          test -w /dev/kvm
+
+      - name: Run instrumented quality & UI tests
+        uses: reactivecircus/android-emulator-runner@e93c997dcab69054e999e3924af3d21c4a736e13 # v2.9.0
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: true
+          working-directory: examples/text_embedder/android
+          script: |
+            adb logcat -c || true
+            ./gradlew :app:connectedDebugAndroidTest --no-daemon --stacktrace
+            mkdir -p ../../build/latency_reports
+            adb logcat -d -s LatencyRecorder | python3 -c '
+            import os, re, sys
+            out = "../../build/latency_reports"
+            for line in sys.stdin:
+                m = re.search(r"LATENCY_REPORT\s+([A-Za-z0-9_.-]+):\s*(\{.*\})\s*$", line)
+                if m:
+                    with open(os.path.join(out, f"{m.group(1)}.json"), "w") as f:
+                        f.write(m.group(2) + "\n")
+            '
+
+      - name: Upload report-only latency JSON
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nightly-text-embedder-latency
+          path: build/latency_reports/**
+          if-no-files-found: ignore
+
+  canary-latest-mediapipe:
+    name: Canary Latest MediaPipe (text_embedder)
+    if: inputs.example == '' || inputs.example == 'all' || inputs.example == 'text_embedder'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Resolve latest published tasks-text version
+        id: latest
+        run: |
+          LATEST=$(curl -fsSL https://dl.google.com/dl/android/maven2/com/google/mediapipe/tasks-text/maven-metadata.xml \
+            | python3 -c "import sys,xml.etree.ElementTree as ET; r=ET.fromstring(sys.stdin.read()); print(r.findtext('./versioning/release') or r.findtext('./versioning/latest') or r.findall('./versioning/versions/version')[-1].text)")
+          echo "Latest published tasks-text: $LATEST"
+          echo "version=$LATEST" >> "$GITHUB_OUTPUT"
+
+      - name: Cache verified model assets
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: examples/text_embedder/android/app/src/main/assets
+          key: text-embedder-models-${{ hashFiles('examples/text_embedder/android/app/download_models.gradle') }}
+
+      - name: Download and verify real models
+        working-directory: examples/text_embedder/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :app:verifyModels --no-daemon --stacktrace
+
+      - name: Enable KVM group permissions
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          test -w /dev/kvm
+
+      - name: Run instrumented tests against latest published version
+        uses: reactivecircus/android-emulator-runner@e93c997dcab69054e999e3924af3d21c4a736e13 # v2.9.0
+        env:
+          CANARY_VERSION: ${{ steps.latest.outputs.version }}
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: true
+          working-directory: examples/text_embedder/android
+          script: ./gradlew :app:connectedDebugAndroidTest -PmediapipeVersion="$CANARY_VERSION" --no-daemon --stacktrace

@@ -2,47 +2,45 @@
 
 ### Overview
 
-This is an app that compare the similarity between two texts, with the 
-option to use a [Mobile Bert](https://storage.googleapis.com/mediapipe-tasks/text_embedder/mobilebert_embedding_with_metadata.tflite),
-or [Average word-embedding](https://storage.googleapis.com/mediapipe-tasks/text_embedder/regex_embedder_with_metadata.tflite)
-model. The model files are downloaded by a Gradle script when you build and run
-the app. You don't need to do any steps to download TFLite models into the
-project explicitly unless you wish to use your own models. If you do use your
-own models, place them into the app's *assets* directory.
-
-This application should be run on a physical Android device to take advantage of
-the physical camera, though the gallery tab will enable you to use an emulator
-for opening locally stored files.
+This Android app compares the semantic similarity of two text inputs on-device
+using the MediaPipe `TextEmbedder` task, with a choice of
+[MobileBERT](https://storage.googleapis.com/mediapipe-models/text_embedder/bert_embedder/float32/1/bert_embedder.tflite)
+or
+[Average Word](https://storage.googleapis.com/mediapipe-models/text_embedder/average_word_embedder/float32/1/average_word_embedder.tflite)
+embedding models.
 
 ![Text Embedder Demo](textembedder.png?raw=true "Text Embedder Demo")
 
-## Build the demo using Android Studio
+Models are downloaded automatically during Gradle build via
+`app/download_models.gradle` with SHA-256 checksum verification (`./gradlew verifyModels`).
+Shared dependency versions, Material 3 UI components, and test utilities live in
+[`android-common/`](../../../android-common).
+
+## Build and run
 
 ### Prerequisites
 
-* The **[Android Studio](https://developer.android.com/studio/index.html)**
-  IDE. This sample has been tested on Android Studio Dolphin.
+* **[Android Studio](https://developer.android.com/studio/index.html)** (JDK 17 or newer).
+* An Android device or emulator running API level 24 (Android 7.0) or higher.
 
-* A physical Android device with a minimum OS version of SDK 24 (Android 7.0 -
-  Nougat) with developer mode enabled. The process of enabling developer mode
-  may vary by device. You may also use an Android emulator with more limited
-  functionality.
+### Building from Android Studio
 
-### Building
+1. Open `examples/text_embedder/android` in Android Studio.
+2. Wait for Gradle sync to finish (dependencies are resolved from
+   `android-common/gradle/libs.versions.toml`).
+3. Click **Run** to deploy to your device or emulator.
 
-* Open Android Studio. From the Welcome screen, select Open an existing Android
-  Studio project.
+### Building and testing from the command line
 
-* From the Open File or Project window that appears, navigate to and select the
-  mediapipe/examples/text_embedder/android directory. Click OK. You may be
-  asked if you trust the project. Select Trust.
+```bash
+cd examples/text_embedder/android
 
-* If it asks you to do a Gradle Sync, click OK.
+# Download and verify model checksums, build the debug APK, and run unit tests
+./gradlew :app:verifyModels :app:assembleDebug :android-common:testing:testDebugUnitTest
 
-* With your Android device connected to your computer and developer mode
-  enabled, click on the green Run arrow in Android Studio.
+# Run real-model quality and end-to-end Compose UI tests on a connected device/emulator
+./gradlew :app:connectedDebugAndroidTest
 
-### Models used
-
-Downloading, extraction, and placing the models into the *assets* folder is
-managed automatically by the **download.gradle** file.
+# Test against a specific MediaPipe Tasks version (canary / release verification)
+./gradlew :app:connectedDebugAndroidTest -PmediapipeVersion=1.2.2
+```
