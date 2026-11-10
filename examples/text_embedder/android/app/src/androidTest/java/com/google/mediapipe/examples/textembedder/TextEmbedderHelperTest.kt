@@ -1,11 +1,11 @@
 /*
- * Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+ * Copyright 2026 The MediaPipe Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *             http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,41 +16,188 @@
 
 package com.google.mediapipe.examples.textembedder
 
+import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-
+import com.google.mediapipe.examples.common.testing.EmbeddingMetrics
+import com.google.mediapipe.examples.common.testing.LatencyRecorder
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
-import org.junit.Assert.assertEquals
-import org.junit.Before
-
-/**
- * Instrumented test, which will execute on an Android device.
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
 @RunWith(AndroidJUnit4::class)
 class TextEmbedderHelperTest {
+
     companion object {
+        private const val TAG = "TextEmbedderHelperTest"
         private const val TEXT_TEST_ONE =
-            "Da Nang is a coastal city with a 60-km long shoreline. With smooth and sandy beaches running across the coast, Da Nang beach is voted by Forbes (U.S.) to be 1 of 6 most beautiful beaches in the world."
+            "Da Nang is a coastal city with a 60-km long shoreline. With smooth and sandy beaches " +
+                "running across the coast, Da Nang beach is voted by Forbes (U.S.) to be 1 of 6 " +
+                "most beautiful beaches in the world."
         private const val TEXT_TEST_TWO =
-            "Da Nang is the commercial and educational centre of Central Vietnam and is the largest city in the region. It has a well-sheltered, easily accessible port, and its location on National Route 1 and the North–South Railway makes it a transport hub."
-        private const val EXPECTED_SIMILARITY = 0.9
-    }
-
-    private lateinit var embedderHelper: TextEmbedderHelper
-
-    @Before
-    fun setup() {
-        embedderHelper =
-            TextEmbedderHelper(ApplicationProvider.getApplicationContext())
+            "Da Nang is the commercial and educational centre of Central Vietnam and is the " +
+                "largest city in the region. It has a well-sheltered, easily accessible port, " +
+                "and its location on National Route 1 and the North–South Railway makes it a " +
+                "transport hub."
+        private const val TEXT_UNRELATED =
+            "Quantum mechanics describes how subatomic particles behave at atomic scales."
+        private const val EXPECTED_MOBILE_BERT_SIMILARITY = 0.9899
+        private const val EXPECTED_MOBILE_BERT_DIMS = 512
+        private const val EXPECTED_USE_SIMILARITY = 0.7682
+        private const val EXPECTED_USE_DIMS = 100
     }
 
     @Test
-    fun embeddingResultsWithinAcceptedRange() {
-        val bundleResult = embedderHelper.compare(TEXT_TEST_ONE, TEXT_TEST_TWO)
-        assertEquals(EXPECTED_SIMILARITY, bundleResult?.similarity ?: 0.0, 0.09)
+    fun mobileBert_embeddingQualityAndRanking() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val recorder = LatencyRecorder("text_embedder_mobile_bert")
+        recorder.putMetadata("model", TextEmbedderHelper.MODEL_MOBILE_BERT_PATH)
+        recorder.putMetadata("delegate", "CPU")
+
+        val helper =
+            recorder.measure("model_load_ms") {
+                TextEmbedderHelper(
+                    context = context,
+                    currentDelegate = TextEmbedderHelper.DELEGATE_CPU,
+                    currentModel = TextEmbedderHelper.MODEL_MOBILE_BERT,
+                )
+            }
+        try {
+            assertTrue("MobileBERT failed to initialize", helper.isReady)
+
+            val related =
+                recorder.measure("compare_related_ms") {
+                    helper.compare(TEXT_TEST_ONE, TEXT_TEST_TWO)
+                }
+            assertNotNull(related)
+            related!!
+            Log.i(TAG, "MobileBERT related=$related")
+
+            EmbeddingMetrics.assertSimilarityClose(
+                expected = EXPECTED_MOBILE_BERT_SIMILARITY,
+                actual = related.similarity,
+                tolerance = 0.02,
+                label = "mobileBert.daNang",
+            )
+            assertEquals(EXPECTED_MOBILE_BERT_DIMS, related.dimensions)
+
+            val identical = helper.compare(TEXT_TEST_ONE, TEXT_TEST_ONE)!!
+            EmbeddingMetrics.assertSimilarityClose(
+                1.0,
+                identical.similarity,
+                tolerance = 1e-4,
+                label = "mobileBert.identical",
+            )
+
+            val reversed = helper.compare(TEXT_TEST_TWO, TEXT_TEST_ONE)!!
+            EmbeddingMetrics.assertSimilarityClose(
+                related.similarity,
+                reversed.similarity,
+                tolerance = 1e-5,
+                label = "mobileBert.symmetry",
+            )
+
+            val unrelated = helper.compare(TEXT_TEST_ONE, TEXT_UNRELATED)!!
+            Log.i(TAG, "MobileBERT unrelated=$unrelated")
+            assertTrue(
+                "Expected related (${related.similarity}) > unrelated (${unrelated.similarity}) + 0.10",
+                related.similarity > unrelated.similarity + 0.10,
+            )
+
+            val presetsById = DefaultPresets.associateBy { it.id }
+            val similarPreset = presetsById.getValue("similar")
+            val unrelatedPreset = presetsById.getValue("unrelated")
+            val similarPresetScore =
+                helper.compare(similarPreset.firstText, similarPreset.secondText)!!.similarity
+            val unrelatedPresetScore =
+                helper.compare(unrelatedPreset.firstText, unrelatedPreset.secondText)!!.similarity
+            assertTrue(
+                "Expected preset 'similar' ($similarPresetScore) > 0.90",
+                similarPresetScore > 0.90,
+            )
+            assertTrue(
+                "Expected preset 'unrelated' ($unrelatedPresetScore) < 0.50",
+                unrelatedPresetScore < 0.50,
+            )
+
+            val emb = helper.embed(TEXT_TEST_ONE)!!
+            assertTrue(EmbeddingMetrics.l2Norm(emb.floatEmbedding()) > 0.0)
+            repeat(5) {
+                recorder.measure("compare_steady_ms") {
+                    helper.compare(TEXT_TEST_ONE, TEXT_TEST_TWO)
+                }
+            }
+            recorder.flush(context)
+        } finally {
+            helper.clearTextEmbedder()
+        }
+    }
+
+    @Test
+    fun universalSentenceEncoder_embeddingQualityAndRanking() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val recorder = LatencyRecorder("text_embedder_universal_sentence_encoder")
+        recorder.putMetadata("model", TextEmbedderHelper.MODEL_UNIVERSAL_SENTENCE_ENCODER_PATH)
+        recorder.putMetadata("delegate", "CPU")
+
+        val helper =
+            recorder.measure("model_load_ms") {
+                TextEmbedderHelper(
+                    context = context,
+                    currentDelegate = TextEmbedderHelper.DELEGATE_CPU,
+                    currentModel = TextEmbedderHelper.MODEL_UNIVERSAL_SENTENCE_ENCODER,
+                )
+            }
+        try {
+            assertTrue("Universal Sentence Encoder failed to initialize", helper.isReady)
+
+            val related =
+                recorder.measure("compare_related_ms") {
+                    helper.compare(TEXT_TEST_ONE, TEXT_TEST_TWO)
+                }!!
+            val unrelated = helper.compare(TEXT_TEST_ONE, TEXT_UNRELATED)!!
+            val identical = helper.compare(TEXT_TEST_ONE, TEXT_TEST_ONE)!!
+            Log.i(TAG, "USE related=$related unrelated=$unrelated")
+
+            EmbeddingMetrics.assertSimilarityClose(
+                expected = EXPECTED_USE_SIMILARITY,
+                actual = related.similarity,
+                tolerance = 0.02,
+                label = "use.daNang",
+            )
+            assertEquals(1.0, identical.similarity, 1e-4)
+            assertEquals(EXPECTED_USE_DIMS, related.dimensions)
+            assertTrue(
+                "Expected related (${related.similarity}) > unrelated (${unrelated.similarity}) + 0.20",
+                related.similarity > unrelated.similarity + 0.20,
+            )
+
+            val presetsById = DefaultPresets.associateBy { it.id }
+            val similarPreset = presetsById.getValue("similar")
+            val unrelatedPreset = presetsById.getValue("unrelated")
+            val similarPresetScore =
+                helper.compare(similarPreset.firstText, similarPreset.secondText)!!.similarity
+            val unrelatedPresetScore =
+                helper.compare(unrelatedPreset.firstText, unrelatedPreset.secondText)!!.similarity
+            assertTrue(
+                "Expected USE preset 'similar' ($similarPresetScore) > 0.90",
+                similarPresetScore > 0.90,
+            )
+            assertTrue(
+                "Expected USE preset 'unrelated' ($unrelatedPresetScore) < 0.65",
+                unrelatedPresetScore < 0.65,
+            )
+
+            repeat(5) {
+                recorder.measure("compare_steady_ms") {
+                    helper.compare(TEXT_TEST_ONE, TEXT_TEST_TWO)
+                }
+            }
+            recorder.flush(context)
+        } finally {
+            helper.clearTextEmbedder()
+        }
     }
 }

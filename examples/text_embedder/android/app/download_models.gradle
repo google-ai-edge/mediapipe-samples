@@ -1,11 +1,11 @@
 /*
- * Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+ * Copyright 2026 The MediaPipe Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *             http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,16 +14,73 @@
  * limitations under the License.
  */
 
+import java.security.MessageDigest
+
+def sha256Hex = { File file ->
+    def digest = MessageDigest.getInstance('SHA-256')
+    file.withInputStream { is ->
+        byte[] buf = new byte[8192]
+        int read
+        while ((read = is.read(buf)) > 0) {
+            digest.update(buf, 0, read)
+        }
+    }
+    digest.digest().collect { String.format('%02x', it) }.join('')
+}
+
+def mobileBertFile = file(project.ext.ASSET_DIR + '/mobile_bert.tflite')
+def mobileBertSha256 = '02ae6279faf86c2cd4ff18f61876c878bcc0b572b472f0678897a184c4ac7ef6'
+
+def useFile = file(project.ext.ASSET_DIR + '/universal_sentence_encoder.tflite')
+def useSha256 = '89ad3c74175dd8caa398cc22b657296d94302d20c525c12b58b29420f7249749'
+
 task downloadMobileBertModel(type: Download) {
     src 'https://storage.googleapis.com/mediapipe-models/text_embedder/bert_embedder/float32/1/bert_embedder.tflite'
     dest project.ext.ASSET_DIR + '/mobile_bert.tflite'
     overwrite false
+    onlyIf { !mobileBertFile.exists() }
+    doLast {
+        def actual = sha256Hex(mobileBertFile)
+        if (actual != mobileBertSha256) {
+            mobileBertFile.delete()
+            throw new GradleException("Checksum mismatch for mobile_bert.tflite: expected $mobileBertSha256, got $actual")
+        }
+    }
 }
 
-task downloadAverageWordModel(type: Download) {
-    src 'https://storage.googleapis.com/mediapipe-models/text_embedder/average_word_embedder/float32/1/average_word_embedder.tflite'
-    dest project.ext.ASSET_DIR + '/average_word.tflite'
+task downloadUniversalSentenceEncoderModel(type: Download) {
+    src 'https://storage.googleapis.com/mediapipe-models/text_embedder/universal_sentence_encoder/float32/1/universal_sentence_encoder.tflite'
+    dest project.ext.ASSET_DIR + '/universal_sentence_encoder.tflite'
     overwrite false
+    onlyIf { !useFile.exists() }
+    doLast {
+        def actual = sha256Hex(useFile)
+        if (actual != useSha256) {
+            useFile.delete()
+            throw new GradleException("Checksum mismatch for universal_sentence_encoder.tflite: expected $useSha256, got $actual")
+        }
+    }
 }
 
-preBuild.dependsOn downloadMobileBertModel, downloadAverageWordModel
+task verifyModels {
+    dependsOn downloadMobileBertModel, downloadUniversalSentenceEncoderModel
+    doLast {
+        [
+            [mobileBertFile, mobileBertSha256, 'mobile_bert.tflite'],
+            [useFile, useSha256, 'universal_sentence_encoder.tflite'],
+        ].each { entry ->
+            File f = entry[0]
+            String expected = entry[1]
+            String name = entry[2]
+            if (!f.exists() || f.length() == 0L) {
+                throw new GradleException("Model $name is missing or empty (stubbed?). Delete it and re-run to download.")
+            }
+            def actual = sha256Hex(f)
+            if (actual != expected) {
+                throw new GradleException("Checksum mismatch for $name: expected $expected, got $actual")
+            }
+        }
+    }
+}
+
+preBuild.dependsOn downloadMobileBertModel, downloadUniversalSentenceEncoderModel
