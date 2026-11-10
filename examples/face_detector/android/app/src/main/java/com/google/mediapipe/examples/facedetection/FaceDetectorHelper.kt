@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+ * Copyright 2026 The MediaPipe Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.google.mediapipe.examples.facedetection
 
 import android.content.Context
@@ -32,18 +33,27 @@ import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetector
 import com.google.mediapipe.tasks.vision.facedetector.FaceDetectorResult
 
+/**
+ * Helper that wraps [FaceDetector] lifecycle, delegate/threshold options, and image/video/camera
+ * inference.
+ */
 class FaceDetectorHelper(
     var threshold: Float = THRESHOLD_DEFAULT,
     var currentDelegate: Int = DELEGATE_CPU,
+    var currentModel: Int = MODEL_SHORT_RANGE,
     var runningMode: RunningMode = RunningMode.IMAGE,
     val context: Context,
-    // The listener is only used when running in RunningMode.LIVE_STREAM
-    var faceDetectorListener: DetectorListener? = null
+    var faceDetectorListener: DetectorListener? = null,
 ) {
-
-    // For this example this needs to be a var so it can be reset on changes. If the faceDetector
-    // will not change, a lazy val would be preferable.
     private var faceDetector: FaceDetector? = null
+
+    /** Duration of the most recent successful [setupFaceDetector] call, in milliseconds. */
+    @Volatile
+    var setupDurationMs: Long = 0L
+        private set
+
+    val isClosed: Boolean
+        get() = faceDetector == null
 
     init {
         setupFaceDetector()
@@ -54,216 +64,170 @@ class FaceDetectorHelper(
         faceDetector = null
     }
 
-    // Initialize the face detector using current settings on the
-    // thread that is using it. CPU can be used with detectors
-    // that are created on the main thread and used on a background thread, but
-    // the GPU delegate needs to be used on the thread that initialized the detector
-    fun setupFaceDetector() {
-        // Set general detection options, including number of used threads
-        val baseOptionsBuilder = BaseOptions.builder()
+    /**
+     * Initializes [FaceDetector] on the calling thread. When using [DELEGATE_GPU], callers should
+     * invoke this on the same thread that submits frames.
+     */
+    fun setupFaceDetector(): Boolean {
+        clearFaceDetector()
+        val startTime = SystemClock.uptimeMillis()
 
-        // Use the specified hardware for running the model. Default to CPU
-        when (currentDelegate) {
-            DELEGATE_CPU -> {
-                baseOptionsBuilder.setDelegate(Delegate.CPU)
-            }
-            DELEGATE_GPU -> {
-                // Is there a check for GPU being supported?
-                baseOptionsBuilder.setDelegate(Delegate.GPU)
-            }
-        }
-
-        val modelName = "face_detection_short_range.tflite"
-
-        baseOptionsBuilder.setModelAssetPath(modelName)
-
-        // Check if runningMode is consistent with faceDetectorListener
-        when (runningMode) {
-            RunningMode.LIVE_STREAM -> {
-                if (faceDetectorListener == null) {
-                    throw IllegalStateException(
-                        "faceDetectorListener must be set when runningMode is LIVE_STREAM."
-                    )
+        val modelAsset =
+            when (currentModel) {
+                MODEL_SHORT_RANGE -> MODEL_SHORT_RANGE_NAME
+                MODEL_FULL_RANGE -> MODEL_FULL_RANGE_NAME
+                else -> {
+                    faceDetectorListener?.onError("Unsupported model index: $currentModel")
+                    return false
                 }
             }
-            RunningMode.IMAGE,
-            RunningMode.VIDEO -> {
-                // no-op
+        val baseOptionsBuilder = BaseOptions.builder().setModelAssetPath(modelAsset)
+        when (currentDelegate) {
+            DELEGATE_CPU -> baseOptionsBuilder.setDelegate(Delegate.CPU)
+            DELEGATE_GPU -> baseOptionsBuilder.setDelegate(Delegate.GPU)
+            else -> {
+                faceDetectorListener?.onError("Unsupported delegate index: $currentDelegate")
+                return false
             }
         }
 
-        try {
+        if (runningMode == RunningMode.LIVE_STREAM && faceDetectorListener == null) {
+            throw IllegalStateException(
+                "faceDetectorListener must be set when runningMode is LIVE_STREAM."
+            )
+        }
+
+        return try {
             val optionsBuilder =
                 FaceDetector.FaceDetectorOptions.builder()
                     .setBaseOptions(baseOptionsBuilder.build())
                     .setMinDetectionConfidence(threshold)
                     .setRunningMode(runningMode)
 
-            when (runningMode) {
-                RunningMode.IMAGE,
-                RunningMode.VIDEO -> optionsBuilder.setRunningMode(runningMode)
-                RunningMode.LIVE_STREAM ->
-                    optionsBuilder.setRunningMode(runningMode)
-                        .setResultListener(this::returnLivestreamResult)
-                        .setErrorListener(this::returnLivestreamError)
+            if (runningMode == RunningMode.LIVE_STREAM) {
+                optionsBuilder
+                    .setResultListener(this::returnLivestreamResult)
+                    .setErrorListener(this::returnLivestreamError)
             }
 
-            val options = optionsBuilder.build()
-            faceDetector = FaceDetector.createFromOptions(context, options)
+            faceDetector = FaceDetector.createFromOptions(context, optionsBuilder.build())
+            setupDurationMs = SystemClock.uptimeMillis() - startTime
+            true
         } catch (e: IllegalStateException) {
-            faceDetectorListener?.onError(
-                "Face detector failed to initialize. See error logs for details"
-            )
-            Log.e(TAG, "TFLite failed to load model with error: " + e.message)
+            val detail = e.message ?: "IllegalStateException"
+            faceDetectorListener?.onError("Face detector failed to initialize: $detail")
+            Log.e(TAG, "TFLite failed to load model with error: $detail", e)
+            false
         } catch (e: RuntimeException) {
+            val detail = e.message ?: "RuntimeException"
+            val errorCode = if (currentDelegate == DELEGATE_GPU) GPU_ERROR else OTHER_ERROR
             faceDetectorListener?.onError(
-                "Face detector failed to initialize. See error logs for " +
-                        "details", GPU_ERROR
+                if (errorCode == GPU_ERROR) {
+                    "This model or device does not support GPU acceleration."
+                } else {
+                    "Face detector failed to initialize: $detail"
+                },
+                errorCode,
             )
-            Log.e(
-                TAG,
-                "Face detector failed to load model with error: " + e.message
-            )
+            Log.e(TAG, "Face detector failed to load model with error: $detail", e)
+            false
         }
     }
 
-    // Return running status of recognizer helper
-    fun isClosed(): Boolean {
-        return faceDetector == null
-    }
-
-    // Accepts the URI for a video file loaded from the user's gallery and attempts to run
-    // face detection inference on the video. This process will evaluate every frame in
-    // the video and attach the results to a bundle that will be returned.
-    fun detectVideoFile(
-        videoUri: Uri,
-        inferenceIntervalMs: Long
-    ): ResultBundle? {
-
+    /** Runs face detection across sampled frames of the video at [videoUri]. */
+    fun detectVideoFile(videoUri: Uri, inferenceIntervalMs: Long): ResultBundle? {
         if (runningMode != RunningMode.VIDEO) {
             throw IllegalArgumentException(
-                "Attempting to call detectVideoFile" +
-                        " while not using RunningMode.VIDEO"
+                "Attempting to call detectVideoFile while not using RunningMode.VIDEO"
             )
         }
+        val detector = faceDetector ?: return null
 
-        if (faceDetector == null) return null
-
-        // Inference time is the difference between the system time at the start and finish of the
-        // process
         val startTime = SystemClock.uptimeMillis()
-
-        var didErrorOccurred = false
-
-        // Load frames from the video and run the face detection model.
+        var didErrorOccur = false
         val retriever = MediaMetadataRetriever()
-        retriever.setDataSource(context, videoUri)
-        val videoLengthMs =
-            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                ?.toLong()
-
-        // Note: We need to read width/height from frame instead of getting the width/height
-        // of the video directly because MediaRetriever returns frames that are smaller than the
-        // actual dimension of the video file.
-        val firstFrame = retriever.getFrameAtTime(0)
-        val width = firstFrame?.width
-        val height = firstFrame?.height
-
-        // If the video is invalid, returns a null detection result
-        if ((videoLengthMs == null) || (width == null) || (height == null)) return null
-
-        // Next, we'll get one frame every frameInterval ms, then run detection on these frames.
         val resultList = mutableListOf<FaceDetectorResult>()
-        val numberOfFrameToRead = videoLengthMs.div(inferenceIntervalMs)
+        val width: Int
+        val height: Int
+        val frameCount: Long
 
-        for (i in 0..numberOfFrameToRead) {
-            val timestampMs = i * inferenceIntervalMs // ms
+        try {
+            retriever.setDataSource(context, videoUri)
+            val videoLengthMs =
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
+            val firstFrame = retriever.getFrameAtTime(0)
+            if (videoLengthMs == null || firstFrame == null) {
+                return null
+            }
+            width = firstFrame.width
+            height = firstFrame.height
+            frameCount = (videoLengthMs / inferenceIntervalMs).coerceAtLeast(1L)
 
-            retriever
-                .getFrameAtTime(
-                    timestampMs * 1000, // convert from ms to micro-s
-                    MediaMetadataRetriever.OPTION_CLOSEST
-                )
-                ?.let { frame ->
-                    // Convert the video frame to ARGB_8888 which is required by the MediaPipe
-                    val argb8888Frame =
+            for (i in 0..frameCount) {
+                val timestampMs = i * inferenceIntervalMs
+                val frame = retriever.getFrameAtTime(timestampMs * 1000L, MediaMetadataRetriever.OPTION_CLOSEST)
+                if (frame != null) {
+                    val argbFrame =
                         if (frame.config == Bitmap.Config.ARGB_8888) frame
                         else frame.copy(Bitmap.Config.ARGB_8888, false)
-
-                    // Convert the input Bitmap face to an MPImage face to run inference
-                    val mpImage = BitmapImageBuilder(argb8888Frame).build()
-
-                    // Run face detection using MediaPipe Face Detector API
-                    faceDetector?.detectForVideo(mpImage, timestampMs)
-                        ?.let { detectionResult ->
-                            resultList.add(detectionResult)
-                        }
-                        ?: {
-                            didErrorOccurred = true
-                            faceDetectorListener?.onError(
-                                "ResultBundle could not be returned" +
-                                        " in detectVideoFile"
-                            )
-                        }
-                }
-                ?: run {
-                    didErrorOccurred = true
+                    val mpImage = BitmapImageBuilder(argbFrame).build()
+                    val detection = detector.detectForVideo(mpImage, timestampMs)
+                    if (detection != null) {
+                        resultList.add(detection)
+                    } else {
+                        didErrorOccur = true
+                        faceDetectorListener?.onError("Result could not be returned in detectVideoFile")
+                    }
+                } else {
+                    didErrorOccur = true
                     faceDetectorListener?.onError(
-                        "Frame at specified time could not be" +
-                                " retrieved when detecting in video."
+                        "Frame at specified time could not be retrieved when detecting in video."
                     )
                 }
+            }
+        } finally {
+            retriever.release()
         }
 
-        retriever.release()
-
         val inferenceTimePerFrameMs =
-            (SystemClock.uptimeMillis() - startTime).div(numberOfFrameToRead)
+            ((SystemClock.uptimeMillis() - startTime) / (frameCount + 1L)).coerceAtLeast(0L)
 
-        return if (didErrorOccurred) {
+        return if (didErrorOccur) {
             null
         } else {
-            ResultBundle(resultList, inferenceTimePerFrameMs, height, width)
+            ResultBundle(resultList, inferenceTimePerFrameMs, height, width, setupDurationMs)
         }
     }
 
-    // Runs face detection on live streaming cameras frame-by-frame and returns the results
-    // asynchronously to the caller.
-    fun detectLivestreamFrame(imageProxy: ImageProxy) {
-
+    /** Runs face detection asynchronously on a CameraX RGBA_8888 [ImageProxy] frame. */
+    fun detectLivestreamFrame(imageProxy: ImageProxy, isFrontCamera: Boolean = true) {
         if (runningMode != RunningMode.LIVE_STREAM) {
+            imageProxy.close()
             throw IllegalArgumentException(
-                "Attempting to call detectLivestreamFrame" +
-                        " while not using RunningMode.LIVE_STREAM"
+                "Attempting to call detectLivestreamFrame while not using RunningMode.LIVE_STREAM"
             )
         }
 
         val frameTime = SystemClock.uptimeMillis()
+        val width: Int
+        val height: Int
+        val rotationDegrees: Int
+        val bitmapBuffer: Bitmap
 
-        // Copy out RGB bits from the frame to a bitmap buffer
-        val bitmapBuffer =
-            Bitmap.createBitmap(
-                imageProxy.width,
-                imageProxy.height,
-                Bitmap.Config.ARGB_8888
-            )
-        imageProxy.use { bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer) }
-        imageProxy.close()
-        // Rotate the frame received from the camera to be in the same direction as it'll be shown
+        imageProxy.use { proxy ->
+            width = proxy.width
+            height = proxy.height
+            rotationDegrees = proxy.imageInfo.rotationDegrees
+            bitmapBuffer = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            bitmapBuffer.copyPixelsFromBuffer(proxy.planes[0].buffer)
+        }
+
         val matrix =
             Matrix().apply {
-                postRotate(imageProxy.imageInfo.rotationDegrees.toFloat())
-
-                // postScale is used here because we're forcing using the front camera lens
-                // This can be set behind a bool if the camera is togglable.
-                // Not using postScale here with the front camera causes the horizontal axis
-                // to be mirrored.
-                postScale(
-                    -1f,
-                    1f,
-                    imageProxy.width.toFloat(),
-                    imageProxy.height.toFloat()
-                )
+                postRotate(rotationDegrees.toFloat())
+                if (isFrontCamera) {
+                    postScale(-1f, 1f, width / 2f, height / 2f)
+                }
             }
 
         val rotatedBitmap =
@@ -274,106 +238,90 @@ class FaceDetectorHelper(
                 bitmapBuffer.width,
                 bitmapBuffer.height,
                 matrix,
-                true
+                true,
             )
+        if (rotatedBitmap != bitmapBuffer) {
+            bitmapBuffer.recycle()
+        }
 
-        // Convert the input Bitmap face to an MPImage face to run inference
         val mpImage = BitmapImageBuilder(rotatedBitmap).build()
-
         detectAsync(mpImage, frameTime)
     }
 
-    // Run face detection using MediaPipe Face Detector API
     @VisibleForTesting
     fun detectAsync(mpImage: MPImage, frameTime: Long) {
-        // As we're using running mode LIVE_STREAM, the detection result will be returned in
-        // returnLivestreamResult function
         faceDetector?.detectAsync(mpImage, frameTime)
     }
 
-    // Return the detection result to this FaceDetectorHelper's caller
-    private fun returnLivestreamResult(
-        result: FaceDetectorResult,
-        input: MPImage
-    ) {
+    private fun returnLivestreamResult(result: FaceDetectorResult, input: MPImage) {
         val finishTimeMs = SystemClock.uptimeMillis()
         val inferenceTime = finishTimeMs - result.timestampMs()
-
         faceDetectorListener?.onResults(
             ResultBundle(
-                listOf(result),
-                inferenceTime,
-                input.height,
-                input.width
+                results = listOf(result),
+                inferenceTime = inferenceTime,
+                inputImageHeight = input.height,
+                inputImageWidth = input.width,
+                loadTimeMs = setupDurationMs,
             )
         )
     }
 
-    // Return errors thrown during detection to this FaceDetectorHelper's caller
     private fun returnLivestreamError(error: RuntimeException) {
-        faceDetectorListener?.onError(
-            error.message ?: "An unknown error has occurred"
-        )
+        faceDetectorListener?.onError(error.message ?: "An unknown error has occurred")
     }
 
-    // Accepted a Bitmap and runs face detection inference on it to return results back
-    // to the caller
+    /** Detects faces in a static [Bitmap], converting to ARGB_8888 if needed. */
     fun detectImage(image: Bitmap): ResultBundle? {
-
         if (runningMode != RunningMode.IMAGE) {
             throw IllegalArgumentException(
-                "Attempting to call detectImage" +
-                        " while not using RunningMode.IMAGE"
+                "Attempting to call detectImage while not using RunningMode.IMAGE"
             )
         }
+        val detector = faceDetector ?: return null
 
-        if (faceDetector == null) return null
+        val argbImage =
+            if (image.config == Bitmap.Config.ARGB_8888) image
+            else image.copy(Bitmap.Config.ARGB_8888, false)
 
-        // Inference time is the difference between the system time at the start and finish of the
-        // process
         val startTime = SystemClock.uptimeMillis()
-
-        // Convert the input Bitmap face to an MPImage face to run inference
-        val mpImage = BitmapImageBuilder(image).build()
-
-        // Run face detection using MediaPipe Face Detector API
-        faceDetector?.detect(mpImage)?.also { detectionResult ->
-            val inferenceTimeMs = SystemClock.uptimeMillis() - startTime
-            return ResultBundle(
-                listOf(detectionResult),
-                inferenceTimeMs,
-                image.height,
-                image.width
-            )
-        }
-
-        // If faceDetector?.detect() returns null, this is likely an error. Returning null
-        // to indicate this.
-        return null
+        val mpImage = BitmapImageBuilder(argbImage).build()
+        val detectionResult = detector.detect(mpImage) ?: return null
+        val inferenceTimeMs = SystemClock.uptimeMillis() - startTime
+        return ResultBundle(
+            results = listOf(detectionResult),
+            inferenceTime = inferenceTimeMs,
+            inputImageHeight = argbImage.height,
+            inputImageWidth = argbImage.width,
+            loadTimeMs = setupDurationMs,
+        )
     }
 
-    // Wraps results from inference, the time it takes for inference to be performed, and
-    // the input image and height for properly scaling UI to return back to callers
     data class ResultBundle(
         val results: List<FaceDetectorResult>,
         val inferenceTime: Long,
         val inputImageHeight: Int,
         val inputImageWidth: Int,
+        val loadTimeMs: Long = 0L,
     )
 
     companion object {
         const val DELEGATE_CPU = 0
         const val DELEGATE_GPU = 1
+        const val MODEL_SHORT_RANGE = 0
+        const val MODEL_FULL_RANGE = 1
         const val THRESHOLD_DEFAULT = 0.5F
         const val OTHER_ERROR = 0
         const val GPU_ERROR = 1
-
+        const val MODEL_SHORT_RANGE_NAME = "face_detection_short_range.tflite"
+        const val MODEL_FULL_RANGE_NAME = "face_detection_full_range.tflite"
+        const val SAMPLE_IMAGE_ASSET = "sample_faces.jpg"
         const val TAG = "FaceDetectorHelper"
     }
 
-    // Used to pass results or errors back to the calling class
     interface DetectorListener {
         fun onError(error: String, errorCode: Int = OTHER_ERROR)
+
         fun onResults(resultBundle: ResultBundle)
     }
 }
