@@ -1,5 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
-    ~ Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+    ~ Copyright 2026 The MediaPipe Authors. All Rights Reserved.
     ~
     ~ Licensed under the Apache License, Version 2.0 (the "License");
     ~ you may not use this file except in compliance with the License.
@@ -14,19 +15,24 @@
     ~ limitations under the License.
 -->
 <resources>
-    <string name="app_name">MP Text Classifier</string>
-
-    <string name="classify_btn_text">Classify</string>
-    <string name="default_edit_text">Google has released 24 versions of the Android operating
-        system since 2008 and continues to make substantial investments to develop, grow,
-        and improve the OS.</string>
-    <string name="alt_bottom_sheet_chevron">Bottom sheet expandable indicator</string>
-
-    <string name="label_inference_time">Inference Time</string>
-    <string name="label_models">ML Model</string>
-
-    <string name="model_wordvec">AverageWordVec</string>
-    <string name="model_mobilebert">MobileBERT</string>
-
-    <string name="result_display_text">%1$s (%2$f)</string>
+    <string name="app_name">Text Classifier</string>
+    <string name="label_examples">Try an example</string>
+    <string name="label_input_text">Input text</string>
+    <string name="default_edit_text">Google has released 24 versions of the Android operating system since 2008 and continues to make substantial investments to develop, grow, and improve the OS.</string>
+    <string name="hint_input_text">Enter text to analyze sentiment…</string>
+    <string name="classify_btn_text">Classify sentiment</string>
+    <string name="status_loading_model">Loading model…</string>
+    <string name="status_classifying">Classifying…</string>
+    <string name="label_classification">Sentiment analysis</string>
+    <string name="label_confidence_breakdown">Confidence breakdown</string>
+    <string name="label_inference_time">Inference</string>
+    <string name="label_top_score">Confidence</string>
+    <string name="label_models">Model</string>
+    <string name="settings_title">Model Settings</string>
+    <string name="label_accelerator_cpu">Accelerator: CPU</string>
+    <string name="delegate_hint">Text classification models run on CPU (TFLite GPU delegate is not supported for these graphs).</string>
+    <string name="action_done">Done</string>
+    <string name="action_retry">Retry</string>
+    <string name="cd_open_settings">Open model settings</string>
+    <string name="cd_clear_text">Clear text</string>
 </resources>
