@@ -1,5 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
-    ~ Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+    ~ Copyright 2026 The MediaPipe Authors. All Rights Reserved.
     ~
     ~ Licensed under the Apache License, Version 2.0 (the "License");
     ~ you may not use this file except in compliance with the License.
@@ -15,11 +16,26 @@
 -->
 <resources>
     <string name="app_name">Language Detector</string>
-
-    <string name="detect_btn_text">Detect</string>
+    <string name="label_examples">Try an example</string>
+    <string name="label_input_text">Input text</string>
     <string name="default_edit_text">你好！我爱小猫</string>
-    <string name="alt_bottom_sheet_chevron">Bottom sheet expandable indicator</string>
-
-    <string name="label_inference_time">Inference Time</string>
-    <string name="result_display_text">(%1$s) : (%2$f)</string>
+    <string name="hint_input_text">Enter text in any language…</string>
+    <string name="detect_btn_text">Detect language</string>
+    <string name="status_loading_model">Loading model…</string>
+    <string name="status_detecting">Detecting…</string>
+    <string name="label_detected_language">Detected language</string>
+    <string name="label_top_predictions">Top predictions</string>
+    <string name="label_no_confident_match">No language met the confidence threshold.</string>
+    <string name="label_inference_time">Inference</string>
+    <string name="label_top_score">Confidence</string>
+    <string name="label_code">Code</string>
+    <string name="settings_title">Detector Settings</string>
+    <string name="label_max_results">Max results</string>
+    <string name="max_results_description">Maximum number of top language candidates returned above 0.1% confidence.</string>
+    <string name="label_accelerator_cpu">Accelerator: CPU</string>
+    <string name="delegate_hint">Language detection runs on CPU (TFLite GPU delegate is not supported for this graph).</string>
+    <string name="action_done">Done</string>
+    <string name="action_retry">Retry</string>
+    <string name="cd_open_settings">Open detector settings</string>
+    <string name="cd_clear_text">Clear text</string>
 </resources>

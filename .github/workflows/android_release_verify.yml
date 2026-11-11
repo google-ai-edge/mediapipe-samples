@@ -48,6 +48,8 @@ jobs:
             path: examples/text_embedder/android
           - name: text_classification
             path: examples/text_classification/android
+          - name: language_detector
+            path: examples/language_detector/android
     steps:
       - name: Validate inputs and GCP environment configuration
         env:
@@ -164,6 +166,8 @@ jobs:
             path: examples/text_embedder/android
           - name: text_classification
             path: examples/text_classification/android
+          - name: language_detector
+            path: examples/language_detector/android
     steps:
       - name: Validate version input
         env:
