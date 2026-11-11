@@ -31,9 +31,30 @@ permissions:
   contents: read
 
 jobs:
+  detect-examples:
+    name: Auto-detect Android Examples
+    if: inputs.mode == 'verify-staged' || inputs.mode == 'verify-published'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      test_matrix: ${{ steps.detect.outputs.test_matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Detect Android Examples
+        id: detect
+        run: |
+          TEST_MATRIX_JSON=$(python3 .github/scripts/detect_android_examples.py --require-common-testing)
+          echo "test_matrix=$TEST_MATRIX_JSON" >> "$GITHUB_OUTPUT"
+
   verify-staged:
     name: Verify Staged (${{ matrix.name }} · ${{ inputs.mediapipe_version }})
-    if: inputs.mode == 'verify-staged'
+    needs: detect-examples
+    if: inputs.mode == 'verify-staged' && needs.detect-examples.outputs.test_matrix != '{"include":[]}'
     environment: release-verification
     runs-on: macos-15-intel
     timeout-minutes: 30
@@ -42,14 +63,7 @@ jobs:
       id-token: write
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - name: text_embedder
-            path: examples/text_embedder/android
-          - name: text_classification
-            path: examples/text_classification/android
-          - name: language_detector
-            path: examples/language_detector/android
+      matrix: ${{ fromJSON(needs.detect-examples.outputs.test_matrix) }}
     steps:
       - name: Validate inputs and GCP environment configuration
         env:
@@ -153,21 +167,15 @@ jobs:
 
   verify-published:
     name: Verify Published (${{ matrix.name }} · ${{ inputs.mediapipe_version }})
-    if: inputs.mode == 'verify-published'
+    needs: detect-examples
+    if: inputs.mode == 'verify-published' && needs.detect-examples.outputs.test_matrix != '{"include":[]}'
     runs-on: macos-15-intel
     timeout-minutes: 30
     permissions:
       contents: read
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - name: text_embedder
-            path: examples/text_embedder/android
-          - name: text_classification
-            path: examples/text_classification/android
-          - name: language_detector
-            path: examples/language_detector/android
+      matrix: ${{ fromJSON(needs.detect-examples.outputs.test_matrix) }}
     steps:
       - name: Validate version input
         env:
