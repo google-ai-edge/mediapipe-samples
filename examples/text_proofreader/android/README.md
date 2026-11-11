@@ -2,28 +2,34 @@
 
 ### Overview
 
-This sample app demonstrates how to use the MediaPipe Text Proofreader Task on Android. It evaluates and corrects text, providing grammar and style corrections for the user.
+This sample app demonstrates on-device proofreading and grammar/spelling correction using the MediaPipe Tasks Text library (`com.google.mediapipe:tasks-text`) and Gemma 200M (`proofread_quant_200m.litertlm`).
 
-The model file is downloaded automatically by a Gradle script during the build process, so you do not need to manually manage the model assets.
+* **Unary & Streaming Proofreading:** Run either one-shot proofreading or live token streaming (`proofreadStreaming`).
+* **Highlighted Inline Diff:** Displays insertions and deletions color-coded in light and dark themes.
+* **Preset Examples & Token Settings:** Test realistic grammar/spelling examples with one tap and configure `maxNumTokens` (`512`, `1024`, `2048`).
+* **Material 3 Compose UI:** Built with `:android-common:ui` theming and edge-to-edge layout.
 
-![Text Proofreader Demo](text_proofreader.gif?raw=true "Text Proofreader Demo")
+![Text Proofreader Demo](text_proofreader.png?raw=true "Text Proofreader Demo")
 
-## Build the demo using Android Studio
+## Building and Running
+
+This project is self-contained using Gradle Kotlin DSL and a local version catalog (`gradle/libs.versions.toml`). Model downloads are verified via SHA-256 in `app/download_models.gradle.kts`.
 
 ### Prerequisites
 
-*   The **[Android Studio](https://developer.android.com/studio/index.html)** IDE.
-*   A physical or emulated Android device with a minimum OS version of SDK 24 (Android 7.0).
-*   Developer mode enabled on your physical device.
+* **[Android Studio](https://developer.android.com/studio/index.html)** (JDK 17+).
+* An Android device or emulator running API level 24 (Android 7.0) or higher.
 
-### Building
+### Build and Test via Gradle
 
-1.  Open Android Studio.
-2.  Select **Open an existing Android Studio project**.
-3.  Navigate to and select the `examples/text_proofreader/android` directory.
-4.  Allow the Gradle sync to complete.
-5.  With your device connected, click the green **Run** arrow in Android Studio.
+```bash
+cd examples/text_proofreader/android
+./gradlew :app:verifyModels :android-common:testing:testDebugUnitTest
+./gradlew :app:connectedDebugAndroidTest
+```
 
-### Models used
+### Models Used
 
-Downloading, extraction, and placement of the model into the `assets` folder are managed automatically by the `download_models.gradle` file.
+Model assets are automatically downloaded and verified in `app/src/main/assets/` by `app/download_models.gradle.kts`:
+
+* `proofread_quant_200m.litertlm`: Quantized Gemma 200M LiteRT-LM proofreading model.
