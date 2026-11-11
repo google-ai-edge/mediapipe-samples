@@ -21,6 +21,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.mediapipe.examples.common.testing.EmbeddingMetrics
 import com.google.mediapipe.examples.common.testing.LatencyRecorder
+import com.google.mediapipe.tasks.text.textembedder.TextEmbedder
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -47,6 +48,8 @@ class TextEmbedderHelperTest {
         private const val EXPECTED_MOBILE_BERT_DIMS = 512
         private const val EXPECTED_USE_SIMILARITY = 0.7682
         private const val EXPECTED_USE_DIMS = 100
+        private const val EXPECTED_EMBEDDING_GEMMA_SIMILARITY = 0.5922
+        private const val EXPECTED_EMBEDDING_GEMMA_DIMS = 768
     }
 
     @Test
@@ -193,6 +196,118 @@ class TextEmbedderHelperTest {
             repeat(5) {
                 recorder.measure("compare_steady_ms") {
                     helper.compare(TEXT_TEST_ONE, TEXT_TEST_TWO)
+                }
+            }
+            recorder.flush(context)
+        } finally {
+            helper.clearTextEmbedder()
+        }
+    }
+
+    @Test
+    fun embeddingGemma_embeddingQualityAndRanking() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val recorder = LatencyRecorder("text_embedder_embedding_gemma")
+        recorder.putMetadata("model", TextEmbedderHelper.MODEL_EMBEDDING_GEMMA_PATH)
+        recorder.putMetadata("delegate", "CPU")
+
+        val helper =
+            recorder.measure("model_load_ms") {
+                TextEmbedderHelper(
+                    context = context,
+                    currentDelegate = TextEmbedderHelper.DELEGATE_CPU,
+                    currentModel = TextEmbedderHelper.MODEL_EMBEDDING_GEMMA,
+                )
+            }
+        try {
+            assertTrue("EmbeddingGemma failed to initialize", helper.isReady)
+
+            val simContext =
+                TextEmbedder.TextFormatContext.builder()
+                    .setTaskType(TextEmbedder.EmbeddingType.SEMANTIC_SIMILARITY)
+                    .setRole(TextEmbedder.TextRole.QUERY)
+                    .build()
+
+            val related =
+                recorder.measure("compare_related_ms") {
+                    helper.compare(TEXT_TEST_ONE, TEXT_TEST_TWO, simContext, simContext)
+                }!!
+            val unrelated = helper.compare(TEXT_TEST_ONE, TEXT_UNRELATED, simContext, simContext)!!
+            val identical = helper.compare(TEXT_TEST_ONE, TEXT_TEST_ONE, simContext, simContext)!!
+            Log.i(TAG, "EmbeddingGemma related=$related unrelated=$unrelated identical=$identical")
+
+            assertEquals(1.0, identical.similarity, 1e-4)
+            assertEquals(EXPECTED_EMBEDDING_GEMMA_DIMS, related.dimensions)
+            EmbeddingMetrics.assertSimilarityClose(
+                expected = EXPECTED_EMBEDDING_GEMMA_SIMILARITY,
+                actual = related.similarity,
+                tolerance = 0.03,
+                label = "embeddingGemma.daNang",
+            )
+            assertTrue(
+                "Expected related (${related.similarity}) > unrelated (${unrelated.similarity}) + 0.10",
+                related.similarity > unrelated.similarity + 0.10,
+            )
+
+            // Verify asymmetric retrieval formatting via TextFormatContext.
+            val queryCtx =
+                TextEmbedder.TextFormatContext.builder()
+                    .setTaskType(TextEmbedder.EmbeddingType.RETRIEVAL_QUERY)
+                    .setRole(TextEmbedder.TextRole.QUERY)
+                    .build()
+            val docCtx =
+                TextEmbedder.TextFormatContext.builder()
+                    .setTaskType(TextEmbedder.EmbeddingType.RETRIEVAL_DOCUMENT)
+                    .setRole(TextEmbedder.TextRole.DOCUMENT)
+                    .setTitle("Da Nang Travel Guide")
+                    .build()
+            val retrievalMatch =
+                helper.compare(
+                    firstText = "Where can I find sandy beaches in Central Vietnam?",
+                    secondText = TEXT_TEST_ONE,
+                    firstFormatContext = queryCtx,
+                    secondFormatContext = docCtx,
+                )!!
+            val retrievalMismatch =
+                helper.compare(
+                    firstText = "How do quantum computers factor integers?",
+                    secondText = TEXT_TEST_ONE,
+                    firstFormatContext = queryCtx,
+                    secondFormatContext = docCtx,
+                )!!
+            Log.i(
+                TAG,
+                "EmbeddingGemma retrievalMatch=${retrievalMatch.similarity} retrievalMismatch=${retrievalMismatch.similarity}",
+            )
+            assertTrue(
+                "Expected retrievalMatch (${retrievalMatch.similarity}) > retrievalMismatch (${retrievalMismatch.similarity}) + 0.15",
+                retrievalMatch.similarity > retrievalMismatch.similarity + 0.15,
+            )
+
+            val presetsById = DefaultPresets.associateBy { it.id }
+            val similarPreset = presetsById.getValue("similar")
+            val unrelatedPreset = presetsById.getValue("unrelated")
+            val similarPresetScore =
+                helper.compare(similarPreset.firstText, similarPreset.secondText, simContext, simContext)!!
+                    .similarity
+            val unrelatedPresetScore =
+                helper.compare(unrelatedPreset.firstText, unrelatedPreset.secondText, simContext, simContext)!!
+                    .similarity
+            Log.i(
+                TAG,
+                "EmbeddingGemma presets similar=$similarPresetScore unrelated=$unrelatedPresetScore",
+            )
+            assertTrue(
+                "Expected Gemma preset 'similar' ($similarPresetScore) > unrelated ($unrelatedPresetScore) + 0.25",
+                similarPresetScore > unrelatedPresetScore + 0.25,
+            )
+
+            val plainEmbedding = helper.embed(TEXT_TEST_ONE)!!
+            assertTrue(EmbeddingMetrics.l2Norm(plainEmbedding.floatEmbedding()) > 0.0)
+
+            repeat(5) {
+                recorder.measure("compare_steady_ms") {
+                    helper.compare(TEXT_TEST_ONE, TEXT_TEST_TWO, simContext, simContext)
                 }
             }
             recorder.flush(context)

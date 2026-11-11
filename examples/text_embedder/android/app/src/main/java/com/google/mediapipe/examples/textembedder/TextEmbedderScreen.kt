@@ -87,6 +87,8 @@ fun TextEmbedderScreen(
     uiState: TextEmbedderUiState,
     onFirstTextChange: (String) -> Unit,
     onSecondTextChange: (String) -> Unit,
+    onDocumentTitleChange: (String) -> Unit,
+    onSelectContextMode: (EmbeddingContextMode) -> Unit,
     onSwapTexts: () -> Unit,
     onApplyPreset: (TextPairPreset) -> Unit,
     onCompare: () -> Unit,
@@ -140,8 +142,27 @@ fun TextEmbedderScreen(
                 },
             )
 
+            AnimatedVisibility(
+                visible = uiState.model.supportsFormatContext,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically(),
+            ) {
+                ContextModeSelectorRow(
+                    selectedMode = uiState.contextMode,
+                    onSelectMode = { mode ->
+                        focusManager.clearFocus()
+                        onSelectContextMode(mode)
+                    },
+                )
+            }
+
+            val usesDocRole =
+                uiState.model.supportsFormatContext && uiState.contextMode.usesDocumentTitle
             TextInputCard(
-                label = stringResource(R.string.label_text_a),
+                label =
+                    stringResource(
+                        if (usesDocRole) R.string.label_query_text else R.string.label_text_a
+                    ),
                 text = uiState.firstText,
                 placeholder = stringResource(R.string.default_hint_first_text),
                 inputTag = "input_text_a",
@@ -152,12 +173,17 @@ fun TextEmbedderScreen(
             SwapDividerRow(onSwap = onSwapTexts)
 
             TextInputCard(
-                label = stringResource(R.string.label_text_b),
+                label =
+                    stringResource(
+                        if (usesDocRole) R.string.label_document_text else R.string.label_text_b
+                    ),
                 text = uiState.secondText,
                 placeholder = stringResource(R.string.default_hint_second_text),
                 inputTag = "input_text_b",
                 clearTag = "clear_text_b",
                 onTextChange = onSecondTextChange,
+                optionalTitle = if (usesDocRole) uiState.documentTitle else null,
+                onOptionalTitleChange = if (usesDocRole) onDocumentTitleChange else null,
             )
 
             CompareButton(
@@ -230,6 +256,38 @@ private fun PresetSelectorRow(
 }
 
 @Composable
+private fun ContextModeSelectorRow(
+    selectedMode: EmbeddingContextMode,
+    onSelectMode: (EmbeddingContextMode) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            text = stringResource(R.string.label_context_mode),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            EmbeddingContextMode.entries.forEach { mode ->
+                FilterChip(
+                    selected = mode == selectedMode,
+                    onClick = { onSelectMode(mode) },
+                    label = { Text(mode.label) },
+                    modifier = Modifier.testTag("context_${mode.id}"),
+                )
+            }
+        }
+        Text(
+            text = selectedMode.description,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
 private fun TextInputCard(
     label: String,
     text: String,
@@ -237,6 +295,8 @@ private fun TextInputCard(
     inputTag: String,
     clearTag: String,
     onTextChange: (String) -> Unit,
+    optionalTitle: String? = null,
+    onOptionalTitleChange: ((String) -> Unit)? = null,
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -278,6 +338,24 @@ private fun TextInputCard(
                         Spacer(modifier = Modifier.width(8.dp))
                     }
                 }
+            }
+
+            if (optionalTitle != null && onOptionalTitleChange != null) {
+                TextField(
+                    value = optionalTitle,
+                    onValueChange = onOptionalTitleChange,
+                    label = { Text(stringResource(R.string.label_document_title)) },
+                    placeholder = { Text(stringResource(R.string.hint_document_title)) },
+                    singleLine = true,
+                    textStyle = MaterialTheme.typography.bodyMedium,
+                    colors =
+                        TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent,
+                        ),
+                    modifier = Modifier.fillMaxWidth().testTag("input_document_title"),
+                )
             }
 
             TextField(
@@ -499,7 +577,7 @@ private fun SettingsSheetContent(
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             SegmentedOptionRow(
                 label = stringResource(R.string.label_models),
-                options = models.map { it.displayName },
+                options = models.map { it.shortLabel },
                 selectedIndex = models.indexOf(selectedModel),
                 enabled = !isBusy,
                 onSelect = { idx -> onSelectModel(models[idx]) },

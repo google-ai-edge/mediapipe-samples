@@ -20,6 +20,9 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.google.mediapipe.tasks.text.textembedder.TextEmbedder.EmbeddingType
+import com.google.mediapipe.tasks.text.textembedder.TextEmbedder.TextFormatContext
+import com.google.mediapipe.tasks.text.textembedder.TextEmbedder.TextRole
 import java.util.concurrent.Executors
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -33,21 +36,120 @@ import kotlinx.coroutines.withContext
 enum class EmbedderModel(
     val index: Int,
     val displayName: String,
+    val shortLabel: String,
     val dimensions: Int,
     val description: String,
+    val supportsFormatContext: Boolean = false,
 ) {
+    EMBEDDING_GEMMA(
+        index = TextEmbedderHelper.MODEL_EMBEDDING_GEMMA,
+        displayName = "Gemma 300M",
+        shortLabel = "Gemma",
+        dimensions = 768,
+        description =
+            "EmbeddingGemma 300M · 768d contextual embeddings with task-type formatting",
+        supportsFormatContext = true,
+    ),
     MOBILE_BERT(
         index = TextEmbedderHelper.MODEL_MOBILE_BERT,
         displayName = "MobileBERT",
+        shortLabel = "MobileBERT",
         dimensions = 512,
         description = "Contextual 512d transformer embeddings for full sentences",
     ),
     UNIVERSAL_SENTENCE_ENCODER(
         index = TextEmbedderHelper.MODEL_UNIVERSAL_SENTENCE_ENCODER,
         displayName = "Universal",
+        shortLabel = "Universal",
         dimensions = 100,
         description = "Universal Sentence Encoder · fast 100d sentence embeddings",
     ),
+}
+
+enum class EmbeddingContextMode(
+    val id: String,
+    val label: String,
+    val description: String,
+    val firstTaskType: EmbeddingType?,
+    val firstRole: TextRole?,
+    val secondTaskType: EmbeddingType?,
+    val secondRole: TextRole?,
+    val usesDocumentTitle: Boolean = false,
+) {
+    SIMILARITY(
+        id = "similarity",
+        label = "Similarity",
+        description = "task: sentence similarity | query: <text> for both inputs",
+        firstTaskType = EmbeddingType.SEMANTIC_SIMILARITY,
+        firstRole = TextRole.QUERY,
+        secondTaskType = EmbeddingType.SEMANTIC_SIMILARITY,
+        secondRole = TextRole.QUERY,
+    ),
+    RETRIEVAL(
+        id = "retrieval",
+        label = "Query → Doc",
+        description = "Asymmetric retrieval: Text A as query, Text B as titled document",
+        firstTaskType = EmbeddingType.RETRIEVAL_QUERY,
+        firstRole = TextRole.QUERY,
+        secondTaskType = EmbeddingType.RETRIEVAL_DOCUMENT,
+        secondRole = TextRole.DOCUMENT,
+        usesDocumentTitle = true,
+    ),
+    QUESTION_ANSWERING(
+        id = "qa",
+        label = "Q & A",
+        description = "Asymmetric Q&A: question query matched against answer passage",
+        firstTaskType = EmbeddingType.QUESTION_ANSWERING,
+        firstRole = TextRole.QUERY,
+        secondTaskType = EmbeddingType.QUESTION_ANSWERING,
+        secondRole = TextRole.DOCUMENT,
+        usesDocumentTitle = true,
+    ),
+    CLUSTERING(
+        id = "clustering",
+        label = "Clustering",
+        description = "task: clustering | query: <text> for grouping related passages",
+        firstTaskType = EmbeddingType.CLUSTERING,
+        firstRole = TextRole.QUERY,
+        secondTaskType = EmbeddingType.CLUSTERING,
+        secondRole = TextRole.QUERY,
+    ),
+    NONE(
+        id = "none",
+        label = "Plain text",
+        description = "Embeds raw text without a TextFormatContext prompt wrapper",
+        firstTaskType = null,
+        firstRole = null,
+        secondTaskType = null,
+        secondRole = null,
+    );
+
+    fun buildFirstContext(): TextFormatContext? =
+        buildContext(firstTaskType, firstRole, title = null)
+
+    fun buildSecondContext(documentTitle: String): TextFormatContext? =
+        buildContext(
+            secondTaskType,
+            secondRole,
+            title = documentTitle.trim().takeIf { usesDocumentTitle && it.isNotEmpty() },
+        )
+
+    private fun buildContext(
+        taskType: EmbeddingType?,
+        role: TextRole?,
+        title: String?,
+    ): TextFormatContext? {
+        if (taskType == null || role == null) return null
+        return TextFormatContext.builder()
+            .setTaskType(taskType)
+            .setRole(role)
+            .apply {
+                if (!title.isNullOrEmpty()) {
+                    setTitle(title)
+                }
+            }
+            .build()
+    }
 }
 
 data class TextPairPreset(
@@ -55,12 +157,16 @@ data class TextPairPreset(
     val label: String,
     val firstText: String,
     val secondText: String,
+    val documentTitle: String = "",
+    val preferredContext: EmbeddingContextMode = EmbeddingContextMode.SIMILARITY,
 )
 
 data class TextEmbedderUiState(
     val firstText: String = DefaultPresets.first().firstText,
     val secondText: String = DefaultPresets.first().secondText,
-    val model: EmbedderModel = EmbedderModel.MOBILE_BERT,
+    val documentTitle: String = DefaultPresets.first().documentTitle,
+    val model: EmbedderModel = EmbedderModel.EMBEDDING_GEMMA,
+    val contextMode: EmbeddingContextMode = EmbeddingContextMode.SIMILARITY,
     val isModelLoading: Boolean = true,
     val isComparing: Boolean = false,
     val isReady: Boolean = false,
@@ -91,6 +197,15 @@ val DefaultPresets: List<TextPairPreset> =
                 "The golden retriever ran across the sunny sandy beach toward the ocean.",
             secondText =
                 "A happy dog sprinted along the ocean shoreline on the warm sand.",
+        ),
+        TextPairPreset(
+            id = "retrieval",
+            label = "Query → Doc",
+            firstText = "How does on-device ML keep user data private?",
+            secondText =
+                "On-device machine learning runs inference directly on the user's phone without sending personal text to remote servers.",
+            documentTitle = "On-Device Privacy Architecture",
+            preferredContext = EmbeddingContextMode.RETRIEVAL,
         ),
         TextPairPreset(
             id = "unrelated",
@@ -153,6 +268,18 @@ class TextEmbedderViewModel(appContext: Context) : ViewModel() {
         }
     }
 
+    fun updateDocumentTitle(title: String) {
+        _uiState.update {
+            if (it.documentTitle == title) it else it.copy(documentTitle = title, result = null)
+        }
+    }
+
+    fun selectContextMode(mode: EmbeddingContextMode) {
+        _uiState.update {
+            if (it.contextMode == mode) it else it.copy(contextMode = mode, result = null)
+        }
+    }
+
     fun swapTexts() {
         _uiState.update {
             it.copy(firstText = it.secondText, secondText = it.firstText, result = null)
@@ -161,7 +288,15 @@ class TextEmbedderViewModel(appContext: Context) : ViewModel() {
 
     fun applyPreset(preset: TextPairPreset) {
         _uiState.update {
-            it.copy(firstText = preset.firstText, secondText = preset.secondText, result = null)
+            it.copy(
+                firstText = preset.firstText,
+                secondText = preset.secondText,
+                documentTitle = preset.documentTitle,
+                contextMode =
+                    if (it.model.supportsFormatContext) preset.preferredContext
+                    else it.contextMode,
+                result = null,
+            )
         }
     }
 
@@ -179,13 +314,28 @@ class TextEmbedderViewModel(appContext: Context) : ViewModel() {
         val snapshot = _uiState.value
         if (!snapshot.canCompare) return
 
+        val firstCtx =
+            if (snapshot.model.supportsFormatContext) snapshot.contextMode.buildFirstContext()
+            else null
+        val secondCtx =
+            if (snapshot.model.supportsFormatContext) {
+                snapshot.contextMode.buildSecondContext(snapshot.documentTitle)
+            } else {
+                null
+            }
+
         activeJob?.cancel()
         _uiState.update { it.copy(isComparing = true, errorMessage = null) }
         activeJob =
             viewModelScope.launch {
                 val bundle =
                     withContext(engineDispatcher) {
-                        helper?.compare(snapshot.firstText, snapshot.secondText)
+                        helper?.compare(
+                            firstText = snapshot.firstText,
+                            secondText = snapshot.secondText,
+                            firstFormatContext = firstCtx,
+                            secondFormatContext = secondCtx,
+                        )
                     }
                 _uiState.update {
                     if (bundle != null) {

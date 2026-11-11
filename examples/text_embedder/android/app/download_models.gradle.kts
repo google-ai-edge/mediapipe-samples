@@ -52,6 +52,12 @@ val universalSentenceEncoder = VerifiedModelDownload(
     sha256 = "89ad3c74175dd8caa398cc22b657296d94302d20c525c12b58b29420f7249749",
 )
 
+val embeddingGemma = VerifiedModelDownload(
+    url = "https://storage.googleapis.com/mediapipe-models/text_embedder/embedding_gemma/int4int8/latest/embedding_gemma.task",
+    destFile = file("$assetDir/embedding_gemma.task"),
+    sha256 = "913b7a1edc7c7c3d1da3979ec1d0648ed9e0a370f181bb59ab177ca4b97707ad",
+)
+
 fun registerVerifiedDownload(taskName: String, spec: VerifiedModelDownload) =
     tasks.register(taskName) {
         outputs.file(spec.destFile)
@@ -79,11 +85,17 @@ fun registerVerifiedDownload(taskName: String, spec: VerifiedModelDownload) =
 val downloadMobileBertModel = registerVerifiedDownload("downloadMobileBertModel", mobileBert)
 val downloadUniversalSentenceEncoderModel =
     registerVerifiedDownload("downloadUniversalSentenceEncoderModel", universalSentenceEncoder)
+val downloadEmbeddingGemmaModel =
+    registerVerifiedDownload("downloadEmbeddingGemmaModel", embeddingGemma)
 
 tasks.register("verifyModels") {
-    dependsOn(downloadMobileBertModel, downloadUniversalSentenceEncoderModel)
+    dependsOn(
+        downloadMobileBertModel,
+        downloadUniversalSentenceEncoderModel,
+        downloadEmbeddingGemmaModel,
+    )
     doLast {
-        listOf(mobileBert, universalSentenceEncoder).forEach { spec ->
+        listOf(mobileBert, universalSentenceEncoder, embeddingGemma).forEach { spec ->
             if (!spec.destFile.exists() || spec.destFile.length() == 0L) {
                 throw GradleException(
                     "Model ${spec.destFile.name} is missing or empty (stubbed?). Delete it and re-run to download."
@@ -100,5 +112,9 @@ tasks.register("verifyModels") {
 }
 
 tasks.named("preBuild") {
-    dependsOn(downloadMobileBertModel, downloadUniversalSentenceEncoderModel)
+    dependsOn(
+        downloadMobileBertModel,
+        downloadUniversalSentenceEncoderModel,
+        downloadEmbeddingGemmaModel,
+    )
 }

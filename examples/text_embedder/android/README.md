@@ -4,10 +4,13 @@
 
 This Android app compares the semantic similarity of two text inputs on-device
 using the MediaPipe `TextEmbedder` task, with a choice of
+[EmbeddingGemma 300M](https://storage.googleapis.com/mediapipe-models/text_embedder/embedding_gemma/int4int8/latest/embedding_gemma.task)
+(768d, with optional `TextFormatContext` task prompts such as Semantic Similarity,
+Query → Document retrieval, Q&A, and Clustering),
 [MobileBERT](https://storage.googleapis.com/mediapipe-models/text_embedder/bert_embedder/float32/1/bert_embedder.tflite)
-or
+(512d), or
 [Universal Sentence Encoder](https://storage.googleapis.com/mediapipe-models/text_embedder/universal_sentence_encoder/float32/1/universal_sentence_encoder.tflite)
-embedding models.
+(100d) embedding models.
 
 ![Text Embedder Demo](textembedder.png?raw=true "Text Embedder Demo")
 
