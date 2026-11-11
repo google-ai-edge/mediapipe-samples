@@ -42,6 +42,8 @@ class MainActivity : ComponentActivity() {
                     uiState = uiState,
                     onFirstTextChange = embedderViewModel::updateFirstText,
                     onSecondTextChange = embedderViewModel::updateSecondText,
+                    onDocumentTitleChange = embedderViewModel::updateDocumentTitle,
+                    onSelectContextMode = embedderViewModel::selectContextMode,
                     onSwapTexts = embedderViewModel::swapTexts,
                     onApplyPreset = embedderViewModel::applyPreset,
                     onCompare = embedderViewModel::compare,

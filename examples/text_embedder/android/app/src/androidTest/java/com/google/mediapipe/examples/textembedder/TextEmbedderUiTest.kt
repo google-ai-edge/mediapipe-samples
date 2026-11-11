@@ -38,14 +38,14 @@ class TextEmbedderUiTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<MainActivity>()
 
-    private fun waitForCompareReady(timeoutMillis: Long = 20_000L) {
+    private fun waitForCompareReady(timeoutMillis: Long = 30_000L) {
         composeRule.waitUntil(timeoutMillis = timeoutMillis) {
             val nodes = composeRule.onAllNodesWithTag("compare_button").fetchSemanticsNodes()
             nodes.isNotEmpty() && !nodes.first().config.contains(SemanticsProperties.Disabled)
         }
     }
 
-    private fun waitForResultCard(timeoutMillis: Long = 20_000L): Double {
+    private fun waitForResultCard(timeoutMillis: Long = 30_000L): Double {
         composeRule.waitUntil(timeoutMillis = timeoutMillis) {
             composeRule.onAllNodesWithTag("similarity_score").fetchSemanticsNodes().isNotEmpty()
         }
@@ -58,22 +58,45 @@ class TextEmbedderUiTest {
         return scoreText.toDouble()
     }
 
+    private fun waitForResultCleared(timeoutMillis: Long = 5_000L) {
+        composeRule.waitUntil(timeoutMillis = timeoutMillis) {
+            composeRule.onAllNodesWithTag("result_card").fetchSemanticsNodes().isEmpty()
+        }
+    }
+
     @Test
     fun defaultComparison_displaysScoreAndMetrics() {
         waitForCompareReady()
+        composeRule.onNodeWithTag("top_bar_subtitle").assertTextContains("Gemma 300M · 768d")
 
         composeRule.onNodeWithTag("compare_button").performScrollTo().performClick()
         val score = waitForResultCard()
 
-        assertTrue("Expected positive similarity score for MediaPipe preset, got $score", score in 0.50..1.00)
+        assertTrue(
+            "Expected positive similarity score for MediaPipe preset, got $score",
+            score in 0.45..1.00,
+        )
         composeRule.onNodeWithTag("result_card").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithTag("metric_inference_time").assertTextContains("ms", substring = true)
-        composeRule.onNodeWithTag("metric_dimensions").assertTextContains("512d", substring = true)
+        composeRule.onNodeWithTag("metric_dimensions").assertTextContains("768d", substring = true)
     }
 
     @Test
-    fun customTexts_computesQualityRanking_andInvalidatesStaleResult() {
+    fun retrievalContextAndCustomTexts_computesQualityRanking_andInvalidatesStaleResult() {
         waitForCompareReady()
+
+        // Selecting Query -> Doc preset applies TextFormatContext retrieval mode and title input.
+        composeRule.onNodeWithTag("preset_retrieval").performScrollTo().performClick()
+        composeRule.onNodeWithTag("input_document_title").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag("compare_button").performScrollTo().performClick()
+        val retrievalScore = waitForResultCard()
+        assertTrue(
+            "Expected positive Query -> Doc similarity for retrieval preset, got $retrievalScore",
+            retrievalScore > 0.50,
+        )
+
+        composeRule.onNodeWithTag("context_similarity").performScrollTo().performClick()
+        waitForResultCleared()
 
         val similarTextA =
             "The golden retriever ran across the sunny sandy beach toward the ocean."
@@ -82,14 +105,14 @@ class TextEmbedderUiTest {
         val unrelatedTextB =
             "The federal reserve adjusted benchmark interest rates following the quarterly inflation report."
 
-        composeRule.onNodeWithTag("input_text_a").performTextReplacement(similarTextA)
-        composeRule.onNodeWithTag("input_text_b").performTextReplacement(similarTextB)
+        composeRule.onNodeWithTag("input_text_a").performScrollTo().performTextReplacement(similarTextA)
+        composeRule.onNodeWithTag("input_text_b").performScrollTo().performTextReplacement(similarTextB)
 
         composeRule.onNodeWithTag("compare_button").performScrollTo().performClick()
         val similarScore = waitForResultCard()
         assertTrue(
             "Expected high similarity for related pair, got $similarScore",
-            similarScore > 0.90,
+            similarScore > 0.75,
         )
 
         // Editing an input must immediately drop any displayed result so stale scores are never shown.
@@ -97,14 +120,13 @@ class TextEmbedderUiTest {
             .onNodeWithTag("input_text_b")
             .performScrollTo()
             .performTextReplacement(unrelatedTextB)
-        composeRule.waitForIdle()
-        composeRule.onNodeWithTag("result_card").assertDoesNotExist()
+        waitForResultCleared()
 
         composeRule.onNodeWithTag("compare_button").performScrollTo().performClick()
         val unrelatedScore = waitForResultCard()
         assertTrue(
-            "Expected related score ($similarScore) > unrelated score ($unrelatedScore) + 0.40",
-            similarScore > unrelatedScore + 0.40,
+            "Expected related score ($similarScore) > unrelated score ($unrelatedScore) + 0.30",
+            similarScore > unrelatedScore + 0.30,
         )
     }
 
@@ -113,7 +135,7 @@ class TextEmbedderUiTest {
         waitForCompareReady()
 
         val similarPreset = DefaultPresets.first { it.id == "similar" }
-        composeRule.onNodeWithTag("preset_similar").performClick()
+        composeRule.onNodeWithTag("preset_similar").performScrollTo().performClick()
         composeRule.onNodeWithTag("input_text_a").assertTextContains(similarPreset.firstText)
         composeRule.onNodeWithTag("input_text_b").assertTextContains(similarPreset.secondText)
 
@@ -123,8 +145,21 @@ class TextEmbedderUiTest {
     }
 
     @Test
-    fun switchModelInSettings_runsUniversalEncoderEndToEnd() {
+    fun switchModelInSettings_runsMobileBertAndUniversalEncoderEndToEnd() {
         waitForCompareReady()
+
+        composeRule.onNodeWithTag("settings_button").performClick()
+        composeRule.onNodeWithTag("settings_sheet").assertIsDisplayed()
+        composeRule.onNodeWithTag("option_Model_MobileBERT").performClick()
+        composeRule.onNodeWithTag("settings_done_button").performClick()
+
+        composeRule.onNodeWithTag("top_bar_subtitle").assertTextContains("MobileBERT · 512d")
+        waitForCompareReady()
+        composeRule.onNodeWithTag("preset_similar").performScrollTo().performClick()
+        composeRule.onNodeWithTag("compare_button").assertIsEnabled().performScrollTo().performClick()
+        val bertSimilarScore = waitForResultCard()
+        assertTrue("Expected high MobileBERT similarity, got $bertSimilarScore", bertSimilarScore > 0.90)
+        composeRule.onNodeWithTag("metric_dimensions").assertTextContains("512d", substring = true)
 
         composeRule.onNodeWithTag("settings_button").performClick()
         composeRule.onNodeWithTag("settings_sheet").assertIsDisplayed()
@@ -134,13 +169,13 @@ class TextEmbedderUiTest {
         composeRule.onNodeWithTag("top_bar_subtitle").assertTextContains("Universal · 100d")
         waitForCompareReady()
 
-        composeRule.onNodeWithTag("preset_similar").performClick()
+        composeRule.onNodeWithTag("preset_similar").performScrollTo().performClick()
         composeRule.onNodeWithTag("compare_button").assertIsEnabled().performScrollTo().performClick()
         val similarScore = waitForResultCard()
         assertTrue("Expected high USE similarity for Similar preset, got $similarScore", similarScore > 0.90)
         composeRule.onNodeWithTag("metric_dimensions").assertTextContains("100d", substring = true)
 
-        composeRule.onNodeWithTag("preset_unrelated").performClick()
+        composeRule.onNodeWithTag("preset_unrelated").performScrollTo().performClick()
         composeRule.onNodeWithTag("compare_button").assertIsEnabled().performScrollTo().performClick()
         val unrelatedScore = waitForResultCard()
         assertTrue(

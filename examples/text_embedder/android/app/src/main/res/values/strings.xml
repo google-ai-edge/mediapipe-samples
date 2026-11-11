@@ -17,8 +17,13 @@
 <resources>
     <string name="app_name">Text Embedder</string>
     <string name="label_examples">Try an example</string>
+    <string name="label_context_mode">Task format</string>
+    <string name="label_document_title">Document title (optional)</string>
+    <string name="hint_document_title">e.g. On-Device Privacy Architecture</string>
     <string name="label_text_a">Text A</string>
     <string name="label_text_b">Text B</string>
+    <string name="label_query_text">Text A · Query</string>
+    <string name="label_document_text">Text B · Document</string>
     <string name="default_hint_first_text">MediaPipe offers cross-platform, customizable ML solutions for live and streaming media.</string>
     <string name="default_hint_second_text">I use MediaPipe to create amazing things with text, audio, and visual content.</string>
     <string name="btn_compare">Compare similarity</string>

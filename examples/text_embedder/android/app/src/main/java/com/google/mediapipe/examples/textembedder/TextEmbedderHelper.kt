@@ -24,6 +24,7 @@ import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
 import com.google.mediapipe.tasks.text.textembedder.TextEmbedder
 import com.google.mediapipe.tasks.text.textembedder.TextEmbedder.TextEmbedderOptions
+import com.google.mediapipe.tasks.text.textembedder.TextEmbedder.TextFormatContext
 
 /**
  * Helper that wraps [TextEmbedder] lifecycle, delegate/model configuration, and cosine similarity
@@ -66,6 +67,7 @@ class TextEmbedderHelper(
             MODEL_MOBILE_BERT -> baseOptionsBuilder.setModelAssetPath(MODEL_MOBILE_BERT_PATH)
             MODEL_UNIVERSAL_SENTENCE_ENCODER ->
                 baseOptionsBuilder.setModelAssetPath(MODEL_UNIVERSAL_SENTENCE_ENCODER_PATH)
+            MODEL_EMBEDDING_GEMMA -> baseOptionsBuilder.setModelAssetPath(MODEL_EMBEDDING_GEMMA_PATH)
             else -> {
                 listener?.onError("Unsupported model index: $currentModel")
                 return false
@@ -100,16 +102,41 @@ class TextEmbedderHelper(
         }
     }
 
-    /** Embeds a single string and returns the primary [Embedding], or `null` if not initialized. */
-    fun embed(text: String): Embedding? =
-        textEmbedder?.embed(text)?.embeddingResult()?.embeddings()?.firstOrNull()
+    /**
+     * Embeds a single string with optional [TextFormatContext] (supported by EmbeddingGemma),
+     * returning the primary [Embedding] or `null` if not initialized.
+     */
+    fun embed(
+        text: String,
+        formatContext: TextFormatContext? = null,
+    ): Embedding? {
+        val embedder = textEmbedder ?: return null
+        val result =
+            if (formatContext != null) embedder.embed(text, formatContext)
+            else embedder.embed(text)
+        return result.embeddingResult().embeddings().firstOrNull()
+    }
 
-    /** Computes the cosine similarity and latency for comparing [firstText] and [secondText]. */
-    fun compare(firstText: String, secondText: String): ResultBundle? {
+    /**
+     * Computes cosine similarity and latency for comparing [firstText] and [secondText],
+     * applying optional [TextFormatContext] prompts when provided.
+     */
+    fun compare(
+        firstText: String,
+        secondText: String,
+        firstFormatContext: TextFormatContext? = null,
+        secondFormatContext: TextFormatContext? = null,
+    ): ResultBundle? {
         val embedder = textEmbedder ?: return null
         val startTime = SystemClock.uptimeMillis()
-        val firstEmbed = embedder.embed(firstText).embeddingResult().embeddings().first()
-        val secondEmbed = embedder.embed(secondText).embeddingResult().embeddings().first()
+        val firstResult =
+            if (firstFormatContext != null) embedder.embed(firstText, firstFormatContext)
+            else embedder.embed(firstText)
+        val secondResult =
+            if (secondFormatContext != null) embedder.embed(secondText, secondFormatContext)
+            else embedder.embed(secondText)
+        val firstEmbed = firstResult.embeddingResult().embeddings().first()
+        val secondEmbed = secondResult.embeddingResult().embeddings().first()
         val inferenceTimeMs = SystemClock.uptimeMillis() - startTime
         val dims = firstEmbed.floatEmbedding().size
         return ResultBundle(
@@ -138,8 +165,10 @@ class TextEmbedderHelper(
         const val DELEGATE_GPU = 1
         const val MODEL_MOBILE_BERT = 0
         const val MODEL_UNIVERSAL_SENTENCE_ENCODER = 1
+        const val MODEL_EMBEDDING_GEMMA = 2
         const val MODEL_MOBILE_BERT_PATH = "mobile_bert.tflite"
         const val MODEL_UNIVERSAL_SENTENCE_ENCODER_PATH = "universal_sentence_encoder.tflite"
+        const val MODEL_EMBEDDING_GEMMA_PATH = "embedding_gemma.task"
         const val OTHER_ERROR = 0
         const val GPU_ERROR = 1
         private const val TAG = "TextEmbedderHelper"

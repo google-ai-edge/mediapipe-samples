@@ -82,7 +82,7 @@ jobs:
           target: aosp_atd
           arch: x86_64
           profile: pixel_6
-          disk-size: 8G
+          disk-size: 10G
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
           disable-spellchecker: true
