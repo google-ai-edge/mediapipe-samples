@@ -29,7 +29,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,19 +39,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -60,22 +60,30 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.mediapipe.examples.common.ui.MediaPipeTheme
+import com.google.mediapipe.examples.common.ui.MediaPipeTopBar
+import com.google.mediapipe.examples.common.ui.MetadataBadge
+import com.google.mediapipe.examples.common.ui.SegmentedOptionRow
+import com.google.mediapipe.examples.common.ui.StatusErrorBanner
 import com.google.mediapipe.tasks.audio.audiotranscriber.AudioTranscriberResult
-import com.google.mediapipe.tasks.examples.audiotranscriber.ui.theme.AudioTranscriberTheme
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -150,7 +158,7 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
     enableEdgeToEdge()
     setContent {
-      AudioTranscriberTheme {
+      MediaPipeTheme {
         val appContext = LocalContext.current.applicationContext
         val transcriberViewModel: AudioTranscriberViewModel =
           viewModel(factory = AudioTranscriberViewModel.factory(appContext))
@@ -208,6 +216,7 @@ private fun AudioTranscriberRoute(viewModel: AudioTranscriberViewModel) {
 
   AudioTranscriberScreen(
     state = state,
+    onTranscribeSample = viewModel::transcribeSampleClip,
     onToggleRecording = {
       if (state.isRecording) {
         viewModel.stopRecording()
@@ -223,97 +232,145 @@ private fun AudioTranscriberRoute(viewModel: AudioTranscriberViewModel) {
     },
     onClearTranscripts = viewModel::clearTranscripts,
     onSelectModelFile = { openModelLauncher.launch(arrayOf("*/*")) },
+    onSelectDelegate = viewModel::setDelegate,
+    onFallbackToCpu = viewModel::fallbackToCpu,
   )
 }
 
-/** Stateless Jetpack Compose screen for live MediaPipe [AudioTranscriber] speech recognition. */
+/** Stateless Jetpack Compose screen for MediaPipe [AudioTranscriber] speech recognition. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AudioTranscriberScreen(
   state: AudioTranscriberUiState,
+  onTranscribeSample: () -> Unit,
   onToggleRecording: () -> Unit,
   onClearTranscripts: () -> Unit,
   onSelectModelFile: () -> Unit,
+  onSelectDelegate: (Int) -> Unit = {},
+  onFallbackToCpu: () -> Unit = {},
   modifier: Modifier = Modifier,
 ) {
-  Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
+  var showSettings by rememberSaveable { mutableStateOf(false) }
+  val delegateLabel =
+    if (state.currentDelegate == AudioTranscriberViewModel.DELEGATE_GPU) "GPU" else "CPU"
+  val subtitle = "Parakeet TDT 0.6B · $delegateLabel"
+
+  Scaffold(
+    modifier = modifier.fillMaxSize(),
+    containerColor = MaterialTheme.colorScheme.background,
+    topBar = {
+      MediaPipeTopBar(
+        title = stringResource(R.string.app_name),
+        subtitle = subtitle,
+        onSettingsClick = { showSettings = true },
+      )
+    },
+  ) { innerPadding ->
     Column(
       modifier = Modifier.fillMaxSize().padding(innerPadding).padding(16.dp),
-      horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.spacedBy(16.dp),
+      verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-      HeaderSection(activeModelName = state.activeModelName)
+      if (!state.errorMessage.isNullOrBlank()) {
+        StatusErrorBanner(
+          message = state.errorMessage,
+          actionLabel =
+            if (state.currentDelegate == AudioTranscriberViewModel.DELEGATE_GPU) {
+              "Use CPU"
+            } else {
+              null
+            },
+          onAction =
+            if (state.currentDelegate == AudioTranscriberViewModel.DELEGATE_GPU) {
+              onFallbackToCpu
+            } else {
+              null
+            },
+        )
+      }
 
-      StatusPill(isRecording = state.isRecording, statusMessage = state.statusMessage)
+      Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        MetadataBadge(
+          label = "Status",
+          value = state.statusMessage,
+          modifier = Modifier.weight(1.4f).testTag("status_badge"),
+        )
+        MetadataBadge(
+          label = "Segments",
+          value = state.finalizedSegments.size.toString(),
+          modifier = Modifier.weight(0.8f),
+        )
+        MetadataBadge(
+          label = "Latency",
+          value = state.lastLatencyMs?.let { "${it} ms" } ?: "--",
+          modifier = Modifier.weight(0.9f),
+        )
+      }
 
-      if (state.isRecording) {
+      if (state.isRecording || state.isTranscribingSample) {
         AudioLevelMeter(audioLevel = state.audioLevel)
       }
 
       TranscriptCard(
         finalizedSegments = state.finalizedSegments,
         interimTranscript = state.interimTranscript,
-        modifier = Modifier.weight(1f).fillMaxWidth(),
+        modifier = Modifier.weight(1f).fillMaxWidth().testTag("transcript_card"),
       )
 
       ControlButtonsRow(
-        isRecording = state.isRecording,
+        state = state,
         hasTranscriptContent =
           state.finalizedSegments.isNotEmpty() || state.interimTranscript.isNotEmpty(),
+        onTranscribeSample = onTranscribeSample,
         onToggleRecording = onToggleRecording,
         onClearTranscripts = onClearTranscripts,
-        onSelectModelFile = onSelectModelFile,
       )
     }
   }
-}
 
-@Composable
-private fun HeaderSection(activeModelName: String) {
-  Column(
-    horizontalAlignment = Alignment.CenterHorizontally,
-    verticalArrangement = Arrangement.spacedBy(4.dp),
-    modifier = Modifier.padding(top = 8.dp),
-  ) {
-    Text(
-      text = stringResource(R.string.app_name),
-      style = MaterialTheme.typography.headlineSmall,
-      fontWeight = FontWeight.Bold,
-    )
-    Text(
-      text = stringResource(R.string.subtitle),
-      style = MaterialTheme.typography.bodyMedium,
-      color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-    Text(
-      text = stringResource(R.string.model_label_format, activeModelName),
-      style = MaterialTheme.typography.labelMedium,
-      fontFamily = FontFamily.Monospace,
-      color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-  }
-}
-
-@Composable
-private fun StatusPill(isRecording: Boolean, statusMessage: String) {
-  Surface(color = MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(20.dp)) {
-    Row(
-      modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-      val indicatorColor =
-        if (isRecording) {
-          MaterialTheme.colorScheme.error
-        } else {
-          MaterialTheme.colorScheme.primary
+  if (showSettings) {
+    ModalBottomSheet(onDismissRequest = { showSettings = false }) {
+      Column(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+      ) {
+        Text(
+          text = stringResource(R.string.settings_title),
+          style = MaterialTheme.typography.titleMedium,
+          fontWeight = FontWeight.SemiBold,
+        )
+        Text(
+          text = state.activeModelName,
+          style = MaterialTheme.typography.bodySmall,
+          fontFamily = FontFamily.Monospace,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis,
+        )
+        SegmentedOptionRow(
+          label = stringResource(R.string.delegate_label),
+          options = listOf("CPU", "GPU"),
+          selectedIndex = state.currentDelegate,
+          enabled = !state.isRecording && !state.isTranscribingSample,
+          onSelect = onSelectDelegate,
+        )
+        OutlinedButton(
+          onClick = {
+            showSettings = false
+            onSelectModelFile()
+          },
+          enabled = !state.isRecording && !state.isTranscribingSample,
+          modifier = Modifier.fillMaxWidth().testTag("load_model_button"),
+        ) {
+          Text(text = stringResource(R.string.load_model))
         }
-      Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(indicatorColor))
-      Text(
-        text = statusMessage,
-        style = MaterialTheme.typography.labelMedium,
-        fontFamily = FontFamily.Monospace,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-      )
+        Button(
+          onClick = { showSettings = false },
+          modifier = Modifier.fillMaxWidth(),
+        ) {
+          Text(text = stringResource(R.string.done))
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+      }
     }
   }
 }
@@ -363,9 +420,13 @@ private fun TranscriptCard(
     }
   }
 
-  OutlinedCard(modifier = modifier, shape = RoundedCornerShape(12.dp)) {
+  ElevatedCard(
+    modifier = modifier,
+    shape = RoundedCornerShape(16.dp),
+    colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+  ) {
     Column(
-      modifier = Modifier.fillMaxSize().padding(14.dp),
+      modifier = Modifier.fillMaxSize().padding(16.dp),
       verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
       Text(
@@ -406,11 +467,11 @@ private fun TranscriptCard(
 @Composable
 private fun SegmentRow(segment: AudioTranscriberResult.Segment) {
   Surface(
-    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f),
-    shape = RoundedCornerShape(8.dp),
+    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    shape = RoundedCornerShape(10.dp),
     modifier = Modifier.fillMaxWidth(),
   ) {
-    Row(modifier = Modifier.padding(10.dp), verticalAlignment = Alignment.Top) {
+    Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.Top) {
       Text(
         text = String.format(Locale.US, "(%.1fs)", segment.durationSeconds),
         style = MaterialTheme.typography.labelSmall,
@@ -431,11 +492,11 @@ private fun SegmentRow(segment: AudioTranscriberResult.Segment) {
 @Composable
 private fun InterimSegmentRow(interimTranscript: String) {
   Surface(
-    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f),
-    shape = RoundedCornerShape(8.dp),
+    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
+    shape = RoundedCornerShape(10.dp),
     modifier = Modifier.fillMaxWidth(),
   ) {
-    Row(modifier = Modifier.padding(10.dp), verticalAlignment = Alignment.Top) {
+    Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.Top) {
       Text(
         text = stringResource(R.string.live_badge),
         style = MaterialTheme.typography.labelSmall,
@@ -457,53 +518,67 @@ private fun InterimSegmentRow(interimTranscript: String) {
 
 @Composable
 private fun ControlButtonsRow(
-  isRecording: Boolean,
+  state: AudioTranscriberUiState,
   hasTranscriptContent: Boolean,
+  onTranscribeSample: () -> Unit,
   onToggleRecording: () -> Unit,
   onClearTranscripts: () -> Unit,
-  onSelectModelFile: () -> Unit,
 ) {
-  Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+  val busy = state.isRecording || state.isTranscribingSample
+  Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
     Button(
-      onClick = onToggleRecording,
-      colors =
-        ButtonDefaults.buttonColors(
-          containerColor =
-            if (isRecording) {
-              MaterialTheme.colorScheme.error
-            } else {
-              MaterialTheme.colorScheme.primary
-            }
-        ),
+      onClick = onTranscribeSample,
+      enabled = state.isModelReady && !busy,
       shape = RoundedCornerShape(28.dp),
       contentPadding = PaddingValues(vertical = 14.dp),
-      modifier = Modifier.fillMaxWidth(),
+      modifier = Modifier.fillMaxWidth().testTag("transcribe_sample_button"),
     ) {
       Text(
-        text =
-          stringResource(if (isRecording) R.string.stop_recording else R.string.start_recording),
+        text = stringResource(R.string.transcribe_sample),
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.Bold,
       )
     }
 
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-      OutlinedButton(
-        onClick = onSelectModelFile,
-        enabled = !isRecording,
+      Button(
+        onClick = onToggleRecording,
+        enabled = state.isModelReady && !state.isTranscribingSample,
+        colors =
+          ButtonDefaults.buttonColors(
+            containerColor =
+              if (state.isRecording) {
+                MaterialTheme.colorScheme.error
+              } else {
+                MaterialTheme.colorScheme.secondaryContainer
+              },
+            contentColor =
+              if (state.isRecording) {
+                MaterialTheme.colorScheme.onError
+              } else {
+                MaterialTheme.colorScheme.onSecondaryContainer
+              },
+          ),
         shape = RoundedCornerShape(24.dp),
-        modifier = Modifier.weight(1f),
+        modifier = Modifier.weight(1f).testTag("record_mic_button"),
       ) {
-        Text(text = stringResource(R.string.load_model))
+        Text(
+          text =
+            stringResource(
+              if (state.isRecording) R.string.stop_recording else R.string.start_recording
+            ),
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis,
+        )
       }
 
       OutlinedButton(
         onClick = onClearTranscripts,
-        enabled = !isRecording && hasTranscriptContent,
+        enabled = !busy && hasTranscriptContent,
         shape = RoundedCornerShape(24.dp),
-        modifier = Modifier.weight(1f),
+        modifier = Modifier.weight(1f).testTag("clear_transcript_button"),
       ) {
-        Text(text = stringResource(R.string.clear_all))
+        Text(text = stringResource(R.string.clear_all), maxLines = 1)
       }
     }
   }
