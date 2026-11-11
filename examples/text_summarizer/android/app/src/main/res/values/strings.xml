@@ -1,26 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    ~ Copyright 2024 The TensorFlow Authors. All Rights Reserved.
-    ~
-    ~ Licensed under the Apache License, Version 2.0 (the "License");
-    ~ you may not use this file except in compliance with the License.
-    ~ You may obtain a copy of the License at
-    ~
-    ~       http://www.apache.org/licenses/LICENSE-2.0
-    ~
-    ~ Unless required by applicable law or agreed to in writing, software
-    ~ distributed under the License is distributed on an "AS IS" BASIS,
-    ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    ~ See the License for the specific language governing permissions and
-    ~ limitations under the License.
+  ~ Copyright 2026 The MediaPipe Authors.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~       http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
 -->
 <resources>
-    <string name="app_name">MP Text Summarizer</string>
-    <string name="hint_text">Enter text to summarize...</string>
-    <string name="btn_summarize">SUMMARIZE</string>
-    <string name="btn_summarize_stream">SUMMARIZE (STREAM)</string>
-    <string name="btn_clear">CLEAR</string>
-    <string name="label_result">Result:</string>
-    <string name="result_text">Result will appear here.</string>
-    <string name="tldr_mode">TL;DR Mode</string>
+    <string name="app_name">Text Summarizer</string>
+    <string name="cd_open_settings">Model settings</string>
+    <string name="cd_clear_text">Clear text</string>
+
+    <string name="label_examples">Sample passages</string>
+    <string name="label_summary_mode">Summary style</string>
+    <string name="mode_keypoints">Keypoints</string>
+    <string name="mode_tldr">TL;DR</string>
+
+    <string name="label_input_text">Source text</string>
+    <string name="hint_input_text">Paste or type an article, meeting notes, or research abstract to summarize…</string>
+
+    <string name="action_summarize">Summarize</string>
+    <string name="action_stream">Stream</string>
+    <string name="status_loading_model">Loading model…</string>
+    <string name="status_summarizing">Summarizing…</string>
+
+    <string name="label_summary_result">Summary</string>
+    <string name="label_inference_time">Inference</string>
+    <string name="label_compression">Compression</string>
+    <string name="label_max_tokens">Max tokens</string>
+
+    <string name="settings_title">Summarizer settings</string>
+    <string name="max_tokens_description">Maximum token budget allocated for the Gemma 200M summarization context.</string>
+    <string name="label_accelerator_cpu">CPU (Gemma 200M)</string>
+    <string name="delegate_hint">Runs locally on-device using Gemma 200M 2-mode LiteRT-LM via MediaPipe Tasks Text.</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_done">Done</string>
 </resources>
