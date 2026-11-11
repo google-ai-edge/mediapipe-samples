@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    ~ Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+    ~ Copyright 2026 The MediaPipe Authors. All Rights Reserved.
     ~
     ~ Licensed under the Apache License, Version 2.0 (the "License");
     ~ you may not use this file except in compliance with the License.
@@ -16,28 +16,33 @@
 -->
 <resources>
     <string name="app_name">Holistic Landmarker</string>
-
-    <string name="media_pipe">MediaPipe</string>
-
-    <string name="alt_bottom_sheet_chevron">Bottom sheet expandable indicator</string>
-
-    <string name="alt_bottom_sheet_threshold_button_minus">Decreasing threshold button</string>
-    <string name="alt_bottom_sheet_threshold_button_plus">Increasing threshold button</string>
     <string name="menu_camera">Camera</string>
     <string name="menu_gallery">Gallery</string>
-    <string name="tv_gallery_placeholder">Click + to add an image or a video to begin running the holistic landmarker.</string>
 
-    <string name="label_inference_time">Inference Time</string>
-    <string name="label_fps">Frames per Second</string>
-    <string name="label_pose_detection_confidence_threshold">Pose Detection Threshold</string>
-    <string name="label_pose_presence_confidence_threshold">Pose Presence Threshold</string>
-    <string name="label_face_detection_confidence_threshold">Face Detection Threshold</string>
-    <string name="label_face_presence_confidence_threshold">Face Presence Threshold</string>
-    <string name="label_hand_landmarks_confidence_threshold">Hand Landmarks Threshold</string>
+    <string name="camera_permission_title">Camera access needed</string>
+    <string name="camera_permission_body">Grant camera permission to detect pose, face, and hand landmarks live, or switch to Gallery to inspect photos and videos.</string>
+    <string name="action_grant_camera">Allow camera</string>
+    <string name="action_switch_camera">Switch camera</string>
+    <string name="camera_lens_front">Front</string>
+    <string name="camera_lens_back">Back</string>
+
+    <string name="gallery_empty_title">Detect holistic landmarks in media</string>
+    <string name="gallery_empty_body">Try the bundled portrait photo or pick an image or video from your device.</string>
+    <string name="action_try_sample">Try sample</string>
+    <string name="action_pick_media">Pick media</string>
+    <string name="status_detecting">Detecting holistic landmarks…</string>
+
+    <string name="label_inference_time">Inference</string>
+    <string name="label_face_pose">Mesh</string>
+    <string name="label_hands">Hands</string>
     <string name="label_delegate">Delegate</string>
+    <string name="label_face_detection_threshold">Face detection</string>
+    <string name="label_pose_detection_threshold">Pose detection</string>
+    <string name="label_hand_landmarks_threshold">Hand landmarks</string>
 
-    <string-array name="delegate_spinner_titles">
-        <item>CPU</item>
-        <item>GPU</item>
-    </string-array>
+    <string name="settings_title">Landmarker settings</string>
+    <string name="cd_open_settings">Model and hardware settings</string>
+    <string name="action_done">Done</string>
+    <string name="action_use_cpu">Use CPU</string>
+    <string name="action_retry">Retry</string>
 </resources>

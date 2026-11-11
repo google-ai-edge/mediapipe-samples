@@ -1,44 +1,37 @@
-# MediaPipe Tasks Holistic Landmark Detection Android Demo
+# MediaPipe Tasks Holistic Landmarker Android Demo
 
 ### Overview
 
-This is a camera app that detects holistic landmarks (pose, face, and hands)
-either from continuous camera frames seen by your device's camera, an image,
-or a video from the device's gallery using a custom **task** file.
+This Jetpack Compose Android app detects holistic landmarks (pose, face mesh, and left/right hand
+skeletons) from live camera frames (`CameraX` + `RunningMode.LIVE_STREAM`), bundled sample media, or
+device photos and videos (`RunningMode.IMAGE` / `RunningMode.VIDEO`).
 
-The task file is downloaded by a Gradle script when you build and run the app.
-You don't need to do any additional steps to download task files into the
-project explicitly unless you wish to use your own landmark detection task. If
-you do use your own task file, place it into the app's *assets* directory.
-
-This application should be run on a physical Android device to take advantage
-of the camera.
-
-## Build the demo using Android Studio
+![Holistic Landmarker Sample App](holistic_landmarker.png)
 
 ### Prerequisites
 
-*   The **[Android Studio](https://developer.android.com/studio/index.html)** IDE.
+* Android Studio or JDK 17 with Android SDK (`compileSdk = 36`, `minSdk = 24`).
+* An Android device or emulator (physical device recommended for live camera inference).
 
-*   A physical Android device with a minimum OS version of SDK 24 (Android 7.0 -
-    Nougat) with developer mode enabled. The process of enabling developer mode
-    may vary by device.
+### Building & Testing
 
-### Building
+From `examples/holistic_landmarker/android`:
 
-*   Open Android Studio. From the Welcome screen, select Open an existing
-    Android Studio project.
+```bash
+# Download and verify the SHA-256 of holistic_landmarker.task
+./gradlew :app:verifyModels
 
-*   From the Open File or Project window that appears, navigate to and select
-    the examples/holistic_landmarker/android directory. Click OK. You may
-    be asked if you trust the project. Select Trust.
+# Run unit tests
+./gradlew :android-common:testing:testDebugUnitTest
 
-*   If it asks you to do a Gradle Sync, click OK.
+# Build debug & androidTest APKs
+./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
 
-*   With your Android device connected to your computer and developer mode
-    enabled, click on the green Run arrow in Android Studio.
+# Run real-model & Compose UI instrumentation tests on a connected device/emulator
+./gradlew :app:connectedDebugAndroidTest
+```
 
 ### Models used
 
-Downloading, extraction, and placing the model into the *assets* folder is
-managed automatically by the **download_tasks.gradle** file.
+Downloading and SHA-256 verification of `holistic_landmarker.task` into `app/src/main/assets` is
+managed automatically by [download_tasks.gradle.kts](app/download_tasks.gradle.kts).

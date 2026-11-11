@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+ * Copyright 2024 The MediaPipe Authors. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *             http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,6 +32,10 @@ import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.holisticlandmarker.HolisticLandmarker
 import com.google.mediapipe.tasks.vision.holisticlandmarker.HolisticLandmarkerResult
 
+/**
+ * Helper that wraps [HolisticLandmarker] lifecycle, delegate/threshold options, and
+ * image/video/camera inference.
+ */
 class HolisticLandmarkerHelper(
     var minFaceDetectionConfidence: Float = DEFAULT_FACE_DETECTION_CONFIDENCE,
     var minFacePresenceConfidence: Float = DEFAULT_FACE_PRESENCE_CONFIDENCE,
@@ -41,13 +45,17 @@ class HolisticLandmarkerHelper(
     var currentDelegate: Int = DELEGATE_CPU,
     var runningMode: RunningMode = RunningMode.IMAGE,
     val context: Context,
-    // this listener is only used when running in RunningMode.LIVE_STREAM
-    val holisticLandmarkerHelperListener: LandmarkerListener? = null
+    val holisticLandmarkerHelperListener: LandmarkerListener? = null,
 ) {
-
-    // For this example this needs to be a var so it can be reset on changes.
-    // If the Holistic Landmarker will not change, a lazy val would be preferable.
     private var holisticLandmarker: HolisticLandmarker? = null
+
+    /** Duration of the most recent successful [setupHolisticLandmarker] call, in milliseconds. */
+    @Volatile
+    var setupDurationMs: Long = 0L
+        private set
+
+    val isClosed: Boolean
+        get() = holisticLandmarker == null
 
     init {
         setupHolisticLandmarker()
@@ -58,53 +66,36 @@ class HolisticLandmarkerHelper(
         holisticLandmarker = null
     }
 
-    // Return running status of HolisticLandmarkerHelper
-    fun isClose(): Boolean {
-        return holisticLandmarker == null
-    }
+    /**
+     * Initializes [HolisticLandmarker] on the calling thread. When using [DELEGATE_GPU], callers
+     * should invoke this on the same thread that submits frames.
+     */
+    fun setupHolisticLandmarker(): Boolean {
+        clearHolisticLandmarker()
+        val startTime = SystemClock.uptimeMillis()
 
-    // Initialize the Holistic landmarker using current settings on the
-    // thread that is using it. CPU can be used with Landmarker
-    // that are created on the main thread and used on a background thread, but
-    // the GPU delegate needs to be used on the thread that initialized the
-    // Landmarker
-    fun setupHolisticLandmarker() {
-        // Set general holistic landmarker options
-        val baseOptionBuilder = BaseOptions.builder()
-
-        // Use the specified hardware for running the model. Default to CPU
+        val baseOptionBuilder = BaseOptions.builder().setModelAssetPath(MODEL_HOLISTIC_PATH)
         when (currentDelegate) {
-            DELEGATE_CPU -> {
-                baseOptionBuilder.setDelegate(Delegate.CPU)
-            }
-            DELEGATE_GPU -> {
-                baseOptionBuilder.setDelegate(Delegate.GPU)
-            }
-        }
-
-        baseOptionBuilder.setModelAssetPath(MP_HOLISTIC_LANDMARKER_TASK)
-
-        // Check if runningMode is consistent with holisticLandmarkerHelperListener
-        when (runningMode) {
-            RunningMode.LIVE_STREAM -> {
-                if (holisticLandmarkerHelperListener == null) {
-                    throw IllegalStateException(
-                        "holisticLandmarkerHelperListener must be set when runningMode is LIVE_STREAM."
-                    )
-                }
-            }
+            DELEGATE_CPU -> baseOptionBuilder.setDelegate(Delegate.CPU)
+            DELEGATE_GPU -> baseOptionBuilder.setDelegate(Delegate.GPU)
             else -> {
-                // no-op
+                holisticLandmarkerHelperListener?.onError(
+                    "Unsupported delegate index: $currentDelegate"
+                )
+                return false
             }
         }
 
-        try {
-            val baseOptions = baseOptionBuilder.build()
-            // Create an option builder with base options and specific
-            // options only used for Holistic Landmarker.
+        if (runningMode == RunningMode.LIVE_STREAM && holisticLandmarkerHelperListener == null) {
+            throw IllegalStateException(
+                "holisticLandmarkerHelperListener must be set when runningMode is LIVE_STREAM."
+            )
+        }
+
+        return try {
             val optionsBuilder =
                 HolisticLandmarker.HolisticLandmarkerOptions.builder()
-                    .setBaseOptions(baseOptions)
+                    .setBaseOptions(baseOptionBuilder.build())
                     .setMinFaceDetectionConfidence(minFaceDetectionConfidence)
                     .setMinFacePresenceConfidence(minFacePresenceConfidence)
                     .setMinPoseDetectionConfidence(minPoseDetectionConfidence)
@@ -114,233 +105,208 @@ class HolisticLandmarkerHelper(
                     .setOutputPoseSegmentationMasks(false)
                     .setRunningMode(runningMode)
 
-            // The ResultListener and ErrorListener are only used for LIVE_STREAM mode.
             if (runningMode == RunningMode.LIVE_STREAM) {
                 optionsBuilder
                     .setResultListener(this::returnLivestreamResult)
                     .setErrorListener(this::returnLivestreamError)
             }
 
-            val options = optionsBuilder.build()
             holisticLandmarker =
-                HolisticLandmarker.createFromOptions(context, options)
+                HolisticLandmarker.createFromOptions(context, optionsBuilder.build())
+            setupDurationMs = SystemClock.uptimeMillis() - startTime
+            true
         } catch (e: IllegalStateException) {
+            val detail = e.message ?: "IllegalStateException"
             holisticLandmarkerHelperListener?.onError(
-                "Holistic Landmarker failed to initialize. See error logs for details"
+                "Holistic Landmarker failed to initialize: $detail"
             )
-            Log.e(
-                TAG, "MediaPipe failed to load the task with error: " + e.message
-            )
+            Log.e(TAG, "MediaPipe failed to load the task with error: $detail", e)
+            false
         } catch (e: RuntimeException) {
-            // This occurs if the model being used does not support GPU
+            val detail = e.message ?: "RuntimeException"
+            val errorCode = if (currentDelegate == DELEGATE_GPU) GPU_ERROR else OTHER_ERROR
             holisticLandmarkerHelperListener?.onError(
-                "Holistic Landmarker failed to initialize. See error logs for details",
-                GPU_ERROR
+                if (errorCode == GPU_ERROR) {
+                    "This model or device does not support GPU acceleration."
+                } else {
+                    "Holistic Landmarker failed to initialize: $detail"
+                },
+                errorCode,
             )
-            Log.e(
-                TAG,
-                "Holistic Landmarker failed to load model with error: " + e.message
-            )
+            Log.e(TAG, "Holistic Landmarker failed to load model with error: $detail", e)
+            false
         }
     }
 
-    // Convert the ImageProxy to MP Image and feed it to HolisticLandmarkerHelper.
-    fun detectLiveStream(
-        imageProxy: ImageProxy,
-        isFrontCamera: Boolean
-    ) {
+    /** Converts a CameraX RGBA [ImageProxy] to an upright bitmap and runs async detection. */
+    fun detectLiveStream(imageProxy: ImageProxy, isFrontCamera: Boolean) {
         if (runningMode != RunningMode.LIVE_STREAM) {
+            imageProxy.close()
             throw IllegalArgumentException(
                 "Attempting to call detectLiveStream while not using RunningMode.LIVE_STREAM"
             )
         }
         val frameTime = SystemClock.uptimeMillis()
+        val rotationDegrees = imageProxy.imageInfo.rotationDegrees
+        val width = imageProxy.width
+        val height = imageProxy.height
 
-        // Copy out RGB bits from the frame to a bitmap buffer
-        val bitmapBuffer =
-            Bitmap.createBitmap(
-                imageProxy.width,
-                imageProxy.height,
-                Bitmap.Config.ARGB_8888
-            )
-        imageProxy.use { bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer) }
-        imageProxy.close()
-
-        val matrix = Matrix().apply {
-            // Rotate the frame received from the camera to be in the same direction as it'll be shown
-            postRotate(imageProxy.imageInfo.rotationDegrees.toFloat())
-
-            // flip image if user uses front camera
-            if (isFrontCamera) {
-                postScale(
-                    -1f,
-                    1f,
-                    imageProxy.width.toFloat(),
-                    imageProxy.height.toFloat()
-                )
-            }
+        val bitmapBuffer = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        imageProxy.use { proxy ->
+            bitmapBuffer.copyPixelsFromBuffer(proxy.planes[0].buffer)
         }
-        val rotatedBitmap = Bitmap.createBitmap(
-            bitmapBuffer, 0, 0, bitmapBuffer.width, bitmapBuffer.height,
-            matrix, true
-        )
 
-        // Convert the input Bitmap object to an MPImage object to run inference
+        val matrix =
+            Matrix().apply {
+                postRotate(rotationDegrees.toFloat())
+                if (isFrontCamera) {
+                    postScale(-1f, 1f)
+                }
+            }
+        val rotatedBitmap =
+            Bitmap.createBitmap(
+                bitmapBuffer,
+                0,
+                0,
+                bitmapBuffer.width,
+                bitmapBuffer.height,
+                matrix,
+                true,
+            )
+        if (rotatedBitmap !== bitmapBuffer) {
+            bitmapBuffer.recycle()
+        }
+
         val mpImage = BitmapImageBuilder(rotatedBitmap).build()
-
         detectAsync(mpImage, frameTime)
     }
 
-    // Run holistic landmark using MediaPipe Holistic Landmarker API
     @VisibleForTesting
     fun detectAsync(mpImage: MPImage, frameTime: Long) {
         holisticLandmarker?.detectAsync(mpImage, frameTime)
-        // As we're using running mode LIVE_STREAM, the landmark result will
-        // be returned in returnLivestreamResult function
     }
 
-    // Accepts the URI for a video file loaded from the user's gallery and attempts to run
-    // holistic landmarker inference on the video. This process will evaluate every
-    // frame in the video and attach the results to a bundle that will be returned.
-    fun detectVideoFile(
-        videoUri: Uri,
-        inferenceIntervalMs: Long
-    ): VideoResultBundle? {
+    /** Samples frames from [videoUri] every [inferenceIntervalMs] ms and returns detection results. */
+    fun detectVideoFile(videoUri: Uri, inferenceIntervalMs: Long): ResultBundle? {
         if (runningMode != RunningMode.VIDEO) {
             throw IllegalArgumentException(
                 "Attempting to call detectVideoFile while not using RunningMode.VIDEO"
             )
         }
+        require(inferenceIntervalMs > 0L) { "inferenceIntervalMs must be positive." }
 
         val startTime = SystemClock.uptimeMillis()
-        var didErrorOccurred = false
+        var didErrorOccur = false
 
-        // Load frames from the video and run the holistic landmarker.
         val retriever = MediaMetadataRetriever()
-        retriever.setDataSource(context, videoUri)
-        val videoLengthMs =
-            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                ?.toLong()
+        return try {
+            retriever.setDataSource(context, videoUri)
+            val videoLengthMs =
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
+            val firstFrame = retriever.getFrameAtTime(0)
+            val width = firstFrame?.width
+            val height = firstFrame?.height
+            firstFrame?.recycle()
 
-        val firstFrame = retriever.getFrameAtTime(0)
-        val width = firstFrame?.width
-        val height = firstFrame?.height
+            if (videoLengthMs == null || width == null || height == null) {
+                return null
+            }
 
-        // If the video is invalid, returns a null detection result
-        if ((videoLengthMs == null) || (width == null) || (height == null)) return null
+            val resultList = mutableListOf<HolisticLandmarkerResult>()
+            val lastFrameIndex = videoLengthMs / inferenceIntervalMs
 
-        val resultList = mutableListOf<HolisticLandmarkerResult>()
-        val numberOfFrameToRead = videoLengthMs.div(inferenceIntervalMs)
-
-        for (i in 0..numberOfFrameToRead) {
-            val timestampMs = i * inferenceIntervalMs
-
-            retriever
-                .getFrameAtTime(
-                    timestampMs * 1000, // convert from ms to micro-s
-                    MediaMetadataRetriever.OPTION_CLOSEST
-                )
-                ?.let { frame ->
-                    val argb8888Frame =
-                        if (frame.config == Bitmap.Config.ARGB_8888) frame
-                        else frame.copy(Bitmap.Config.ARGB_8888, false)
-
-                    val mpImage = BitmapImageBuilder(argb8888Frame).build()
-
-                    holisticLandmarker?.detectForVideo(mpImage, timestampMs)
-                        ?.let { detectionResult ->
-                            resultList.add(detectionResult)
-                        } ?: run {
-                            didErrorOccurred = true
-                            holisticLandmarkerHelperListener?.onError(
-                                "ResultBundle could not be returned in detectVideoFile"
-                            )
-                        }
-                }
-                ?: run {
-                    didErrorOccurred = true
+            for (i in 0..lastFrameIndex) {
+                val timestampMs = i * inferenceIntervalMs
+                val frame =
+                    retriever.getFrameAtTime(
+                        timestampMs * 1000L,
+                        MediaMetadataRetriever.OPTION_CLOSEST,
+                    )
+                if (frame == null) {
+                    didErrorOccur = true
                     holisticLandmarkerHelperListener?.onError(
                         "Frame at specified time could not be retrieved when detecting in video."
                     )
+                    continue
                 }
-        }
-
-        retriever.release()
-
-        val inferenceTimePerFrameMs =
-            if (numberOfFrameToRead > 0) {
-                (SystemClock.uptimeMillis() - startTime).div(numberOfFrameToRead)
-            } else {
-                SystemClock.uptimeMillis() - startTime
+                val argbFrame =
+                    if (frame.config == Bitmap.Config.ARGB_8888) frame
+                    else frame.copy(Bitmap.Config.ARGB_8888, false)
+                try {
+                    val mpImage = BitmapImageBuilder(argbFrame).build()
+                    val detectionResult = holisticLandmarker?.detectForVideo(mpImage, timestampMs)
+                    if (detectionResult != null) {
+                        resultList.add(detectionResult)
+                    } else {
+                        didErrorOccur = true
+                        holisticLandmarkerHelperListener?.onError(
+                            "ResultBundle could not be returned in detectVideoFile"
+                        )
+                    }
+                } finally {
+                    if (argbFrame !== frame) argbFrame.recycle()
+                    frame.recycle()
+                }
             }
 
-        return if (didErrorOccurred) {
-            null
-        } else {
-            VideoResultBundle(resultList, inferenceTimePerFrameMs, height, width)
+            val frameCount = (lastFrameIndex + 1).coerceAtLeast(1L)
+            val inferenceTimePerFrameMs = (SystemClock.uptimeMillis() - startTime) / frameCount
+
+            if (didErrorOccur) {
+                null
+            } else {
+                ResultBundle(resultList, inferenceTimePerFrameMs, height, width)
+            }
+        } finally {
+            retriever.release()
         }
     }
 
-    // Accepts a Bitmap and runs holistic landmarker inference on it to return
-    // results back to the caller
+    /** Runs holistic landmark detection on a single still [Bitmap] in [RunningMode.IMAGE]. */
     fun detectImage(image: Bitmap): ResultBundle? {
         if (runningMode != RunningMode.IMAGE) {
             throw IllegalArgumentException(
                 "Attempting to call detectImage while not using RunningMode.IMAGE"
             )
         }
-
-        val startTime = SystemClock.uptimeMillis()
-
-        // Convert the input Bitmap object to an MPImage object to run inference
-        val mpImage = BitmapImageBuilder(image).build()
-
-        holisticLandmarker?.detect(mpImage)?.also { landmarkResult ->
-            val inferenceTimeMs = SystemClock.uptimeMillis() - startTime
-            return ResultBundle(
-                landmarkResult,
-                inferenceTimeMs,
-                image.height,
-                image.width
-            )
+        val argbImage =
+            if (image.config == Bitmap.Config.ARGB_8888) image
+            else image.copy(Bitmap.Config.ARGB_8888, false)
+        return try {
+            val startTime = SystemClock.uptimeMillis()
+            val mpImage = BitmapImageBuilder(argbImage).build()
+            val landmarkResult = holisticLandmarker?.detect(mpImage)
+            if (landmarkResult != null) {
+                val inferenceTimeMs = SystemClock.uptimeMillis() - startTime
+                ResultBundle(
+                    results = listOf(landmarkResult),
+                    inferenceTime = inferenceTimeMs,
+                    inputImageHeight = argbImage.height,
+                    inputImageWidth = argbImage.width,
+                )
+            } else {
+                holisticLandmarkerHelperListener?.onError("Holistic Landmarker failed to detect.")
+                null
+            }
+        } finally {
+            if (argbImage !== image) argbImage.recycle()
         }
-
-        holisticLandmarkerHelperListener?.onError(
-            "Holistic Landmarker failed to detect."
-        )
-        return null
     }
 
-    // Return the landmark result to this HolisticLandmarkerHelper's caller
-    private fun returnLivestreamResult(
-        result: HolisticLandmarkerResult,
-        input: MPImage
-    ) {
+    private fun returnLivestreamResult(result: HolisticLandmarkerResult, input: MPImage) {
         val finishTimeMs = SystemClock.uptimeMillis()
         val inferenceTime = finishTimeMs - result.timestampMs()
-
-        val hasLandmarks = result.faceLandmarks().isNotEmpty() ||
-                result.poseLandmarks().isNotEmpty() ||
-                result.leftHandLandmarks().isNotEmpty() ||
-                result.rightHandLandmarks().isNotEmpty()
-
-        if (hasLandmarks) {
-            holisticLandmarkerHelperListener?.onResults(
-                ResultBundle(
-                    result,
-                    inferenceTime,
-                    input.height,
-                    input.width
-                )
+        holisticLandmarkerHelperListener?.onResults(
+            ResultBundle(
+                results = listOf(result),
+                inferenceTime = inferenceTime,
+                inputImageHeight = input.height,
+                inputImageWidth = input.width,
             )
-        } else {
-            holisticLandmarkerHelperListener?.onEmpty()
-        }
+        )
     }
 
-    // Return errors thrown during detection to this HolisticLandmarkerHelper's caller
     private fun returnLivestreamError(error: RuntimeException) {
-        Log.e(TAG, "returnLivestreamError: ${error.message}", error)
         holisticLandmarkerHelperListener?.onError(
             error.message ?: "An unknown error has occurred"
         )
@@ -348,7 +314,8 @@ class HolisticLandmarkerHelper(
 
     companion object {
         const val TAG = "HolisticLandmarkerHelper"
-        private const val MP_HOLISTIC_LANDMARKER_TASK = "holistic_landmarker.task"
+        const val MODEL_HOLISTIC_PATH = "holistic_landmarker.task"
+        const val SAMPLE_IMAGE_ASSET = "sample_holistic.png"
 
         const val DELEGATE_CPU = 0
         const val DELEGATE_GPU = 1
@@ -362,13 +329,6 @@ class HolisticLandmarkerHelper(
     }
 
     data class ResultBundle(
-        val result: HolisticLandmarkerResult,
-        val inferenceTime: Long,
-        val inputImageHeight: Int,
-        val inputImageWidth: Int,
-    )
-
-    data class VideoResultBundle(
         val results: List<HolisticLandmarkerResult>,
         val inferenceTime: Long,
         val inputImageHeight: Int,
