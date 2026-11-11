@@ -2,44 +2,34 @@
 
 ### Overview
 
-This is an audio app that continuously classifies the sound of objects that is
-recorded by the microphone, or in the audios imported from the device library,
-with the option to use a
-[Yamnet classification](https://storage.googleapis.com/download.tensorflow.org/models/tflite/task_library/audio_classification/android/lite-model_yamnet_classification_tflite_1.tflite)
-. The model files are downloaded by a Gradle script when you build and run the
-app. You don't need to do any steps to download TFLite models into the project
-explicitly unless you wish to use your own models. If you do use your own
-models, place them into the app's *assets* directory.
+This app continuously classifies sounds recorded from the microphone or loaded from audio clips on device using [YAMNet](https://storage.googleapis.com/mediapipe-models/audio_classifier/yamnet/float32/1/yamnet.tflite) and the MediaPipe Tasks Audio library (`com.google.mediapipe:tasks-audio`).
+
+* **Audio Clip mode:** Classify the bundled 16 kHz speech clip, a synthesized 440 Hz sine tone, or any audio file picked from device storage, with window-by-window playback and probability bars.
+* **Live Mic mode:** Stream 16 kHz microphone audio in `RunningMode.AUDIO_STREAM` with configurable overlap, max results, and confidence threshold.
+* **Material 3 Compose UI:** Shared `:android-common:ui` theming and components with edge-to-edge layout and light/dark theme support.
 
 ![Audio Classifier Demo](audioclassifier.png?raw=true "Audio Classifier Demo")
 
-## Build the demo using Android Studio
+## Building and Running
+
+This project is self-contained using Gradle Kotlin DSL and a local version catalog (`gradle/libs.versions.toml`). Model and sample audio downloads are verified via SHA-256 in `app/download_model.gradle.kts`.
 
 ### Prerequisites
 
-* The **[Android Studio](https://developer.android.com/studio/index.html)**
-  IDE. This sample has been tested on Android Studio Dolphin.
+* **[Android Studio](https://developer.android.com/studio/index.html)** (JDK 17+).
+* An Android device or emulator running API level 24 (Android 7.0) or higher.
 
-* A physical Android device with a minimum OS version of SDK 24 (Android 7.0 -
-  Nougat) with developer mode enabled. The process of enabling developer mode
-  may vary by device. You may also use an Android emulator with more limited
-  functionality.
+### Build and Test via Gradle
 
-### Building
+```bash
+cd examples/audio_classifier/android
+./gradlew :app:verifyModels :app:testDebugUnitTest
+./gradlew :app:connectedDebugAndroidTest
+```
 
-* Open Android Studio. From the Welcome screen, select Open an existing Android
-  Studio project.
+### Models and Sample Audio Used
 
-* From the Open File or Project window that appears, navigate to and select the
-  mediapipe/examples/audio_classifier/android directory. Click OK. You may be
-  asked if you trust the project. Select Trust.
+Model and sample audio assets are automatically downloaded and verified in `app/src/main/assets/` by `app/download_model.gradle.kts`:
 
-* If it asks you to do a Gradle Sync, click OK.
-
-* With your Android device connected to your computer and developer mode
-  enabled, click on the green Run arrow in Android Studio.
-
-### Models used
-
-Downloading, extraction, and placing the models into the *assets* folder is
-managed automatically by the **download_models.gradle** file.
+* `yamnet.tflite`: YAMNet audio event classification model (16 kHz mono).
+* `speech_16000_hz_mono.wav`: Bundled 16 kHz mono sample clip for immediate offline classification and instrumented testing.
