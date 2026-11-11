@@ -1,41 +1,31 @@
 # MediaPipe Tasks Pose Landmark Detection Android Demo
 
-### Overview
+## Overview
 
-This is a camera app that can detects landmarks on a person either from continuous camera frames seen by your device's back camera, an image, or a video from the device's gallery using a custom **task** file.
+This sample demonstrates the MediaPipe [Pose Landmarker](https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker/android) task in a Jetpack Compose Material 3 app. It detects 33 3D human body pose landmarks across:
 
-The task file is downloaded by a Gradle script when you build and run the app. You don't need to do any additional steps to download task files into the project explicitly unless you wish to use your own landmark detection task. If you do use your own task file, place it into the app's *assets* directory.
+- **Camera:** Live front/back CameraX feed with real-time pose skeleton overlays and inference latency telemetry.
+- **Gallery:** Bundled outdoor pose sample (`Try sample`) as well as user-selected images and videos from the device gallery.
 
-This application should be run on a physical Android device to take advantage of the camera.
+In the **Settings** sheet, you can switch models (**Pose Lite**, **Pose Full**, and **Pose Heavy**), toggle hardware **Delegate** (`CPU` or `GPU`), and tune detection, tracking, and presence confidence thresholds.
 
-![Pose Landmarker Demo](pose_landmarker.png?raw=true "Pose Landmarker Demo")
-[Public domain video from Lance Foss](https://www.youtube.com/watch?v=KALIKOd1pbA)
+![Pose Landmark Detection Demo](pose_landmarker.png?raw=true "Pose Landmark Detection Demo")
 
-## Build the demo using Android Studio
+## Prerequisites
 
-### Prerequisites
+- **[Android Studio](https://developer.android.com/studio)** (with Android SDK 36 and JDK 17+)
+- An Android device or emulator running Android 7.0 (API 24) or higher
 
-*   The **[Android Studio](https://developer.android.com/studio/index.html)** IDE. This sample has been tested on Android Studio Dolphin.
+## Build and Run
 
-*   A physical Android device with a minimum OS version of SDK 24 (Android 7.0 -
-    Nougat) with developer mode enabled. The process of enabling developer mode
-    may vary by device.
+The Gradle script [app/download_tasks.gradle.kts](app/download_tasks.gradle.kts) automatically downloads and SHA-256 verifies `pose_landmarker_lite.task`, `pose_landmarker_full.task`, and `pose_landmarker_heavy.task` into `app/src/main/assets/` before building:
 
-### Building
+```bash
+./gradlew :app:verifyModels :app:assembleDebug
+```
 
-*   Open Android Studio. From the Welcome screen, select Open an existing
-    Android Studio project.
+To run the shared unit tests and instrumented real-model + UI tests:
 
-*   From the Open File or Project window that appears, navigate to and select
-    the mediapipe/examples/pose_landmarker/android directory. Click OK. You may
-    be asked if you trust the project. Select Trust.
-
-*   If it asks you to do a Gradle Sync, click OK.
-
-*   With your Android device connected to your computer and developer mode
-    enabled, click on the green Run arrow in Android Studio.
-
-### Models used
-
-Downloading, extraction, and placing the models into the *assets* folder is
-managed automatically by the **download.gradle** file.
+```bash
+./gradlew :android-common:testing:testDebugUnitTest :app:connectedDebugAndroidTest
+```
