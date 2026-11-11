@@ -15,5 +15,6 @@
 local.properties
 .kotlin
 *.litertlm
+*.wav
 app/libs/*.aar
 app/libs/*.jar

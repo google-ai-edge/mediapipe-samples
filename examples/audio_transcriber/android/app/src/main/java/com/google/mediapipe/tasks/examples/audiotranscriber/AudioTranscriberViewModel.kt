@@ -17,6 +17,7 @@
 package com.google.mediapipe.tasks.examples.audiotranscriber
 
 import android.content.Context
+import android.os.SystemClock
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -53,10 +54,15 @@ val AudioTranscriberResult.Segment.durationSeconds: Double
 /** Immutable UI state published by [AudioTranscriberViewModel]. */
 data class AudioTranscriberUiState(
   val isRecording: Boolean = false,
+  val isTranscribingSample: Boolean = false,
+  val isModelReady: Boolean = false,
+  val currentDelegate: Int = AudioTranscriberViewModel.DELEGATE_CPU,
   val interimTranscript: String = "",
   val finalizedSegments: List<AudioTranscriberResult.Segment> = emptyList(),
   val audioLevel: Float = 0.0f,
-  val statusMessage: String = AudioTranscriberViewModel.STATUS_READY,
+  val lastLatencyMs: Long? = null,
+  val statusMessage: String = AudioTranscriberViewModel.STATUS_LOADING,
+  val errorMessage: String? = null,
   val activeModelName: String = AudioTranscriberViewModel.DEFAULT_MODEL_FILE_NAME,
 )
 
@@ -73,13 +79,17 @@ interface AudioTranscribing : AutoCloseable {
 
   companion object {
     /** Creates an [AudioTranscribing] instance backed by MediaPipe's [AudioTranscriber]. */
-    fun create(context: Context, modelFile: File): AudioTranscribing {
-      // Default to CPU so the sample runs out-of-the-box on both Android emulators and physical
-      // devices (the bundled .litertlm archive's TFLite subgraphs support both CPU and GPU).
+    fun create(
+      context: Context,
+      modelFile: File,
+      delegateIndex: Int = AudioTranscriberViewModel.DELEGATE_CPU,
+    ): AudioTranscribing {
+      val delegate =
+        if (delegateIndex == AudioTranscriberViewModel.DELEGATE_GPU) Delegate.GPU else Delegate.CPU
       val baseOptions =
         BaseOptions.builder()
           .setModelAssetPath(modelFile.absolutePath)
-          .setDelegate(Delegate.CPU)
+          .setDelegate(delegate)
           .build()
       val options =
         AudioTranscriberOptions.builder()
@@ -155,13 +165,14 @@ internal fun resolveDefaultModelFile(
 }
 
 /**
- * ViewModel coordinating live microphone capture and MediaPipe [AudioTranscriber] streaming speech
- * recognition.
+ * ViewModel coordinating live microphone capture, sample clip playback/decoding, and MediaPipe
+ * [AudioTranscriber] streaming speech recognition.
  */
 class AudioTranscriberViewModel(
   private val captureEngine: AudioCapturing = AudioCaptureEngine(),
   private val initialModelResolver: suspend () -> File,
-  private val transcriberLoader: suspend (File) -> AudioTranscribing,
+  private val sampleAudioProvider: (suspend () -> DecodedWavAudio)? = null,
+  private val transcriberLoader: suspend (File, Int) -> AudioTranscribing,
   private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
 
@@ -170,13 +181,17 @@ class AudioTranscriberViewModel(
 
   private val transcriberMutex = Mutex()
   @Volatile private var transcriber: AudioTranscribing? = null
+  @Volatile private var activeModelFile: File? = null
   @Volatile private var audioChunkChannel: Channel<FloatArray>? = null
   private var isCleared = false
 
   init {
     viewModelScope.launch {
-      val unused =
-        loadTranscriber(statusOnSuccess = { STATUS_READY }, modelProvider = initialModelResolver)
+      loadTranscriber(
+        statusOnSuccess = { STATUS_READY },
+        delegateIndex = _uiState.value.currentDelegate,
+        modelProvider = initialModelResolver,
+      )
     }
   }
 
@@ -184,12 +199,125 @@ class AudioTranscriberViewModel(
     if (_uiState.value.isRecording) stopRecording() else startRecording()
   }
 
+  fun setDelegate(delegateIndex: Int) {
+    if (_uiState.value.isRecording || _uiState.value.isTranscribingSample) return
+    if (delegateIndex == _uiState.value.currentDelegate && _uiState.value.isModelReady) return
+    _uiState.update {
+      it.copy(
+        currentDelegate = delegateIndex,
+        isModelReady = false,
+        statusMessage = STATUS_LOADING,
+        errorMessage = null,
+      )
+    }
+    viewModelScope.launch {
+      val provider: suspend () -> File = { activeModelFile ?: initialModelResolver() }
+      loadTranscriber(
+        statusOnSuccess = { STATUS_READY },
+        delegateIndex = delegateIndex,
+        modelProvider = provider,
+      )
+    }
+  }
+
+  fun fallbackToCpu() {
+    setDelegate(DELEGATE_CPU)
+  }
+
+  fun transcribeSampleClip() {
+    if (_uiState.value.isRecording || _uiState.value.isTranscribingSample) return
+    val provider = sampleAudioProvider ?: return
+
+    _uiState.update {
+      it.copy(
+        isTranscribingSample = true,
+        statusMessage = STATUS_TRANSCRIBING_SAMPLE,
+        errorMessage = null,
+        interimTranscript = "",
+        finalizedSegments = emptyList(),
+      )
+    }
+
+    launchTask("Sample transcription error") {
+      try {
+        if (
+          transcriber == null &&
+            !loadTranscriber(
+              statusOnSuccess = { STATUS_READY },
+              delegateIndex = _uiState.value.currentDelegate,
+              modelProvider = { activeModelFile ?: initialModelResolver() },
+            )
+        ) {
+          return@launchTask
+        }
+
+        val audio = withContext(ioDispatcher) { provider() }
+        val chunkSize = SAMPLE_RATE_HZ / 2 // 500 ms chunks at 16 kHz
+        val startMs = SystemClock.uptimeMillis()
+
+        val resultSegments =
+          withTranscriber {
+            val active = transcriber ?: return@withTranscriber emptyList()
+            val accumulated = mutableListOf<AudioTranscriberResult.Segment>()
+            var offset = 0
+            while (offset < audio.samples.size) {
+              val end = (offset + chunkSize).coerceAtMost(audio.samples.size)
+              val chunk = audio.samples.copyOfRange(offset, end)
+              val isLast = end == audio.samples.size
+              val partial = active.transcribe(chunk, endOfStream = isLast)
+              val chunkLevel = chunk.calculateRmsLevel()
+              _uiState.update { state ->
+                val nextFinal = state.finalizedSegments.toMutableList()
+                var nextInterim = state.interimTranscript
+                for (segment in partial.segments()) {
+                  if (segment.isFinal) {
+                    nextFinal.add(segment)
+                    accumulated.add(segment)
+                    nextInterim = ""
+                  } else {
+                    nextInterim = segment.transcript()
+                  }
+                }
+                state.copy(
+                  audioLevel = chunkLevel,
+                  finalizedSegments = nextFinal,
+                  interimTranscript = nextInterim,
+                )
+              }
+              offset = end
+            }
+            val finished = active.finishStream()
+            active.prewarm()
+            accumulated.addAll(finished.segments())
+            finished.segments()
+          }
+
+        val elapsedMs = (SystemClock.uptimeMillis() - startMs).coerceAtLeast(1L)
+        _uiState.update { current ->
+          current.copy(
+            finalizedSegments = current.finalizedSegments + resultSegments,
+            interimTranscript = "",
+            audioLevel = 0.0f,
+            lastLatencyMs = elapsedMs,
+            statusMessage = STATUS_SAMPLE_COMPLETE,
+          )
+        }
+      } finally {
+        _uiState.update { it.copy(isTranscribingSample = false, audioLevel = 0.0f) }
+      }
+    }
+  }
+
   fun startRecording() {
-    if (_uiState.value.isRecording) return
+    if (_uiState.value.isRecording || _uiState.value.isTranscribingSample) return
     launchTask("Microphone error") {
       if (
         transcriber == null &&
-          !loadTranscriber(statusOnSuccess = { STATUS_READY }, modelProvider = initialModelResolver)
+          !loadTranscriber(
+            statusOnSuccess = { STATUS_READY },
+            delegateIndex = _uiState.value.currentDelegate,
+            modelProvider = { activeModelFile ?: initialModelResolver() },
+          )
       ) {
         return@launchTask
       }
@@ -200,7 +328,9 @@ class AudioTranscriberViewModel(
         )
       audioChunkChannel?.close()
       audioChunkChannel = channel
-      _uiState.update { it.copy(isRecording = true, statusMessage = STATUS_LISTENING) }
+      _uiState.update {
+        it.copy(isRecording = true, statusMessage = STATUS_LISTENING, errorMessage = null)
+      }
       try {
         captureEngine.startCapture { chunk -> onAudioChunkCaptured(chunk) }
       } catch (e: Exception) {
@@ -210,6 +340,7 @@ class AudioTranscriberViewModel(
         throw e
       }
       launchTask("Transcription error") {
+        val sessionStartMs = SystemClock.uptimeMillis()
         for (samples in channel) {
           val result =
             withTranscriber {
@@ -217,6 +348,7 @@ class AudioTranscriberViewModel(
               transcriber?.transcribe(samples, endOfStream = false)
             } ?: continue
           if (!_uiState.value.isRecording) break
+          val elapsedMs = (SystemClock.uptimeMillis() - sessionStartMs).coerceAtLeast(1L)
           _uiState.update { current ->
             val updatedFinalized = current.finalizedSegments.toMutableList()
             var updatedInterim = current.interimTranscript
@@ -228,7 +360,11 @@ class AudioTranscriberViewModel(
                 updatedInterim = segment.transcript()
               }
             }
-            current.copy(finalizedSegments = updatedFinalized, interimTranscript = updatedInterim)
+            current.copy(
+              finalizedSegments = updatedFinalized,
+              interimTranscript = updatedInterim,
+              lastLatencyMs = elapsedMs,
+            )
           }
         }
       }
@@ -240,14 +376,17 @@ class AudioTranscriberViewModel(
     stopCaptureSession()
     _uiState.update { it.copy(isRecording = false, audioLevel = 0.0f) }
     launchTask("Finalization error") {
+      val startMs = SystemClock.uptimeMillis()
       val finalResult =
         withTranscriber {
           transcriber?.let { active -> active.finishStream().also { active.prewarm() } }
         } ?: return@launchTask
+      val finalizeMs = (SystemClock.uptimeMillis() - startMs).coerceAtLeast(1L)
       _uiState.update { current ->
         current.copy(
           finalizedSegments = current.finalizedSegments + finalResult.segments(),
           interimTranscript = "",
+          lastLatencyMs = finalizeMs,
           statusMessage = STATUS_FINALIZED,
         )
       }
@@ -255,7 +394,14 @@ class AudioTranscriberViewModel(
   }
 
   fun clearTranscripts() {
-    _uiState.update { it.copy(interimTranscript = "", finalizedSegments = emptyList()) }
+    _uiState.update {
+      it.copy(
+        interimTranscript = "",
+        finalizedSegments = emptyList(),
+        lastLatencyMs = null,
+        errorMessage = null,
+      )
+    }
     launchTask("Reset error") {
       withTranscriber {
         transcriber?.let { active ->
@@ -273,20 +419,30 @@ class AudioTranscriberViewModel(
       _uiState.update { it.copy(isRecording = false, audioLevel = 0.0f) }
     }
     viewModelScope.launch {
-      val unused = loadTranscriber(statusOnSuccess = { "Loaded ${it.name}" }) { modelFile }
+      loadTranscriber(
+        statusOnSuccess = { STATUS_READY },
+        delegateIndex = _uiState.value.currentDelegate,
+        modelProvider = { modelFile },
+      )
     }
   }
 
   fun onModelStagingFailed(reason: String?) {
+    val detail = reason ?: "Unknown error"
     _uiState.update {
-      it.copy(statusMessage = "Initialization error: ${reason ?: "Unknown error"}")
+      it.copy(statusMessage = STATUS_ERROR, errorMessage = "Model staging failed: $detail")
     }
   }
 
   fun onMicrophonePermissionDenied() {
     stopCaptureSession()
     _uiState.update {
-      it.copy(isRecording = false, audioLevel = 0.0f, statusMessage = STATUS_PERMISSION_DENIED)
+      it.copy(
+        isRecording = false,
+        audioLevel = 0.0f,
+        statusMessage = STATUS_PERMISSION_DENIED,
+        errorMessage = STATUS_PERMISSION_DENIED,
+      )
     }
   }
 
@@ -315,26 +471,33 @@ class AudioTranscriberViewModel(
 
   private suspend fun loadTranscriber(
     statusOnSuccess: (File) -> String,
+    delegateIndex: Int,
     modelProvider: suspend () -> File,
-  ): Boolean =
-    try {
+  ): Boolean {
+    val startMs = SystemClock.uptimeMillis()
+    return try {
       val modelFile =
         withTranscriber {
           if (isCleared) return@withTranscriber null
           runCatching { transcriber?.close() }
           transcriber = null
           val file = modelProvider()
-          val instance = transcriberLoader(file)
+          val instance = transcriberLoader(file, delegateIndex)
           instance.prewarm()
+          activeModelFile = file
           transcriber = instance
           file
         } ?: return false
+      val loadMs = (SystemClock.uptimeMillis() - startMs).coerceAtLeast(1L)
       _uiState.update {
         it.copy(
+          isModelReady = true,
           interimTranscript = "",
           finalizedSegments = emptyList(),
           activeModelName = modelFile.name,
+          lastLatencyMs = loadMs,
           statusMessage = statusOnSuccess(modelFile),
+          errorMessage = null,
         )
       }
       true
@@ -343,10 +506,15 @@ class AudioTranscriberViewModel(
     } catch (e: Exception) {
       Log.e(TAG, "Failed to initialize AudioTranscriber", e)
       _uiState.update {
-        it.copy(statusMessage = "Initialization error: ${e.message ?: "unknown error"}")
+        it.copy(
+          isModelReady = false,
+          statusMessage = STATUS_ERROR,
+          errorMessage = e.message ?: "Failed to initialize AudioTranscriber",
+        )
       }
       false
     }
+  }
 
   private suspend fun <T> withTranscriber(block: suspend () -> T): T =
     withContext(ioDispatcher) { transcriberMutex.withLock { block() } }
@@ -359,7 +527,12 @@ class AudioTranscriberViewModel(
         throw e
       } catch (e: Exception) {
         Log.e(TAG, errorPrefix, e)
-        _uiState.update { it.copy(statusMessage = "$errorPrefix: ${e.message ?: "unknown error"}") }
+        _uiState.update {
+          it.copy(
+            statusMessage = STATUS_ERROR,
+            errorMessage = "$errorPrefix: ${e.message ?: "unknown error"}",
+          )
+        }
       }
     }
   }
@@ -368,14 +541,21 @@ class AudioTranscriberViewModel(
     private const val TAG = "AudioTranscriberVM"
     private const val SIDELOAD_TMP_DIR_PATH = "/data/local/tmp/audiotranscriber"
     private const val AUDIO_CHANNEL_CAPACITY = 64
+    const val DELEGATE_CPU = 0
+    const val DELEGATE_GPU = 1
     const val MODEL_EXTENSION = "litertlm"
     const val DEFAULT_MODEL_FILE_NAME = "parakeet_tdt_0.6b_v3_5s_i8_stateful.$MODEL_EXTENSION"
+    const val SAMPLE_AUDIO_ASSET = "speech_16000_hz_mono.wav"
     const val SAMPLE_RATE_HZ = 16_000
+    const val STATUS_LOADING = "Loading..."
     const val STATUS_READY = "Ready"
     const val STATUS_LISTENING = "Listening..."
-    const val STATUS_FINALIZED = "Recording finalized"
+    const val STATUS_TRANSCRIBING_SAMPLE = "Transcribing..."
+    const val STATUS_SAMPLE_COMPLETE = "Transcribed"
+    const val STATUS_FINALIZED = "Finalized"
     const val STATUS_CLEARED = "Cleared"
-    const val STATUS_PERMISSION_DENIED = "Microphone permission denied"
+    const val STATUS_PERMISSION_DENIED = "No mic access"
+    const val STATUS_ERROR = "Error"
 
     fun factory(context: Context): ViewModelProvider.Factory {
       val appContext = context.applicationContext
@@ -388,7 +568,12 @@ class AudioTranscriberViewModel(
             initialModelResolver = {
               resolveDefaultModelFile(sideloadDirs, appContext.cacheDir, appContext.assets::open)
             },
-            transcriberLoader = { file -> AudioTranscribing.create(appContext, file) },
+            sampleAudioProvider = {
+              appContext.assets.open(SAMPLE_AUDIO_ASSET).use { WavAudioLoader.decode(it) }
+            },
+            transcriberLoader = { file, delegate ->
+              AudioTranscribing.create(appContext, file, delegate)
+            },
           )
             as T
         }
