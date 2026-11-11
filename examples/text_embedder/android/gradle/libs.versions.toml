@@ -26,10 +26,10 @@ kotlin = "2.2.20"
 mediapipeTasksText = "1.2.2"
 
 # AndroidX & Compose
-coreKtx = "1.18.0"
+coreKtx = "1.19.1"
 lifecycle = "2.10.0"
 activityCompose = "1.12.4"
-composeBom = "2026.05.00"
+composeBom = "2026.09.00"
 coroutines = "1.11.0"
 
 # Testing
