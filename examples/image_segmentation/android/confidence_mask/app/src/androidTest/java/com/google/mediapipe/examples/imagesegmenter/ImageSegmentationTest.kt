@@ -15,135 +15,171 @@
  */
 package com.google.mediapipe.examples.imagesegmenter
 
-import android.content.res.AssetManager
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Color
+import android.os.SystemClock
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.google.common.truth.Truth.assertThat
+import com.google.mediapipe.examples.common.testing.LatencyRecorder
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.ByteBufferExtractor
+import com.google.mediapipe.tasks.vision.core.RunningMode
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.io.InputStream
 
-/**
- * Instrumented test, which will execute on an Android device.
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
+/** Real-model confidence mask instrumentation tests for [ImageSegmenterHelper]. */
 @RunWith(AndroidJUnit4::class)
 class ImageSegmentationTest {
-    companion object {
-        private const val EXPECTED_MASK_TOLERANCE = 1e-2
-        private const val INPUT_IMAGE = "input_image.jpeg"
-        private const val EXPECTED_IMAGE = "expected_image.png"
-        private val labelColors = listOf(
-            -16777216,
-            -8388608,
-            -16744448,
-            -8355840,
-            -16777088,
-            -8388480,
-            -16744320,
-            -8355712,
-            -12582912,
-            -4194304,
-            -12550144,
-            -4161536,
-            -12582784,
-            -4194176,
-            -12550016,
-            -4161408,
-            -16760832,
-            -8372224,
-            -16728064,
-            -8339456,
-            -16760704
-        )
-    }
 
-    private lateinit var imageSegmenterHelper: ImageSegmenterHelper
+    companion object {
+        private const val INPUT_IMAGE = "input_image.jpeg"
+    }
 
     @Test
-    fun segmentationResultShouldNotBeChanged() {
-        imageSegmenterHelper =
-            ImageSegmenterHelper(context = ApplicationProvider.getApplicationContext(),
-                imageSegmenterListener = object :
-                    ImageSegmenterHelper.SegmenterListener {
-                    override fun onError(error: String, errorCode: Int) {
-                        // no-op
-                    }
+    fun detectImage_deepLabV3_returnsValidConfidenceMasks_andRecordsLatency() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val bitmap = loadTestAsset(INPUT_IMAGE)
 
-                    override fun onResults(resultBundle: ImageSegmenterHelper.ResultBundle) {
-                        // no-op
-                    }
-                })
+        val recorder = LatencyRecorder("image_segmenter_confidence_mask_cpu")
+        recorder.putMetadata("model", ImageSegmenterHelper.MODEL_DEEPLABV3_PATH)
+        recorder.putMetadata("delegate", "CPU")
 
-        val testBitmap = loadImage(INPUT_IMAGE)
-        val mpImage = BitmapImageBuilder(testBitmap).build()
-
-        // Run the image segmentation with the test image.
-        val imageSegmentationResult =
-            imageSegmenterHelper.segmentImageFile(mpImage)
-
-
-        // Verify that the segmentation result is not null.
-        assertNotNull(imageSegmentationResult)
-
-        // Create the mask bitmap with colors
-        val byteBuffer = ByteBufferExtractor.extract(
-            imageSegmentationResult!!.categoryMask().get()
-        )
-        val outputMask = IntArray(byteBuffer.capacity())
-        for (i in outputMask.indices) {
-            val index = byteBuffer.get(i).toInt()
-            val color: Int =
-                if (index in 1..20) labelColors[index].toAlphaColor() else Color.TRANSPARENT
-            outputMask[i] = color
-        }
-
-        val maskBitmap = Bitmap.createBitmap(
-            outputMask,
-            mpImage.width,
-            mpImage.height,
-            Bitmap.Config.ARGB_8888
-        )
-
-        // Verify output mask bitmap.
-        val expectedPixels = getPixels(loadImage(EXPECTED_IMAGE)!!)
-        val actualPixels = getPixels(maskBitmap)
-
-        assertThat(actualPixels.size).isEqualTo(expectedPixels.size)
-
-        var inconsistentPixels = 0
-        for (i in actualPixels.indices) {
-            if (actualPixels[i] != expectedPixels[i]) {
-                inconsistentPixels++
+        val helper =
+            recorder.measure("model_load_ms") {
+                ImageSegmenterHelper(
+                    context = context,
+                    currentModel = ImageSegmenterHelper.MODEL_DEEPLABV3,
+                    runningMode = RunningMode.IMAGE,
+                )
             }
+        try {
+            assertFalse("DeepLabV3 failed to initialize", helper.isClosed)
+            val result =
+                recorder.measure("detect_image_ms") {
+                    helper.segmentImageFile(BitmapImageBuilder(bitmap).build())
+                }
+            assertNotNull(result)
+
+            val masks = result!!.confidenceMasks().orElse(null)
+            assertNotNull(masks)
+            assertEquals(21, masks!!.size)
+
+            val backgroundBuffer = ByteBufferExtractor.extract(masks[0]).asFloatBuffer()
+            assertEquals(bitmap.width * bitmap.height, backgroundBuffer.capacity())
+            var hasHighBackground = false
+            var hasLowBackgroundForeground = false
+            for (i in 0 until backgroundBuffer.capacity()) {
+                val conf = backgroundBuffer.get(i)
+                assertTrue("Confidence out of [0,1]: $conf", conf in 0f..1f)
+                if (conf > 0.8f) hasHighBackground = true
+                if (conf < 0.2f) hasLowBackgroundForeground = true
+            }
+            assertTrue("Expected confident background region", hasHighBackground)
+            assertTrue("Expected confident foreground region", hasLowBackgroundForeground)
+
+            val bundle = helper.detectImage(bitmap)
+            assertNotNull(bundle)
+            assertTrue("Expected foreground % in (5, 95)", bundle!!.foregroundPercent in 5..95)
+
+            repeat(5) {
+                recorder.measure("detect_steady_ms") { helper.detectImage(bitmap) }
+            }
+            recorder.flush(context)
+        } finally {
+            helper.clearImageSegmenter()
+            bitmap.recycle()
         }
-
-        assertThat(inconsistentPixels.toDouble() / actualPixels.size).isLessThan(
-            EXPECTED_MASK_TOLERANCE
-        )
     }
 
-    @Throws(Exception::class)
-    private fun loadImage(fileName: String): Bitmap? {
-        val assetManager: AssetManager =
-            InstrumentationRegistry.getInstrumentation().context.assets
-        val inputStream: InputStream = assetManager.open(fileName)
-        return BitmapFactory.decodeStream(inputStream)
+    @Test
+    fun detectImage_secondaryModels_returnConfidenceMasks() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val bitmap = loadTestAsset(INPUT_IMAGE)
+        try {
+            listOf(
+                ImageSegmenterHelper.MODEL_HAIR_SEGMENTER,
+                ImageSegmenterHelper.MODEL_SELFIE_SEGMENTER,
+                ImageSegmenterHelper.MODEL_SELFIE_MULTICLASS,
+            ).forEach { modelId ->
+                val helper =
+                    ImageSegmenterHelper(
+                        context = context,
+                        currentModel = modelId,
+                        runningMode = RunningMode.IMAGE,
+                    )
+                try {
+                    assertFalse("Model $modelId failed to initialize", helper.isClosed)
+                    val bundle = helper.detectImage(bitmap)
+                    assertNotNull("Null bundle for model $modelId", bundle)
+                    assertTrue(bundle!!.maskCount >= 1)
+                    assertTrue(bundle.maskWidth > 0 && bundle.maskHeight > 0)
+                } finally {
+                    helper.clearImageSegmenter()
+                }
+            }
+        } finally {
+            bitmap.recycle()
+        }
     }
 
-    private fun getPixels(bitmap: Bitmap): IntArray {
-        val width = bitmap.width
-        val height = bitmap.height
-        val pixels = IntArray(width * height)
-        bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
-        return pixels
+    @Test
+    fun detectLiveStream_returnsConfidenceMaskResult() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val latch = CountDownLatch(1)
+        val resultRef = AtomicReference<ImageSegmenterHelper.ResultBundle?>()
+        val errorRef = AtomicReference<String?>()
+
+        val helper =
+            ImageSegmenterHelper(
+                context = context,
+                runningMode = RunningMode.LIVE_STREAM,
+                imageSegmenterListener =
+                    object : ImageSegmenterHelper.SegmenterListener {
+                        override fun onError(error: String, errorCode: Int) {
+                            errorRef.compareAndSet(null, error)
+                            latch.countDown()
+                        }
+
+                        override fun onResults(resultBundle: ImageSegmenterHelper.ResultBundle) {
+                            resultRef.compareAndSet(null, resultBundle)
+                            latch.countDown()
+                        }
+                    },
+            )
+        val bitmap = loadTestAsset(INPUT_IMAGE)
+        try {
+            assertFalse("LIVE_STREAM helper failed to initialize", helper.isClosed)
+            helper.segmentAsync(BitmapImageBuilder(bitmap).build(), SystemClock.uptimeMillis())
+
+            assertTrue(
+                "Timed out waiting for LIVE_STREAM callback",
+                latch.await(15, TimeUnit.SECONDS),
+            )
+            val err = errorRef.get()
+            if (err != null) {
+                throw AssertionError("Unexpected LIVE_STREAM error: $err")
+            }
+
+            val bundle = resultRef.get()
+            assertNotNull(bundle)
+            assertEquals(21, bundle!!.maskCount)
+        } finally {
+            helper.clearImageSegmenter()
+            bitmap.recycle()
+        }
     }
+
+    private fun loadTestAsset(fileName: String): Bitmap =
+        InstrumentationRegistry.getInstrumentation().context.assets.open(fileName).use { stream ->
+            requireNotNull(BitmapFactory.decodeStream(stream)) { "Failed to decode $fileName" }
+        }
 }
