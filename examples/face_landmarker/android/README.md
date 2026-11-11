@@ -1,38 +1,31 @@
 # MediaPipe Tasks Face Landmark Detection Android Demo
 
-### Overview
+## Overview
 
-This is a camera app that can  detects face landmarks either from continuous camera frames seen by your device's front camera, an image, or a video from the device's gallery using a custom **task** file.
+This sample demonstrates the MediaPipe [Face Landmarker](https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker/android) task in a Jetpack Compose Material 3 app. It detects 478 3D face landmarks and 52 ARKit-compatible facial expression blendshape scores across:
 
-The task file is downloaded by a Gradle script when you build and run the app. You don't need to do any additional steps to download task files into the project explicitly unless you wish to use your own landmark detection task. If you do use your own task file, place it into the app's *assets* directory.
+- **Camera:** Live front/back CameraX feed with real-time face mesh connector overlays and inference latency telemetry.
+- **Gallery:** Bundled portrait photo (`Try sample`) as well as user-selected images and videos from the device gallery, including top expression blendshape scores.
 
-This application should be run on a physical Android device to take advantage of the camera.
+In the **Settings** sheet, you can switch hardware **Delegate** (`CPU` or `GPU`), change **Max faces** (`1` or `2`), and tune detection, tracking, and presence confidence thresholds.
 
-## Build the demo using Android Studio
+![Face Landmark Detection Demo](facelandmarker.png?raw=true "Face Landmark Detection Demo")
 
-### Prerequisites
+## Prerequisites
 
-*   The **[Android Studio](https://developer.android.com/studio/index.html)** IDE. This sample has been tested on Android Studio Dolphin.
+- **[Android Studio](https://developer.android.com/studio)** (with Android SDK 36 and JDK 17+)
+- An Android device or emulator running Android 7.0 (API 24) or higher
 
-*   A physical Android device with a minimum OS version of SDK 24 (Android 7.0 -
-    Nougat) with developer mode enabled. The process of enabling developer mode
-    may vary by device.
+## Build and Run
 
-### Building
+The Gradle script [app/download_tasks.gradle.kts](app/download_tasks.gradle.kts) automatically downloads and SHA-256 verifies `face_landmarker.task` into `app/src/main/assets/` before building:
 
-*   Open Android Studio. From the Welcome screen, select Open an existing
-    Android Studio project.
+```bash
+./gradlew :app:verifyModels :app:assembleDebug
+```
 
-*   From the Open File or Project window that appears, navigate to and select
-    the mediapipe/examples/face_landmarker/android directory. Click OK. You may
-    be asked if you trust the project. Select Trust.
+To run the shared unit tests and instrumented real-model + UI tests:
 
-*   If it asks you to do a Gradle Sync, click OK.
-
-*   With your Android device connected to your computer and developer mode
-    enabled, click on the green Run arrow in Android Studio.
-
-### Models used
-
-Downloading, extraction, and placing the models into the *assets* folder is
-managed automatically by the **download.gradle** file.
+```bash
+./gradlew :android-common:testing:testDebugUnitTest :app:connectedDebugAndroidTest
+```
