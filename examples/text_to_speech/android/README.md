@@ -1,72 +1,40 @@
 # MediaPipe Text-to-Speech — Android Sample
 
-This sample app demonstrates on-device speech synthesis using the MediaPipe Tasks Audio TextToSpeech API with the [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) LiteRT-LM model (`kokoro.litertlm`).
+This sample app demonstrates on-device neural speech synthesis using the MediaPipe Tasks Audio `TextToSpeech` API (`com.google.mediapipe:tasks-audio`) and the [Kokoro-82M](https://huggingface.co/litert-community/Kokoro-82M) LiteRT-LM model (`kokoro_int8_fp16.litertlm`), built with Compose Material 3 (`:android-common:ui`).
 
 ## Features
 
-- **On-device neural TTS**: High-quality speech synthesis running entirely on-device via MediaPipe and LiteRT.
-- **Unary & Streaming Synthesis**:
-  - **Speak**: Full-utterance synthesis with immediate gapless playback.
-  - **Stream**: Clause-by-clause low-latency streaming (`synthesizeStream`) with real-time audio playback as chunks arrive.
-- **Multilingual & Multivoice**: Supports multiple voices and locales provided by the model (e.g., `af_heart`, `ef_dora`, `zf_xiaobei`).
-- **PCM Audio Player & WAV Export**: Audio playback via Android `AudioTrack` and optional WAV recording.
-- **Scripted testing**: Command-line automation via `scripts/run_android_demo.sh`.
+- **On-device Neural TTS:** High-quality 24 kHz speech synthesis running locally on GPU (with automatic CPU fallback) or CPU.
+- **Unary & Streaming Synthesis:**
+  - **Speak:** Full-utterance synthesis (`synthesize`) with WAV export and hardware `AudioTrack` playback.
+  - **Stream:** Low-latency clause-by-clause streaming (`synthesizeStream`) with time-to-first-audio (TTFA) reporting and incremental playback.
+  - **Replay & Stop:** Replay the most recent synthesized utterance or stop synthesis/playback immediately.
+- **Multilingual Voices & Settings Sheet:** Select sample presets, pick languages/voices (`af_heart`, `ef_dora`, `zf_xiaobei`, etc.), adjust speaking rate (`0.75x–1.40x`), and switch hardware delegates (`Auto`, `CPU`, `GPU`).
 
-## Model Setup
+![Text to Speech Demo](texttospeech.png?raw=true "Text to Speech Demo")
 
-The demo requires a Kokoro-82M LiteRT-LM model bundle from the [LiteRT Kokoro-82M Hugging Face repository](https://huggingface.co/litert-community/Kokoro-82M).
+## Model
 
-### Choosing the Right Model Variant
+The default `kokoro_int8_fp16.litertlm` model is downloaded automatically during Gradle build and verified via SHA-256 in `app/download_models.gradle.kts` (supports custom URLs via `KOKORO_MODEL_URL`):
 
-| Model Bundle | Recommended Target | Delegate | Description |
-|---|---|---|---|
-| **`kokoro_int8_gpu_fp16.litertlm`** ⭐ | **Physical Android Device** | **GPU** | **Recommended for devices**. Vocoder convolutions run natively on OpenCL in FP16. Fast (RTF ~0.12) with minimal peak RAM (~350 MB). *Note: running this model on CPU causes audible high-pitched quantization overtones.* |
-| **`kokoro_int8_fp16.litertlm`** | **Android Emulator & CPU** | **CPU** | **Recommended for emulator / CPU**. Contains explicit dequantization ops for XNNPACK, producing clean audio on CPU without quantization harmonics (~700–850 MB peak RAM). |
+* **Kokoro-82M** (`kokoro_int8_fp16.litertlm`): https://huggingface.co/litert-community/Kokoro-82M
 
-> **Note on Emulator vs. Device:**
-> The Android Emulator does not provide guest OpenCL compute drivers, so LiteRT's GPU delegate automatically falls back to CPU (XNNPACK). When testing on an Android emulator, use `kokoro_int8_fp16.litertlm` to avoid vocoder quantization noise.
+For sideloading a custom model variant (such as `kokoro_int8_gpu_fp16.litertlm` renamed to `kokoro.litertlm`), `TextToSpeechHelper` checks external files, `/data/local/tmp`, and internal storage before falling back to bundled assets.
 
-The app automatically searches for the model in the following locations:
-1. App's external files directory: `/sdcard/Android/data/com.google.mediapipe.tasks.audio.texttospeech.examples/files/kokoro.litertlm`
-2. Shared device temporary storage: `/data/local/tmp/kokoro.litertlm`
-3. Internal files directory: `context.filesDir`
-4. Bundled APK assets: `app/src/main/assets/kokoro.litertlm`
-
-### Pushing the Model via ADB (Recommended)
-
-To push the model directly to your device without rebuilding:
+## Build and Test
 
 ```bash
-adb push kokoro.litertlm /sdcard/Android/data/com.google.mediapipe.tasks.audio.texttospeech.examples/files/kokoro.litertlm
-```
+cd examples/text_to_speech/android
 
-Or push to `/data/local/tmp`:
+# Download and verify model checksum, run unit tests, and build debug APK
+./gradlew :app:verifyModels :android-common:testing:testDebugUnitTest :app:assembleDebug
 
-```bash
-adb push kokoro.litertlm /data/local/tmp/kokoro.litertlm
-```
-
-## Building the Sample
-
-### Prerequisites
-- Android Studio Iguana or newer, or JDK 17+ with Android SDK (API 34+).
-- A physical Android device running Android 8.0 (API 26) or higher, or an Android emulator.
-
-### Build via Gradle
-```bash
-./gradlew installDebug
+# Run real-model TTS quality & Compose UI tests on a connected device/emulator
+./gradlew :app:connectedDebugAndroidTest
 ```
 
 ### Run via Command-line Script
-The sample includes a convenience script that builds, installs, pushes the model, runs the demo, streams logcat output, and pulls the synthesized WAV file:
 
 ```bash
 ./scripts/run_android_demo.sh --text "Hello from MediaPipe Text to Speech!" --voice af_heart
 ```
-
-Options:
-- `--text "..."`: Text to synthesize.
-- `--voice ID`: Voice identifier (default: `af_heart`).
-- `--stream`: Run in clause-by-clause streaming mode.
-- `--no-play`: Disable device speaker playback.
-- `--model PATH`: Path to local model file on host.

@@ -19,8 +19,12 @@ captures/
 .externalNativeBuild/
 .cxx/
 
-# Model Files
+# Kotlin caches
+.kotlin/
+
+# Model & Audio Files
 *.litertlm
+*.wav
 
 # Local build artifacts in libs
 app/libs/*.aar
