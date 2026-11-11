@@ -17,6 +17,7 @@
 package com.google.mediapipe.examples.decisionmaker
 
 import android.content.Context
+import android.os.Build
 import android.os.SystemClock
 import android.util.Log
 import com.google.mediapipe.tasks.decision.BooleanQuestion
@@ -36,7 +37,7 @@ import java.io.File
  */
 class DecisionMakerHelper(
     private val context: Context,
-    var currentDelegate: Int = DELEGATE_GPU,
+    var currentDelegate: Int = if (isAndroidEmulator()) DELEGATE_CPU else DELEGATE_GPU,
     var currentModel: Int = MODEL_EMBEDDING_GEMMA,
 ) {
     private var decisionMaker: DecisionMaker? = null
@@ -157,5 +158,25 @@ class DecisionMakerHelper(
 
         private const val MAX_NUM_TOKENS = 4096
         private const val TAG = "DecisionMakerHelper"
+
+        fun isAndroidEmulator(): Boolean {
+            val fingerprint = Build.FINGERPRINT
+            val model = Build.MODEL
+            val manufacturer = Build.MANUFACTURER
+            val hardware = Build.HARDWARE
+            val product = Build.PRODUCT
+            return fingerprint.startsWith("generic") ||
+                fingerprint.startsWith("unknown") ||
+                model.contains("google_sdk") ||
+                model.contains("Emulator") ||
+                model.contains("Android SDK built for") ||
+                manufacturer.contains("Genymotion") ||
+                hardware.contains("goldfish") ||
+                hardware.contains("ranchu") ||
+                product.contains("sdk") ||
+                product.contains("emulator") ||
+                product.contains("simulator") ||
+                (Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic"))
+        }
     }
 }

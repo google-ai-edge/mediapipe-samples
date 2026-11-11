@@ -91,7 +91,7 @@ jobs:
           working-directory: examples/decision_maker/android
           script: |
             adb logcat -c || true
-            ./gradlew :app:connectedDebugAndroidTest --no-daemon --stacktrace || (adb logcat -d | tail -n 250; exit 1)
+            ./gradlew :app:connectedDebugAndroidTest --no-daemon --stacktrace || (echo "=== CRASH BUFFER ==="; adb logcat -d -b crash; echo "=== FILTERED LOGCAT ==="; adb logcat -d | grep -iE "FATAL|DEBUG|backtrace|tombstone|SIG|Abort|decisionmaker|DecisionMaker|lowmemory|OutOfMemory|No space|litert|mediapipe" | tail -n 150; echo "=== STORAGE ==="; adb shell df -h; exit 1)
             adb logcat -d -s LatencyRecorder | python3 ../../../.github/scripts/extract_latency_reports.py ../../../build/latency_reports
 
       - name: Upload report-only latency JSON

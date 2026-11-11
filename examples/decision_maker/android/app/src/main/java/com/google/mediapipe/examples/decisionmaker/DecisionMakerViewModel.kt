@@ -77,10 +77,17 @@ data class DecisionOutcomeUi(
     val inferenceTimeMs: Long,
 )
 
+private fun defaultDelegateOption(): DecisionDelegateOption =
+    if (DecisionMakerHelper.isAndroidEmulator()) {
+        DecisionDelegateOption.CPU
+    } else {
+        DecisionDelegateOption.GPU
+    }
+
 data class DecisionMakerUiState(
     val questionType: QuestionType = QuestionType.BOOLEAN,
     val drafts: Map<QuestionType, QuestionDraftUi> = defaultDrafts(),
-    val delegateOption: DecisionDelegateOption = DecisionDelegateOption.GPU,
+    val delegateOption: DecisionDelegateOption = defaultDelegateOption(),
     val modelOption: DecisionModelOption = DecisionModelOption.EMBEDDING_GEMMA,
     val isModelLoading: Boolean = true,
     val isEvaluating: Boolean = false,
@@ -148,7 +155,8 @@ fun defaultDrafts(): Map<QuestionType, QuestionDraftUi> =
 
 class DecisionMakerViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _uiState = MutableStateFlow(DecisionMakerUiState())
+    private val defaultDelegate = defaultDelegateOption()
+    private val _uiState = MutableStateFlow(DecisionMakerUiState(delegateOption = defaultDelegate))
     val uiState: StateFlow<DecisionMakerUiState> = _uiState.asStateFlow()
 
     private val executor = Executors.newSingleThreadExecutor()
@@ -156,12 +164,12 @@ class DecisionMakerViewModel(application: Application) : AndroidViewModel(applic
     private val helper =
         DecisionMakerHelper(
             context = application,
-            currentDelegate = DecisionMakerHelper.DELEGATE_GPU,
+            currentDelegate = defaultDelegate.id,
             currentModel = DecisionMakerHelper.MODEL_EMBEDDING_GEMMA,
         )
 
     init {
-        setupEngine(allowGpuFallback = true)
+        setupEngine(allowGpuFallback = defaultDelegate == DecisionDelegateOption.GPU)
     }
 
     fun selectQuestionType(type: QuestionType) {

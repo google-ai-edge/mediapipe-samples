@@ -35,14 +35,14 @@ class DecisionMakerUiTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<MainActivity>()
 
-    private fun waitForEvaluateReady(timeoutMillis: Long = 60_000L) {
+    private fun waitForEvaluateReady(timeoutMillis: Long = 180_000L) {
         composeRule.waitUntil(timeoutMillis = timeoutMillis) {
             val nodes = composeRule.onAllNodesWithTag("evaluate_button").fetchSemanticsNodes()
             nodes.isNotEmpty() && !nodes.first().config.contains(SemanticsProperties.Disabled)
         }
     }
 
-    private fun waitForOutcome(timeoutMillis: Long = 60_000L) {
+    private fun waitForOutcome(timeoutMillis: Long = 180_000L) {
         composeRule.waitUntil(timeoutMillis = timeoutMillis) {
             composeRule.onAllNodesWithTag("result_headline").fetchSemanticsNodes().isNotEmpty()
         }
