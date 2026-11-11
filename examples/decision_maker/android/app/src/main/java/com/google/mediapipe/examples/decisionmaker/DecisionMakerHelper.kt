@@ -41,22 +41,26 @@ class DecisionMakerHelper(
 ) {
     private var decisionMaker: DecisionMaker? = null
 
+    val isReady: Boolean
+        get() = decisionMaker != null
+
     /** Creates the [DecisionMaker]. Throws if the model is missing or the delegate fails. */
     fun setupDecisionMaker() {
         clearDecisionMaker()
-        val options = DecisionMakerOptions.builder()
-            .setModelPath(resolveModelPath(MODEL_FILES[currentModel]))
-            .setMaxNumTokens(MAX_NUM_TOKENS)
-            .setDelegate(
-                if (currentDelegate == DELEGATE_GPU) DecisionMakerDelegate.GPU
-                else DecisionMakerDelegate.CPU
-            )
-            .build()
+        val options =
+            DecisionMakerOptions.builder()
+                .setModelPath(resolveModelPath(MODEL_FILES[currentModel]))
+                .setMaxNumTokens(MAX_NUM_TOKENS)
+                .setDelegate(
+                    if (currentDelegate == DELEGATE_GPU) DecisionMakerDelegate.GPU
+                    else DecisionMakerDelegate.CPU
+                )
+                .build()
         decisionMaker = DecisionMaker.createFromOptions(context, options)
     }
 
     fun clearDecisionMaker() {
-        decisionMaker?.close()
+        runCatching { decisionMaker?.close() }
         decisionMaker = null
     }
 
@@ -64,13 +68,14 @@ class DecisionMakerHelper(
         text: String,
         condition: String,
         threshold: Float,
-    ): ResultBundle<BooleanResult> =
-        timed { it.evaluate(text, BooleanQuestion(condition = condition, threshold = threshold)) }
+    ): ResultBundle<BooleanResult> = timed {
+        it.evaluate(text, BooleanQuestion(condition = condition, threshold = threshold))
+    }
 
     fun evaluateChoice(
         text: String,
         options: Map<String, String>,
-        instructions: String
+        instructions: String,
     ): ResultBundle<ChoiceResult> = timed {
         it.evaluate(text, ChoiceQuestion.withDescriptions(options, instructions = instructions))
     }
@@ -78,7 +83,7 @@ class DecisionMakerHelper(
     fun evaluateScore(
         text: String,
         rubric: List<String>,
-        instructions: String
+        instructions: String,
     ): ResultBundle<ScoreResult> = timed {
         it.evaluate(text, ScoreQuestion(rubric = rubric, instructions = instructions))
     }
@@ -92,28 +97,39 @@ class DecisionMakerHelper(
 
     /**
      * Returns a readable path for [fileName]: a copy pushed to the device (see README), or the
-     * APK asset downloaded by download_models.gradle (copied to internal storage, and copied
+     * APK asset downloaded by download_models.gradle.kts (copied to internal storage, and copied
      * again after each app update so a newer bundled model is never shadowed by an old copy).
      */
     private fun resolveModelPath(fileName: String): String {
-        val pushed = listOfNotNull(
-            File("/data/local/tmp/decision_models", fileName),
-            context.getExternalFilesDir(null)?.let { File(it, fileName) },
-        ).firstOrNull { it.canRead() && it.length() > 0L }
+        val pushed =
+            listOfNotNull(
+                    File("/data/local/tmp/decision_models", fileName),
+                    context.getExternalFilesDir(null)?.let { File(it, fileName) },
+                )
+                .firstOrNull { it.canRead() && it.length() > 0L }
         if (pushed != null) return pushed.absolutePath
 
         if (context.assets.list("")?.contains(fileName) != true) {
             throw ModelNotFoundException("$fileName not found. See the README to download the model.")
         }
         val copy = File(context.filesDir, fileName)
-        val appUpdatedAt = context.packageManager.getPackageInfo(context.packageName, 0).lastUpdateTime
-        if (!copy.exists() || copy.lastModified() < appUpdatedAt) {
+        val appUpdatedAt =
+            runCatching {
+                    context.packageManager
+                        .getPackageInfo(context.packageName, 0)
+                        .lastUpdateTime
+                }
+                .getOrDefault(0L)
+        if (!copy.exists() || copy.length() == 0L || copy.lastModified() < appUpdatedAt) {
             Log.i(TAG, "Copying $fileName from assets to ${copy.absolutePath}")
             val tmp = File(context.filesDir, "$fileName.tmp")
             context.assets.open(fileName).use { input ->
                 tmp.outputStream().use { output -> input.copyTo(output) }
             }
-            if (!tmp.renameTo(copy)) throw IllegalStateException("Could not copy $fileName.")
+            if (!tmp.renameTo(copy)) {
+                tmp.delete()
+                throw IllegalStateException("Could not copy $fileName.")
+            }
         }
         return copy.absolutePath
     }
@@ -131,12 +147,13 @@ class DecisionMakerHelper(
         const val MODEL_LAYA = 1
         const val MODEL_GLINER = 2
 
-        /** Model files, indexed by the MODEL_* constants (see download_models.gradle). */
-        private val MODEL_FILES = listOf(
-            "embeddinggemma-2-text-270m.litertlm",
-            "laya_s256.task",
-            "gliner_s256.task",
-        )
+        /** Model files, indexed by the MODEL_* constants (see download_models.gradle.kts). */
+        val MODEL_FILES =
+            listOf(
+                "embeddinggemma-2-text-270m.litertlm",
+                "laya_s256.task",
+                "gliner_s256.task",
+            )
 
         private const val MAX_NUM_TOKENS = 4096
         private const val TAG = "DecisionMakerHelper"
