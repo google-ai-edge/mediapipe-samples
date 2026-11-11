@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    ~ Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+    ~ Copyright 2026 The MediaPipe Authors. All Rights Reserved.
     ~
     ~ Licensed under the Apache License, Version 2.0 (the "License");
     ~ you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
     ~ See the License for the specific language governing permissions and
     ~ limitations under the License.
 -->
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_pressed="true" android:color="@color/icPressed" />
-    <item android:state_focused="true" android:color="@color/icFocused" />
-    <item android:color="@color/icActive" />
-</selector>
+<resources>
+    <style name="AppTheme" parent="android:Theme.Material.NoActionBar" />
+</resources>
