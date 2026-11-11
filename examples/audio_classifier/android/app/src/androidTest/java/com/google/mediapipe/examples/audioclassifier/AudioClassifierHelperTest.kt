@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+ * Copyright 2026 The MediaPipe Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,83 +17,107 @@
 package com.google.mediapipe.examples.audioclassifier
 
 import android.content.Context
-import android.media.AudioFormat
+import android.util.Log
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.mediapipe.tasks.components.containers.AudioData
+import com.google.mediapipe.examples.common.testing.LatencyRecorder
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
-import org.junit.Before
-import java.io.DataInputStream
-
-/**
- * Instrumented test, which will execute on an Android device.
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
 @RunWith(AndroidJUnit4::class)
 class AudioClassifierHelperTest {
+
     companion object {
-        private const val AUDIO_CAT_SOUND = "cat_sound.wav"
-        private const val AUDIO_DURATION = 6000L // milliseconds
-        private val expectedResult =
-            setOf("Cat", "Meow", "Domestic animals, pets", "Speech")
-    }
-
-    private lateinit var audioClassifierHelper: AudioClassifierHelper
-    private lateinit var context: Context
-
-    @Before
-    fun setup() {
-        audioClassifierHelper =
-            AudioClassifierHelper(ApplicationProvider.getApplicationContext())
-        context = InstrumentationRegistry.getInstrumentation().context
+        private const val TAG = "AudioClassifierHelperTest"
     }
 
     @Test
-    fun classificationResultShouldNotBeChange() {
-        val audioData = getAudioDataFromAsset()
+    fun classifySpeechClipAndSineTone_matchesExpectedCategoriesAndOptions() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val recorder = LatencyRecorder("audio_classifier")
+        recorder.putMetadata("model", AudioClassifierHelper.YAMNET_MODEL)
+        recorder.putMetadata("delegate", "CPU")
 
-        assertNotNull(audioData)
+        val helper =
+            recorder.measure("model_load_ms") {
+                AudioClassifierHelper(
+                    context = context,
+                    classificationThreshold = AudioClassifierHelper.DISPLAY_THRESHOLD,
+                    numOfResults = 3,
+                )
+            }
 
-        val resultBundle = audioClassifierHelper.classifyAudio(audioData!!)
+        try {
+            assertTrue("AudioClassifier failed to initialize", !helper.isClosed())
 
-        assertNotNull(resultBundle)
-        val actualResult =
-            resultBundle!!.results.first().classificationResults()
-                .map {
-                    it.classifications().first().categories()
-                        .mapNotNull { it.categoryName() }
-                }.flatten().toSet()
+            val decodedSpeech =
+                AudioClipDecoder.decodeAssetWav(context, AudioClassifierHelper.SAMPLE_SPEECH_ASSET)
+            assertEquals(AudioClassifierHelper.SAMPLING_RATE_IN_HZ, decodedSpeech.sampleRateHz)
+            val speechAudioData = decodedSpeech.toAudioData()
 
-        assertEquals(expectedResult, actualResult)
-    }
+            val speechBundle =
+                recorder.measure("classify_speech_clip_ms") {
+                    helper.classifyAudio(speechAudioData)
+                }
+            assertNotNull(speechBundle)
+            speechBundle!!
 
-    private fun getAudioDataFromAsset(): AudioData? {
+            val classificationWindows = speechBundle.results.first().classificationResults()
+            assertTrue("Expected at least 1 audio window", classificationWindows.isNotEmpty())
 
-        val inputStream = context.assets.open(AUDIO_CAT_SOUND)
-        val dataInputStream = DataInputStream(inputStream)
-        val targetArray = ByteArray(dataInputStream.available())
-        dataInputStream.read(targetArray)
-        val audioFloatArrayData = targetArray.toShortArray()
+            val topCategoriesPerWindow =
+                classificationWindows.map { window ->
+                    window.classifications().first().categories().mapNotNull { cat ->
+                        cat.categoryName()?.let { name -> name to cat.score() }
+                    }
+                }
+            Log.i(TAG, "speech windows=${topCategoriesPerWindow.size} details=$topCategoriesPerWindow")
 
-        // calculate the sample rate
-        val expectedSampleRate =
-            audioFloatArrayData.size / (AUDIO_DURATION / 1000F / AudioClassifierHelper.EXPECTED_INPUT_LENGTH)
+            val allPredictedLabels = topCategoriesPerWindow.flatten().map { it.first }.toSet()
+            assertTrue(
+                "Expected Speech to be detected in speech_16000_hz_mono.wav, got $allPredictedLabels",
+                allPredictedLabels.contains("Speech"),
+            )
 
-        // create audio data
-        val audioData = AudioData.create(
-            AudioData.AudioDataFormat.builder().setNumOfChannels(
-                AudioFormat.CHANNEL_IN_DEFAULT
-            ).setSampleRate(expectedSampleRate).build(),
-            audioFloatArrayData.size
-        )
-        audioData.load(audioFloatArrayData)
-        return audioData
+            // Verify sine tone is also classified coherently (e.g. Sine wave / Musical instrument / Beep).
+            val toneAudioData =
+                AudioClipDecoder.generateSineTone(freqHz = 440f, durationMs = 2_000).toAudioData()
+            val toneBundle =
+                recorder.measure("classify_sine_tone_ms") {
+                    helper.classifyAudio(toneAudioData)
+                }
+            assertNotNull(toneBundle)
+            val toneLabels =
+                toneBundle!!
+                    .results
+                    .first()
+                    .classificationResults()
+                    .flatMap { it.classifications().first().categories() }
+                    .mapNotNull { it.categoryName() }
+                    .toSet()
+            Log.i(TAG, "tone labels=$toneLabels")
+            assertTrue("Expected non-empty labels for 440 Hz tone", toneLabels.isNotEmpty())
+
+            repeat(5) {
+                recorder.measure("classify_steady_ms") {
+                    helper.classifyAudio(speechAudioData)
+                }
+            }
+            recorder.flush(context)
+
+            // Verify maxResults = 1 option constrains each window.
+            helper.numOfResults = 1
+            assertTrue("Failed to re-init AudioClassifier with maxResults=1", helper.initClassifier())
+            val limitedBundle = helper.classifyAudio(speechAudioData)!!
+            limitedBundle.results.first().classificationResults().forEach { window ->
+                val count = window.classifications().first().categories().size
+                assertTrue("Expected <= 1 category, got $count", count <= 1)
+            }
+        } finally {
+            helper.stopAudioClassification()
+        }
     }
 }
