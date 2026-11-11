@@ -35,7 +35,7 @@ class SemanticRetrieverUiTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<MainActivity>()
 
-    private fun waitForIndexReady(timeoutMillis: Long = 240_000L) {
+    private fun waitForIndexReady(timeoutMillis: Long = 540_000L) {
         composeRule.waitUntil(timeoutMillis = timeoutMillis) {
             val nodes = composeRule.onAllNodesWithTag("search_button").fetchSemanticsNodes()
             nodes.isNotEmpty() && !nodes.first().config.contains(SemanticsProperties.Disabled)

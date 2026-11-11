@@ -363,23 +363,29 @@ class SemanticRetrieverViewModel(appContext: Context) : ViewModel() {
                         indexedCount = existingIds.size,
                     )
                 }
-                if (existingIds.isEmpty()) {
-                    runIndexSampleGallery()
+                val existingSet = existingIds.toSet()
+                val sampleIds = BundledGalleryItems.mapTo(mutableSetOf()) { it.id }
+                val missingSamples = BundledGalleryItems.filter { it.id !in existingSet }
+                // Resume partial initial indexing if a previous run was interrupted mid-gallery.
+                if (existingSet.all { it in sampleIds } && missingSamples.isNotEmpty()) {
+                    runIndexSampleGallery(missingSamples)
                 }
             }
     }
 
-    private suspend fun runIndexSampleGallery() {
+    private suspend fun runIndexSampleGallery(
+        items: List<GalleryItemSpec> = BundledGalleryItems,
+    ) {
         _uiState.update {
             it.copy(
                 isIndexing = true,
                 indexingProgress = 0,
-                indexingTotal = BundledGalleryItems.size,
+                indexingTotal = items.size,
                 errorMessage = null,
             )
         }
-        var latestCount = 0
-        for ((idx, item) in BundledGalleryItems.withIndex()) {
+        var latestCount = _uiState.value.indexedCount
+        for ((idx, item) in items.withIndex()) {
             val ok =
                 withContext(engineDispatcher) {
                     runCatching {
@@ -400,7 +406,7 @@ class SemanticRetrieverViewModel(appContext: Context) : ViewModel() {
                         .getOrDefault(false)
                 }
             if (ok) {
-                latestCount = idx + 1
+                latestCount += 1
             }
             _uiState.update { it.copy(indexingProgress = idx + 1) }
         }
