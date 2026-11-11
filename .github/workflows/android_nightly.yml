@@ -184,6 +184,12 @@ jobs:
           path: ${{ matrix.path }}/app/src/main/assets
           key: ${{ matrix.slug }}-models-${{ hashFiles(format('{0}/app/download*.gradle*', matrix.path)) }}
 
+      - name: Update catalog to latest published MediaPipe version
+        env:
+          CANARY_VERSION: ${{ steps.latest.outputs.version }}
+          EXAMPLE_PATH: ${{ matrix.path }}
+        run: python3 .github/scripts/bump_mediapipe_version.py "$CANARY_VERSION" "$EXAMPLE_PATH"
+
       - name: Download and verify real models
         working-directory: ${{ matrix.path }}
         run: |
@@ -192,8 +198,6 @@ jobs:
 
       - name: Run instrumented tests against latest published version
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
-        env:
-          CANARY_VERSION: ${{ steps.latest.outputs.version }}
         with:
           api-level: 34
           target: aosp_atd
@@ -204,4 +208,4 @@ jobs:
           disable-animations: true
           disable-spellchecker: true
           working-directory: ${{ matrix.path }}
-          script: ./gradlew :app:connectedDebugAndroidTest -PmediapipeVersion="$CANARY_VERSION" --no-daemon --stacktrace
+          script: ./gradlew :app:connectedDebugAndroidTest --no-daemon --stacktrace

@@ -25,6 +25,40 @@ updates:
       default-days: 7
     open-pull-requests-limit: 10
     groups:
+      androidx-compose:
+        patterns:
+          - "androidx.*"
+
+  - package-ecosystem: "gradle"
+    directory: "/examples/text_embedder/android"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/Los_Angeles"
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 10
+    groups:
+      mediapipe:
+        patterns:
+          - "com.google.mediapipe:*"
+          - "com.google.ai.edge.litertlm:*"
+      androidx-compose:
+        patterns:
+          - "androidx.*"
+
+  - package-ecosystem: "gradle"
+    directory: "/examples/text_classification/android"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/Los_Angeles"
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 10
+    groups:
       mediapipe:
         patterns:
           - "com.google.mediapipe:*"

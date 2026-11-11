@@ -30,40 +30,66 @@ def _strip_comments(text: str) -> str:
 
 
 def _extract_properties(gradle_texts: list[str], app_dir: str) -> dict[str, str]:
-    """Extracts project.ext / ext string properties from app/build.gradle and download*.gradle."""
+    """Extracts project.ext / extra / val string properties from app/build.gradle* and download*.gradle*."""
     props: dict[str, str] = {
+        "projectDir": app_dir,
         "ASSET_DIR": os.path.join(app_dir, "src", "main", "assets"),
+        "assetDir": os.path.join(app_dir, "src", "main", "assets"),
         "TEST_ASSET_DIR": os.path.join(app_dir, "src", "androidTest", "assets"),
         "TEST_ASSETS_DIR": os.path.join(app_dir, "src", "androidTest", "assets"),
+        "testAssetsDir": os.path.join(app_dir, "src", "androidTest", "assets"),
     }
 
     for text in gradle_texts:
         clean = _strip_comments(text)
         for match in re.finditer(
-            r"(?:project\.ext\.)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.+)", clean
+            r"""(?:(?:project\.ext\.|val\s+)([A-Za-z_][A-Za-z0-9_]*)|extra(?:\.set)?\(\s*["']([A-Za-z_][A-Za-z0-9_]*)["']\s*,?|extra\[["']([A-Za-z_][A-Za-z0-9_]*)["']\])\s*=\s*(.+)""",
+            clean,
         ):
-            key = match.group(1).strip()
-            rhs = match.group(2).strip()
+            key = next(g for g in match.groups()[:3] if g).strip()
+            rhs = match.group(4).strip()
             if "projectDir" in rhs:
-                m_rel = re.search(r"['\"]([^'\"]+)['\"]", rhs)
+                m_rel = re.search(r"""["']([^"']+)["']""", rhs)
                 if m_rel:
-                    props[key] = os.path.join(app_dir, m_rel.group(1).lstrip("/"))
+                    rel = m_rel.group(1).replace("${projectDir}", "").replace("$projectDir", "")
+                    props[key] = os.path.join(app_dir, rel.lstrip("/"))
             else:
-                m_str = re.match(r"^['\"]([^'\"]+)['\"]$", rhs)
+                m_extra = re.match(r"""^extra\[["']([A-Za-z_][A-Za-z0-9_]*)["']\](?:\s+as\s+String)?$""", rhs)
+                if m_extra and m_extra.group(1) in props:
+                    props[key] = props[m_extra.group(1)]
+                    continue
+                m_str = re.match(r"""^["']([^"']+)["']$""", rhs)
                 if m_str:
                     props[key] = m_str.group(1)
 
     return props
 
 
+def _interpolate_vars(text: str, props: dict[str, str]) -> str:
+    """Expands $var and ${var} placeholders using extracted Gradle properties."""
+    def repl(match: re.Match[str]) -> str:
+        name = match.group(1) or match.group(2)
+        return props.get(name, match.group(0))
+
+    return re.sub(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)", repl, text)
+
+
 def _resolve_dest_expression(expr: str, props: dict[str, str], app_dir: str) -> str | None:
-    """Evaluates a Gradle Download `dest` expression against extracted properties."""
+    """Evaluates a Gradle Download `dest` or Kotlin DSL `destFile` expression."""
+    expr = expr.strip().rstrip(",")
+    m_file = re.match(r"""^file\(\s*(.+?)\s*\)$""", expr)
+    if m_file:
+        expr = m_file.group(1).strip()
+
     tokens = [t.strip() for t in expr.split("+")]
     parts: list[str] = []
     for token in tokens:
-        m_lit = re.match(r"^['\"]([^'\"]*)['\"]$", token)
+        m_lit = re.match(r"""^["']([^"']*)["']$""", token)
         if m_lit:
-            parts.append(m_lit.group(1))
+            expanded = _interpolate_vars(m_lit.group(1), props)
+            if re.search(r"\$\{?[A-Za-z_][A-Za-z0-9_]*\}?", expanded):
+                return None
+            parts.append(expanded)
             continue
         m_prop = re.match(r"^(?:project\.ext\.|ext\.)?([A-Za-z_][A-Za-z0-9_]*)$", token)
         if m_prop and m_prop.group(1) in props:
@@ -78,7 +104,7 @@ def _resolve_dest_expression(expr: str, props: dict[str, str], app_dir: str) -> 
 
 
 def stub_models_for_project(project_dir: str, dry_run: bool = False) -> list[str]:
-    """Inspects app/download*.gradle and creates stub files for all Download task destinations."""
+    """Inspects app/download*.gradle* and creates stub files for all download destinations."""
     project_dir = os.path.abspath(project_dir)
     app_dir = os.path.join(project_dir, "app")
     if not os.path.isdir(app_dir):
@@ -105,26 +131,33 @@ def stub_models_for_project(project_dir: str, dry_run: bool = False) -> list[str
 
     props = _extract_properties(gradle_texts, app_dir)
     created_stubs: list[str] = []
+    dest_patterns = (
+        r"^\s*dest\s+([^\r\n]+)",
+        r"^\s*destFile\s*=\s*([^\r\n]+)",
+        r"^\s*dest\s*=\s*([^\r\n]+)",
+        r"^\s*dest\(\s*([^\r\n]+)\s*\)",
+    )
 
     for _, content in dl_contents:
         clean = _strip_comments(content)
-        for match in re.finditer(r"^\s*dest\s+([^\r\n]+)", clean, flags=re.MULTILINE):
-            expr = match.group(1).strip()
-            full_path = _resolve_dest_expression(expr, props, app_dir)
-            if not full_path:
-                print(f"Warning: Could not resolve dest expression: {expr}", file=sys.stderr)
-                continue
+        for pattern in dest_patterns:
+            for match in re.finditer(pattern, clean, flags=re.MULTILINE):
+                expr = match.group(1).strip()
+                full_path = _resolve_dest_expression(expr, props, app_dir)
+                if not full_path:
+                    print(f"Warning: Could not resolve dest expression: {expr}", file=sys.stderr)
+                    continue
 
-            rel_path = os.path.relpath(full_path, project_dir)
-            if not os.path.exists(full_path):
-                if not dry_run:
-                    os.makedirs(os.path.dirname(full_path), exist_ok=True)
-                    with open(full_path, "wb"):
-                        pass
-                created_stubs.append(full_path)
-                print(f"Stubbed referenced model/asset: {rel_path}")
-            else:
-                print(f"Model/asset already exists on disk: {rel_path}")
+                rel_path = os.path.relpath(full_path, project_dir)
+                if not os.path.exists(full_path):
+                    if not dry_run:
+                        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+                        with open(full_path, "wb"):
+                            pass
+                    created_stubs.append(full_path)
+                    print(f"Stubbed referenced model/asset: {rel_path}")
+                else:
+                    print(f"Model/asset already exists on disk: {rel_path}")
 
     return created_stubs
 
