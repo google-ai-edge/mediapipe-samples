@@ -36,14 +36,14 @@ class UniversalEmbedderUiTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<MainActivity>()
 
-    private fun waitForCompareReady(timeoutMillis: Long = 60_000L) {
+    private fun waitForCompareReady(timeoutMillis: Long = 180_000L) {
         composeRule.waitUntil(timeoutMillis = timeoutMillis) {
             val nodes = composeRule.onAllNodesWithTag("compare_button").fetchSemanticsNodes()
             nodes.isNotEmpty() && !nodes.first().config.contains(SemanticsProperties.Disabled)
         }
     }
 
-    private fun waitForResultScore(timeoutMillis: Long = 30_000L): Double {
+    private fun waitForResultScore(timeoutMillis: Long = 180_000L): Double {
         composeRule.waitUntil(timeoutMillis = timeoutMillis) {
             composeRule.onAllNodesWithTag("similarity_score").fetchSemanticsNodes().isNotEmpty()
         }

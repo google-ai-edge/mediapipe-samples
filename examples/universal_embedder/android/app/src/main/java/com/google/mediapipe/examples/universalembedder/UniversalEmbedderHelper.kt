@@ -18,6 +18,7 @@ package com.google.mediapipe.examples.universalembedder
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.os.Build
 import android.os.SystemClock
 import android.util.Log
 import com.google.mediapipe.framework.image.BitmapImageBuilder
@@ -205,5 +206,26 @@ class UniversalEmbedderHelper(
         const val OTHER_ERROR = 0
         const val GPU_ERROR = 1
         private const val TAG = "UniversalEmbedderHelper"
+
+        /**
+         * Returns true on Android emulators where SwiftShader software Vulkan initializes without
+         * throwing yet times out (`VK_TIMEOUT`) during multimodal EmbeddingGemma inference.
+         */
+        fun isAndroidEmulator(): Boolean {
+            val fp = Build.FINGERPRINT
+            val hw = Build.HARDWARE
+            val model = Build.MODEL
+            val product = Build.PRODUCT
+            return fp.startsWith("generic") ||
+                fp.contains("emulator", ignoreCase = true) ||
+                hw.contains("goldfish") ||
+                hw.contains("ranchu") ||
+                model.contains("Emulator") ||
+                model.contains("Android SDK built for") ||
+                product.contains("sdk_gphone") ||
+                product.contains("emulator")
+        }
+
+        fun defaultDelegate(): Int = if (isAndroidEmulator()) DELEGATE_CPU else DELEGATE_GPU
     }
 }

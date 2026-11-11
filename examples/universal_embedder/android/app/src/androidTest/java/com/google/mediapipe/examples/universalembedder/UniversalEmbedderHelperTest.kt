@@ -47,12 +47,14 @@ class UniversalEmbedderHelperTest {
     @Test
     fun multimodalEmbeddings_crossModalAndSameModalRanking() {
         val context = ApplicationProvider.getApplicationContext<Context>()
+        val initialDelegate = UniversalEmbedderHelper.defaultDelegate()
         val helper =
             UniversalEmbedderHelper(
                 context = context,
-                currentDelegate = UniversalEmbedderHelper.DELEGATE_GPU,
+                currentDelegate = initialDelegate,
             )
-        var usedDelegate = "GPU"
+        var usedDelegate =
+            if (initialDelegate == UniversalEmbedderHelper.DELEGATE_CPU) "CPU" else "GPU"
         val recorder = LatencyRecorder("universal_embedder")
         recorder.putMetadata("model", UniversalEmbedderHelper.MODEL_FILE_NAME)
 
@@ -60,10 +62,12 @@ class UniversalEmbedderHelperTest {
             recorder.measure("model_load_ms") {
                 if (helper.setupUniversalEmbedder()) {
                     true
-                } else {
+                } else if (initialDelegate != UniversalEmbedderHelper.DELEGATE_CPU) {
                     usedDelegate = "CPU"
                     helper.currentDelegate = UniversalEmbedderHelper.DELEGATE_CPU
                     helper.setupUniversalEmbedder()
+                } else {
+                    false
                 }
             }
         recorder.putMetadata("delegate", usedDelegate)

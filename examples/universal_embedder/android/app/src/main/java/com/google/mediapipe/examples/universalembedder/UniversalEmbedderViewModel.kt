@@ -150,7 +150,12 @@ data class UniversalEmbedderUiState(
             text = DefaultMultimodalPresets.first().secondText,
             samplePhoto = DefaultMultimodalPresets.first().secondPhoto,
         ),
-    val delegateOption: UniversalDelegateOption = UniversalDelegateOption.GPU,
+    val delegateOption: UniversalDelegateOption =
+        if (UniversalEmbedderHelper.isAndroidEmulator()) {
+            UniversalDelegateOption.CPU
+        } else {
+            UniversalDelegateOption.GPU
+        },
     val isModelLoading: Boolean = true,
     val isComparing: Boolean = false,
     val isReady: Boolean = false,
