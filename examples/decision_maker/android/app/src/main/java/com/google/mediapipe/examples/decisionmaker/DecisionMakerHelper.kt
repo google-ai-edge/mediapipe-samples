@@ -156,7 +156,8 @@ class DecisionMakerHelper(
                 "gliner_s256.task",
             )
 
-        private const val MAX_NUM_TOKENS = 4096
+        // Attention/prefix workspaces scale steeply with context size; 1024 keeps peak RSS under ~1 GB.
+        private const val MAX_NUM_TOKENS = 1024
         private const val TAG = "DecisionMakerHelper"
 
         fun isAndroidEmulator(): Boolean {
