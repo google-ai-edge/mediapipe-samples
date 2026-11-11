@@ -1,43 +1,31 @@
-
 # MediaPipe Tasks Object Detection Android Demo
 
-### Overview
+## Overview
 
-This is a camera app that continuously detects the objects (bounding boxes, classes, and confidence) in the frames seen by your device's back camera, in an image imported from the device gallery,  or in a video imported by the device gallery, with the option to use a quantized [MobileNetV2](https://storage.cloud.google.com/tf_model_garden/vision/qat/mobilenetv2_ssd_coco/mobilenetv2_ssd_256_uint8.tflite) [EfficientDet Lite 0](https://storage.googleapis.com/mediapipe-tasks/object_detector/efficientdet_lite0_uint8.tflite), or [EfficientDet Lite2](https://storage.googleapis.com/mediapipe-tasks/object_detector/efficientdet_lite2_uint8.tflite) model.
+This sample demonstrates the MediaPipe [Object Detector](https://ai.google.dev/edge/mediapipe/solutions/vision/object_detector/android) task in a Jetpack Compose Material 3 app (consolidating the legacy Views and Jetpack Compose Android variants). It supports:
 
-The model files are downloaded by a Gradle script when you build and run the app. You don't need to do any steps to download TFLite models into the project explicitly unless you wish to use your own models. If you do use your own models, place them into the app's *assets* directory.
+- **Camera:** Live front/back CameraX feed with real-time bounding boxes, category labels, and inference telemetry.
+- **Gallery:** Bundled dining sample (`Try sample`) as well as user-selected images and videos from the device gallery.
 
-This application should be run on a physical Android device to take advantage of the physical camera, though the gallery tab will enable you to use an emulator for opening locally stored files.
+In the **Settings** sheet, you can switch models (**EfficientDet Lite0** and **EfficientDet Lite2**), toggle hardware **Delegate** (`CPU` or `GPU`), change **Max results** (`1`, `3`, `5`), and tune the **Confidence threshold**.
 
-![Object Detection Demo](object_detection.gif?raw=true "Object Detection Demo")
+![Object Detection Demo](objectdetection.png?raw=true "Object Detection Demo")
 
-## Build the demo using Android Studio
+## Prerequisites
 
-### Prerequisites
+- **[Android Studio](https://developer.android.com/studio)** (with Android SDK 36 and JDK 17+)
+- An Android device or emulator running Android 7.0 (API 24) or higher
 
-*   The **[Android Studio](https://developer.android.com/studio/index.html)**
-    IDE. This sample has been tested on Android Studio Dolphin.
+## Build and Run
 
-*   A physical Android device with a minimum OS version of SDK 24 (Android 7.0 -
-    Nougat) with developer mode enabled. The process of enabling developer mode
-    may vary by device. You may also use an Android emulator with more limited
-    functionality.
+The Gradle script [app/download_models.gradle.kts](app/download_models.gradle.kts) automatically downloads and SHA-256 verifies `efficientdet-lite0.tflite` and `efficientdet-lite2.tflite` into `app/src/main/assets/` before building:
 
-### Building
+```bash
+./gradlew :app:verifyModels :app:assembleDebug
+```
 
-*   Open Android Studio. From the Welcome screen, select Open an existing
-    Android Studio project.
+To run the shared unit tests and instrumented real-model + UI tests:
 
-*   From the Open File or Project window that appears, navigate to and select
-    the mediapipe/examples/object_detection/android directory. Click OK. You may
-    be asked if you trust the project. Select Trust.
-
-*   If it asks you to do a Gradle Sync, click OK.
-
-*   With your Android device connected to your computer and developer mode
-    enabled, click on the green Run arrow in Android Studio.
-
-### Models used
-
-Downloading, extraction, and placing the models into the *assets* folder is
-managed automatically by the **download.gradle** file.
+```bash
+./gradlew :android-common:testing:testDebugUnitTest :app:connectedDebugAndroidTest
+```

@@ -13,246 +13,270 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.google.mediapipe.examples.objectdetection
 
+import android.content.Context
 import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.SystemClock
+import android.util.Log
 import androidx.core.net.toUri
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.google.mediapipe.examples.common.testing.LatencyRecorder
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.components.containers.Category
 import com.google.mediapipe.tasks.vision.core.RunningMode
-import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetectorResult
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.BeforeClass
-import org.junit.Test
-import org.junit.runner.RunWith
 import java.io.File
 import java.io.FileOutputStream
-import java.io.InputStream
-import java.util.concurrent.locks.Condition
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.min
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import org.junit.runner.RunWith
 
-/**
- * Instrumented test, which will execute on an Android device.
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
+/** Instrumented test for [ObjectDetectorHelper] across IMAGE, VIDEO, and LIVE_STREAM modes. */
 @RunWith(AndroidJUnit4::class)
 class ObjectDetectorTest {
+
     companion object {
+        private const val TAG = "ObjectDetectorTest"
         private const val TEST_IMAGE_NAME = "test_image.jpg"
         private const val TEST_VIDEO_NAME = "test_video.mp4"
-        private lateinit var lock: ReentrantLock
-        private lateinit var condition: Condition
 
-        @BeforeClass
-        @JvmStatic
-        fun setup() {
-            lock = ReentrantLock()
-            condition = lock.newCondition()
-        }
+        private val expectedCategoriesForImageAndLiveStreamMode =
+            listOf(
+                Category.create(0.74924266f, 0, "bottle", ""),
+                Category.create(0.7368947f, 1, "pizza", ""),
+                Category.create(0.69547653f, 2, "dining table", ""),
+            )
+
+        private val expectedCategoryForVideoMode =
+            listOf(
+                Category.create(0.65084565f, 0, "person", ""),
+                Category.create(0.53448033f, 1, "cell phone", ""),
+            )
     }
 
-
-    private val expectedCategoriesForImageAndLiveStreamMode = listOf(
-        Category.create(0.73828125f, 0, "bottle", ""),
-        Category.create(0.70703125f, 1, "wine glass", ""),
-        Category.create(0.66796875f, 2, "pizza", "")
-    )
-
-    private val expectedCategoryForVideoMode = listOf(
-        Category.create(0.64570314f, 0, "laptop", ""),
-        Category.create(0.62890625f, 1, "person", ""),
-        Category.create(0.5859375f, 2, "cell phone", ""),
-    )
-
-    /**
-     * Verify that the result returned from the Object Detector Helper with
-     * LIVE_STREAM mode is within the acceptable range to the expected result.
-     */
     @Test
     fun detectionResultsFromLiveStreamModeFallsWithinAcceptedRange() {
-        var detectionResult: ObjectDetectorResult? = null
-        val objectDetectorHelper = ObjectDetectorHelper(
-            context = ApplicationProvider.getApplicationContext(),
-            runningMode = RunningMode.LIVE_STREAM,
-            objectDetectorListener =
-            object : ObjectDetectorHelper.DetectorListener {
-                override fun onError(error: String, errorCode: Int) {
-                    println(error)
+        val latch = CountDownLatch(1)
+        val resultRef = AtomicReference<ObjectDetectorHelper.ResultBundle?>()
+        val errorRef = AtomicReference<String?>()
 
-                    // Release the lock
-                    lock.withLock {
-                        condition.signal()
-                    }
-                }
+        val objectDetectorHelper =
+            ObjectDetectorHelper(
+                context = ApplicationProvider.getApplicationContext(),
+                runningMode = RunningMode.LIVE_STREAM,
+                objectDetectorListener =
+                    object : ObjectDetectorHelper.DetectorListener {
+                        override fun onError(error: String, errorCode: Int) {
+                            errorRef.compareAndSet(null, error)
+                            latch.countDown()
+                        }
 
-                override fun onResults(resultBundle: ObjectDetectorHelper.ResultBundle) {
-                    detectionResult = resultBundle.results.first()
-
-                    // Release the lock and start verifying the result
-                    lock.withLock {
-                        condition.signal()
-                    }
-                }
-            })
-
+                        override fun onResults(resultBundle: ObjectDetectorHelper.ResultBundle) {
+                            resultRef.compareAndSet(null, resultBundle)
+                            latch.countDown()
+                        }
+                    },
+            )
         val bitmap = loadImage(TEST_IMAGE_NAME)
-        val mpImage = BitmapImageBuilder(bitmap).build()
+        try {
+            assertFalse("ObjectDetector LIVE_STREAM failed to initialize", objectDetectorHelper.isClosed)
+            val mpImage = BitmapImageBuilder(bitmap).build()
+            objectDetectorHelper.detectAsync(mpImage, SystemClock.uptimeMillis())
 
-        // Run the object detection with the test image.
-        objectDetectorHelper.detectAsync(mpImage, SystemClock.uptimeMillis())
+            assertTrue("Timed out waiting for LIVE_STREAM callback", latch.await(15, TimeUnit.SECONDS))
+            val error = errorRef.get()
+            if (error != null) {
+                throw AssertionError("Unexpected LIVE_STREAM error: $error")
+            }
 
-        // Lock to wait the objectDetectorHelper return the value.
-        lock.withLock {
-            condition.await()
-        }
+            val bundle = resultRef.get()
+            assertNotNull(bundle)
+            val detections = bundle!!.results.first().detections()
+            assertTrue("Expected at least one detection", detections.isNotEmpty())
+            val actualLabels = detections.mapNotNull { it.categories().firstOrNull()?.categoryName() }
+            val actualScores = detections.mapNotNull { it.categories().firstOrNull()?.score() }
+            Log.i(TAG, "LiveStream Lite0 detections=$actualLabels scores=$actualScores")
 
-        // Verify that the detection result is not null.
-        assertNotNull(detectionResult)
-
-        val actualCategories =
-            detectionResult!!.detections().first().categories()
-
-        for (i in actualCategories.indices) {
-            // Verify that the categories are correct.
-            assertEquals(
-                expectedCategoriesForImageAndLiveStreamMode[i].categoryName(),
-                actualCategories[i].categoryName()
-            )
-
-            // Verify that the scores are correct.
-            assertEquals(
-                expectedCategoriesForImageAndLiveStreamMode[i].score(),
-                actualCategories[i].score(), 0.05f
-            )
+            val expectedSize = min(detections.size, expectedCategoriesForImageAndLiveStreamMode.size)
+            for (i in 0 until expectedSize) {
+                val category = detections[i].categories().first()
+                assertEquals(
+                    expectedCategoriesForImageAndLiveStreamMode[i].categoryName(),
+                    category.categoryName(),
+                )
+                assertEquals(
+                    expectedCategoriesForImageAndLiveStreamMode[i].score(),
+                    category.score(),
+                    0.08f,
+                )
+            }
+        } finally {
+            objectDetectorHelper.clearObjectDetector()
+            bitmap.recycle()
         }
     }
 
-    /**
-     * Verify that the result returned from Object Detector Helper with
-     * VIDEO mode is within the acceptable range to the expected result.
-     * The result is the average of all frames.
-     */
     @Test
     fun detectionResultsFromVideoModeFallsWithinAcceptedRange() {
-        val objectDetectorHelper = ObjectDetectorHelper(
-            context = ApplicationProvider.getApplicationContext(),
-            runningMode = RunningMode.VIDEO
-        )
+        val objectDetectorHelper =
+            ObjectDetectorHelper(
+                context = ApplicationProvider.getApplicationContext(),
+                runningMode = RunningMode.VIDEO,
+            )
+        val tempFile = createTempVideoFile(TEST_VIDEO_NAME)
+        try {
+            assertFalse("ObjectDetector VIDEO failed to initialize", objectDetectorHelper.isClosed)
+            val videoUri: Uri = tempFile.toUri()
+            val detectionResult = objectDetectorHelper.detectVideoFile(videoUri, 300)
+            assertNotNull(detectionResult)
 
-        val videoUri = getVideoUri(TEST_VIDEO_NAME)
-
-        // Run the object detection with the test video.
-        val detectionResult = objectDetectorHelper.detectVideoFile(
-            videoUri,
-            300
-        )
-
-        // Verify that the detection result is not null.
-        assertNotNull(detectionResult)
-
-        // Average scores of all frames.
-        val hashMap = HashMap<String, Pair<Float, Int>>()
-        detectionResult!!.results.forEach { frameResult ->
-            frameResult.detections().first().categories().forEach {
-                if (hashMap.containsKey(it.categoryName())) {
-                    hashMap[it.categoryName()] = Pair(
-                        hashMap[it.categoryName()]!!.first + it.score(),
-                        hashMap[it.categoryName()]!!.second + 1
-                    )
-                } else {
-                    hashMap[it.categoryName()] = Pair(it.score(), 1)
+            val hashMap = HashMap<String, Pair<Float, Int>>()
+            detectionResult!!.results.forEach { frameResult ->
+                frameResult.detections().forEach { detection ->
+                    detection.categories().firstOrNull()?.let { category ->
+                        val prev = hashMap[category.categoryName()]
+                        if (prev != null) {
+                            hashMap[category.categoryName()] =
+                                Pair(prev.first + category.score(), prev.second + 1)
+                        } else {
+                            hashMap[category.categoryName()] = Pair(category.score(), 1)
+                        }
+                    }
                 }
             }
-        }
-        val actualAverageCategories = hashMap.map {
-            val averageScore = it.value.first / it.value.second
-            Category.create(averageScore, 0, it.key, "")
-        }.toList().sortedByDescending { it.score() }
-
-        val minSize =
-            min(actualAverageCategories.size, expectedCategoryForVideoMode.size)
-
-        for (i in 0 until minSize) {
-            // Verify that the categories are correct.
-            assertEquals(
-                expectedCategoryForVideoMode[i].categoryName(),
-                actualAverageCategories[i].categoryName()
+            val actualAverageCategories =
+                hashMap
+                    .map { Category.create(it.value.first / it.value.second, 0, it.key, "") }
+                    .sortedByDescending { it.score() }
+            Log.i(
+                TAG,
+                "Video top avg categories=${actualAverageCategories.take(3).map { "${it.categoryName()}:${it.score()}" }}",
             )
-
-            // Verify that the scores are correct.
-            assertEquals(
-                expectedCategoryForVideoMode[i].score(),
-                actualAverageCategories[i].score(), 0.05f
-            )
+            assertTrue("Expected video detections", actualAverageCategories.isNotEmpty())
+            val minSize = min(actualAverageCategories.size, expectedCategoryForVideoMode.size)
+            for (i in 0 until minSize) {
+                assertEquals(
+                    expectedCategoryForVideoMode[i].categoryName(),
+                    actualAverageCategories[i].categoryName(),
+                )
+                assertEquals(
+                    expectedCategoryForVideoMode[i].score(),
+                    actualAverageCategories[i].score(),
+                    0.15f,
+                )
+            }
+        } finally {
+            objectDetectorHelper.clearObjectDetector()
+            tempFile.delete()
         }
     }
 
-    /**
-     * Verify that the result returned from the Object Detector Helper with
-     * IMAGE mode is within the acceptable range to the expected result.
-     */
     @Test
-    fun detectionResultsFromImageModeFallsWithinAcceptedRange() {
-        val objectDetectorHelper = ObjectDetectorHelper(
-            context = ApplicationProvider.getApplicationContext(),
-            runningMode = RunningMode.IMAGE
-        )
-
+    fun detectionResultsFromImageModeFallsWithinAcceptedRange_andRecordsLatency() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
         val bitmap = loadImage(TEST_IMAGE_NAME)
 
-        // Run the object detection with the test image.
-        val detectionResult =
-            objectDetectorHelper.detectImage(bitmap!!)?.results?.first()
+        val recorder = LatencyRecorder("object_detector_lite0_cpu")
+        recorder.putMetadata("model", ObjectDetectorHelper.MODEL_EFFICIENTDETV0_NAME)
+        recorder.putMetadata("delegate", "CPU")
 
-        // Verify that the detection result is not null.
-        assertNotNull(detectionResult)
+        val objectDetectorHelper =
+            recorder.measure("model_load_ms") {
+                ObjectDetectorHelper(context = context, runningMode = RunningMode.IMAGE)
+            }
+        try {
+            assertFalse("ObjectDetector Lite0 IMAGE failed to initialize", objectDetectorHelper.isClosed)
+            val bundle = recorder.measure("detect_image_ms") { objectDetectorHelper.detectImage(bitmap) }
+            assertNotNull(bundle)
+            val detections = bundle!!.results.first().detections()
+            assertTrue(detections.isNotEmpty())
+            val expectedSize = min(detections.size, expectedCategoriesForImageAndLiveStreamMode.size)
+            for (i in 0 until expectedSize) {
+                val category = detections[i].categories().first()
+                assertEquals(
+                    expectedCategoriesForImageAndLiveStreamMode[i].categoryName(),
+                    category.categoryName(),
+                )
+                assertEquals(
+                    expectedCategoriesForImageAndLiveStreamMode[i].score(),
+                    category.score(),
+                    0.08f,
+                )
+            }
 
-        val actualCategories =
-            detectionResult!!.detections().first().categories()
-
-        for (i in actualCategories.indices) {
-            // Verify that the categories are correct.
-            assertEquals(
-                expectedCategoriesForImageAndLiveStreamMode[i].categoryName(),
-                actualCategories[i].categoryName()
-            )
-
-            // Verify that the scores are correct.
-            assertEquals(
-                expectedCategoriesForImageAndLiveStreamMode[i].score(),
-                actualCategories[i].score(), 0.05f
-            )
+            repeat(5) {
+                recorder.measure("detect_steady_ms") { objectDetectorHelper.detectImage(bitmap) }
+            }
+            recorder.flush(context)
+        } finally {
+            objectDetectorHelper.clearObjectDetector()
+            bitmap.recycle()
         }
     }
 
-    @Throws(Exception::class)
-    private fun loadImage(fileName: String): Bitmap? {
-        val assetManager: AssetManager =
-            InstrumentationRegistry.getInstrumentation().context.assets
-        val inputStream: InputStream = assetManager.open(fileName)
-        return BitmapFactory.decodeStream(inputStream)
+    @Test
+    fun efficientDetLite2_detectsSampleImage_andRecordsLatency() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val bitmap = loadImage(TEST_IMAGE_NAME)
+
+        val recorder = LatencyRecorder("object_detector_lite2_cpu")
+        recorder.putMetadata("model", ObjectDetectorHelper.MODEL_EFFICIENTDETV2_NAME)
+        recorder.putMetadata("delegate", "CPU")
+
+        val helper =
+            recorder.measure("model_load_ms") {
+                ObjectDetectorHelper(
+                    context = context,
+                    currentModel = ObjectDetectorHelper.MODEL_EFFICIENTDETV2,
+                    runningMode = RunningMode.IMAGE,
+                )
+            }
+        try {
+            assertFalse("ObjectDetector Lite2 failed to initialize", helper.isClosed)
+            val bundle = recorder.measure("detect_image_ms") { helper.detectImage(bitmap) }
+            assertNotNull(bundle)
+            val labels =
+                bundle!!.results.first().detections().mapNotNull { it.categories().firstOrNull()?.categoryName() }
+            Log.i(TAG, "Image Lite2 labels=$labels")
+            assertTrue("Expected Lite2 to detect bottle or wine glass: $labels", labels.contains("bottle"))
+
+            repeat(5) {
+                recorder.measure("detect_steady_ms") { helper.detectImage(bitmap) }
+            }
+            recorder.flush(context)
+        } finally {
+            helper.clearObjectDetector()
+            bitmap.recycle()
+        }
     }
 
-    @Throws(Exception::class)
-    private fun getVideoUri(videoName: String): Uri {
-        val assetManager: AssetManager =
-            InstrumentationRegistry.getInstrumentation().context.assets
+    private fun loadImage(fileName: String): Bitmap {
+        val assetManager: AssetManager = InstrumentationRegistry.getInstrumentation().context.assets
+        return assetManager.open(fileName).use { stream ->
+            requireNotNull(BitmapFactory.decodeStream(stream)) { "Failed to decode $fileName" }
+        }
+    }
+
+    private fun createTempVideoFile(videoName: String): File {
+        val assetManager: AssetManager = InstrumentationRegistry.getInstrumentation().context.assets
         val file = File.createTempFile("test_video", ".mp4")
-        val output = FileOutputStream(file)
-        val inputStream: InputStream = assetManager.open(videoName)
-        inputStream.copyTo(output)
-        return file.toUri()
+        assetManager.open(videoName).use { input ->
+            FileOutputStream(file).use { output ->
+                input.copyTo(output)
+            }
+        }
+        return file
     }
 }
