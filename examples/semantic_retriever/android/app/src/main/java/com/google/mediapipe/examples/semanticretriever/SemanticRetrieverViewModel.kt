@@ -93,7 +93,12 @@ data class SearchMatchUi(
 
 data class SemanticRetrieverUiState(
     val query: String = DefaultQuerySuggestions.first().query,
-    val delegateOption: RetrieverDelegateOption = RetrieverDelegateOption.GPU,
+    val delegateOption: RetrieverDelegateOption =
+        if (SemanticRetrieverHelper.isAndroidEmulator()) {
+            RetrieverDelegateOption.CPU
+        } else {
+            RetrieverDelegateOption.GPU
+        },
     val storeOption: VectorStoreOption = VectorStoreOption.SQLITE,
     val isModelLoading: Boolean = true,
     val isIndexing: Boolean = false,

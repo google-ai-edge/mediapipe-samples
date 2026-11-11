@@ -40,14 +40,22 @@ class SemanticRetrieverHelperTest {
         sqliteDbName: String = "test_semantic_sqlite.db",
         appSearchDbName: String = "test_semantic_appsearch",
     ): Pair<SemanticRetrieverHelper, String> {
+        val initialDelegate = SemanticRetrieverHelper.defaultDelegate()
         val helper =
             SemanticRetrieverHelper(
                 context = context,
-                currentDelegate = SemanticRetrieverHelper.DELEGATE_GPU,
+                currentDelegate = initialDelegate,
                 currentStore = store,
                 sqliteDbName = sqliteDbName,
                 appSearchDbName = appSearchDbName,
             )
+        if (initialDelegate == SemanticRetrieverHelper.DELEGATE_CPU) {
+            assertTrue(
+                "SemanticRetriever failed to initialize on CPU for store=$store",
+                helper.setupSemanticRetriever(),
+            )
+            return helper to "CPU"
+        }
         if (helper.setupSemanticRetriever()) {
             return helper to "GPU"
         }

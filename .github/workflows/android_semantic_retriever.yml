@@ -89,7 +89,7 @@ jobs:
           working-directory: examples/semantic_retriever/android
           script: |
             adb logcat -c || true
-            ./gradlew :app:connectedDebugAndroidTest --no-daemon --stacktrace
+            ./gradlew :app:connectedDebugAndroidTest --no-daemon --stacktrace || (adb logcat -d -b crash; adb logcat -d | grep -iE "FATAL|DEBUG|semanticretriever|LiteRt" | tail -n 120; exit 1)
             adb logcat -d -s LatencyRecorder | python3 ../../../.github/scripts/extract_latency_reports.py ../../../build/latency_reports
 
       - name: Upload report-only latency JSON

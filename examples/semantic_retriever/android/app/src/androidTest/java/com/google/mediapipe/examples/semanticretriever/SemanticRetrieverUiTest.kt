@@ -35,7 +35,7 @@ class SemanticRetrieverUiTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<MainActivity>()
 
-    private fun waitForIndexReady(timeoutMillis: Long = 90_000L) {
+    private fun waitForIndexReady(timeoutMillis: Long = 240_000L) {
         composeRule.waitUntil(timeoutMillis = timeoutMillis) {
             val nodes = composeRule.onAllNodesWithTag("search_button").fetchSemanticsNodes()
             nodes.isNotEmpty() && !nodes.first().config.contains(SemanticsProperties.Disabled)
@@ -50,7 +50,7 @@ class SemanticRetrieverUiTest {
         composeRule.onNodeWithTag("suggestion_cat").performScrollTo().performClick()
         composeRule.onNodeWithTag("search_button").performScrollTo().performClick()
 
-        composeRule.waitUntil(timeoutMillis = 30_000L) {
+        composeRule.waitUntil(timeoutMillis = 120_000L) {
             composeRule.onAllNodesWithTag("result_card_1").fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithTag("result_card_1").performScrollTo().assertIsDisplayed()
