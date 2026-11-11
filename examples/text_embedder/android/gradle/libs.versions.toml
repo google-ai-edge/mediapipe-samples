@@ -19,7 +19,7 @@ targetSdk = "36"
 minSdk = "24"
 
 # Build tooling
-agp = "8.13.2"
+agp = "9.5.1"
 kotlin = "2.2.20"
 
 # MediaPipe
