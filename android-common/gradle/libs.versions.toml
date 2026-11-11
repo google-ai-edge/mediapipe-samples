@@ -22,8 +22,8 @@ agp = "8.13.2"
 kotlin = "2.2.20"
 
 # AndroidX & Compose
-coreKtx = "1.18.0"
-composeBom = "2026.05.00"
+coreKtx = "1.19.1"
+composeBom = "2026.09.00"
 
 # Testing
 junit = "4.13.2"
