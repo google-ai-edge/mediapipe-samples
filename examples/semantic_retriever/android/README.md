@@ -1,76 +1,29 @@
-# MediaPipe Tasks Semantic Retriever Android Demo
+# MediaPipe Semantic Retriever — Android Sample
 
-### Overview
+This Android sample app demonstrates local semantic image search using MediaPipe `SemanticRetriever` (`com.google.mediapipe:tasks-retrieval`) and **EmbeddingGemma 2 Multimodal (440M)** (`embeddinggemma-2-text-vision-440m.litertlm`), built with Compose Material 3 (`:android-common:ui`).
 
-This app demonstrates on-device **semantic image search** with the MediaPipe
-`tasks-retrieval` library. Ten sample images are embedded with
-[EmbeddingGemma V2](https://ai.google.dev/gemma) running entirely on the device, stored in a
-vector store, and then retrieved by meaning — searching for *"a piece of fruit"* returns the
-banana and the apple even though neither the query nor the images contain that text.
+## Features
 
-The sample supports both vector store backends and lets you switch between them at runtime:
+* **Automatic Sample Gallery Indexing:** Indexes 10 bundled photos into the local vector store (`SQLite` or `AppSearch`), plus Photo Picker support for adding custom photos.
+* **Natural-Language Search:** Query indexed photos with freeform text or quick suggestion chips (`Beach`, `Cat`, `Mountain`, `Coffee`, `Sports car`, `Apple`).
+* **Vector Store & Hardware Settings:** Switch between `SQLite` (`SqliteVectorStore`) and `AppSearch` (`AppSearchVectorStore`) backends and `GPU` (with automatic `CPU` fallback) / `CPU` delegates.
 
-| Backend | Class | Notes |
-| --- | --- | --- |
-| AppSearch | `AppSearchVectorStore` | Backed by Android's on-device AppSearch (Icing) index |
-| SQLite | `SqliteVectorStore` | Backed by a local SQLite database with a vector extension |
+![Semantic Retriever Demo](semanticretriever.png?raw=true "Semantic Retriever Demo")
 
-Switching backends closes the current store, opens the other one, and clears it, so you can
-index and query each backend independently. The embedding engine itself is loaded once and
-shared by both.
+## Model
 
-This application should be run on a physical Android device (arm64).
+The LiteRT-LM multimodal model is downloaded automatically during Gradle build and verified via SHA-256 in `app/download_models.gradle.kts`:
 
-## Build the demo using Android Studio
+* **EmbeddingGemma 2 Text+Vision 440M** (`embeddinggemma-2-text-vision-440m.litertlm`): https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm
 
-### Prerequisites
+## Build and Test
 
-*   The **[Android Studio](https://developer.android.com/studio/index.html)** IDE.
+```bash
+cd examples/semantic_retriever/android
 
-*   A physical Android device with a minimum OS version of SDK 24 (Android 7.0 - Nougat) with
-    developer mode enabled.
+# Download and verify model checksum, run unit tests, and build debug APK
+./gradlew :app:verifyModels :android-common:testing:testDebugUnitTest :app:assembleDebug
 
-### Model
-
-The app uses the [EmbeddingGemma 2 (Text + Vision 440M) LiteRT-LM model][model-url] at:
-
+# Run real-model quality and end-to-end Compose UI tests on a connected device/emulator
+./gradlew :app:connectedDebugAndroidTest
 ```
-app/src/main/assets/embeddinggemma-2-text-vision-440m.litertlm
-```
-
-`app/download.gradle` automatically downloads the model from
-<https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm/resolve/main/embeddinggemma-2-text-vision-440m.litertlm>
-at build time. If the model is not yet live at that URL or requires authentication, download it
-manually and place it at the path above.
-
-Available EmbeddingGemma 2 LiteRT-LM models:
-
-*   **Text (270M)**:
-    <https://huggingface.co/litert-community/embeddinggemma-2-text-270m-litert-lm/resolve/main/embeddinggemma-2-text-270m.litertlm>
-*   **Text + Vision (440M)**:
-    <https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm/resolve/main/embeddinggemma-2-text-vision-440m.litertlm>
-*   **Text + Vision + Audio (740M)**:
-    <https://huggingface.co/litert-community/embeddinggemma-2-740m-litert-lm/resolve/main/embeddinggemma-2-740m.litertlm>
-
-On first launch the model is copied from assets into `filesDir` and opened via a
-`ParcelFileDescriptor` passed to `BaseOptions.setModelAssetFileDescriptor`. Expect a few seconds of
-load time on the first start.
-
-### Building
-
-*   Open Android Studio. From the Welcome screen, select Open an existing Android Studio project.
-
-*   Navigate to and select the `mediapipe/examples/semantic_retriever/android` directory. Click OK.
-
-*   If it asks you to do a Gradle Sync, click OK.
-
-*   With your Android device connected and developer mode enabled, click the green Run arrow.
-
-### Using the app
-
-1.  Pick a vector store (AppSearch or SQLite).
-2.  Tap **Index 10 sample images** and wait for the progress bar to complete (~15s).
-3.  Type a query, or tap one of the suggestion chips, to retrieve the closest images ranked by
-    cosine similarity.
-
-[model-url]: https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm/resolve/main/embeddinggemma-2-text-vision-440m.litertlm

@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 The TensorFlow Authors. All Rights Reserved.
+ * Copyright 2026 The MediaPipe Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,157 +18,215 @@ package com.google.mediapipe.examples.semanticretriever
 
 import android.content.Context
 import android.net.Uri
-import android.os.ParcelFileDescriptor
+import android.os.SystemClock
 import android.util.Log
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
 import com.google.mediapipe.tasks.retrieval.components.AppSearchVectorStore
 import com.google.mediapipe.tasks.retrieval.components.SqliteVectorStore
-import com.google.mediapipe.tasks.retrieval.components.VectorStore
 import com.google.mediapipe.tasks.retrieval.semanticretriever.RetrievalResult
 import com.google.mediapipe.tasks.retrieval.semanticretriever.SemanticRetriever
 import com.google.mediapipe.tasks.retrieval.semanticretriever.SemanticRetrieverComponents
 import com.google.mediapipe.tasks.retrieval.universalembedder.UniversalEmbedder
 import com.google.mediapipe.tasks.retrieval.universalembedder.UniversalEmbedderOptions
 import java.io.File
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
 
 /**
- * Owns the embedding engine and the currently selected vector store.
- *
- * The [UniversalEmbedder] wraps a ~470 MB LiteRT-LM model ([MODEL_URL]), so it is created exactly
- * once and kept alive for the lifetime of the helper. Switching vector stores only swaps the cheap
- * [SemanticRetriever] / [VectorStore] pair on top of that same embedder — tearing the engine down
- * and standing a second one up would either fail to mmap the model file or leave callers holding a
- * closed engine.
- *
- * This class is not thread safe: callers must serialize access (see the single-thread dispatcher
- * in [MainActivity]).
+ * Helper managing [UniversalEmbedder], [SemanticRetriever], and pluggable vector stores
+ * ([AppSearchVectorStore] or [SqliteVectorStore]) on CPU or GPU.
  */
-class SemanticRetrieverHelper(private val context: Context) {
-
-    private var universalEmbedder: UniversalEmbedder? = null
+class SemanticRetrieverHelper(
+    private val context: Context,
+    var currentDelegate: Int = DELEGATE_CPU,
+    var currentStore: Int = STORE_SQLITE,
+    var listener: RetrieverListener? = null,
+    private val sqliteDbName: String = DEFAULT_SQLITE_DB,
+    private val appSearchDbName: String = DEFAULT_APPSEARCH_DB,
+) {
+    private var embedder: UniversalEmbedder? = null
     private var semanticRetriever: SemanticRetriever? = null
-    private var currentlyOnGpu = false
 
-    /** True once a vector store has been opened and the helper can accept work. */
+    /** Duration of the most recent successful [setupSemanticRetriever] call, in milliseconds. */
+    @Volatile
+    var setupDurationMs: Long = 0L
+        private set
+
     val isReady: Boolean
         get() = semanticRetriever != null
 
     /**
-     * Loads the embedding model. Safe to call repeatedly; the engine is only built the first time.
+     * Initializes [UniversalEmbedder] and [SemanticRetriever] with the selected delegate and vector
+     * store. Returns `true` on success; reports failures to [listener] and returns `false`.
      */
-    fun prepareEmbedder(useGpu: Boolean = true) {
-        if (universalEmbedder != null && currentlyOnGpu == useGpu) return
+    fun setupSemanticRetriever(): Boolean {
+        clearSemanticRetriever()
+        val startTime = SystemClock.uptimeMillis()
 
-        // The accelerator is baked into the engine, so changing it means rebuilding it.
-        if (universalEmbedder != null) {
-            semanticRetriever?.close()
-            semanticRetriever = null
-            universalEmbedder?.close()
-            universalEmbedder = null
-        }
-
-        // Copy the model from APK assets into filesDir on first launch so we can open a standalone
-        // ParcelFileDescriptor for BaseOptions.setModelAssetFileDescriptor.
-        val modelFile = File(context.filesDir, MODEL_NAME)
-        if (!modelFile.exists()) {
-            Log.i(TAG, "Copying $MODEL_NAME from assets to filesDir…")
-            try {
-                context.assets.open(MODEL_NAME).use { input ->
-                    FileOutputStream(modelFile).use { output ->
-                        input.copyTo(output)
-                    }
+        val delegate =
+            when (currentDelegate) {
+                DELEGATE_CPU -> Delegate.CPU
+                DELEGATE_GPU -> Delegate.GPU
+                else -> {
+                    listener?.onError("Unsupported delegate index: $currentDelegate")
+                    return false
                 }
-            } catch (e: FileNotFoundException) {
-                throw IllegalStateException(
-                    "Model $MODEL_NAME not found in assets. Download it from $MODEL_URL and " +
-                        "place it in app/src/main/assets/$MODEL_NAME.",
-                    e
-                )
             }
-            Log.i(TAG, "Model copied (${modelFile.length()} bytes).")
-        }
 
-        val delegate = if (useGpu) Delegate.GPU else Delegate.CPU
-        val startedAt = System.currentTimeMillis()
-        universalEmbedder =
-            ParcelFileDescriptor.open(modelFile, ParcelFileDescriptor.MODE_READ_ONLY).use { pfd ->
-                val baseOptions = BaseOptions.builder()
-                    .setModelAssetFileDescriptor(pfd.fd)
+        return try {
+            val modelPath = resolveModelPath(MODEL_FILE_NAME)
+            val baseOptions =
+                BaseOptions.builder()
+                    .setModelAssetPath(modelPath)
                     .setDelegate(delegate)
                     .build()
-
-                val embedderOptions = UniversalEmbedderOptions.builder()
+            val embedderOptions =
+                UniversalEmbedderOptions.builder()
                     .setBaseOptions(baseOptions)
+                    .setTextDelegate(delegate)
+                    .setVisionDelegate(delegate)
+                    .setL2Normalize(true)
                     .setCacheDir(context.cacheDir.absolutePath)
                     .build()
 
-                UniversalEmbedder.createFromOptions(context, embedderOptions)
+            val createdEmbedder = UniversalEmbedder.createFromOptions(context, embedderOptions)
+            val vectorStore =
+                when (currentStore) {
+                    STORE_APPSEARCH -> AppSearchVectorStore(context, appSearchDbName)
+                    STORE_SQLITE ->
+                        SqliteVectorStore(
+                            context,
+                            File(context.filesDir, sqliteDbName).absolutePath,
+                            EMBEDDING_DIMENSION,
+                        )
+                    else -> throw IllegalArgumentException("Unsupported store index: $currentStore")
+                }
+
+            val components =
+                SemanticRetrieverComponents()
+                    .setVectorStore(vectorStore)
+                    .addProvider(createdEmbedder.getProvider())
+
+            val createdRetriever = SemanticRetriever.createFromComponents(context, components)
+            embedder = createdEmbedder
+            semanticRetriever = createdRetriever
+            setupDurationMs = SystemClock.uptimeMillis() - startTime
+            true
+        } catch (t: Throwable) {
+            clearSemanticRetriever()
+            val detail = t.message ?: t::class.java.simpleName
+            val errorCode = if (currentDelegate == DELEGATE_GPU) GPU_ERROR else OTHER_ERROR
+            Log.e(
+                TAG,
+                "Failed to initialize SemanticRetriever on delegate=$delegate store=$currentStore: $detail",
+                t,
+            )
+            listener?.onError(
+                if (errorCode == GPU_ERROR) {
+                    "GPU delegate is unavailable on this device: $detail"
+                } else {
+                    "Semantic retriever failed to initialize: $detail"
+                },
+                errorCode,
+            )
+            false
+        }
+    }
+
+    /** Inserts an image at [imageUri] with [id] and optional [metadata]. */
+    fun insertImage(
+        id: String,
+        imageUri: Uri,
+        metadata: Map<String, String> = emptyMap(),
+    ) {
+        val retriever = semanticRetriever ?: error("SemanticRetriever is not initialized")
+        retriever.insertImage(id, imageUri, metadata)
+    }
+
+    /** Returns all currently indexed record IDs, or empty if uninitialized. */
+    fun getAllRecordIds(): List<String> = semanticRetriever?.getAllRecordIds().orEmpty()
+
+    /** Deletes all records from the active vector store. */
+    fun clearIndex() {
+        semanticRetriever?.deleteAll()
+    }
+
+    /** Queries the vector store with natural-language [query], returning top [topK] results and timing. */
+    fun retrieve(query: String, topK: Int = 5): SearchBundle? {
+        val retriever = semanticRetriever ?: return null
+        val startTime = SystemClock.uptimeMillis()
+        val results = retriever.retrieve(query, topK)
+        val inferenceTimeMs = SystemClock.uptimeMillis() - startTime
+        return SearchBundle(
+            results = results,
+            inferenceTime = inferenceTimeMs,
+            loadTimeMs = setupDurationMs,
+        )
+    }
+
+    private fun resolveModelPath(fileName: String): String {
+        val externalCopy =
+            listOfNotNull(
+                    File("/data/local/tmp/semantic_retriever_models", fileName),
+                    context.getExternalFilesDir(null)?.let { File(it, fileName) },
+                )
+                .firstOrNull { it.canRead() && it.length() > 0L }
+        if (externalCopy != null) return externalCopy.absolutePath
+
+        if (context.assets.list("")?.contains(fileName) != true) {
+            throw IllegalStateException(
+                "$fileName not found in assets. Run ./gradlew :app:verifyModels to download it."
+            )
+        }
+        val dest = File(context.filesDir, fileName)
+        val appUpdatedAt =
+            runCatching {
+                    context.packageManager
+                        .getPackageInfo(context.packageName, 0)
+                        .lastUpdateTime
+                }
+                .getOrDefault(0L)
+        if (!dest.exists() || dest.length() == 0L || dest.lastModified() < appUpdatedAt) {
+            Log.i(TAG, "Copying $fileName to ${dest.absolutePath}")
+            val tmp = File(context.filesDir, "$fileName.tmp")
+            context.assets.open(fileName).use { input ->
+                tmp.outputStream().use { output -> input.copyTo(output) }
             }
-        currentlyOnGpu = useGpu
-        val elapsed = System.currentTimeMillis() - startedAt
-        Log.i(TAG, "Embedding engine ready on $delegate in ${elapsed}ms")
-    }
-
-    /**
-     * Closes the previous store (if any) and opens [useAppSearch] ? AppSearch : SQLite, reusing the
-     * already loaded embedding engine.
-     */
-    fun openStore(useAppSearch: Boolean) {
-        val embedder = requireNotNull(universalEmbedder) {
-            "prepareEmbedder() must be called before openStore()"
+            if (!tmp.renameTo(dest)) {
+                tmp.delete()
+                throw IllegalStateException("Could not extract $fileName to app storage.")
+            }
         }
+        return dest.absolutePath
+    }
 
-        // SemanticRetriever.close() closes the vector store it was built with, and leaves the
-        // embedder untouched — which is exactly what we want here.
-        semanticRetriever?.close()
+    fun clearSemanticRetriever() {
+        runCatching { semanticRetriever?.close() }
         semanticRetriever = null
-
-        val vectorStore: VectorStore = if (useAppSearch) {
-            AppSearchVectorStore(context, DB_NAME)
-        } else {
-            SqliteVectorStore(context, DB_NAME, 768)
-        }
-
-        val components = SemanticRetrieverComponents()
-            .setVectorStore(vectorStore)
-            .addProvider(embedder.provider)
-
-        semanticRetriever = SemanticRetriever.createFromComponents(context, components)
-        Log.i(TAG, "Opened ${if (useAppSearch) "AppSearch" else "SQLite"} vector store.")
+        runCatching { embedder?.close() }
+        embedder = null
     }
 
-    /**
-     * Drops [ids] from the open store. Used to reset state when switching backends, which is safer
-     * than deleting the database files out from under a live store.
-     */
-    fun clear(ids: List<String>) {
-        semanticRetriever?.delete(ids)
+    data class SearchBundle(
+        val results: List<RetrievalResult>,
+        val inferenceTime: Long,
+        val loadTimeMs: Long = 0L,
+    )
+
+    interface RetrieverListener {
+        fun onError(error: String, errorCode: Int = OTHER_ERROR)
     }
 
-    fun embedImage(id: String, uri: Uri) {
-        checkNotNull(semanticRetriever) { "No vector store is open" }.insertImage(id, uri)
-    }
-
-    fun searchImages(query: String, limit: Int = 5): List<RetrievalResult> {
-        return semanticRetriever?.retrieve(query, limit) ?: emptyList()
-    }
-
-    fun close() {
-        semanticRetriever?.close()
-        semanticRetriever = null
-        universalEmbedder?.close()
-        universalEmbedder = null
-    }
-
-    private companion object {
-        const val TAG = "SemanticRetriever"
-        const val MODEL_NAME = "embeddinggemma-2-text-vision-440m.litertlm"
-        const val MODEL_URL =
-            "https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm/" +
-                "resolve/main/embeddinggemma-2-text-vision-440m.litertlm"
-        const val DB_NAME = "semantic_db"
+    companion object {
+        const val DELEGATE_CPU = 0
+        const val DELEGATE_GPU = 1
+        const val STORE_APPSEARCH = 0
+        const val STORE_SQLITE = 1
+        const val MODEL_FILE_NAME = "embeddinggemma-2-text-vision-440m.litertlm"
+        const val EMBEDDING_DIMENSION = 768
+        const val DEFAULT_SQLITE_DB = "semantic_retriever_vectors.db"
+        const val DEFAULT_APPSEARCH_DB = "semantic_retriever_appsearch"
+        const val OTHER_ERROR = 0
+        const val GPU_ERROR = 1
+        private const val TAG = "SemanticRetrieverHelper"
     }
 }
