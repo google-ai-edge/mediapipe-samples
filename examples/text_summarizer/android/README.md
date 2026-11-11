@@ -2,28 +2,34 @@
 
 ### Overview
 
-This sample app demonstrates how to use the MediaPipe Text Summarizer Task on Android. It summarizes input text into a concise format, supporting different summarization modes like TL;DR and Keypoints.
+This sample app demonstrates on-device text summarization using the MediaPipe Tasks Text library (`com.google.mediapipe:tasks-text`) and Gemma 200M (`summarization_quant_200m_2modes.litertlm`).
 
-The model file is downloaded automatically by a Gradle script during the build process, so you do not need to manually manage the model assets.
+* **Keypoints & TL;DR Modes:** Switch between bulleted keypoints (`Mode.KEYPOINTS`) and concise paragraph summaries (`Mode.TLDR`).
+* **Unary & Streaming Summarization:** Generate full summaries or stream tokens live (`summarizeStreaming`).
+* **Sample Passages & Token Settings:** Test curated sample passages and configure `maxNumTokens` (`512`, `1024`, `2048`).
+* **Material 3 Compose UI:** Built with `:android-common:ui` theming and edge-to-edge layout.
 
-![Text Summarizer Demo](text_summarizer.gif?raw=true "Text Summarizer Demo")
+![Text Summarizer Demo](text_summarizer.png?raw=true "Text Summarizer Demo")
 
-## Build the demo using Android Studio
+## Building and Running
+
+This project is self-contained using Gradle Kotlin DSL and a local version catalog (`gradle/libs.versions.toml`). Model downloads are verified via SHA-256 in `app/download_models.gradle.kts`.
 
 ### Prerequisites
 
-*   The **[Android Studio](https://developer.android.com/studio/index.html)** IDE.
-*   A physical or emulated Android device with a minimum OS version of SDK 24 (Android 7.0).
-*   Developer mode enabled on your physical device.
+* **[Android Studio](https://developer.android.com/studio/index.html)** (JDK 17+).
+* An Android device or emulator running API level 24 (Android 7.0) or higher.
 
-### Building
+### Build and Test via Gradle
 
-1.  Open Android Studio.
-2.  Select **Open an existing Android Studio project**.
-3.  Navigate to and select the `examples/text_summarizer/android` directory.
-4.  Allow the Gradle sync to complete.
-5.  With your device connected, click the green **Run** arrow in Android Studio.
+```bash
+cd examples/text_summarizer/android
+./gradlew :app:verifyModels :android-common:testing:testDebugUnitTest
+./gradlew :app:connectedDebugAndroidTest
+```
 
-### Models used
+### Models Used
 
-Downloading, extraction, and placement of the model into the `assets` folder are managed automatically by the `download_models.gradle` file.
+Model assets are automatically downloaded and verified in `app/src/main/assets/` by `app/download_models.gradle.kts`:
+
+* `summarization_quant_200m_2modes.litertlm`: Quantized 2-mode Gemma 200M LiteRT-LM summarization model.
