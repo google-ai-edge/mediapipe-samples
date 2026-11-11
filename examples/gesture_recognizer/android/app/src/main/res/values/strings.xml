@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    ~ Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+    ~ Copyright 2026 The MediaPipe Authors. All Rights Reserved.
     ~
     ~ Licensed under the Apache License, Version 2.0 (the "License");
     ~ you may not use this file except in compliance with the License.
@@ -15,39 +15,34 @@
     ~ limitations under the License.
 -->
 <resources>
-    <string name="app_name">MP Gesture Recognizer</string>
-
-    <string name="media_pipe">MediaPipe</string>
-
-    <string name="alt_bottom_sheet_chevron">Bottom sheet expandable indicator</string>
-
-    <string name="alt_bottom_sheet_max_results_button_minus">Decreasing
-        maximum recognized results button</string>
-    <string name="alt_bottom_sheet_max_results_button_plus">Increasing maximum recognized results
-        button</string>
-    <string name="alt_bottom_sheet_threshold_button_minus">Decreasing
-        threshold of recognized hand gesture results button</string>
-    <string name="alt_bottom_sheet_threshold_button_plus">Increasing
-        threshold of recognized hand gesture results button</string>
-    <string name="alt_bottom_sheet_thread_button_minus">Decrease the number of threads used</string>
-    <string name="alt_bottom_sheet_thread_button_plus">Increase the number of threads used</string>
+    <string name="app_name">Gesture Recognizer</string>
     <string name="menu_camera">Camera</string>
     <string name="menu_gallery">Gallery</string>
-    <string name="tv_gallery_placeholder">Click + to add an image or a video
-        to begin running the gesture recognizer.</string>
 
-    <string name="label_inference_time">Inference Time</string>
-    <string name="label_fps">Frames per Second</string>
-    <string name="label_hand_detection_confidence_threshold">Detection
-        Threshold</string>
-    <string name="label_hand_tracking_confidence_threshold">Tracking
-        Threshold</string>
-    <string name="label_hand_presence_confidence_threshold">Presence
-        Threshold</string>
+    <string name="camera_permission_title">Camera access needed</string>
+    <string name="camera_permission_body">Grant camera permission to recognize hand gestures live, or switch to Gallery to inspect photos and videos.</string>
+    <string name="action_grant_camera">Allow camera</string>
+    <string name="action_switch_camera">Switch camera</string>
+    <string name="camera_lens_front">Front</string>
+    <string name="camera_lens_back">Back</string>
+
+    <string name="gallery_empty_title">Recognize hand gestures in media</string>
+    <string name="gallery_empty_body">Try the bundled thumbs-up photo or pick an image or video from your device.</string>
+    <string name="action_try_sample">Try sample</string>
+    <string name="action_pick_media">Pick media</string>
+    <string name="status_detecting">Recognizing gestures…</string>
+
+    <string name="label_inference_time">Inference</string>
+    <string name="label_gesture">Gesture</string>
+    <string name="label_score">Score</string>
     <string name="label_delegate">Delegate</string>
+    <string name="label_detection_threshold">Detection confidence</string>
+    <string name="label_tracking_threshold">Tracking confidence</string>
+    <string name="label_presence_threshold">Presence confidence</string>
 
-    <string-array name="delegate_spinner_titles">
-        <item>CPU</item>
-        <item>GPU</item>
-    </string-array>
+    <string name="settings_title">Recognizer settings</string>
+    <string name="cd_open_settings">Model and hardware settings</string>
+    <string name="action_done">Done</string>
+    <string name="action_use_cpu">Use CPU</string>
+    <string name="action_retry">Retry</string>
 </resources>
