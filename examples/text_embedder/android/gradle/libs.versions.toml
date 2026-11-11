@@ -20,7 +20,7 @@ minSdk = "24"
 
 # Build tooling
 agp = "8.13.2"
-kotlin = "2.2.20"
+kotlin = "2.4.21"
 
 # MediaPipe
 mediapipeTasksText = "1.2.2"
