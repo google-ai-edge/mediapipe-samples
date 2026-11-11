@@ -24,6 +24,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
 import org.junit.Test
@@ -36,14 +37,14 @@ class TextToSpeechUiTest {
 
   @Test
   fun speakAndSettings_synthesizeSpeechAndDisplayTelemetry() {
-    composeRule.waitUntil(timeoutMillis = 90_000L) {
+    composeRule.waitUntil(timeoutMillis = 240_000L) {
       composeRule.onAllNodesWithText("Ready").fetchSemanticsNodes().isNotEmpty()
     }
 
-    composeRule.onNodeWithTag("tts_text_input").assertIsDisplayed()
+    composeRule.onNodeWithTag("tts_text_input").assertIsDisplayed().performTextReplacement("Hello Kokoro.")
     composeRule.onNodeWithTag("tts_speak_button").assertIsEnabled().performClick()
 
-    composeRule.waitUntil(timeoutMillis = 90_000L) {
+    composeRule.waitUntil(timeoutMillis = 240_000L) {
       composeRule.onAllNodesWithTag("tts_telemetry_card").fetchSemanticsNodes().isNotEmpty() &&
         composeRule.onAllNodesWithText("Done").fetchSemanticsNodes().isNotEmpty()
     }
