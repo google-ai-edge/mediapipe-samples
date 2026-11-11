@@ -91,11 +91,7 @@ jobs:
           working-directory: examples/decision_maker/android
           script: |
             adb logcat -c || true
-            ./gradlew :app:connectedDebugAndroidTest --no-daemon --stacktrace || {
-              echo "=== Recent Android logcat tail ==="
-              adb logcat -d | tail -n 250 || true
-              exit 1
-            }
+            ./gradlew :app:connectedDebugAndroidTest --no-daemon --stacktrace || (adb logcat -d | tail -n 250; exit 1)
             adb logcat -d -s LatencyRecorder | python3 ../../../.github/scripts/extract_latency_reports.py ../../../build/latency_reports
 
       - name: Upload report-only latency JSON
