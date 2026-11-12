@@ -113,7 +113,7 @@ MODEL_NAME="$("${D[@]}" shell getprop ro.product.model | tr -d '\r')"
 SDK="$("${D[@]}" shell getprop ro.build.version.sdk | tr -d '\r')"
 ABI="$("${D[@]}" shell getprop ro.product.cpu.abi | tr -d '\r')"
 echo "Using ${SERIAL}: ${MODEL_NAME}, API ${SDK}, ABI ${ABI}"
-[[ "${SDK}" -ge 26 ]] || die "Device API ${SDK} < 26 (minSdk)"
+[[ "${SDK}" -ge 28 ]] || die "Device API ${SDK} < 28 (minSdk)"
 
 # ---------------------------------------------------------------------------
 # 2. Build and install APK

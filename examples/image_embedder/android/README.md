@@ -21,7 +21,7 @@ Shared Material 3 UI components and test utilities live in
 ### Prerequisites
 
 * **[Android Studio](https://developer.android.com/studio/index.html)** (JDK 17 or newer).
-* An Android device or emulator running API level 24 (Android 7.0) or higher.
+* An Android device or emulator running API level 28 (Android 9.0) or higher.
 
 ### Building from Android Studio
 

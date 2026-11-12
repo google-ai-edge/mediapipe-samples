@@ -16,7 +16,7 @@
 # Android SDK levels
 compileSdk = "36"
 targetSdk = "36"
-minSdk = "26"
+minSdk = "28"
 
 # Build tooling
 agp = "8.13.2"

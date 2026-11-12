@@ -11,7 +11,7 @@ Segmenter, and Selfie Multiclass models.
 
 ### Prerequisites
 
-* Android Studio or JDK 17 with Android SDK (`compileSdk = 36`, `minSdk = 24`).
+* Android Studio or JDK 17 with Android SDK (`compileSdk = 36`, `minSdk = 28`).
 * An Android device or emulator (physical device recommended for live camera inference).
 
 ### Building & Testing

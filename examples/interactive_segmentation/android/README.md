@@ -10,7 +10,7 @@ using the MagicTouch interactive segmentation model (`interactive_segmentation.t
 
 ### Prerequisites
 
-* Android Studio or JDK 17 with Android SDK (`compileSdk = 36`, `minSdk = 24`).
+* Android Studio or JDK 17 with Android SDK (`compileSdk = 36`, `minSdk = 28`).
 * An Android device or emulator.
 
 ### Building & Testing

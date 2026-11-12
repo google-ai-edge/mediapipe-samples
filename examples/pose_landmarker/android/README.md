@@ -14,7 +14,7 @@ In the **Settings** sheet, you can switch models (**Pose Lite**, **Pose Full**, 
 ## Prerequisites
 
 - **[Android Studio](https://developer.android.com/studio)** (with Android SDK 36 and JDK 17+)
-- An Android device or emulator running Android 7.0 (API 24) or higher
+- An Android device or emulator running Android 9.0 (API 28) or higher
 
 ## Build and Run
 
