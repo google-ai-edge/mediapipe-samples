@@ -18,7 +18,7 @@ This project is self-contained using Gradle Kotlin DSL and a local version catal
 ### Prerequisites
 
 * **[Android Studio](https://developer.android.com/studio/index.html)** (JDK 17+).
-* An Android device or emulator running API level 24 (Android 7.0) or higher.
+* An Android device or emulator running API level 28 (Android 9.0) or higher.
 
 ### Build and Test via Gradle
 
