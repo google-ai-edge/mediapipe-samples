@@ -34,6 +34,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     private var results: HandLandmarkerResult? = null
     private var linePaint = Paint()
     private var pointPaint = Paint()
+    private var landmarkIndexPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     private var scaleFactor: Float = 1f
     private var imageWidth: Int = 1
@@ -60,18 +61,26 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
         pointPaint.color = Color.YELLOW
         pointPaint.strokeWidth = LANDMARK_STROKE_WIDTH
         pointPaint.style = Paint.Style.FILL
+
+        landmarkIndexPaint.color = Color.WHITE
+        landmarkIndexPaint.textSize = LANDMARK_INDEX_TEXT_SIZE
+        landmarkIndexPaint.setShadowLayer(4f, 1f, 1f, Color.BLACK)
     }
 
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
         results?.let { handLandmarkerResult ->
             for (landmark in handLandmarkerResult.landmarks()) {
-                for (normalizedLandmark in landmark) {
+                for ((landmarkIndex, normalizedLandmark) in landmark.withIndex()) {
+                    val x = normalizedLandmark.x() * imageWidth * scaleFactor
+                    val y = normalizedLandmark.y() * imageHeight * scaleFactor
                     canvas.drawPoint(
-                        normalizedLandmark.x() * imageWidth * scaleFactor,
-                        normalizedLandmark.y() * imageHeight * scaleFactor,
+                        x,
+                        y,
                         pointPaint
                     )
+                    // Show point IDs temporarily to make the Logcat coordinates easy to verify.
+                    canvas.drawText(landmarkIndex.toString(), x + 8f, y - 8f, landmarkIndexPaint)
                 }
 
                 HandLandmarker.HAND_CONNECTIONS.forEach {
@@ -119,5 +128,6 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
     companion object {
         private const val LANDMARK_STROKE_WIDTH = 8F
+        private const val LANDMARK_INDEX_TEXT_SIZE = 24F
     }
 }

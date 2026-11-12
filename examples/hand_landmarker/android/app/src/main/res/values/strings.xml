@@ -16,6 +16,7 @@
 -->
 <resources>
     <string name="app_name">MP Hand Landmarker</string>
+    <string name="no_cameras_available">No cameras are available on this device.</string>
 
     <string name="media_pipe">MediaPipe</string>
 

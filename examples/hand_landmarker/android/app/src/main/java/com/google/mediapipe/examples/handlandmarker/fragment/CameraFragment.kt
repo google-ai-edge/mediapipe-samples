@@ -39,7 +39,9 @@ import com.google.mediapipe.examples.handlandmarker.HandLandmarkerHelper
 import com.google.mediapipe.examples.handlandmarker.MainViewModel
 import com.google.mediapipe.examples.handlandmarker.R
 import com.google.mediapipe.examples.handlandmarker.databinding.FragmentCameraBinding
+import com.google.mediapipe.tasks.components.containers.NormalizedLandmark
 import com.google.mediapipe.tasks.vision.core.RunningMode
+import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarkerResult
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -49,6 +51,7 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
 
     companion object {
         private const val TAG = "Hand Landmarker"
+        private const val ANGLE_SMOOTHING_ALPHA = 0.25
     }
 
     private var _fragmentCameraBinding: FragmentCameraBinding? = null
@@ -63,6 +66,8 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
     private var camera: Camera? = null
     private var cameraProvider: ProcessCameraProvider? = null
     private var cameraFacing = CameraSelector.LENS_FACING_FRONT
+    private var isFrontCamera = true
+    private val smoothedAngles = mutableMapOf<String, Double>()
 
     /** Blocking ML operations are performed using this executor */
     private lateinit var backgroundExecutor: ExecutorService
@@ -316,8 +321,35 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
         val cameraProvider = cameraProvider
             ?: throw IllegalStateException("Camera initialization failed.")
 
-        val cameraSelector =
-            CameraSelector.Builder().requireLensFacing(cameraFacing).build()
+        val availableCameras = cameraProvider.availableCameraInfos
+        if (availableCameras.isEmpty()) {
+            Log.e(TAG, "No cameras are available on this device.")
+            Toast.makeText(
+                requireContext(),
+                R.string.no_cameras_available,
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+
+        val hasRequestedFacing =
+            availableCameras.any { it.lensFacing == cameraFacing }
+        val cameraSelector = when {
+            hasRequestedFacing -> {
+                CameraSelector.Builder().requireLensFacing(cameraFacing).build()
+            }
+            availableCameras.any { it.lensFacing == CameraSelector.LENS_FACING_BACK } -> {
+                Log.w(TAG, "Requested camera facing is unavailable; using the back camera.")
+                CameraSelector.DEFAULT_BACK_CAMERA
+            }
+            else -> {
+                Log.w(TAG, "Camera facing is not reported; using the first available camera.")
+                isFrontCamera = false
+                CameraSelector.Builder()
+                    .addCameraFilter { cameraInfos -> cameraInfos.take(1) }
+                    .build()
+            }
+        }
 
         // Preview. Only using the 4:3 ratio because this is the closest to our models
         preview = Preview.Builder().setTargetAspectRatio(AspectRatio.RATIO_4_3)
@@ -347,6 +379,7 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
             camera = cameraProvider.bindToLifecycle(
                 this, cameraSelector, preview, imageAnalyzer
             )
+            isFrontCamera = hasRequestedFacing && cameraFacing == CameraSelector.LENS_FACING_FRONT
 
             // Attach the viewfinder's surface provider to preview use case
             preview?.setSurfaceProvider(fragmentCameraBinding.viewFinder.surfaceProvider)
@@ -358,7 +391,7 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
     private fun detectHand(imageProxy: ImageProxy) {
         handLandmarkerHelper.detectLiveStream(
             imageProxy = imageProxy,
-            isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
+            isFrontCamera = isFrontCamera
         )
     }
 
@@ -374,6 +407,10 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
     override fun onResults(
         resultBundle: HandLandmarkerHelper.ResultBundle
     ) {
+        // Write the raw normalized landmarks and joint flexion angles to Logcat.
+        // This runs for each completed live-stream frame and does not change the UI.
+        logLandmarksAndFingerAngles(resultBundle.results.first())
+
         activity?.runOnUiThread {
             if (_fragmentCameraBinding != null) {
                 fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
@@ -392,6 +429,141 @@ class CameraFragment : Fragment(), HandLandmarkerHelper.LandmarkerListener {
             }
         }
     }
+
+    private fun logLandmarksAndFingerAngles(
+        result: HandLandmarkerResult
+    ) {
+        val hands = result.landmarks()
+        val callbackDelayMs = (android.os.SystemClock.uptimeMillis() - result.timestampMs()).coerceAtLeast(0L)
+        if (hands.isEmpty()) {
+            synchronized(smoothedAngles) { smoothedAngles.clear() }
+            Log.i(TAG, "No hand detected frame=${result.timestampMs()}ms callback_delay=${callbackDelayMs}ms")
+            return
+        }
+
+        hands.forEachIndexed { handIndex, landmarks ->
+            val points = landmarks.mapIndexed { index, point ->
+                "$index(${point.x().format3()},${point.y().format3()},${point.z().format3()})"
+            }.joinToString(" ")
+
+            val fingerAngles = listOf(
+                "thumb" to listOf("MCP" to Triple(1, 2, 3), "IP" to Triple(2, 3, 4)),
+                "index" to listOf("MCP" to Triple(0, 5, 6), "PIP" to Triple(5, 6, 7), "DIP" to Triple(6, 7, 8)),
+                "middle" to listOf("MCP" to Triple(0, 9, 10), "PIP" to Triple(9, 10, 11), "DIP" to Triple(10, 11, 12)),
+                "ring" to listOf("MCP" to Triple(0, 13, 14), "PIP" to Triple(13, 14, 15), "DIP" to Triple(14, 15, 16)),
+                "pinky" to listOf("MCP" to Triple(0, 17, 18), "PIP" to Triple(17, 18, 19), "DIP" to Triple(18, 19, 20))
+            ).flatMap { (name, joints) ->
+                joints.map { (jointName, points) ->
+                    val (a, joint, c) = points
+                    val angle = flexionDegrees(landmarks[a], landmarks[joint], landmarks[c])
+                    "$name.$jointName" to angle
+                }
+            }.toMap()
+            val fingerAnglesRaw = fingerAngles.entries.joinToString(" ") { (key, angle) ->
+                "$key=${angle.format1()}"
+            }
+            val fingerAnglesSmooth = fingerAngles.entries.joinToString(" ") { (key, angle) ->
+                "$key=${smoothAngle("flex.$key", angle).format1()}"
+            }
+            val interFingerAngles = getInterFingerAngles(landmarks)
+            val interFingerAnglesRaw = interFingerAngles.entries.joinToString(" ") { (name, angle) ->
+                "$name=${angle.format1()}"
+            }
+            val interFingerAnglesSmooth = interFingerAngles.entries.joinToString(" ") { (name, angle) ->
+                "$name=${smoothAngle("spread.$name", angle).format1()}"
+            }
+            val handedness = result.handednesses().getOrNull(handIndex)?.firstOrNull()
+            val handLabel = handedness?.categoryName() ?: "unknown"
+            val handScore = handedness?.score()?.format2() ?: "n/a"
+
+            // Keep each frame in one line so Android Studio Logcat can filter/copy it easily.
+            Log.i(
+                TAG,
+                "frame=${result.timestampMs()}ms callback_delay=${callbackDelayMs}ms hand=$handIndex " +
+                    "side=$handLabel side_score=$handScore points=$points " +
+                    "angles_flexion_deg=$fingerAnglesRaw angles_flexion_smooth_deg=$fingerAnglesSmooth " +
+                    "angles_between_deg=$interFingerAnglesRaw angles_between_smooth_deg=$interFingerAnglesSmooth"
+            )
+        }
+    }
+
+    /** Dampens frame-to-frame landmark jitter while preserving the raw values in Logcat. */
+    private fun smoothAngle(key: String, value: Double): Double = synchronized(smoothedAngles) {
+        val smoothed = smoothedAngles[key]?.let { previous -> previous + ANGLE_SMOOTHING_ALPHA * (value - previous) }
+            ?: value
+        smoothedAngles[key] = smoothed
+        smoothed
+    }
+
+    /** Angle between each finger's MCP-to-tip direction vectors, in degrees. */
+    private fun getInterFingerAngles(
+        landmarks: List<NormalizedLandmark>
+    ): Map<String, Double> {
+        fun direction(from: Int, to: Int): DoubleArray {
+            val start = landmarks[from]
+            val end = landmarks[to]
+            return doubleArrayOf(
+                (end.x() - start.x()).toDouble(),
+                (end.y() - start.y()).toDouble(),
+                (end.z() - start.z()).toDouble()
+            )
+        }
+
+        val directions = linkedMapOf(
+            "thumb" to direction(2, 4),
+            "index" to direction(5, 8),
+            "middle" to direction(9, 12),
+            "ring" to direction(13, 16),
+            "pinky" to direction(17, 20)
+        )
+
+        fun angleBetween(first: DoubleArray, second: DoubleArray): Double {
+            val dot = first.indices.sumOf { first[it] * second[it] }
+            val firstLength = kotlin.math.sqrt(first.sumOf { it * it })
+            val secondLength = kotlin.math.sqrt(second.sumOf { it * it })
+            if (firstLength == 0.0 || secondLength == 0.0) return 0.0
+            val cosine = (dot / (firstLength * secondLength)).coerceIn(-1.0, 1.0)
+            return Math.toDegrees(kotlin.math.acos(cosine))
+        }
+
+        val result = linkedMapOf<String, Double>()
+        val names = directions.keys.toList()
+        for (index in 0 until names.lastIndex) {
+            val first = names[index]
+            val second = names[index + 1]
+            result["$first-$second"] = angleBetween(directions.getValue(first), directions.getValue(second))
+        }
+        result["thumb-pinky"] = angleBetween(
+            directions.getValue("thumb"),
+            directions.getValue("pinky")
+        )
+        return result
+    }
+
+    /** Returns joint flexion: 0° is straight and larger values indicate more bending. */
+    private fun flexionDegrees(
+        a: NormalizedLandmark,
+        joint: NormalizedLandmark,
+        c: NormalizedLandmark
+    ): Double {
+        val ax = a.x() - joint.x()
+        val ay = a.y() - joint.y()
+        val az = a.z() - joint.z()
+        val cx = c.x() - joint.x()
+        val cy = c.y() - joint.y()
+        val cz = c.z() - joint.z()
+        val dot = ax * cx + ay * cy + az * cz
+        val aLength = kotlin.math.sqrt(ax * ax + ay * ay + az * az)
+        val cLength = kotlin.math.sqrt(cx * cx + cy * cy + cz * cz)
+        if (aLength == 0f || cLength == 0f) return 0.0
+        val cosine = (dot / (aLength * cLength)).coerceIn(-1f, 1f)
+        val interiorAngle = Math.toDegrees(kotlin.math.acos(cosine).toDouble())
+        return 180.0 - interiorAngle
+    }
+
+    private fun Float.format3(): String = String.format(Locale.US, "%.3f", this)
+    private fun Double.format1(): String = String.format(Locale.US, "%.1f", this)
+    private fun Float.format2(): String = String.format(Locale.US, "%.2f", this)
 
     override fun onError(error: String, errorCode: Int) {
         activity?.runOnUiThread {

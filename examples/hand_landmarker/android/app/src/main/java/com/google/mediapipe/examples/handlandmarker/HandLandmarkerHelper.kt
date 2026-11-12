@@ -359,7 +359,8 @@ class HandLandmarkerHelper(
 
         const val DELEGATE_CPU = 0
         const val DELEGATE_GPU = 1
-        const val DEFAULT_HAND_DETECTION_CONFIDENCE = 0.5F
+        // A slightly higher detection threshold helps avoid reporting background shapes as hands.
+        const val DEFAULT_HAND_DETECTION_CONFIDENCE = 0.65F
         const val DEFAULT_HAND_TRACKING_CONFIDENCE = 0.5F
         const val DEFAULT_HAND_PRESENCE_CONFIDENCE = 0.5F
         const val DEFAULT_NUM_HANDS = 1
