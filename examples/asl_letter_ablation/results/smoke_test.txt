@@ -1,0 +1,6 @@
+ASL real-image smoke test (NOT an accuracy benchmark)
+Input source: public Waikato ASL Letters VOC validation split
+Classifier: abdollahhh/asl-sign-language-efficientnet-b0; 26-way argmax
+letter=A full_prediction=A image=A4_jpg.rf.d03522dc177baa9498936c8f8d1ddca7.jpg mediapipe_hand_detected=True crop_prediction=A
+letter=B full_prediction=B image=B11_jpg.rf.8e133c2f504842695f2a074e464141a9.jpg mediapipe_hand_detected=True crop_prediction=B
+letter=C full_prediction=G image=C0_jpg.rf.3a02e62f278a8a5df84948f70bbe7869.jpg mediapipe_hand_detected=True crop_prediction=G

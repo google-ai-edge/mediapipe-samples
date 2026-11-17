@@ -1,0 +1,3 @@
+Method,Plain BG top-1 (%),Cluttered BG top-1 (%),Overall top-1 (%),N,Hand detection failure (%)
+Full frame (baseline),PENDING,PENDING,45.45,110,N/A
+MediaPipe hand crop,PENDING,PENDING,41.82,110,19.09
