@@ -1,0 +1,10 @@
+transformers>=4.45,<5
+huggingface_hub>=0.26,<1
+pillow>=10
+numpy>=1.26,<3
+mediapipe>=0.10.14,<0.11
+safetensors>=0.4
+requests>=2.31
+# PyTorch installed by default on Google Colab; install separately on local machines.
+
+pandas>=2
