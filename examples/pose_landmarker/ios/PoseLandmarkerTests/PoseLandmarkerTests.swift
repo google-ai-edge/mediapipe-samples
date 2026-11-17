@@ -27,7 +27,7 @@ final class PoseLandmarkerTests: XCTestCase {
   static let minPoseDetectionConfidence: Float = 0.3
   static let minPosePresenceConfidence: Float = 0.3
   static let minTrackingConfidence: Float = 0.3
-  static let delegate: PoseLandmarkerDelegate = .CPU
+  static let delegate: PoseLandmarkerDelegate = .cpu
 
   static let testImage = UIImage(
     named: "test_image.jpg",

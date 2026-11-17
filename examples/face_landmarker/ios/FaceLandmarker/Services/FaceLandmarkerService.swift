@@ -43,7 +43,7 @@ class FaceLandmarkerService: NSObject {
   weak var videoDelegate: FaceLandmarkerServiceVideoDelegate?
 
   var faceLandmarker: FaceLandmarker?
-  private(set) var runningMode = RunningMode.image
+  private(set) var runningMode = VisionRunningMode.image
   private var numFaces: Int
   private var minFaceDetectionConfidence: Float
   private var minFacePresenceConfidence: Float
@@ -54,7 +54,7 @@ class FaceLandmarkerService: NSObject {
 
   // MARK: - Custom Initializer
   private init?(modelPath: String?,
-                runningMode:RunningMode,
+                runningMode:VisionRunningMode,
                 numFaces: Int,
                 minFaceDetectionConfidence: Float,
                 minFacePresenceConfidence: Float,
@@ -74,7 +74,7 @@ class FaceLandmarkerService: NSObject {
   }
 
   private func createFaceLandmarker() {
-    let faceLandmarkerOptions = FaceLandmarkerOptions()
+    var faceLandmarkerOptions = FaceLandmarkerOptions()
     faceLandmarkerOptions.runningMode = runningMode
     faceLandmarkerOptions.numFaces = numFaces
     faceLandmarkerOptions.minFaceDetectionConfidence = minFaceDetectionConfidence
@@ -83,7 +83,9 @@ class FaceLandmarkerService: NSObject {
     faceLandmarkerOptions.baseOptions.modelAssetPath = modelPath
     faceLandmarkerOptions.baseOptions.delegate = delegate.delegate
     if runningMode == .liveStream {
-      faceLandmarkerOptions.faceLandmarkerLiveStreamDelegate = self
+      faceLandmarkerOptions.liveStreamResultHandler = { [weak self] result, timestampInMilliseconds in
+        self?.handleLiveStreamResult(result, timestampInMilliseconds: timestampInMilliseconds)
+      }
     }
     do {
       faceLandmarker = try FaceLandmarker(options: faceLandmarkerOptions)
@@ -258,22 +260,24 @@ class FaceLandmarkerService: NSObject {
 
     return (faceLandmarkerResults, videoSize)
   }
-}
 
-// MARK: - FaceLandmarkerLiveStreamDelegate Methods
-extension FaceLandmarkerService: FaceLandmarkerLiveStreamDelegate {
-  func faceLandmarker(
-    _ faceLandmarker: FaceLandmarker,
-    didFinishDetection result: FaceLandmarkerResult?,
-    timestampInMilliseconds: Int,
-    error: Error?) {
+  private func handleLiveStreamResult(
+    _ result: Result<FaceLandmarkerResult, any Error>,
+    timestampInMilliseconds: Int
+  ) {
+    let inferenceTime = Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds)
+    switch result {
+    case .success(let landmarkerResult):
       let resultBundle = ResultBundle(
-        inferenceTime: Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds),
-        faceLandmarkerResults: [result])
-      liveStreamDelegate?.faceLandmarkerService(
-        self,
-        didFinishDetection: resultBundle,
-        error: error)
+        inferenceTime: inferenceTime,
+        faceLandmarkerResults: [landmarkerResult])
+      liveStreamDelegate?.faceLandmarkerService(self, didFinishDetection: resultBundle, error: nil)
+    case .failure(let error):
+      let resultBundle = ResultBundle(
+        inferenceTime: inferenceTime,
+        faceLandmarkerResults: [nil])
+      liveStreamDelegate?.faceLandmarkerService(self, didFinishDetection: resultBundle, error: error)
+    }
   }
 }
 

@@ -43,7 +43,7 @@ class PoseLandmarkerService: NSObject {
   weak var videoDelegate: PoseLandmarkerServiceVideoDelegate?
 
   var poseLandmarker: PoseLandmarker?
-  private(set) var runningMode = RunningMode.image
+  private(set) var runningMode = VisionRunningMode.image
   private var numPoses: Int
   private var minPoseDetectionConfidence: Float
   private var minPosePresenceConfidence: Float
@@ -53,7 +53,7 @@ class PoseLandmarkerService: NSObject {
 
   // MARK: - Custom Initializer
   private init?(modelPath: String?,
-                runningMode:RunningMode,
+                runningMode:VisionRunningMode,
                 numPoses: Int,
                 minPoseDetectionConfidence: Float,
                 minPosePresenceConfidence: Float,
@@ -73,7 +73,7 @@ class PoseLandmarkerService: NSObject {
   }
 
   private func createPoseLandmarker() {
-    let poseLandmarkerOptions = PoseLandmarkerOptions()
+    var poseLandmarkerOptions = PoseLandmarkerOptions()
     poseLandmarkerOptions.runningMode = runningMode
     poseLandmarkerOptions.numPoses = numPoses
     poseLandmarkerOptions.minPoseDetectionConfidence = minPoseDetectionConfidence
@@ -82,7 +82,9 @@ class PoseLandmarkerService: NSObject {
     poseLandmarkerOptions.baseOptions.modelAssetPath = modelPath
     poseLandmarkerOptions.baseOptions.delegate = delegate.delegate
     if runningMode == .liveStream {
-      poseLandmarkerOptions.poseLandmarkerLiveStreamDelegate = self
+      poseLandmarkerOptions.liveStreamResultHandler = { [weak self] result, timestampInMilliseconds in
+        self?.handleLiveStreamResult(result, timestampInMilliseconds: timestampInMilliseconds)
+      }
     }
     do {
       poseLandmarker = try PoseLandmarker(options: poseLandmarkerOptions)
@@ -255,19 +257,25 @@ class PoseLandmarkerService: NSObject {
 
     return (poseLandmarkerResults, videoSize)
   }
-}
 
-// MARK: - PoseLandmarkerLiveStreamDelegate Methods
-extension PoseLandmarkerService: PoseLandmarkerLiveStreamDelegate {
-    func poseLandmarker(_ poseLandmarker: PoseLandmarker, didFinishDetection result: PoseLandmarkerResult?, timestampInMilliseconds: Int, error: (any Error)?) {
-        let resultBundle = ResultBundle(
-          inferenceTime: Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds),
-          poseLandmarkerResults: [result])
-        liveStreamDelegate?.poseLandmarkerService(
-          self,
-          didFinishDetection: resultBundle,
-          error: error)
+  private func handleLiveStreamResult(
+    _ result: Result<PoseLandmarkerResult, any Error>,
+    timestampInMilliseconds: Int
+  ) {
+    let inferenceTime = Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds)
+    switch result {
+    case .success(let landmarkerResult):
+      let resultBundle = ResultBundle(
+        inferenceTime: inferenceTime,
+        poseLandmarkerResults: [landmarkerResult])
+      liveStreamDelegate?.poseLandmarkerService(self, didFinishDetection: resultBundle, error: nil)
+    case .failure(let error):
+      let resultBundle = ResultBundle(
+        inferenceTime: inferenceTime,
+        poseLandmarkerResults: [nil])
+      liveStreamDelegate?.poseLandmarkerService(self, didFinishDetection: resultBundle, error: error)
     }
+  }
 }
 
 /// A result from the `PoseLandmarkerService`.

@@ -221,9 +221,8 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
         }
         self.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
         guard let result = resultBundle.imageSegmenterResults.first, let result = result else { return }
-        let mark = result.categoryMask
-        let uint8Data = mark?.uint8Data
-        guard let outputPixelBuffer = self.render.render(ciImage: sourceImage, categoryMasks: uint8Data) else {
+        guard let uint8Data = result.categoryMask?.uint8Elements,
+              let outputPixelBuffer = self.render.render(ciImage: sourceImage, categoryMasks: uint8Data) else {
           request.finish(with: sourceImage, context: nil)
           return
         }
@@ -286,10 +285,9 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
             self.hideProgressView()
             self.render.prepare(with: image.size, outputRetainedBufferCountHint: 3)
             self.inferenceResultDeliveryDelegate?.didPerformInference(result: resultBundle)
-            let mark = imageSegmenterResult.categoryMask
-            let uint8Data = mark?.uint8Data
-            let newImage = self.render.render(image: image, categoryMasks: uint8Data)
-            self.pickedImageView.image = newImage
+            if let uint8Data = imageSegmenterResult.categoryMask?.uint8Elements {
+              self.pickedImageView.image = self.render.render(image: image, categoryMasks: uint8Data)
+            }
           }
         }
       default:
@@ -306,7 +304,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     return generator
   }
 
-  func clearAndInitializeImageSegmenterService(runningMode: RunningMode) {
+  func clearAndInitializeImageSegmenterService(runningMode: VisionRunningMode) {
     imageSegmenterService = nil
     switch runningMode {
     case .image:

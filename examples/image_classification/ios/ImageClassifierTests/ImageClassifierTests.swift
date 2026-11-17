@@ -74,7 +74,7 @@ final class ImageClassifierTests: XCTestCase {
       model: model,
       scoreThreshold: scoreThreshold,
       maxResult: maxResult,
-      delegate: .CPU)
+      delegate: .cpu)
     return imageClassifierService!
   }
 

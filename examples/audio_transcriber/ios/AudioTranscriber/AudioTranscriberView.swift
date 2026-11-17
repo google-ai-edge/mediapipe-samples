@@ -12,11 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#if canImport(MediaPipeTasksAudio)
 import MediaPipeTasksAudio
-#elseif canImport(MPPAudioTranscriber)
-import MPPAudioTranscriber
-#endif
 import SwiftUI
 
 #if canImport(UIKit)

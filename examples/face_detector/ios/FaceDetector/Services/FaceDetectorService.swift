@@ -43,14 +43,14 @@ class FaceDetectorService: NSObject {
   weak var videoDelegate: FaceDetectorServiceVideoDelegate?
 
   var faceDetector: FaceDetector?
-  private(set) var runningMode = RunningMode.image
+  private(set) var runningMode = VisionRunningMode.image
   private var minDetectionConfidence: Float = 0.5
   private var minSuppressionThreshold: Float = 0.5
   private var modelPath: String
   private var delegate: Delegate
 
   // MARK: - Custom Initializer
-  private init?(modelPath: String?, minDetectionConfidence: Float, minSuppressionThreshold: Float, runningMode:RunningMode, delegate: Delegate) {
+  private init?(modelPath: String?, minDetectionConfidence: Float, minSuppressionThreshold: Float, runningMode:VisionRunningMode, delegate: Delegate) {
     guard let modelPath = modelPath else { return nil }
     self.modelPath = modelPath
     self.minDetectionConfidence = minDetectionConfidence
@@ -63,14 +63,16 @@ class FaceDetectorService: NSObject {
   }
 
   private func createFaceDetector() {
-    let faceDetectorOptions = FaceDetectorOptions()
+    var faceDetectorOptions = FaceDetectorOptions()
     faceDetectorOptions.runningMode = runningMode
     faceDetectorOptions.minDetectionConfidence = minDetectionConfidence
     faceDetectorOptions.minSuppressionThreshold = minSuppressionThreshold
     faceDetectorOptions.baseOptions.modelAssetPath = modelPath
     faceDetectorOptions.baseOptions.delegate = delegate
     if runningMode == .liveStream {
-      faceDetectorOptions.faceDetectorLiveStreamDelegate = self
+      faceDetectorOptions.liveStreamResultHandler = { [weak self] result, timestampInMilliseconds in
+        self?.handleLiveStreamResult(result, timestampInMilliseconds: timestampInMilliseconds)
+      }
     }
     do {
       faceDetector = try FaceDetector(options: faceDetectorOptions)
@@ -234,23 +236,20 @@ class FaceDetectorService: NSObject {
 
     return (faceDetectorResults, videoSize)
   }
-}
 
-// MARK: - FaceDetectorLiveStreamDelegate
-extension FaceDetectorService: FaceDetectorLiveStreamDelegate {
-  func faceDetector(
-    _ faceDetector: FaceDetector,
-    didFinishDetection result: FaceDetectorResult?,
-    timestampInMilliseconds: Int,
-    error: Error?) {
-    guard let result = result else {
+  private func handleLiveStreamResult(
+    _ result: Result<FaceDetectorResult, any Error>,
+    timestampInMilliseconds: Int
+  ) {
+    switch result {
+    case .success(let detectionResult):
+      let resultBundle = ResultBundle(
+        inferenceTime: Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds),
+        faceDetectorResults: [detectionResult])
+      liveStreamDelegate?.faceDetectorService(self, didFinishDetection: resultBundle, error: nil)
+    case .failure(let error):
       liveStreamDelegate?.faceDetectorService(self, didFinishDetection: nil, error: error)
-      return
     }
-    let resultBundle = ResultBundle(
-      inferenceTime: Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds),
-      faceDetectorResults: [result])
-    liveStreamDelegate?.faceDetectorService(self, didFinishDetection: resultBundle, error: nil)
   }
 }
 

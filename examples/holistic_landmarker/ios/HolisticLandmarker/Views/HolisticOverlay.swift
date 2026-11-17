@@ -196,12 +196,12 @@ class OverlayView: UIView {
     if !result.faceLandmarks.isEmpty {
       let faceDots = transformLandmarks(result.faceLandmarks)
       allDots.append(contentsOf: faceDots)
-      let faceConnections = FaceLandmarker.faceOvalConnections() +
-        FaceLandmarker.leftEyeConnections() +
-        FaceLandmarker.rightEyeConnections() +
-        FaceLandmarker.leftEyebrowConnections() +
-        FaceLandmarker.rightEyebrowConnections() +
-        FaceLandmarker.lipsConnections()
+      let faceConnections = FaceLandmarker.faceOvalConnections +
+        FaceLandmarker.leftEyeConnections +
+        FaceLandmarker.rightEyeConnections +
+        FaceLandmarker.leftEyebrowConnections +
+        FaceLandmarker.rightEyebrowConnections +
+        FaceLandmarker.lipsConnections
 
       let faceLines = faceConnections.compactMap { connection -> Line? in
         let startIdx = Int(connection.start)

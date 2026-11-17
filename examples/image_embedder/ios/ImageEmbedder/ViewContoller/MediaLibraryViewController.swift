@@ -150,7 +150,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
       }
     }
 
-  func clearAndInitializeImageEmbedderService(runningMode: RunningMode) {
+  func clearAndInitializeImageEmbedderService(runningMode: VisionRunningMode) {
     imageEmbedderService = nil
     switch runningMode {
     case .image:
@@ -205,7 +205,7 @@ class ImageEmbedderView: UIView {
     layoutIfNeeded()
   }
 
-  func setResult(floatEmbedding: [NSNumber]?) {
+  func setResult(floatEmbedding: [Float]?) {
     DispatchQueue.main.async {
       guard let floatEmbedding = floatEmbedding else {
         self.resultLabel.text = ""

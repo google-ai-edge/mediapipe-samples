@@ -43,7 +43,7 @@ class HandLandmarkerService: NSObject {
   weak var videoDelegate: HandLandmarkerServiceVideoDelegate?
 
   var handLandmarker: HandLandmarker?
-  private(set) var runningMode = RunningMode.image
+  private(set) var runningMode = VisionRunningMode.image
   private var numHands: Int
   private var minHandDetectionConfidence: Float
   private var minHandPresenceConfidence: Float
@@ -53,7 +53,7 @@ class HandLandmarkerService: NSObject {
 
   // MARK: - Custom Initializer
   private init?(modelPath: String?,
-                runningMode:RunningMode,
+                runningMode:VisionRunningMode,
                 numHands: Int,
                 minHandDetectionConfidence: Float,
                 minHandPresenceConfidence: Float,
@@ -73,7 +73,7 @@ class HandLandmarkerService: NSObject {
   }
 
   private func createHandLandmarker() {
-    let handLandmarkerOptions = HandLandmarkerOptions()
+    var handLandmarkerOptions = HandLandmarkerOptions()
     handLandmarkerOptions.runningMode = runningMode
     handLandmarkerOptions.numHands = numHands
     handLandmarkerOptions.minHandDetectionConfidence = minHandDetectionConfidence
@@ -82,7 +82,9 @@ class HandLandmarkerService: NSObject {
     handLandmarkerOptions.baseOptions.modelAssetPath = modelPath
     handLandmarkerOptions.baseOptions.delegate = delegate.delegate
     if runningMode == .liveStream {
-      handLandmarkerOptions.handLandmarkerLiveStreamDelegate = self
+      handLandmarkerOptions.liveStreamResultHandler = { [weak self] result, timestampInMilliseconds in
+        self?.handleLiveStreamResult(result, timestampInMilliseconds: timestampInMilliseconds)
+      }
     }
     do {
       handLandmarker = try HandLandmarker(options: handLandmarkerOptions)
@@ -257,22 +259,24 @@ class HandLandmarkerService: NSObject {
 
     return (handLandmarkerResults, videoSize)
   }
-}
 
-// MARK: - HandLandmarkerLiveStreamDelegate Methods
-extension HandLandmarkerService: HandLandmarkerLiveStreamDelegate {
-  func handLandmarker(
-    _ handLandmarker: HandLandmarker,
-    didFinishDetection result: HandLandmarkerResult?,
-    timestampInMilliseconds: Int,
-    error: Error?) {
+  private func handleLiveStreamResult(
+    _ result: Result<HandLandmarkerResult, any Error>,
+    timestampInMilliseconds: Int
+  ) {
+    let inferenceTime = Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds)
+    switch result {
+    case .success(let landmarkerResult):
       let resultBundle = ResultBundle(
-        inferenceTime: Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds),
-        handLandmarkerResults: [result])
-      liveStreamDelegate?.handLandmarkerService(
-        self,
-        didFinishDetection: resultBundle,
-        error: error)
+        inferenceTime: inferenceTime,
+        handLandmarkerResults: [landmarkerResult])
+      liveStreamDelegate?.handLandmarkerService(self, didFinishDetection: resultBundle, error: nil)
+    case .failure(let error):
+      let resultBundle = ResultBundle(
+        inferenceTime: inferenceTime,
+        handLandmarkerResults: [nil])
+      liveStreamDelegate?.handLandmarkerService(self, didFinishDetection: resultBundle, error: error)
+    }
   }
 }
 

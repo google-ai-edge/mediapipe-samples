@@ -13,11 +13,7 @@
 // limitations under the License.
 
 import Foundation
-#if canImport(MediaPipeTasksAudio)
 import MediaPipeTasksAudio
-#elseif canImport(MPPAudioTranscriber)
-import MPPAudioTranscriber
-#endif
 import OSLog
 import Observation
 
@@ -80,17 +76,7 @@ package protocol AudioTranscribing {
   func close() throws
 }
 
-extension AudioTranscriber: AudioTranscribing {
-  package func transcribe(samples: [Float], endOfStream: Bool) throws -> AudioTranscriberResult {
-    try samples.withUnsafeBufferPointer { buffer in
-      try transcribe(
-        samples: buffer.baseAddress,
-        count: UInt(buffer.count),
-        endOfStream: endOfStream
-      )
-    }
-  }
-}
+extension AudioTranscriber: AudioTranscribing {}
 
 /// Observable view model coordinating live microphone capture and MediaPipe `AudioTranscriber`
 /// streaming speech recognition.
@@ -427,9 +413,9 @@ package final class AudioTranscriberViewModel {
   nonisolated private static func makeTranscriber(
     modelPath: String
   ) throws -> any AudioTranscribing {
-    let options = AudioTranscriberOptions()
+    var options = AudioTranscriberOptions()
     options.baseOptions.modelAssetPath = modelPath
-    options.baseOptions.delegate = .CPU
+    options.baseOptions.delegate = .cpu
     options.sampleRateHz = TranscriberConfiguration.sampleRateHz
     options.enableInterimResults = true
     options.modelArchitecture = .auto

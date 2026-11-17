@@ -29,38 +29,38 @@ struct DefaultConstants {
   static var minHandPresenceConfidence: Float = 0.5
   static var minTrackingConfidence: Float = 0.5
   static let modelPath: String? = Bundle.main.path(forResource: "gesture_recognizer", ofType: "task")
-  static let delegate: GestureRecognizerDelegate = .CPU
+  static let delegate: GestureRecognizerDelegate = .cpu
 }
 
 // MARK: GestureRecognizerDelegate
 enum GestureRecognizerDelegate: CaseIterable {
-  case GPU
-  case CPU
+  case gpu
+  case cpu
 
   var name: String {
     switch self {
-    case .GPU:
+    case .gpu:
       return "GPU"
-    case .CPU:
+    case .cpu:
       return "CPU"
     }
   }
 
   var delegate: Delegate {
     switch self {
-    case .GPU:
-      return .GPU
-    case .CPU:
-      return .CPU
+    case .gpu:
+      return .gpu
+    case .cpu:
+      return .cpu
     }
   }
 
   init?(name: String) {
     switch name {
-    case GestureRecognizerDelegate.CPU.name:
-      self = GestureRecognizerDelegate.CPU
-    case GestureRecognizerDelegate.GPU.name:
-      self = GestureRecognizerDelegate.GPU
+    case GestureRecognizerDelegate.cpu.name:
+      self = GestureRecognizerDelegate.cpu
+    case GestureRecognizerDelegate.gpu.name:
+      self = GestureRecognizerDelegate.gpu
     default:
       return nil
     }

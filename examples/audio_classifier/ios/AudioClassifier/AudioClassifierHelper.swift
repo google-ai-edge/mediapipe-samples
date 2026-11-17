@@ -29,7 +29,7 @@ protocol AudioClassifierHelperDelegate: AnyObject {
   )
 }
 
-class AudioClassifierHelper: NSObject, AudioClassifierStreamDelegate {
+class AudioClassifierHelper {
 
   weak var delegate: AudioClassifierHelperDelegate?
 
@@ -48,7 +48,6 @@ class AudioClassifierHelper: NSObject, AudioClassifierStreamDelegate {
     self.modelPath = modelPath
     self.scoreThreshold = scoreThreshold
     self.maxResults = maxResults
-    super.init()
   }
 
   func startLiveClassification() {
@@ -72,17 +71,19 @@ class AudioClassifierHelper: NSObject, AudioClassifierStreamDelegate {
           try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
           try session.setActive(true)
 
-          let options = AudioClassifierOptions()
+          var options = AudioClassifierOptions()
           options.baseOptions.modelAssetPath = self.modelPath
           options.runningMode = .audioStream
           options.scoreThreshold = self.scoreThreshold
           options.maxResults = self.maxResults
-          options.audioClassifierStreamDelegate = self
+          options.audioStreamResultHandler = { [weak self] result in
+            self?.handleClassificationResult(result)
+          }
 
           self.audioClassifier = try AudioClassifier(options: options)
 
-          let format = AudioDataFormat(channelCount: UInt(self.channelCount), sampleRate: self.sampleRate)
-          let bufferLength = UInt(self.sampleRate * 2)
+          let format = AudioDataFormat(channelCount: self.channelCount, sampleRate: self.sampleRate)
+          let bufferLength = Int(self.sampleRate * 2)
           self.audioRecord = try AudioRecord(audioDataFormat: format, bufferLength: bufferLength)
 
           try self.audioRecord?.startRecording()
@@ -101,8 +102,8 @@ class AudioClassifierHelper: NSObject, AudioClassifierStreamDelegate {
   private func classifyAsync() {
     guard let audioRecord = audioRecord, let audioClassifier = audioClassifier else { return }
     do {
-      let audioFormat = AudioDataFormat(channelCount: UInt(channelCount), sampleRate: sampleRate)
-      let sampleCount = UInt(sampleRate * 0.975)
+      let audioFormat = AudioDataFormat(channelCount: channelCount, sampleRate: sampleRate)
+      let sampleCount = Int(sampleRate * 0.975)
       let audioData = AudioData(format: audioFormat, sampleCount: sampleCount)
       try audioData.load(audioRecord: audioRecord)
 
@@ -129,34 +130,26 @@ class AudioClassifierHelper: NSObject, AudioClassifierStreamDelegate {
     }
   }
 
-  // MARK: - AudioClassifierStreamDelegate
-
-  func audioClassifier(
-    _ AudioClassifier: AudioClassifier,
-    didFinishClassification result: AudioClassifierResult?,
-    timestampInMilliseconds: Int,
-    error: Error?
-  ) {
-    if let error = error {
+  private func handleClassificationResult(_ result: Result<AudioClassifierResult, any Error>) {
+    switch result {
+    case .failure(let error):
       DispatchQueue.main.async {
         self.delegate?.audioClassifierHelper(self, didFailWithError: error)
       }
-      return
-    }
+    case .success(let classificationResult):
+      let inferenceTime = (CACurrentMediaTime() - lastInferenceStartTime) * 1000.0
+      var categories: [ResultCategory] = []
+      if let head = classificationResult.classificationResults.first?.classifications.first {
+        categories = head.categories
+      }
 
-    let inferenceTime = (CACurrentMediaTime() - lastInferenceStartTime) * 1000.0
-    var categories: [ResultCategory] = []
-    if let classificationResult = result?.classificationResults.first,
-       let head = classificationResult.classifications.first {
-      categories = head.categories
-    }
-
-    DispatchQueue.main.async {
-      self.delegate?.audioClassifierHelper(
-        self,
-        didFinishClassification: categories,
-        inferenceTime: max(1.0, inferenceTime)
-      )
+      DispatchQueue.main.async {
+        self.delegate?.audioClassifierHelper(
+          self,
+          didFinishClassification: categories,
+          inferenceTime: max(1.0, inferenceTime)
+        )
+      }
     }
   }
 }

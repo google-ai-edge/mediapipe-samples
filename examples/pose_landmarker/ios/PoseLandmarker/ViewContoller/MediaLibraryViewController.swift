@@ -291,7 +291,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     }
   }
   
-  func clearAndInitializePoseLandmarkerService(runningMode: RunningMode) {
+  func clearAndInitializePoseLandmarkerService(runningMode: VisionRunningMode) {
     poseLandmarkerService = nil
     switch runningMode {
       case .image:

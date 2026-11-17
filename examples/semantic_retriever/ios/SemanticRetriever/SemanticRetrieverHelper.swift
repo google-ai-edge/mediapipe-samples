@@ -64,11 +64,11 @@ final class SemanticRetrieverHelper {
       throw HelperError.modelNotFound
     }
 
-    let options = UniversalEmbedderOptions()
+    var options = UniversalEmbedderOptions()
     options.baseOptions.modelAssetPath = modelPath
     // Delegates are per-modality: the text tower encodes queries, the vision tower encodes images.
     // Both are pushed onto the same accelerator here.
-    let delegate: Delegate = useGPU ? .GPU : .CPU
+    let delegate: Delegate = useGPU ? .gpu : .cpu
     options.textDelegate = delegate
     options.visionDelegate = delegate
     options.cacheDirectory =
@@ -98,7 +98,7 @@ final class SemanticRetrieverHelper {
 
     let vectorStore = SqliteVectorStore(
       databasePath: databasePath,
-      embeddingDimension: MPPSemanticRetrieverDefaultEmbeddingDimension)
+      embeddingDimension: SemanticRetriever.defaultEmbeddingDimension)
     let components = try SemanticRetrieverComponents(
       vectorStore: vectorStore, chunker: nil, providers: [embedder])
 
@@ -114,12 +114,12 @@ final class SemanticRetrieverHelper {
 
   func embedImage(id: String, path: String) throws {
     guard let semanticRetriever else { throw HelperError.storeNotOpen }
-    try semanticRetriever.insertImage(withId: id, filePath: path)
+    try semanticRetriever.insertImage(id: id, filePath: path)
   }
 
   func searchImages(query: String, limit: Int = 5) throws -> [RetrievalResult] {
     guard let semanticRetriever else { throw HelperError.storeNotOpen }
-    return try semanticRetriever.retrieve(withText: query, topK: limit)
+    return try semanticRetriever.retrieve(text: query, limit: limit)
   }
 
   func close() {

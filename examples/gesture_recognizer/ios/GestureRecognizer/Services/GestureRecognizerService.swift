@@ -43,7 +43,7 @@ class GestureRecognizerService: NSObject {
   weak var videoDelegate: GestureRecognizerServiceVideoDelegate?
 
   var gestureRecognizer: GestureRecognizer?
-  private(set) var runningMode = RunningMode.image
+  private(set) var runningMode = VisionRunningMode.image
   private var minHandDetectionConfidence: Float
   private var minHandPresenceConfidence: Float
   private var minTrackingConfidence: Float
@@ -53,7 +53,7 @@ class GestureRecognizerService: NSObject {
 
   // MARK: - Custom Initializer
   private init?(modelPath: String?,
-                runningMode:RunningMode,
+                runningMode:VisionRunningMode,
                 minHandDetectionConfidence: Float,
                 minHandPresenceConfidence: Float,
                 minTrackingConfidence: Float,
@@ -71,7 +71,7 @@ class GestureRecognizerService: NSObject {
   }
 
   private func createGestureRecognizer() {
-    let gestureRecognizerOptions = GestureRecognizerOptions()
+    var gestureRecognizerOptions = GestureRecognizerOptions()
     gestureRecognizerOptions.runningMode = runningMode
     gestureRecognizerOptions.minHandDetectionConfidence = minHandDetectionConfidence
     gestureRecognizerOptions.minHandPresenceConfidence = minHandPresenceConfidence
@@ -79,7 +79,9 @@ class GestureRecognizerService: NSObject {
     gestureRecognizerOptions.baseOptions.modelAssetPath = modelPath
     gestureRecognizerOptions.baseOptions.delegate = delegate.delegate
     if runningMode == .liveStream {
-      gestureRecognizerOptions.gestureRecognizerLiveStreamDelegate = self
+      gestureRecognizerOptions.liveStreamResultHandler = { [weak self] result, timestampInMilliseconds in
+        self?.handleLiveStreamResult(result, timestampInMilliseconds: timestampInMilliseconds)
+      }
     }
     do {
       gestureRecognizer = try GestureRecognizer(options: gestureRecognizerOptions)
@@ -248,19 +250,24 @@ class GestureRecognizerService: NSObject {
 
     return (gestureRecognizerResults, videoSize)
   }
-}
 
-// MARK: - GestureRecognizerLiveStreamDelegate Methods
-extension GestureRecognizerService: GestureRecognizerLiveStreamDelegate {
-
-  func gestureRecognizer(_ gestureRecognizer: GestureRecognizer, didFinishGestureRecognition result: GestureRecognizerResult?, timestampInMilliseconds: Int, error: Error?) {
-    let resultBundle = ResultBundle(
-      inferenceTime: Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds),
-      gestureRecognizerResults: [result])
-    liveStreamDelegate?.gestureRecognizerService(
-      self,
-      didFinishRecognition: resultBundle,
-      error: error)
+  private func handleLiveStreamResult(
+    _ result: Result<GestureRecognizerResult, any Error>,
+    timestampInMilliseconds: Int
+  ) {
+    let inferenceTime = Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds)
+    switch result {
+    case .success(let recognitionResult):
+      let resultBundle = ResultBundle(
+        inferenceTime: inferenceTime,
+        gestureRecognizerResults: [recognitionResult])
+      liveStreamDelegate?.gestureRecognizerService(self, didFinishRecognition: resultBundle, error: nil)
+    case .failure(let error):
+      let resultBundle = ResultBundle(
+        inferenceTime: inferenceTime,
+        gestureRecognizerResults: [nil])
+      liveStreamDelegate?.gestureRecognizerService(self, didFinishRecognition: resultBundle, error: error)
+    }
   }
 }
 

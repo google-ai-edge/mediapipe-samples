@@ -35,7 +35,7 @@ struct DefaultConstants {
   static let ovelayColor = UIColor(red: 0, green: 127/255.0, blue: 139/255.0, alpha: 1)
   static let displayFont = UIFont.systemFont(ofSize: 14.0, weight: .medium)
   static let model: Model = .efficientnetLite0
-  static let delegate: ImageClassifierDelegate = .CPU
+  static let delegate: ImageClassifierDelegate = .cpu
 }
 
 // MARK: Tflite Model
@@ -57,33 +57,33 @@ enum Model: String, CaseIterable {
 
 // MARK: ImageClassifierDelegate
 enum ImageClassifierDelegate: CaseIterable {
-  case GPU
-  case CPU
+  case gpu
+  case cpu
 
   var name: String {
     switch self {
-    case .GPU:
+    case .gpu:
       return "GPU"
-    case .CPU:
+    case .cpu:
       return "CPU"
     }
   }
 
   var delegate: Delegate {
     switch self {
-    case .GPU:
-      return .GPU
-    case .CPU:
-      return .CPU
+    case .gpu:
+      return .gpu
+    case .cpu:
+      return .cpu
     }
   }
 
   init?(name: String) {
     switch name {
-    case ImageClassifierDelegate.CPU.name:
-      self = ImageClassifierDelegate.CPU
-    case ImageClassifierDelegate.GPU.name:
-      self = ImageClassifierDelegate.GPU
+    case ImageClassifierDelegate.cpu.name:
+      self = ImageClassifierDelegate.cpu
+    case ImageClassifierDelegate.gpu.name:
+      self = ImageClassifierDelegate.gpu
     default:
       return nil
     }

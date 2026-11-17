@@ -19,7 +19,7 @@ class TextSummarizerHelper {
   private var textSummarizer: TextSummarizer?
 
   init(modelPath: String, mode: TextSummarizerMode) {
-    let options = TextSummarizerOptions()
+    var options = TextSummarizerOptions()
     options.baseOptions.modelAssetPath = modelPath
     options.mode = mode
     do {
@@ -39,17 +39,18 @@ class TextSummarizerHelper {
     }
   }
 
-  func summarizeStreaming(text: String, completion: @escaping (String?, Bool, Error?) -> Void) {
+  func summarizeStreaming(text: String) -> AsyncThrowingStream<TextSummarizerStreamResult, any Error> {
     guard let textSummarizer = textSummarizer else {
-      completion(nil, false, NSError(domain: "TextSummarizerHelper", code: -1, userInfo: [NSLocalizedDescriptionKey: "Summarizer not initialized"]))
-      return
-    }
-    do {
-      try textSummarizer.summarizeStreaming(text: text) { result, error in
-        completion(result?.chunk, result?.done ?? false, error)
+      return AsyncThrowingStream { continuation in
+        continuation.finish(
+          throwing: NSError(
+            domain: "TextSummarizerHelper",
+            code: -1,
+            userInfo: [NSLocalizedDescriptionKey: "Summarizer not initialized"]
+          )
+        )
       }
-    } catch {
-      completion(nil, false, error)
     }
+    return textSummarizer.summarizeStreaming(text: text)
   }
 }

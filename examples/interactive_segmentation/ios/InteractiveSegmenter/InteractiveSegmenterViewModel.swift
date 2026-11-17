@@ -245,9 +245,9 @@ actor InteractiveSegmenterRunner {
   private var segmenter: InteractiveSegmenter?
 
   func setup(modelPath: String) throws {
-    let options = InteractiveSegmenterOptions()
+    var options = InteractiveSegmenterOptions()
     options.baseOptions.modelAssetPath = modelPath
-    options.baseOptions.delegate = .GPU
+    options.baseOptions.delegate = .gpu
     segmenter = try InteractiveSegmenter(options: options)
   }
 

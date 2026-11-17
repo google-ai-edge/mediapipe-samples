@@ -45,7 +45,7 @@ class HolisticLandmarkerService: NSObject {
   weak var videoDelegate: HolisticLandmarkerServiceVideoDelegate?
 
   var holisticLandmarker: HolisticLandmarker?
-  private(set) var runningMode = RunningMode.image
+  private(set) var runningMode = VisionRunningMode.image
   private var minFaceDetectionConfidence: Float
   private var minFacePresenceConfidence: Float
   private var minPoseDetectionConfidence: Float
@@ -57,7 +57,7 @@ class HolisticLandmarkerService: NSObject {
   // MARK: - Custom Initializer
   private init?(
     modelPath: String?,
-    runningMode: RunningMode,
+    runningMode: VisionRunningMode,
     minFaceDetectionConfidence: Float,
     minFacePresenceConfidence: Float,
     minPoseDetectionConfidence: Float,
@@ -83,7 +83,7 @@ class HolisticLandmarkerService: NSObject {
   }
 
   private func createHolisticLandmarker() {
-    let holisticLandmarkerOptions = HolisticLandmarkerOptions()
+    var holisticLandmarkerOptions = HolisticLandmarkerOptions()
     holisticLandmarkerOptions.runningMode = runningMode
     holisticLandmarkerOptions.minFaceDetectionConfidence = minFaceDetectionConfidence
     holisticLandmarkerOptions.minFacePresenceConfidence = minFacePresenceConfidence
@@ -93,7 +93,9 @@ class HolisticLandmarkerService: NSObject {
     holisticLandmarkerOptions.baseOptions.modelAssetPath = modelPath
     holisticLandmarkerOptions.baseOptions.delegate = delegate.delegate
     if runningMode == .liveStream {
-      holisticLandmarkerOptions.holisticLandmarkerLiveStreamDelegate = self
+      holisticLandmarkerOptions.liveStreamResultHandler = { [weak self] result, timestampInMilliseconds in
+        self?.handleLiveStreamResult(result, timestampInMilliseconds: timestampInMilliseconds)
+      }
     }
     do {
       holisticLandmarker = try HolisticLandmarker(options: holisticLandmarkerOptions)
@@ -275,23 +277,24 @@ class HolisticLandmarkerService: NSObject {
 
     return (results, videoSize)
   }
-}
 
-// MARK: - HolisticLandmarkerLiveStreamDelegate Methods
-extension HolisticLandmarkerService: HolisticLandmarkerLiveStreamDelegate {
-  func holisticLandmarker(
-    _ holisticLandmarker: HolisticLandmarker,
-    didFinishDetection result: HolisticLandmarkerResult?,
-    timestampInMilliseconds: Int,
-    error: Error?
+  private func handleLiveStreamResult(
+    _ result: Result<HolisticLandmarkerResult, any Error>,
+    timestampInMilliseconds: Int
   ) {
-    let resultBundle = ResultBundle(
-      inferenceTime: Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds),
-      holisticLandmarkerResults: [result])
-    liveStreamDelegate?.holisticLandmarkerService(
-      self,
-      didFinishDetection: resultBundle,
-      error: error)
+    let inferenceTime = Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds)
+    switch result {
+    case .success(let landmarkerResult):
+      let resultBundle = ResultBundle(
+        inferenceTime: inferenceTime,
+        holisticLandmarkerResults: [landmarkerResult])
+      liveStreamDelegate?.holisticLandmarkerService(self, didFinishDetection: resultBundle, error: nil)
+    case .failure(let error):
+      let resultBundle = ResultBundle(
+        inferenceTime: inferenceTime,
+        holisticLandmarkerResults: [nil])
+      liveStreamDelegate?.holisticLandmarkerService(self, didFinishDetection: resultBundle, error: error)
+    }
   }
 }
 

@@ -30,8 +30,8 @@ class TextEmbedderService {
       return nil
       
     }
-     let cosineSimilarity = try? Float(
-      truncating: TextEmbedder.cosineSimilarity(embedding1: text1EmbedderResult, embedding2: text2EmbedderResult))
+    let cosineSimilarity = try? Float(
+      TextEmbedder.cosineSimilarity(embedding1: text1EmbedderResult, embedding2: text2EmbedderResult))
     return cosineSimilarity ?? 0
   }
 

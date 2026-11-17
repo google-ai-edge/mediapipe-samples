@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import AVFoundation
 import UIKit
 import MediaPipeTasksVision
 
@@ -30,13 +31,13 @@ class ImageEmbedderService: NSObject {
   weak var liveStreamDelegate: ImageEmbedderServiceLiveStreamDelegate?
 
   var imageEmbedder: ImageEmbedder?
-  private(set) var runningMode: RunningMode
+  private(set) var runningMode: VisionRunningMode
   private var modelPath: String
   private var delegate: ImageEmbedderDelegate
 
   // MARK: - Custom Initializer
   private init?(model: Model,
-                runningMode:RunningMode,
+                runningMode:VisionRunningMode,
                 delegate: ImageEmbedderDelegate) {
     guard let modelPath = model.modelPath else { return nil }
     self.modelPath = modelPath
@@ -48,12 +49,14 @@ class ImageEmbedderService: NSObject {
   }
 
   private func createImageEmbedder() {
-    let imageEmbedderOptions = ImageEmbedderOptions()
+    var imageEmbedderOptions = ImageEmbedderOptions()
     imageEmbedderOptions.runningMode = runningMode
     imageEmbedderOptions.baseOptions.modelAssetPath = modelPath
     imageEmbedderOptions.baseOptions.delegate = delegate.delegate
     if runningMode == .liveStream {
-      imageEmbedderOptions.imageEmbedderLiveStreamDelegate = self
+      imageEmbedderOptions.liveStreamResultHandler = { [weak self] result, timestampInMilliseconds in
+        self?.handleLiveStreamResult(result, timestampInMilliseconds: timestampInMilliseconds)
+      }
     }
     do {
       imageEmbedder = try ImageEmbedder(options: imageEmbedderOptions)
@@ -122,19 +125,20 @@ class ImageEmbedderService: NSObject {
       print(error)
     }
   }
-}
 
-// MARK: - ImageEmbedderLiveStreamDelegate
-extension ImageEmbedderService: ImageEmbedderLiveStreamDelegate {
-  func imageEmbedder(_ imageEmbedder: ImageEmbedder, didFinishEmbedding result: ImageEmbedderResult?, timestampInMilliseconds: Int, error: (any Error)?) {
-    guard let result = result else {
+  private func handleLiveStreamResult(
+    _ result: Result<ImageEmbedderResult, any Error>,
+    timestampInMilliseconds: Int
+  ) {
+    switch result {
+    case .success(let embedderResult):
+      let resultBundle = ResultBundle(
+        inferenceTime: Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds),
+        imageEmbedderResults: [embedderResult])
+      liveStreamDelegate?.imageEmbedderService(self, didFinishEmbedding: resultBundle, error: nil)
+    case .failure(let error):
       liveStreamDelegate?.imageEmbedderService(self, didFinishEmbedding: nil, error: error)
-      return
     }
-    let resultBundle = ResultBundle(
-      inferenceTime: Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds),
-      imageEmbedderResults: [result])
-    liveStreamDelegate?.imageEmbedderService(self, didFinishEmbedding: resultBundle, error: nil)
   }
 }
 

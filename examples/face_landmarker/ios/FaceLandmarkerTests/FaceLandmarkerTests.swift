@@ -521,7 +521,7 @@ final class FaceLandmarkerTests: XCTestCase {
         minFaceDetectionConfidence: FaceLandmarkerTests.minFaceDetectionConfidence,
         minFacePresenceConfidence: FaceLandmarkerTests.minFacePresenceConfidence,
         minTrackingConfidence: FaceLandmarkerTests.minTrackingConfidence,
-        delegate: .CPU)!
+        delegate: .cpu)!
     return faceLandmarkerService
   }
 

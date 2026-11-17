@@ -25,6 +25,11 @@ class ViewController: UIViewController {
   private let activityIndicator = UIActivityIndicatorView(style: .large)
 
   private var helper: TextProofreaderHelper?
+  private var streamingTask: Task<Void, Never>?
+
+  deinit {
+    streamingTask?.cancel()
+  }
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -122,23 +127,25 @@ class ViewController: UIViewController {
   }
 
   @objc private func streamClicked() {
-    guard let text = inputTextView.text, !text.isEmpty else { return }
+    guard let text = inputTextView.text, !text.isEmpty, let helper else { return }
+    streamingTask?.cancel()
     outputTextView.text = ""
     activityIndicator.startAnimating()
 
-    helper?.proofreadStreaming(text: text) { [weak self] chunk, done, error in
-      DispatchQueue.main.async {
-        if let error = error {
-          self?.outputTextView.text = "Error: \(error.localizedDescription)"
-          self?.activityIndicator.stopAnimating()
-          return
+    streamingTask = Task { @MainActor [weak self] in
+      defer { self?.activityIndicator.stopAnimating() }
+      do {
+        for try await update in helper.proofreadStreaming(text: text) {
+          guard !Task.isCancelled else { return }
+          self?.outputTextView.text += update.chunk
+          if update.isDone {
+            break
+          }
         }
-        if let chunk = chunk {
-          self?.outputTextView.text += chunk
-        }
-        if done {
-          self?.activityIndicator.stopAnimating()
-        }
+      } catch is CancellationError {
+        return
+      } catch {
+        self?.outputTextView.text = "Error: \(error.localizedDescription)"
       }
     }
   }

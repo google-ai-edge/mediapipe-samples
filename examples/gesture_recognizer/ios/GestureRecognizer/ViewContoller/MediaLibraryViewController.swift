@@ -287,7 +287,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     }
   }
   
-  func clearAndInitializeGestureRecognizerService(runningMode: RunningMode) {
+  func clearAndInitializeGestureRecognizerService(runningMode: VisionRunningMode) {
     gestureRecognizerService = nil
     switch runningMode {
       case .image:

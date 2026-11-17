@@ -289,7 +289,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     }
   }
   
-  func clearAndInitializeObjectDetectorService(runningMode: RunningMode) {
+  func clearAndInitializeObjectDetectorService(runningMode: VisionRunningMode) {
     objectDetectorService = nil
     switch runningMode {
       case .image:

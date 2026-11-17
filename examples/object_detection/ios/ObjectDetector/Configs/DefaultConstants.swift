@@ -34,7 +34,7 @@ struct DefaultConstants {
   ]
   static let displayFont = UIFont.systemFont(ofSize: 14.0, weight: .medium)
   static let model: Model = .efficientdetLite0
-  static let delegate: Delegate = .CPU
+  static let delegate: Delegate = .cpu
 }
 
 // MARK: Model
