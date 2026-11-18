@@ -1,0 +1,31 @@
+{
+  "model": "abdollahhh/asl-sign-language-efficientnet-b0",
+  "labels_evaluated": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "L",
+    "O",
+    "R",
+    "S",
+    "V",
+    "Y"
+  ],
+  "prediction_rule": "argmax over all 26 pretrained output classes; 14 out-of-scope outputs count wrong",
+  "method": "mediapipe_automatic_hand_crop",
+  "split": "val",
+  "manifest": "data/processed/manifest.csv",
+  "max_per_letter": null,
+  "crop_margin": 0.1,
+  "research_limitations": "Public dataset supplies no signer IDs. Not signer-disjoint; plain/clutter only if manually annotated.",
+  "images_evaluated": 110,
+  "correct": 44,
+  "top1_accuracy_pct": 40.0,
+  "detection_failures": 21,
+  "detection_failure_rate_pct": 19.09,
+  "by_background": {},
+  "background_metadata_complete": false
+}
