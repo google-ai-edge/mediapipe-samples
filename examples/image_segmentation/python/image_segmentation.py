@@ -35,7 +35,7 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from mediapipe.tasks.python.vision import image_segmenter
 
-MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/image_segmenter/deeplab_v3/float32/1/deeplab_v3.tflite'
+MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-ImageSegmenter-DeepLab-V3/resolve/main/deeplab_v3.tflite'
 IMAGE_URL = 'https://storage.googleapis.com/mediapipe-assets/segmentation_input_rotation0.jpg'
 
 DELEGATES = {

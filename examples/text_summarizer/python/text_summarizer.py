@@ -29,7 +29,7 @@ from typing import Optional, Sequence
 from mediapipe.tasks import python
 from mediapipe.tasks.python import text
 
-MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/text_summarizer/gemma_200m/latest/summarization_quant_200m_2modes.litertlm'
+MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-TextSummarizer-200M/resolve/main/summarization_quant_200m_2modes.litertlm'
 
 # The text that is summarized by default.
 INPUT_TEXT = (

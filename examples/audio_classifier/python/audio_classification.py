@@ -34,7 +34,7 @@ from mediapipe.tasks.python import audio
 from mediapipe.tasks.python.components import containers
 from scipy.io import wavfile
 
-MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/audio_classifier/yamnet/float32/1/yamnet.tflite'
+MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-AudioClassifier-YAMNet/resolve/main/yamnet.tflite'
 AUDIO_URL = 'https://storage.googleapis.com/mediapipe-assets/speech_16000_hz_mono.wav'
 
 DELEGATES = {

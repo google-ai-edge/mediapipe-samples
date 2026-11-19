@@ -33,7 +33,7 @@ import numpy as np
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/int8/1/efficientdet_lite0.tflite'
+MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-ObjectDetector-EfficientDet-Lite0/resolve/main/efficientdet_lite0_int8.tflite'
 # This image comes from Pixabay:
 # https://pixabay.com/photos/pet-cute-animal-domestic-mammal-3157961/
 IMAGE_URL = 'https://storage.googleapis.com/mediapipe-tasks/object_detector/cat_and_dog.jpg'

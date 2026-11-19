@@ -41,7 +41,7 @@ from mediapipe.tasks.python import vision
 from mediapipe.tasks.python.vision import drawing_styles
 from mediapipe.tasks.python.vision import drawing_utils
 
-MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task'
+MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-FaceLandmarker/resolve/main/face_landmarker.task'
 # The image is from Unsplash: https://unsplash.com/photos/mt2fyrdXxzk
 IMAGE_URL = 'https://storage.googleapis.com/mediapipe-assets/business-person.png'
 

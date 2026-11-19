@@ -26,107 +26,122 @@ import urllib.request
 _MODELS = 'https://storage.googleapis.com/mediapipe-models/'
 _ASSETS = 'https://storage.googleapis.com/mediapipe-assets/'
 _TASKS = 'https://storage.googleapis.com/mediapipe-tasks/'
+_HF = 'https://huggingface.co/litert-community/'
 # Hugging Face repositories are mutable, so these URLs name a commit.
-_PARAKEET = 'https://huggingface.co/litert-community/parakeet-tdt-0.6b-v3/resolve/cd95f7bb97fd0757ab1bd6d5eff513cfcd7a2a10/'
-_KOKORO = 'https://huggingface.co/litert-community/Kokoro-82M/resolve/bf1c2405642aa310bd210205c22d3ae1abc253fb/'
-_POCKET_TTS = 'https://huggingface.co/litert-community/pocket-tts/resolve/03f949ec418ccd4d153008f7ef9c58c754cc0616/'
-_PHONON = 'https://huggingface.co/litert-community/phonon-31m-en/resolve/63a6170895a34600560f80dce4c70f7c90e32956/'
-_EG2_270M = 'https://huggingface.co/litert-community/embeddinggemma-2-text-270m-litert-lm/resolve/9be6e8b90982095dc05c2bd162e4b954ee4dbac7/'
-_EG2_440M = 'https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm/resolve/538e6574db281b4fe17993a3212f10c73bd678c6/'
+_YAMNET = _HF + 'MediaPipe-AudioClassifier-YAMNet/resolve/fcd63e19bd0a7a0d3d8c9c070af1898f7dd29675/'
+_BLAZEFACE_SHORT = _HF + 'MediaPipe-FaceDetector-BlazeFace-Short-Range/resolve/1ab2d0325e858c9aa0bbf89e85a759ec7e394f25/'
+_FACE_LANDMARKER = _HF + 'MediaPipe-FaceLandmarker/resolve/cfb66f449dc5cb9f8dada3d52174d4cdae1c9ef1/'
+_GESTURE_RECOGNIZER = _HF + 'MediaPipe-GestureRecognizer/resolve/cdc67a52ca3c423d75bb32c5e636a94a2163cf73/'
+_HAND_LANDMARKER = _HF + 'MediaPipe-HandLandmarker-Full/resolve/74806d5014cdd5bd6ce94a80a0e4e93ae4cf2f9b/'
+_HOLISTIC_LANDMARKER = _HF + 'MediaPipe-HolisticLandmarker/resolve/4f2fac960e1bbb53343073a56ff524a1cfcc177e/'
+_EFFICIENTNET_LITE0 = _HF + 'MediaPipe-ImageClassifier-EfficientNet-Lite0/resolve/a41ac2f251fb8f9e1f0d8cc12eea427d1c379cbc/'
+_MOBILENET_V3_SMALL = _HF + 'MediaPipe-ImageEmbedder-MobileNet-V3-Small/resolve/45a8f4237a3175e9d580be1e267b10681f323813/'
+_DEEPLAB_V3 = _HF + 'MediaPipe-ImageSegmenter-DeepLab-V3/resolve/739202fd92e4a822ba439afe91bdf69254227d94/'
+_MAGIC_TOUCH = _HF + 'MediaPipe-InteractiveSegmenter-MagicTouch/resolve/61de3ef0dcf18e1ad21636bb206439dff5cf516d/'
+_LANGUAGE_DETECTOR = _HF + 'MediaPipe-LanguageDetector/resolve/58112979e05eaf888cfd26e5924a4b9743bfd99f/'
+_EFFICIENTDET_LITE0 = _HF + 'MediaPipe-ObjectDetector-EfficientDet-Lite0/resolve/2c3b3e2fc45b9fddf8ef8ad03a63ca874458add6/'
+_POSE_HEAVY = _HF + 'MediaPipe-PoseLandmarker-Heavy/resolve/8a9deee6a176119dbaf22006b4a1db71fd889d82/'
+_BERT_CLASSIFIER = _HF + 'MediaPipe-TextClassifier-MobileBERT/resolve/ed51b3985b8cfe3b16e0c70d0c706a0f04bc15d4/'
+_TEXT_PROOFREADER = _HF + 'MediaPipe-TextProofreader-200M/resolve/7f5d1124f2adc535113f671268eca8c5b65df77e/'
+_TEXT_SUMMARIZER = _HF + 'MediaPipe-TextSummarizer-200M/resolve/e59af6de5d4753422ce706280d0371fdc223b1ba/'
+_PARAKEET = _HF + 'parakeet-tdt-0.6b-v3/resolve/cd95f7bb97fd0757ab1bd6d5eff513cfcd7a2a10/'
+_KOKORO = _HF + 'Kokoro-82M/resolve/bf1c2405642aa310bd210205c22d3ae1abc253fb/'
+_POCKET_TTS = _HF + 'pocket-tts/resolve/03f949ec418ccd4d153008f7ef9c58c754cc0616/'
+_PHONON = _HF + 'phonon-31m-en/resolve/63a6170895a34600560f80dce4c70f7c90e32956/'
+_EG2_270M = _HF + 'embeddinggemma-2-text-270m-litert-lm/resolve/9be6e8b90982095dc05c2bd162e4b954ee4dbac7/'
+_EG2_440M = _HF + 'embeddinggemma-2-text-vision-440m-litert-lm/resolve/538e6574db281b4fe17993a3212f10c73bd678c6/'
 
 ASSETS = {
     # --- Models: the ones the notebooks download, unless noted. ---
     'yamnet.tflite': {
-        'url': _MODELS + 'audio_classifier/yamnet/float32/1/yamnet.tflite',
+        'url': _YAMNET + 'yamnet.tflite',
         'sha256': '4d8b4a53282dc83ef04e3e7dbc4fbc98082e34e44ed798e16c3a0cdd4c584faf',
         'bytes': 4126810,
     },
     'blaze_face_short_range.tflite': {
-        'url': _MODELS + 'face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite',
+        'url': _BLAZEFACE_SHORT + 'blaze_face_short_range.tflite',
         'sha256': 'b4578f35940bf5a1a655214a1cce5cab13eba73c1297cd78e1a04c2380b0152f',
         'bytes': 229746,
     },
     'face_landmarker.task': {
-        'url': _MODELS + 'face_landmarker/face_landmarker/float16/1/face_landmarker.task',
+        'url': _FACE_LANDMARKER + 'face_landmarker.task',
         'sha256': '64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff',
         'bytes': 3758596,
     },
     'gesture_recognizer.task': {
-        'url': _MODELS + 'gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task',
+        'url': _GESTURE_RECOGNIZER + 'gesture_recognizer.task',
         'sha256': '97952348cf6a6a4915c2ea1496b4b37ebabc50cbbf80571435643c455f2b0482',
         'bytes': 8373440,
     },
     'hand_landmarker.task': {
-        'url': _MODELS + 'hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
+        'url': _HAND_LANDMARKER + 'hand_landmarker.task',
         'sha256': 'fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1',
         'bytes': 7819105,
     },
     'holistic_landmarker.task': {
-        'url': _MODELS + 'holistic_landmarker/holistic_landmarker/float16/1/holistic_landmarker.task',
+        'url': _HOLISTIC_LANDMARKER + 'holistic_landmarker.task',
         'sha256': 'e2dab61191e2dcd0a15f943d8e3ed1dce13c82dfa597b9dd39f562975a50c3f8',
         'bytes': 13683609,
     },
     'efficientnet_lite0.tflite': {
-        'url': _MODELS + 'image_classifier/efficientnet_lite0/float32/1/efficientnet_lite0.tflite',
+        'url': _EFFICIENTNET_LITE0 + 'efficientnet_lite0_float32.tflite',
         'sha256': '6c7ab0a6e5dcbf38a8c33b960996a55a3b4300b36a018c4545801de3a3c8bde0',
         'bytes': 18582189,
     },
     'mobilenet_v3_small.tflite': {
-        'url': _MODELS + 'image_embedder/mobilenet_v3_small/float32/1/mobilenet_v3_small.tflite',
+        'url': _MOBILENET_V3_SMALL + 'mobilenet_v3_small.tflite',
         'sha256': 'bbbb4c51a55a53905af1daec995ca1aae355046f8839bb8c9f5ce9271394bc40',
         'bytes': 4117670,
     },
     'deeplab_v3.tflite': {
-        'url': _MODELS + 'image_segmenter/deeplab_v3/float32/1/deeplab_v3.tflite',
+        'url': _DEEPLAB_V3 + 'deeplab_v3.tflite',
         'sha256': 'ff36e24d40547fe9e645e2f4e8745d1876d6e38b332d39a82f0bf0f5d1d561b3',
         'bytes': 2780176,
     },
     'interactive_segmentation.task': {
-        'url': _MODELS + 'interactive_segmenter_v2/magic_touch/int8/1/interactive_segmentation.task',
+        'url': _MAGIC_TOUCH + 'interactive_segmentation.task',
         'sha256': '38431bc66b883404e8397f74c3579404315b9b52b04a46c6346fe906a7309b03',
         'bytes': 30525312,
     },
-    # The URL of this model is not versioned ("latest").
     'language_detector.tflite': {
-        'url': _MODELS + 'language_detector/language_detector/float32/latest/language_detector.tflite',
+        'url': _LANGUAGE_DETECTOR + 'language_detector.tflite',
         'sha256': '7db4f23dfe1ad8966b050b419a865da451143fd43eb6b606a256aadeeb1e5417',
         'bytes': 315294,
     },
     'efficientdet_lite0_int8.tflite': {
-        'url': _MODELS + 'object_detector/efficientdet_lite0/int8/1/efficientdet_lite0.tflite',
+        'url': _EFFICIENTDET_LITE0 + 'efficientdet_lite0_int8.tflite',
         'sha256': '0720bf247bd76e6594ea28fa9c6f7c5242be774818997dbbeffc4da460c723bb',
         'bytes': 4602795,
     },
     # Not used by the notebook; see the object_detector entry in cases.py.
     'efficientdet_lite0_float32.tflite': {
-        'url': _MODELS + 'object_detector/efficientdet_lite0/float32/1/efficientdet_lite0.tflite',
+        'url': _EFFICIENTDET_LITE0 + 'efficientdet_lite0_float32.tflite',
         'sha256': '40338edf5ec70d43e318b0a716a84d4564cd1802759a7a07170c7e43796dbf58',
         'bytes': 13836895,
     },
     'pose_landmarker_heavy.task': {
-        'url': _MODELS + 'pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task',
+        'url': _POSE_HEAVY + 'pose_landmarker_heavy.task',
         'sha256': '64437af838a65d18e5ba7a0d39b465540069bc8aae8308de3e318aad31fcbc7b',
         'bytes': 30664242,
     },
     'bert_classifier.tflite': {
-        'url': _MODELS + 'text_classifier/bert_classifier/float32/1/bert_classifier.tflite',
+        'url': _BERT_CLASSIFIER + 'bert_classifier.tflite',
         'sha256': '9b45012ab143d88d61e10ea501d6c8763f7202b86fa987711519d89bfa2a88b1',
         'bytes': 25707538,
     },
+    # Not yet published on Hugging Face under litert-community.
     'bert_embedder.tflite': {
         'url': _MODELS + 'text_embedder/bert_embedder/float32/1/bert_embedder.tflite',
         'sha256': '02ae6279faf86c2cd4ff18f61876c878bcc0b572b472f0678897a184c4ac7ef6',
         'bytes': 26142232,
     },
-    # The URL of this model is not versioned ("latest").
     'proofread_quant_200m.litertlm': {
-        'url': _MODELS + 'text_proofreader/gemma_200m/latest/proofread_quant_200m.litertlm',
+        'url': _TEXT_PROOFREADER + 'proofread_quant_200m.litertlm',
         'sha256': '2caa317d5a6f951af6e437edce3bb3a9fdedc85a7a8c2a8fcaec96318d7708cc',
         'bytes': 117587968,
     },
-    # The URL of this model is not versioned ("latest").
     'summarization_quant_200m_2modes.litertlm': {
-        'url': _MODELS + 'text_summarizer/gemma_200m/latest/summarization_quant_200m_2modes.litertlm',
+        'url': _TEXT_SUMMARIZER + 'summarization_quant_200m_2modes.litertlm',
         'sha256': '8b2d4ef09236adb9ead3127325526ba1aa5a59feb7c5de2d3f5958f27479de59',
         'bytes': 117587968,
     },

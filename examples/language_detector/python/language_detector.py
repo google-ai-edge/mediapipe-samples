@@ -31,7 +31,7 @@ from typing import Optional, Sequence
 from mediapipe.tasks import python
 from mediapipe.tasks.python import text
 
-MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/language_detector/language_detector/float32/latest/language_detector.tflite'
+MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-LanguageDetector/resolve/main/language_detector.tflite'
 
 # The input text that the model classifies by default: a Chinese proverb.
 INPUT_TEXT = '\u5206\u4E45\u5FC5\u5408\u5408\u4E45\u5FC5\u5206'

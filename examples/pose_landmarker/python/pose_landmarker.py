@@ -37,7 +37,7 @@ from mediapipe.tasks.python import vision
 from mediapipe.tasks.python.vision import drawing_styles
 from mediapipe.tasks.python.vision import drawing_utils
 
-MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task'
+MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-PoseLandmarker-Heavy/resolve/main/pose_landmarker_heavy.task'
 # The notebook uses
 # https://cdn.pixabay.com/photo/2019/03/12/20/39/girl-4051811_960_720.jpg, which
 # that host does not serve to scripts. This is one of MediaPipe's own test

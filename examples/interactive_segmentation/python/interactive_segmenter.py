@@ -36,7 +36,7 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from mediapipe.tasks.python.vision import interactive_segmenter
 
-MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/interactive_segmenter_v2/magic_touch/int8/1/interactive_segmentation.task'
+MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-InteractiveSegmenter-MagicTouch/resolve/main/interactive_segmentation.task'
 IMAGE_URL = 'https://storage.googleapis.com/mediapipe-assets/cats_and_dogs.jpg'
 
 DELEGATES = {

@@ -36,7 +36,7 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite0/float32/1/efficientnet_lite0.tflite'
+MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-ImageClassifier-EfficientNet-Lite0/resolve/main/efficientnet_lite0_float32.tflite'
 # The images are from Pixabay.
 IMAGE_URL = 'https://storage.googleapis.com/mediapipe-tasks/image_classifier/'
 IMAGE_FILENAMES = ['burger.jpg', 'cat.jpg']

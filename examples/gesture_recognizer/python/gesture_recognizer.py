@@ -38,7 +38,7 @@ import numpy as np
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task'
+MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-GestureRecognizer/resolve/main/gesture_recognizer.task'
 # The images are from Pixabay.
 IMAGE_URL = 'https://storage.googleapis.com/mediapipe-tasks/gesture_recognizer/'
 IMAGE_FILENAMES = [

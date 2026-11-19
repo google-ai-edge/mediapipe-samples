@@ -185,11 +185,10 @@ Two runs of the same release validate the same thing:
   release needs a version the pins exclude, the installation fails and says so;
   update the file (its header explains how), or pass `--no-constraints` for a
   run that is explicitly not reproducible.
-- **Models and inputs.** `assets.py` pins every file by SHA-256. A file whose
-  content changed upstream fails the cases that use it instead of being
-  validated silently. Three model URLs are not versioned (`.../latest/...`:
-  language detector, text proofreader, text summarizer), so this can happen.
-  The Hugging Face URLs name a commit.
+- **Models and inputs.** `assets.py` pins every file by SHA-256 and byte size.
+  A file whose content changed upstream fails the cases that use it instead of
+  being validated silently. Every Hugging Face URL in `assets.py` also names an
+  immutable commit SHA.
 - **Processes.** Each case runs in a fresh process with the same arguments.
   Files that a task writes next to its model (compiled caches) are deleted
   before every case, so no case depends on what ran before it, or on a run with

@@ -29,7 +29,7 @@ from typing import Optional, Sequence
 from mediapipe.tasks import python
 from mediapipe.tasks.python import text
 
-MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/text_classifier/bert_classifier/float32/1/bert_classifier.tflite'
+MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-TextClassifier-MobileBERT/resolve/main/bert_classifier.tflite'
 
 # The input text that the model classifies by default.
 INPUT_TEXT = "I'm looking forward to what will come next."

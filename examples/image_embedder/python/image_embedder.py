@@ -31,7 +31,7 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/image_embedder/mobilenet_v3_small/float32/1/mobilenet_v3_small.tflite'
+MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-ImageEmbedder-MobileNet-V3-Small/resolve/main/mobilenet_v3_small.tflite'
 IMAGE_URL = 'https://storage.googleapis.com/mediapipe-assets/'
 IMAGE_FILENAMES = ['burger.jpg', 'burger_crop.jpg']
 

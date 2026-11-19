@@ -34,7 +34,7 @@ import numpy as np
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite'
+MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-FaceDetector-BlazeFace-Short-Range/resolve/main/blaze_face_short_range.tflite'
 # The notebook uses https://i.imgur.com/Vu2Nqwb.jpeg, which that host does not
 # serve to scripts. This is one of MediaPipe's own test images instead.
 IMAGE_URL = 'https://storage.googleapis.com/mediapipe-assets/portrait.jpg'

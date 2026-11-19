@@ -30,7 +30,7 @@ from typing import Optional, Sequence
 from mediapipe.tasks import python
 from mediapipe.tasks.python import text
 
-MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/text_proofreader/gemma_200m/latest/proofread_quant_200m.litertlm'
+MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-TextProofreader-200M/resolve/main/proofread_quant_200m.litertlm'
 
 # The text that is proofread by default.
 INPUT_TEXT = 'I am a studnt.'

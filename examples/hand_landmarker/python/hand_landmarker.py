@@ -33,7 +33,7 @@ import numpy as np
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task'
+MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-HandLandmarker-Full/resolve/main/hand_landmarker.task'
 IMAGE_URL = 'https://storage.googleapis.com/mediapipe-tasks/hand_landmarker/woman_hands.jpg'
 
 DELEGATES = {
