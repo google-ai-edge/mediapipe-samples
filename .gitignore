@@ -9,6 +9,7 @@
 # MediaPipe Task files
 *.task
 *.litertlm
+*.xnnpack_cache
 *.wav
 
 # Swift
@@ -120,3 +121,7 @@ lint/generated/
 lint/outputs/
 lint/tmp/
 # lint/reports/
+
+# Python release validation (.github/scripts/release_validate)
+.release_validation/
+release-validation-report/

@@ -14,6 +14,7 @@
 """Transcribes a .wav file with the MediaPipe AudioTranscriber task."""
 
 import argparse
+from collections.abc import Sequence
 import os
 import time
 import urllib.request
@@ -67,9 +68,12 @@ def load_wav(path: str) -> tuple[np.ndarray, int]:
 
 
 def create_transcriber(
-    model_path: str, delegate: str, sample_rate: int
+    model_path: str,
+    delegate: str,
+    sample_rate: int,
+    allow_cpu_fallback: bool = True,
 ) -> tuple[audio_transcriber.AudioTranscriber, str]:
-  """Creates an AudioTranscriber, falling back to CPU if GPU is unavailable."""
+  """Creates an AudioTranscriber, optionally falling back to CPU."""
 
   def create(delegate_name: str) -> audio_transcriber.AudioTranscriber:
     options = audio_transcriber.AudioTranscriberOptions(
@@ -84,13 +88,15 @@ def create_transcriber(
   try:
     return create(delegate), delegate
   except RuntimeError as e:
-    if delegate == 'CPU':
+    if delegate == 'CPU' or not allow_cpu_fallback:
       raise
     print(f'GPU is not available ({e}), falling back to CPU.')
     return create('CPU'), 'CPU'
 
 
-def main() -> None:
+def main(
+    argv: Sequence[str] | None = None,
+) -> audio_transcriber.AudioTranscriberResult:
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument(
       '--model',
@@ -102,7 +108,7 @@ def main() -> None:
       help='Path to a PCM .wav file. Defaults to a downloaded sample clip.',
   )
   parser.add_argument(
-      '--delegate', choices=['GPU', 'CPU'], type=str.upper, default='GPU'
+      '--delegate', choices=['GPU', 'CPU'], type=str.upper, default=None
   )
   parser.add_argument(
       '--stream',
@@ -115,7 +121,7 @@ def main() -> None:
       default=1000,
       help='Chunk length in milliseconds for --stream.',
   )
-  args = parser.parse_args()
+  args = parser.parse_args(argv)
 
   if args.model == os.path.basename(_MODEL_URL):
     download_if_missing(_MODEL_URL, args.model)
@@ -128,7 +134,10 @@ def main() -> None:
   print(f'Audio: {audio_path} ({duration:.2f} s at {sample_rate} Hz)')
 
   transcriber, delegate = create_transcriber(
-      args.model, args.delegate, sample_rate
+      args.model,
+      args.delegate or 'GPU',
+      sample_rate,
+      allow_cpu_fallback=args.delegate is None,
   )
   with transcriber:
     transcriber.prewarm()
@@ -162,6 +171,7 @@ def main() -> None:
   print(
       f'\nLatency: {latency * 1000:.0f} ms (RTF: {latency / duration:.3f})'
   )
+  return audio_transcriber.AudioTranscriberResult(segments=final_segments)
 
 
 if __name__ == '__main__':
