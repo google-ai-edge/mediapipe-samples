@@ -41,7 +41,7 @@ data class VerifiedModelDownload(
 )
 
 val gestureRecognizerTask = VerifiedModelDownload(
-    url = "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task",
+    url = "https://huggingface.co/litert-community/MediaPipe-GestureRecognizer/resolve/main/gesture_recognizer.task",
     destFile = file("$assetDir/gesture_recognizer.task"),
     sha256 = "97952348cf6a6a4915c2ea1496b4b37ebabc50cbbf80571435643c455f2b0482",
 )

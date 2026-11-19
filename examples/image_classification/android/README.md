@@ -4,9 +4,9 @@
 
 This Android app classifies images and live camera frames on-device using the MediaPipe
 `ImageClassifier` task, with a choice of
-[EfficientNet Lite0](https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite0/float32/1/efficientnet_lite0.tflite)
+[EfficientNet Lite0](https://huggingface.co/litert-community/MediaPipe-ImageClassifier-EfficientNet-Lite0/resolve/main/efficientnet_lite0_float32.tflite)
 or
-[EfficientNet Lite2](https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite2/float32/1/efficientnet_lite2.tflite)
+[EfficientNet Lite2](https://huggingface.co/litert-community/MediaPipe-ImageClassifier-EfficientNet-Lite2/resolve/main/efficientnet_lite2_float32.tflite)
 models.
 
 ![Image Classification Demo](imageclassifier.png?raw=true "Image Classification Demo")

@@ -18,6 +18,6 @@ MODEL_FILE=./HolisticLandmarker/holistic_landmarker.task
 if test -f "$MODEL_FILE"; then
     echo "INFO: holistic_landmarker.task exists. Skip downloading and use the local task."
 else
-    curl -o ${MODEL_FILE} https://storage.googleapis.com/mediapipe-models/holistic_landmarker/holistic_landmarker/float16/1/holistic_landmarker.task
+    curl --fail -L -o ${MODEL_FILE} https://huggingface.co/litert-community/MediaPipe-HolisticLandmarker/resolve/main/holistic_landmarker.task
     echo "INFO: Downloaded holistic_landmarker.task to $MODEL_FILE ."
 fi

@@ -41,7 +41,7 @@ data class VerifiedModelDownload(
 )
 
 val handLandmarkerTask = VerifiedModelDownload(
-    url = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+    url = "https://huggingface.co/litert-community/MediaPipe-HandLandmarker-Full/resolve/main/hand_landmarker.task",
     destFile = file("$assetDir/hand_landmarker.task"),
     sha256 = "fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1",
 )

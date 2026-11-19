@@ -41,7 +41,7 @@ data class VerifiedModelDownload(
 )
 
 val proofreaderModel = VerifiedModelDownload(
-    url = "https://storage.googleapis.com/mediapipe-models/text_proofreader/gemma_200m/latest/proofread_quant_200m.litertlm",
+    url = "https://huggingface.co/litert-community/MediaPipe-TextProofreader-200M/resolve/main/proofread_quant_200m.litertlm",
     destFile = file("$assetDir/proofread_quant_200m.litertlm"),
     sha256 = "2caa317d5a6f951af6e437edce3bb3a9fdedc85a7a8c2a8fcaec96318d7708cc",
 )

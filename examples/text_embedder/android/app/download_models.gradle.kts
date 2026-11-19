@@ -47,13 +47,13 @@ val mobileBert = VerifiedModelDownload(
 )
 
 val universalSentenceEncoder = VerifiedModelDownload(
-    url = "https://storage.googleapis.com/mediapipe-models/text_embedder/universal_sentence_encoder/float32/1/universal_sentence_encoder.tflite",
+    url = "https://huggingface.co/litert-community/MediaPipe-TextEmbedder-Universal-Sentence-Encoder/resolve/main/universal_sentence_encoder.tflite",
     destFile = file("$assetDir/universal_sentence_encoder.tflite"),
     sha256 = "89ad3c74175dd8caa398cc22b657296d94302d20c525c12b58b29420f7249749",
 )
 
 val embeddingGemma = VerifiedModelDownload(
-    url = "https://storage.googleapis.com/mediapipe-models/text_embedder/embedding_gemma/int4int8/latest/embedding_gemma.task",
+    url = "https://huggingface.co/litert-community/MediaPipe-TextEmbedder-EmbeddingGemma-300M/resolve/main/embedding_gemma.task",
     destFile = file("$assetDir/embedding_gemma.task"),
     sha256 = "913b7a1edc7c7c3d1da3979ec1d0648ed9e0a370f181bb59ab177ca4b97707ad",
 )

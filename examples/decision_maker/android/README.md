@@ -20,8 +20,8 @@ Model downloads are verified via SHA-256 in `app/download_models.gradle.kts`:
 | Model | Status | Source |
 |---|---|---|
 | EmbeddingGemma 2 270M (`embeddinggemma-2-text-270m.litertlm`) | **Default.** Bundled (~165 MB) via `downloadEmbeddingGemmaModel`. | https://huggingface.co/litert-community/embeddinggemma-2-text-270m-litert-lm |
-| Laya S256 (`laya_s256.task`) | Bundled (~678 MB) via `downloadLayaModel`. | https://storage.googleapis.com/mediapipe-models/decision_maker/laya/float32/laya_s256/latest/laya_s256.task |
-| GLiNER S256 (`gliner_s256.task`) | Optional (~980 MB). Push to device storage (see below). | https://storage.googleapis.com/mediapipe-models/decision_maker/gliner/float16/gliner_s256/latest/gliner_s256.task |
+| Laya S256 (`laya_s256.task`) | Bundled (~678 MB) via `downloadLayaModel`. | https://huggingface.co/litert-community/MediaPipe-DecisionMaker-Laya/resolve/main/laya_s256.task |
+| GLiNER S256 (`gliner_s256.task`) | Optional (~980 MB). Push to device storage (see below). | https://huggingface.co/litert-community/MediaPipe-DecisionMaker-GLiNER2.5-Decide/resolve/main/gliner_s256.task |
 
 To push GLiNER S256 without rebuilding:
 

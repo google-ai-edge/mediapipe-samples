@@ -19,6 +19,6 @@ MODEL_FILE=./InteractiveSegmenter/interactive_segmentation.task
 if test -f "$MODEL_FILE"; then
     echo "INFO: interactive_segmentation.task existed. Skip downloading and use the local task."
 else
-    curl -o ${MODEL_FILE} https://storage.googleapis.com/mediapipe-models/interactive_segmenter_v2/magic_touch/int8/1/interactive_segmentation.task
+    curl --fail -L -o ${MODEL_FILE} https://huggingface.co/litert-community/MediaPipe-InteractiveSegmenter-MagicTouch/resolve/main/interactive_segmentation.task
     echo "INFO: Downloaded interactive_segmentation.task to $MODEL_FILE ."
 fi

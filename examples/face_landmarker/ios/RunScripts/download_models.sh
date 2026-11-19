@@ -19,6 +19,6 @@ MODEL_FILE=./FaceLandmarker/face_landmarker.task
 if test -f "$MODEL_FILE"; then
     echo "INFO: face_landmarker.task existed. Skip downloading and use the local task."
 else
-    curl -o ${MODEL_FILE} https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task
+    curl --fail -L -o ${MODEL_FILE} https://huggingface.co/litert-community/MediaPipe-FaceLandmarker/resolve/main/face_landmarker.task
     echo "INFO: Downloaded face_landmarker.task to $MODEL_FILE ."
 fi

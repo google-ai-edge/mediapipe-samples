@@ -19,6 +19,6 @@ TFLITE_FILE=./TextEmbedder/universal_sentence_encoder.tflite
 if test -f "$TFLITE_FILE"; then
     echo "INFO: universal_sentence_encoder.tflite existed. Skip downloading and use the local model."
 else
-    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/text_embedder/universal_sentence_encoder/float32/latest/universal_sentence_encoder.tflite
+    curl --fail -L -o ${TFLITE_FILE} https://huggingface.co/litert-community/MediaPipe-TextEmbedder-Universal-Sentence-Encoder/resolve/main/universal_sentence_encoder.tflite
     echo "INFO: Downloaded universal_sentence_encoder.tflite to $TFLITE_FILE ."
 fi

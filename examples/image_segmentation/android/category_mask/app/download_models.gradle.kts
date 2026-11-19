@@ -41,25 +41,25 @@ data class VerifiedModelDownload(
 )
 
 val deeplabV3Model = VerifiedModelDownload(
-    url = "https://storage.googleapis.com/mediapipe-models/image_segmenter/deeplab_v3/float32/1/deeplab_v3.tflite",
+    url = "https://huggingface.co/litert-community/MediaPipe-ImageSegmenter-DeepLab-V3/resolve/main/deeplab_v3.tflite",
     destFile = file("$assetDir/deeplabv3.tflite"),
     sha256 = "ff36e24d40547fe9e645e2f4e8745d1876d6e38b332d39a82f0bf0f5d1d561b3",
 )
 
 val hairSegmenterModel = VerifiedModelDownload(
-    url = "https://storage.googleapis.com/mediapipe-models/image_segmenter/hair_segmenter/float32/1/hair_segmenter.tflite",
+    url = "https://huggingface.co/litert-community/MediaPipe-ImageSegmenter-Hair/resolve/main/hair_segmenter.tflite",
     destFile = file("$assetDir/hair_segmenter.tflite"),
     sha256 = "2628cf3ce5f695f604cbea2841e00befcaa3624bf80caf3664bef2656d59bf84",
 )
 
 val selfieMulticlassModel = VerifiedModelDownload(
-    url = "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/1/selfie_multiclass_256x256.tflite",
+    url = "https://huggingface.co/litert-community/MediaPipe-ImageSegmenter-Selfie-Multiclass/resolve/main/selfie_multiclass_256x256.tflite",
     destFile = file("$assetDir/selfie_multiclass.tflite"),
     sha256 = "c6748b1253a99067ef71f7e26ca71096cd449baefa8f101900ea23016507e0e0",
 )
 
 val selfieSegmenterModel = VerifiedModelDownload(
-    url = "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/1/selfie_segmenter.tflite",
+    url = "https://huggingface.co/litert-community/MediaPipe-ImageSegmenter-Selfie-Square/resolve/main/selfie_segmenter.tflite",
     destFile = file("$assetDir/selfie_segmenter.tflite"),
     sha256 = "191ac9529ae506ee0beefa6b2c945a172dab9d07d1e802a290a4e4038226658b",
 )

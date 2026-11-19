@@ -41,7 +41,7 @@ data class VerifiedModelDownload(
 )
 
 val languageDetectorModel = VerifiedModelDownload(
-    url = "https://storage.googleapis.com/mediapipe-models/language_detector/language_detector/float32/1/language_detector.tflite",
+    url = "https://huggingface.co/litert-community/MediaPipe-LanguageDetector/resolve/main/language_detector.tflite",
     destFile = file("$assetDir/detection_model.tflite"),
     sha256 = "7db4f23dfe1ad8966b050b419a865da451143fd43eb6b606a256aadeeb1e5417",
 )

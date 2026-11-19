@@ -19,7 +19,7 @@ TFLITE_FILE=./ObjectDetector/efficientdet_lite0.tflite
 if test -f "$TFLITE_FILE"; then
     echo "INFO: efficientdet_lite0.tflite existed. Skip downloading and use the local model."
 else
-    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float32/1/efficientdet_lite0.tflite
+    curl --fail -L -o ${TFLITE_FILE} https://huggingface.co/litert-community/MediaPipe-ObjectDetector-EfficientDet-Lite0/resolve/main/efficientdet_lite0_float32.tflite
     echo "INFO: Downloaded efficientdet_lite0.tflite to $TFLITE_FILE ."
 fi
 
@@ -28,7 +28,7 @@ TFLITE_FILE=./ObjectDetector/efficientdet_lite2.tflite
 if test -f "$TFLITE_FILE"; then
     echo "INFO: efficientdet_lite0.tflite existed. Skip downloading and use the local model."
 else
-    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite2/float32/1/efficientdet_lite2.tflite
+    curl --fail -L -o ${TFLITE_FILE} https://huggingface.co/litert-community/MediaPipe-ObjectDetector-EfficientDet-Lite2/resolve/main/efficientdet_lite2_float32.tflite
     echo "INFO: Downloaded efficientdet_lite0.tflite to $TFLITE_FILE ."
 fi
 

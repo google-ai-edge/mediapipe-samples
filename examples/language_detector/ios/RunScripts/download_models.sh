@@ -18,6 +18,6 @@ MODEL_FILE=./LanguageDetector/language_detector.tflite
 if test -f "$MODEL_FILE"; then
     echo "INFO: language_detector.tflite exists. Skipping download."
 else
-    curl -o ${MODEL_FILE} https://storage.googleapis.com/mediapipe-models/language_detector/language_detector/float32/1/language_detector.tflite
+    curl --fail -L -o ${MODEL_FILE} https://huggingface.co/litert-community/MediaPipe-LanguageDetector/resolve/main/language_detector.tflite
     echo "INFO: Downloaded language_detector.tflite to $MODEL_FILE ."
 fi

@@ -19,6 +19,6 @@ TFLITE_FILE=./FaceDetector/blaze_face_short_range.tflite
 if test -f "$TFLITE_FILE"; then
     echo "INFO: blaze_face_short_range.tflite existed. Skip downloading and use the local model."
 else
-    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite
+    curl --fail -L -o ${TFLITE_FILE} https://huggingface.co/litert-community/MediaPipe-FaceDetector-BlazeFace-Short-Range/resolve/main/blaze_face_short_range.tflite
     echo "INFO: Downloaded blaze_face_short_range.tflite to $TFLITE_FILE ."
 fi

@@ -2,4 +2,4 @@
 python3 -m pip install pip --upgrade
 python3 -m pip install -r requirements.txt
 
-wget -O face_landmarker.task -q https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task
+wget -O face_landmarker.task -q https://huggingface.co/litert-community/MediaPipe-FaceLandmarker/resolve/main/face_landmarker.task

@@ -41,13 +41,13 @@ data class VerifiedModelDownload(
 )
 
 val efficientNetLite0 = VerifiedModelDownload(
-    url = "https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite0/float32/1/efficientnet_lite0.tflite",
+    url = "https://huggingface.co/litert-community/MediaPipe-ImageClassifier-EfficientNet-Lite0/resolve/main/efficientnet_lite0_float32.tflite",
     destFile = file("$assetDir/efficientnet-lite0.tflite"),
     sha256 = "6c7ab0a6e5dcbf38a8c33b960996a55a3b4300b36a018c4545801de3a3c8bde0",
 )
 
 val efficientNetLite2 = VerifiedModelDownload(
-    url = "https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite2/float32/1/efficientnet_lite2.tflite",
+    url = "https://huggingface.co/litert-community/MediaPipe-ImageClassifier-EfficientNet-Lite2/resolve/main/efficientnet_lite2_float32.tflite",
     destFile = file("$assetDir/efficientnet-lite2.tflite"),
     sha256 = "94b6c84a5d6de20f932558de213b50e0338dcc06ab83d8d64b12128a476b4b83",
 )
