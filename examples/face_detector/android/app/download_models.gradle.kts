@@ -41,13 +41,13 @@ data class VerifiedModelDownload(
 )
 
 val shortRangeModel = VerifiedModelDownload(
-    url = "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite",
+    url = "https://huggingface.co/litert-community/MediaPipe-FaceDetector-BlazeFace-Short-Range/resolve/main/blaze_face_short_range.tflite",
     destFile = file("$assetDir/face_detection_short_range.tflite"),
     sha256 = "b4578f35940bf5a1a655214a1cce5cab13eba73c1297cd78e1a04c2380b0152f",
 )
 
 val fullRangeModel = VerifiedModelDownload(
-    url = "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_full_range/float16/1/blaze_face_full_range.tflite",
+    url = "https://huggingface.co/litert-community/MediaPipe-FaceDetector-BlazeFace-Full-Range/resolve/main/blaze_face_full_range.tflite",
     destFile = file("$assetDir/face_detection_full_range.tflite"),
     sha256 = "3698b18f063835bc609069ef052228fbe86d9c9a6dc8dcb7c7c2d69aed2b181b",
 )

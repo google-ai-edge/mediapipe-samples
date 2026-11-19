@@ -6,4 +6,4 @@ sudo apt-get install libportaudio2
 python3 -m pip install pip --upgrade
 python3 -m pip install -r requirements.txt
 
-wget -O yamnet.tflite -q https://storage.googleapis.com/mediapipe-models/audio_classifier/yamnet/float32/1/yamnet.tflite
+wget -O yamnet.tflite -q https://huggingface.co/litert-community/MediaPipe-AudioClassifier-YAMNet/resolve/main/yamnet.tflite

@@ -41,7 +41,7 @@ data class VerifiedModelDownload(
 )
 
 val yamnetModel = VerifiedModelDownload(
-    url = "https://storage.googleapis.com/mediapipe-models/audio_classifier/yamnet/float32/1/yamnet.tflite",
+    url = "https://huggingface.co/litert-community/MediaPipe-AudioClassifier-YAMNet/resolve/main/yamnet.tflite",
     destFile = file("$assetDir/yamnet.tflite"),
     sha256 = "4d8b4a53282dc83ef04e3e7dbc4fbc98082e34e44ed798e16c3a0cdd4c584faf",
 )

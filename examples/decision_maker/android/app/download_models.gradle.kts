@@ -49,7 +49,7 @@ val embeddingGemmaModel = VerifiedModelDownload(
 
 // Laya S256 (~678 MB) is bundled into the APK assets on every build.
 val layaModel = VerifiedModelDownload(
-    url = "https://storage.googleapis.com/mediapipe-models/decision_maker/laya/float32/laya_s256/latest/laya_s256.task",
+    url = "https://huggingface.co/litert-community/MediaPipe-DecisionMaker-Laya/resolve/main/laya_s256.task",
     destFile = file("$assetDir/laya_s256.task"),
     sha256 = "8cb730b89ef99cb5c98cdbc7936de79deab77623ce25dc0031eec9e25c64c24e",
 )
@@ -88,7 +88,7 @@ val downloadLayaModel = registerVerifiedDownload("downloadLayaModel", layaModel)
 
 // GLiNER S256 (~980 MB) is not bundled, to keep the APK small: push it to the device instead
 // (see README):
-// https://storage.googleapis.com/mediapipe-models/decision_maker/gliner/float16/gliner_s256/latest/gliner_s256.task
+// https://huggingface.co/litert-community/MediaPipe-DecisionMaker-GLiNER2.5-Decide/resolve/main/gliner_s256.task
 
 tasks.register("verifyModels") {
     dependsOn(downloadEmbeddingGemmaModel, downloadLayaModel)

@@ -19,6 +19,6 @@ TASK_FILE=./HandLandmarker/hand_landmarker.task
 if test -f "$TASK_FILE"; then
     echo "INFO: hand_landmarker.task existed. Skip downloading and use the local model."
 else
-    curl -o ${TASK_FILE} https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task
+    curl --fail -L -o ${TASK_FILE} https://huggingface.co/litert-community/MediaPipe-HandLandmarker-Full/resolve/main/hand_landmarker.task
     echo "INFO: Downloaded hand_landmarker.task to $TASK_FILE ."
 fi

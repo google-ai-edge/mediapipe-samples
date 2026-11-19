@@ -19,6 +19,6 @@ TASK_FILE=./GestureRecognizer/gesture_recognizer.task
 if test -f "$TASK_FILE"; then
     echo "INFO: gesture_recognizer.task existed. Skip downloading and use the local model."
 else
-    curl -o ${TASK_FILE} https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task
+    curl --fail -L -o ${TASK_FILE} https://huggingface.co/litert-community/MediaPipe-GestureRecognizer/resolve/main/gesture_recognizer.task
     echo "INFO: Downloaded gesture_recognizer.task to $TASK_FILE ."
 fi

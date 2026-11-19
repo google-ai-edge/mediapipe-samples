@@ -19,7 +19,7 @@ TFLITE_FILE=./ImageEmbedder/mobilenet_v3_small.tflite
 if test -f "$TFLITE_FILE"; then
     echo "INFO: mobilenet_v3_small.tflite existed. Skip downloading and use the local model."
 else
-    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/image_embedder/mobilenet_v3_small/float32/latest/mobilenet_v3_small.tflite
+    curl --fail -L -o ${TFLITE_FILE} https://huggingface.co/litert-community/MediaPipe-ImageEmbedder-MobileNet-V3-Small/resolve/main/mobilenet_v3_small.tflite
     echo "INFO: Downloaded mobilenet_v3_small.tflite to $TFLITE_FILE ."
 fi
 
@@ -28,7 +28,7 @@ TFLITE_FILE=./ImageEmbedder/mobilenet_v3_large.tflite
 if test -f "$TFLITE_FILE"; then
     echo "INFO: mobilenet_v3_large.tflite existed. Skip downloading and use the local model."
 else
-    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/image_embedder/mobilenet_v3_large/float32/latest/mobilenet_v3_large.tflite
+    curl --fail -L -o ${TFLITE_FILE} https://huggingface.co/litert-community/MediaPipe-ImageEmbedder-MobileNet-V3-Large/resolve/main/mobilenet_v3_large.tflite
     echo "INFO: Downloaded mobilenet_v3_large.tflite to $TFLITE_FILE ."
 fi
 

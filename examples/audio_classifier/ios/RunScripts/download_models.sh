@@ -18,7 +18,7 @@ MODEL_FILE=./AudioClassifier/yamnet.tflite
 if test -f "$MODEL_FILE"; then
     echo "INFO: yamnet.tflite exists. Skipping download."
 else
-    curl -o ${MODEL_FILE} https://storage.googleapis.com/mediapipe-models/audio_classifier/yamnet/float32/1/yamnet.tflite
+    curl --fail -L -o ${MODEL_FILE} https://huggingface.co/litert-community/MediaPipe-AudioClassifier-YAMNet/resolve/main/yamnet.tflite
     echo "INFO: Downloaded yamnet.tflite to $MODEL_FILE ."
 fi
 

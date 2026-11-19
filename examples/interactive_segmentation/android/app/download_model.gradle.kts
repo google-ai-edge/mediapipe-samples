@@ -41,7 +41,7 @@ data class VerifiedModelDownload(
 )
 
 val interactiveSegmentationTask = VerifiedModelDownload(
-    url = "https://storage.googleapis.com/mediapipe-models/interactive_segmenter_v2/magic_touch/int8/1/interactive_segmentation.task",
+    url = "https://huggingface.co/litert-community/MediaPipe-InteractiveSegmenter-MagicTouch/resolve/main/interactive_segmentation.task",
     destFile = file("$assetDir/interactive_segmentation.task"),
     sha256 = "38431bc66b883404e8397f74c3579404315b9b52b04a46c6346fe906a7309b03",
 )

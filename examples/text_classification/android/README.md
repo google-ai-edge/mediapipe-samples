@@ -4,9 +4,9 @@
 
 This Android app classifies sentiment (`Positive` / `Negative`) for input text on-device
 using the MediaPipe `TextClassifier` task, with a choice of
-[MobileBERT](https://storage.googleapis.com/mediapipe-models/text_classifier/bert_classifier/float32/1/bert_classifier.tflite)
+[MobileBERT](https://huggingface.co/litert-community/MediaPipe-TextClassifier-MobileBERT/resolve/main/bert_classifier.tflite)
 or
-[Average WordVec](https://storage.googleapis.com/mediapipe-models/text_classifier/average_word_classifier/float32/1/average_word_classifier.tflite)
+[Average WordVec](https://huggingface.co/litert-community/MediaPipe-TextClassifier-AverageWord/resolve/main/average_word_classifier.tflite)
 classification models.
 
 ![Text Classification Demo](textclassification.png?raw=true "Text Classification Demo")

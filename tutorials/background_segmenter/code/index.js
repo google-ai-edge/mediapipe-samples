@@ -78,7 +78,7 @@ async function createImageSegmenter() {
     return await  ImageSegmenter.createFromOptions(wasmFileset, {
         baseOptions: {
             modelAssetPath:
-                "https://storage.googleapis.com/mediapipe-tasks/image_segmenter/selfie_segmentation.tflite",
+                "https://huggingface.co/litert-community/MediaPipe-ImageSegmenter-Selfie-Square/resolve/main/selfie_segmenter.tflite",
             delegate: "GPU"
 
         },

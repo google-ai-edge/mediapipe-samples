@@ -41,13 +41,13 @@ data class VerifiedModelDownload(
 )
 
 val smallModel = VerifiedModelDownload(
-    url = "https://storage.googleapis.com/mediapipe-models/image_embedder/mobilenet_v3_small/float32/1/mobilenet_v3_small.tflite",
+    url = "https://huggingface.co/litert-community/MediaPipe-ImageEmbedder-MobileNet-V3-Small/resolve/main/mobilenet_v3_small.tflite",
     destFile = file("$assetDir/mobilenet_v3_small.tflite"),
     sha256 = "bbbb4c51a55a53905af1daec995ca1aae355046f8839bb8c9f5ce9271394bc40",
 )
 
 val largeModel = VerifiedModelDownload(
-    url = "https://storage.googleapis.com/mediapipe-models/image_embedder/mobilenet_v3_large/float32/1/mobilenet_v3_large.tflite",
+    url = "https://huggingface.co/litert-community/MediaPipe-ImageEmbedder-MobileNet-V3-Large/resolve/main/mobilenet_v3_large.tflite",
     destFile = file("$assetDir/mobilenet_v3_large.tflite"),
     sha256 = "11af3c560dfeed7737cb4c03c23bf52a8403020784192d4dea0b74862a12828d",
 )

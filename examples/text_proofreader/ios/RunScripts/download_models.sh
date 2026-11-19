@@ -18,6 +18,6 @@ MODEL_FILE=./TextProofreader/proofread_quant_200m.litertlm
 if test -f "$MODEL_FILE"; then
     echo "INFO: proofread_quant_200m.litertlm exists. Skipping download."
 else
-    curl -o ${MODEL_FILE} https://storage.googleapis.com/mediapipe-models/text_proofreader/gemma_200m/1/proofread_quant_200m.litertlm
+    curl --fail -L -o ${MODEL_FILE} https://huggingface.co/litert-community/MediaPipe-TextProofreader-200M/resolve/main/proofread_quant_200m.litertlm
     echo "INFO: Downloaded proofread_quant_200m.litertlm to $MODEL_FILE ."
 fi

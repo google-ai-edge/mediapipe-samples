@@ -18,6 +18,6 @@ MODEL_FILE=./TextSummarizer/summarization_quant_200m_2modes.litertlm
 if test -f "$MODEL_FILE"; then
     echo "INFO: summarization_quant_200m_2modes.litertlm exists. Skipping download."
 else
-    curl -o ${MODEL_FILE} https://storage.googleapis.com/mediapipe-models/text_summarizer/gemma_200m/1/summarization_quant_200m_2modes.litertlm
+    curl --fail -L -o ${MODEL_FILE} https://huggingface.co/litert-community/MediaPipe-TextSummarizer-200M/resolve/main/summarization_quant_200m_2modes.litertlm
     echo "INFO: Downloaded summarization_quant_200m_2modes.litertlm to $MODEL_FILE ."
 fi

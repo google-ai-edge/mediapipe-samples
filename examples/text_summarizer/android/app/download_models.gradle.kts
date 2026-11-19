@@ -41,7 +41,7 @@ data class VerifiedModelDownload(
 )
 
 val summarizerModel = VerifiedModelDownload(
-    url = "https://storage.googleapis.com/mediapipe-models/text_summarizer/gemma_200m/latest/summarization_quant_200m_2modes.litertlm",
+    url = "https://huggingface.co/litert-community/MediaPipe-TextSummarizer-200M/resolve/main/summarization_quant_200m_2modes.litertlm",
     destFile = file("$assetDir/summarization_quant_200m_2modes.litertlm"),
     sha256 = "8b2d4ef09236adb9ead3127325526ba1aa5a59feb7c5de2d3f5958f27479de59",
 )

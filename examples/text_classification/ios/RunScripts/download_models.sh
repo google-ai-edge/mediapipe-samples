@@ -19,7 +19,7 @@ TFLITE_FILE=${SRCROOT}/TextClassifier/average_word_classifier.tflite
 if test -f "$TFLITE_FILE"; then
     echo "INFO: average_word_classifier.tflite existed. Skip downloading and use the local model."
 else
-    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/text_classifier/average_word_classifier/float32/1/average_word_classifier.tflite
+    curl --fail -L -o ${TFLITE_FILE} https://huggingface.co/litert-community/MediaPipe-TextClassifier-AverageWord/resolve/main/average_word_classifier.tflite
     echo "INFO: Downloaded average_word_classifier.tflite to $TFLITE_FILE ."
 fi
 
@@ -28,6 +28,6 @@ TFLITE_FILE=${SRCROOT}/TextClassifier/bert_classifier.tflite
 if test -f "$TFLITE_FILE"; then
     echo "INFO: bert_classifier.tflite existed. Skip downloading and use the local model."
 else
-    curl -o ${TFLITE_FILE} https://storage.googleapis.com/mediapipe-models/text_classifier/bert_classifier/float32/1/bert_classifier.tflite
+    curl --fail -L -o ${TFLITE_FILE} https://huggingface.co/litert-community/MediaPipe-TextClassifier-MobileBERT/resolve/main/bert_classifier.tflite
     echo "INFO: Downloaded bert_classifier.tflite to $TFLITE_FILE ."
 fi
