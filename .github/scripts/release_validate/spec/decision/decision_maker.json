@@ -1,0 +1,79 @@
+{
+  "domain": "decision",
+  "task": "decision_maker",
+  "heading": "Decision Maker",
+  "samples": {
+    "python": "examples/decision_maker/python/decision_maker.py",
+    "android": "examples/decision_maker/android",
+    "ios": "examples/decision_maker/ios"
+  },
+  "models": [{"id": "embeddinggemma2_text_270m", "asset": "embeddinggemma-2-text-270m.litertlm", "large": true}],
+  "modes": [
+    {"id": "triage", "options": {"evaluate": "schema"}},
+    {"id": "individual", "options": {"evaluate": "individual"}}
+  ],
+  "tests": [
+    {
+      "about": "Each support ticket is triaged via evaluate_schema. The outage must be judged an urgent outage, a bug and the most severe; the others not urgent, and assigned to their department.",
+      "note": "Support tickets, triaged with the three questions of the sample: is it an outage that stops customers, which department owns it, and how severe is it. The answers follow from the text: the first reports a crash that locks customers out, the second asks for a refund, the third suggests a feature. The outage is plainly the most severe. Mode \"triage\" asks all questions in one call (evaluate_schema); mode \"individual\" asks each on its own.",
+      "questions": {
+        "urgent": {
+          "type": "boolean",
+          "condition": "The ticket reports an outage that stops customers from using the product."
+        },
+        "department": {
+          "type": "choice",
+          "criteria": {
+            "bug": "A software defect, crash or outage.",
+            "billing": "An invoice, charge, refund or payment.",
+            "feature_request": "A suggestion for a new feature or an improvement."
+          }
+        },
+        "severity": {
+          "type": "score",
+          "rubric": [
+            "No impact: a question or a suggestion.",
+            "Minor inconvenience.",
+            "A problem that has a workaround.",
+            "A major problem for some customers.",
+            "Critical: the product is down for customers."
+          ]
+        }
+      },
+      "steps": [
+        {
+          "key": "outage ticket",
+          "text": "Urgent: our production database pipeline crashes with a fatal segfault and customers cannot sign in!",
+          "caption": "outage ticket: urgent=True, department=bug",
+          "expect": {"urgent": true, "department": "bug"}
+        },
+        {
+          "key": "billing ticket",
+          "text": "We were charged twice on invoice #4821 this month, can you refund the duplicate?",
+          "caption": "billing ticket: urgent=False, department=billing",
+          "expect": {"urgent": false, "department": "billing"}
+        },
+        {
+          "key": "feature request",
+          "text": "It would be nice if the analytics dashboard had a dark mode toggle.",
+          "caption": "feature request: urgent=False, department=feature_request",
+          "expect": {"urgent": false, "department": "feature_request"}
+        }
+      ],
+      "expect": {
+        "type": "decisions",
+        "departments": ["bug", "billing", "feature_request"],
+        "levels": 5,
+        "severityOrder": [
+          {"higher": "outage ticket", "lower": "billing ticket", "by": 1.0},
+          {"higher": "outage ticket", "lower": "feature request", "by": 1.0}
+        ]
+      },
+      "inMode": {
+        "individual": {
+          "about": "Each support ticket is triaged via evaluate_boolean/choice/score. The outage must be judged an urgent outage, a bug and the most severe; the others not urgent, and assigned to their department."
+        }
+      }
+    }
+  ]
+}

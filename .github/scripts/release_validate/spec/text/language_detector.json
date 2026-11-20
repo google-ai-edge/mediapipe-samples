@@ -1,0 +1,68 @@
+{
+  "domain": "text",
+  "task": "language_detector",
+  "heading": "Language Detection",
+  "samples": {
+    "python": "examples/language_detector/python/language_detector.py",
+    "android": "examples/language_detector/android",
+    "ios": "examples/language_detector/ios"
+  },
+  "models": [{"id": "language_detector", "asset": "language_detector.tflite"}],
+  "modes": [
+    {"id": "detect", "options": {}}
+  ],
+  "unsupported": [
+    {
+      "platform": "python",
+      "system": "Darwin",
+      "delegate": "GPU",
+      "error": "not supported by the macOS/iOS GPU delegate (only float32 input/output tensors are supported).",
+      "reason": "The macOS GPU delegate rejects string input tensors."
+    }
+  ],
+  "tests": [
+    {
+      "about": "The language of each sentence is detected. It must be correct.",
+      "note": "Sentences with the language they are written in. The first is the default of the notebook: a Chinese proverb. It consists only of characters that are also used in Japanese, so a detector can legitimately be unsure between the two (release 1.2.3 reports zh 0.51 and ja 0.48); for it, Chinese only has to be among the detected languages (\"match\": \"present\").",
+      "steps": [
+        {
+          "key": "sentence 1",
+          "text": "分久必合合久必分",
+          "caption": "Expected: zh",
+          "expect": {"label": "zh", "match": "present", "minScore": 0.3}
+        },
+        {
+          "key": "sentence 2",
+          "text": "To be, or not to be, that is the question",
+          "caption": "Expected: en",
+          "expect": {"label": "en", "match": "top", "minScore": 0.5}
+        },
+        {
+          "key": "sentence 3",
+          "text": "Bonjour, ceci est un test de validation automatique.",
+          "caption": "Expected: fr",
+          "expect": {"label": "fr", "match": "top", "minScore": 0.5}
+        },
+        {
+          "key": "sentence 4",
+          "text": "Hola, esta es una prueba de validación automática para la nueva versión.",
+          "caption": "Expected: es",
+          "expect": {"label": "es", "match": "top", "minScore": 0.5}
+        },
+        {
+          "key": "sentence 5",
+          "text": "Hallo, dies ist ein automatischer Validierungstest für die neue Version.",
+          "caption": "Expected: de",
+          "expect": {"label": "de", "match": "top", "minScore": 0.5}
+        },
+        {
+          "key": "sentence 6",
+          "text": "これは新しいリリースの自動検証テストです。",
+          "caption": "Expected: ja",
+          "expect": {"label": "ja", "match": "top", "minScore": 0.5}
+        }
+      ],
+      "expect": {"type": "textLabels"}
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "domain": "vision",
+  "task": "pose_landmarker",
+  "heading": "Pose Landmarker",
+  "samples": {
+    "python": "examples/pose_landmarker/python/pose_landmarker.py",
+    "android": "examples/pose_landmarker/android",
+    "ios": "examples/pose_landmarker/ios"
+  },
+  "models": [
+    {"id": "pose_landmarker_heavy", "asset": "pose_landmarker_heavy.task"},
+    {"id": "pose_landmarker_full", "asset": "pose_landmarker_full.task"},
+    {"id": "pose_landmarker_lite", "asset": "pose_landmarker_lite.task"}
+  ],
+  "modes": [
+    {"id": "image", "options": {"runningMode": "IMAGE"}},
+    {"id": "video", "options": {"runningMode": "VIDEO"}}
+  ],
+  "tests": [
+    {
+      "about": "The photo shows a man in a wide lunge with his arms stretched out. His 33 pose landmarks must lie on his body, and the segmentation mask must cover him and nothing else.",
+      "note": "pose.jpg (1000x667): one man on a beach in a wide lunge (warrior pose), chest towards the camera and head turned to the left of the image, arms stretched out sideways at shoulder height. His left side is on the right of the image. Pose landmarks: 0 nose, 11/12 left/right shoulder, 15/16 left/right wrist, 27/28 left/right ankle. He is small in the frame: roughly 7% of it.",
+      "options": {"outputSegmentationMasks": true},
+      "steps": [
+        {
+          "key": "pose.jpg",
+          "image": "pose.jpg",
+          "caption": "A man in a warrior pose",
+          "files": {"annotated": "annotated.png", "mask": "mask.png"},
+          "expect": {
+            "groups": [
+              {
+                "key": "poses",
+                "name": "pose",
+                "landmarkCount": 33,
+                "instances": [
+                  {
+                    "points": {
+                      "nose": {"x": 0.458, "y": 0.43, "tolerance": 0.05, "index": 0},
+                      "left shoulder": {"x": 0.545, "y": 0.48, "tolerance": 0.06, "index": 11},
+                      "right shoulder": {"x": 0.455, "y": 0.49, "tolerance": 0.06, "index": 12},
+                      "left wrist": {"x": 0.7, "y": 0.47, "tolerance": 0.06, "index": 15},
+                      "right wrist": {"x": 0.3, "y": 0.465, "tolerance": 0.06, "index": 16},
+                      "left ankle": {"x": 0.705, "y": 0.92, "tolerance": 0.06, "index": 27},
+                      "right ankle": {"x": 0.35, "y": 0.915, "tolerance": 0.06, "index": 28}
+                    }
+                  }
+                ]
+              }
+            ],
+            "mask": {
+              "name": "segmentation mask of the person",
+              "fraction": [0.03, 0.12],
+              "centroidWithin": {"minX": 0.4, "maxX": 0.6, "minY": 0.5, "maxY": 0.8}
+            }
+          }
+        }
+      ],
+      "expect": {"type": "landmarks"}
+    }
+  ]
+}

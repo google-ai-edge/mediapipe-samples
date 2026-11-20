@@ -1,0 +1,50 @@
+{
+  "domain": "vision",
+  "task": "image_embedder",
+  "heading": "Image Embedding",
+  "samples": {
+    "python": "examples/image_embedder/python/image_embedder.py",
+    "android": "examples/image_embedder/android",
+    "ios": "examples/image_embedder/ios"
+  },
+  "models": [
+    {"id": "mobilenet_v3_small", "asset": "mobilenet_v3_small.tflite"},
+    {"id": "mobilenet_v3_large", "asset": "mobilenet_v3_large.tflite"}
+  ],
+  "modes": [
+    {"id": "image-pair", "options": {"runningMode": "IMAGE"}},
+    {"id": "video-pair", "options": {"runningMode": "VIDEO"}}
+  ],
+  "tests": [
+    {
+      "about": "Three pairs of photos are compared. A photo and a crop of it must be very similar, a photo and itself identical, and a burger and a cat dissimilar.",
+      "options": {"l2Normalize": true, "quantize": true},
+      "inputs": [
+        {"asset": "burger.jpg", "kind": "image", "label": "A burger"},
+        {"asset": "burger_crop.jpg", "kind": "image", "label": "The same photo, cropped"},
+        {"asset": "classifier_cat.jpg", "kind": "image", "label": "A cat"}
+      ],
+      "steps": [
+        {
+          "key": "same photo, cropped",
+          "pair": [{"image": "burger.jpg"}, {"image": "burger_crop.jpg"}],
+          "expect": {"range": [0.8, 1.0001]}
+        },
+        {
+          "key": "the same photo twice",
+          "pair": [{"image": "burger.jpg"}, {"image": "burger.jpg"}],
+          "expect": {"range": [0.99, 1.0001]}
+        },
+        {
+          "key": "a burger and a cat",
+          "pair": [{"image": "burger.jpg"}, {"image": "classifier_cat.jpg"}],
+          "expect": {"range": [-1, 0.5]}
+        }
+      ],
+      "expect": {
+        "type": "similarity",
+        "ordered": [{"higher": "same photo, cropped", "lower": "a burger and a cat", "by": 0.3}]
+      }
+    }
+  ]
+}

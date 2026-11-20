@@ -1,0 +1,63 @@
+{
+  "domain": "vision",
+  "task": "face_landmarker",
+  "heading": "Face Landmarker",
+  "samples": {
+    "python": "examples/face_landmarker/python/face_landmarker.py",
+    "android": "examples/face_landmarker/android",
+    "ios": "examples/face_landmarker/ios"
+  },
+  "models": [{"id": "face_landmarker", "asset": "face_landmarker.task"}],
+  "modes": [
+    {"id": "image", "options": {"runningMode": "IMAGE"}},
+    {"id": "video", "options": {"runningMode": "VIDEO"}}
+  ],
+  "tests": [
+    {
+      "about": "The photo shows one woman facing the camera. The 478-point face mesh must lie on her face, with 52 blendshapes that say her eyes are open and her mouth is closed, and one transformation matrix.",
+      "note": "business-person.png (958x1358): one woman facing the camera, from the waist up. Face mesh landmarks: 1 nose tip, 152 chin, 33 outer corner of her right eye (left in the image), 263 outer corner of her left eye. Her eyes are open and her mouth is closed. The model outputs 478 landmarks, 52 blendshapes and one 4x4 transformation matrix per face.",
+      "options": {"numFaces": 1, "outputFaceBlendshapes": true, "outputFacialTransformationMatrixes": true},
+      "steps": [
+        {
+          "key": "business-person.png",
+          "image": "business-person.png",
+          "caption": "A woman facing the camera",
+          "files": {"annotated": "annotated.png", "figure": "blendshapes.png"},
+          "expect": {
+            "groups": [
+              {
+                "key": "faces",
+                "name": "face",
+                "landmarkCount": 478,
+                "instances": [
+                  {
+                    "points": {
+                      "nose tip": {"x": 0.535, "y": 0.252, "tolerance": 0.05, "index": 1},
+                      "chin": {"x": 0.535, "y": 0.342, "tolerance": 0.05, "index": 152},
+                      "right eye outer corner": {"x": 0.437, "y": 0.2, "tolerance": 0.05, "index": 33},
+                      "left eye outer corner": {"x": 0.612, "y": 0.193, "tolerance": 0.05, "index": 263}
+                    }
+                  }
+                ]
+              }
+            ],
+            "equals": [
+              {"key": "blendshapeCounts", "name": "blendshapes per face", "value": [52]},
+              {
+                "key": "matrixShapes",
+                "name": "transformation matrices",
+                "value": [[4, 4]]
+              }
+            ],
+            "ranges": [
+              {"key": "eyeBlinkLeft", "name": "left eye is open (eyeBlinkLeft)", "range": [0, 0.5]},
+              {"key": "eyeBlinkRight", "name": "right eye is open (eyeBlinkRight)", "range": [0, 0.5]},
+              {"key": "jawOpen", "name": "mouth is closed (jawOpen)", "range": [0, 0.3]}
+            ]
+          }
+        }
+      ],
+      "expect": {"type": "landmarks"}
+    }
+  ]
+}

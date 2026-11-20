@@ -31,7 +31,7 @@ Requires Python 3.10 or newer.
 
 ```bash
 python3 -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
+pip install mediapipe huggingface_hub
 
 # Synthesize the default sentence to tts_output.wav (downloads the model on first run).
 python text_to_speech.py
@@ -47,7 +47,7 @@ python text_to_speech.py --list_voices
 Options:
 
 - `--model PATH`: path to a `.litertlm` model. By default, the Kokoro model is
-  downloaded into the current directory if it isn't there yet.
+  downloaded from Hugging Face.
 - `--voice ID`: voice to use (default: `af_heart`). The task speaks the voice's
   language, so pick a voice that matches your text.
 - `--speaking_rate X`: speaking speed, where `1.0` is normal.

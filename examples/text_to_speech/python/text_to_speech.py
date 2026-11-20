@@ -14,12 +14,13 @@
 """Synthesizes speech to a .wav file with the MediaPipe TextToSpeech task."""
 
 import argparse
+from collections.abc import Sequence
 import os
 import tempfile
 import time
-import urllib.request
 import wave
 
+from huggingface_hub import hf_hub_download
 import numpy as np
 
 from mediapipe.tasks.python.audio import text_to_speech
@@ -28,19 +29,9 @@ from mediapipe.tasks.python.core import base_options
 BaseOptions = base_options.BaseOptions
 Delegate = BaseOptions.Delegate
 
-_MODEL_URL = (
-    'https://huggingface.co/litert-community/Kokoro-82M/resolve/main/'
-    'kokoro_int8_gpu_fp16.litertlm'
-)
+_MODEL_REPO = 'litert-community/Kokoro-82M'
+_MODEL_FILENAME = 'kokoro_int8_gpu_fp16.litertlm'
 _DEFAULT_TEXT = 'Hello from MediaPipe Text to Speech, running entirely on device!'
-
-
-def download_if_missing(url: str, path: str) -> str:
-  """Downloads `url` to `path` unless the file already exists."""
-  if not os.path.exists(path):
-    print(f'Downloading {url}...')
-    urllib.request.urlretrieve(url, path)
-  return path
 
 
 def save_wav(path: str, samples: np.ndarray, sample_rate: int) -> None:
@@ -54,16 +45,19 @@ def save_wav(path: str, samples: np.ndarray, sample_rate: int) -> None:
 
 
 def create_tts(
-    model_path: str, delegate: str, speaking_rate: float
+    model_path: str,
+    delegate: str,
+    speaking_rate: float,
+    allow_cpu_fallback: bool = True,
 ) -> tuple[text_to_speech.TextToSpeech, str]:
-  """Creates a TextToSpeech task, falling back to CPU if GPU is unavailable."""
+  """Creates a TextToSpeech task, optionally falling back to CPU."""
 
   def create(delegate_name: str) -> text_to_speech.TextToSpeech:
     options = text_to_speech.TextToSpeechOptions(
         base_options=BaseOptions(
             model_asset_path=model_path, delegate=Delegate[delegate_name]
         ),
-        default_voice_id='af_heart',
+        default_voice_id=None,
         speaking_rate=speaking_rate,
         # Compiled kernels and weights are cached here for faster startup.
         cache_directory=os.path.join(
@@ -75,28 +69,31 @@ def create_tts(
   try:
     return create(delegate), delegate
   except RuntimeError as e:
-    if delegate == 'CPU':
+    if delegate == 'CPU' or not allow_cpu_fallback:
       raise
     print(f'GPU is not available ({e}), falling back to CPU.')
     return create('CPU'), 'CPU'
 
 
-def main() -> None:
+def main(
+    argv: Sequence[str] | None = None,
+) -> list[text_to_speech.TtsAudioResult]:
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument('text', nargs='?', default=_DEFAULT_TEXT)
   parser.add_argument(
       '--model',
-      default=os.path.basename(_MODEL_URL),
-      help='Path to the .litertlm model. Downloaded if missing.',
+      default=None,
+      help='Path to the .litertlm model. Downloaded from Hugging Face if '
+      'omitted.',
   )
   parser.add_argument(
-      '--voice', default='af_heart', help='Voice ID, see --list_voices.'
+      '--voice', default=None, help='Voice ID, see --list_voices.'
   )
   parser.add_argument(
       '--speaking_rate', type=float, default=1.0, help='1.0 is normal speed.'
   )
   parser.add_argument(
-      '--delegate', choices=['GPU', 'CPU'], type=str.upper, default='GPU'
+      '--delegate', choices=['GPU', 'CPU'], type=str.upper, default=None
   )
   parser.add_argument(
       '--stream',
@@ -107,37 +104,47 @@ def main() -> None:
   parser.add_argument(
       '--list_voices', action='store_true', help='List voices and exit.'
   )
-  args = parser.parse_args()
+  args = parser.parse_args(argv)
 
-  if args.model == os.path.basename(_MODEL_URL):
-    download_if_missing(_MODEL_URL, args.model)
+  model_path = args.model or hf_hub_download(
+      repo_id=_MODEL_REPO, filename=_MODEL_FILENAME
+  )
 
-  tts, delegate = create_tts(args.model, args.delegate, args.speaking_rate)
+  tts, delegate = create_tts(
+      model_path,
+      args.delegate or 'GPU',
+      args.speaking_rate,
+      allow_cpu_fallback=args.delegate is None,
+  )
   with tts:
     print(f'Delegate: {delegate}')
     voices = {voice.voice_id: voice for voice in tts.list_voices()}
     if args.list_voices:
       for voice in voices.values():
         print(f'{voice.voice_id:15s} {voice.locale:6s} {voice.display_name}')
-      return
-    if args.voice not in voices:
-      parser.error(f'Unknown voice {args.voice!r}, see --list_voices.')
+      return []
+    voice_id = args.voice or ('af_heart' if 'af_heart' in voices else None)
+    if voice_id is not None and voice_id not in voices:
+      parser.error(f'Unknown voice {voice_id!r}, see --list_voices.')
 
     start = time.perf_counter()
     if args.stream:
-      chunks = []
-      for chunk in tts.synthesize_stream(args.text, voice_id=args.voice):
+      audio_results = []
+      for chunk in tts.synthesize_stream(args.text, voice_id=voice_id):
         elapsed = time.perf_counter() - start
         print(
             f'[{elapsed * 1000:5.0f} ms] chunk {chunk.chunk_index}:'
             f' {chunk.duration_seconds:.2f} s of audio'
         )
-        chunks.append(chunk)
-      samples = np.concatenate([chunk.samples for chunk in chunks])
-      sample_rate = chunks[0].sample_rate_hz
-      word_timestamps = [w for chunk in chunks for w in chunk.word_timestamps]
+        audio_results.append(chunk)
+      samples = np.concatenate([chunk.samples for chunk in audio_results])
+      sample_rate = audio_results[0].sample_rate_hz
+      word_timestamps = [
+          w for chunk in audio_results for w in chunk.word_timestamps
+      ]
     else:
-      result = tts.synthesize(args.text, voice_id=args.voice)
+      result = tts.synthesize(args.text, voice_id=voice_id)
+      audio_results = [result]
       samples, sample_rate = result.samples, result.sample_rate_hz
       word_timestamps = result.word_timestamps
     latency = time.perf_counter() - start
@@ -154,6 +161,7 @@ def main() -> None:
       f'\nSaved {duration:.2f} s of audio to {args.output}.'
       f' Latency: {latency * 1000:.0f} ms (RTF: {latency / duration:.3f})'
   )
+  return audio_results
 
 
 if __name__ == '__main__':

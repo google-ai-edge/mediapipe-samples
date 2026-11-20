@@ -1,0 +1,43 @@
+{
+  "domain": "text",
+  "task": "text_proofreader",
+  "heading": "Text Proofreading",
+  "samples": {
+    "python": "examples/text_proofreader/python/text_proofreader.py",
+    "android": "examples/text_proofreader/android",
+    "ios": "examples/text_proofreader/ios"
+  },
+  "models": [{"id": "gemma_200m", "asset": "proofread_quant_200m.litertlm"}],
+  "modes": [
+    {"id": "proofread", "options": {}}
+  ],
+  "unsupported": [
+    {
+      "platform": "python",
+      "delegate": "GPU",
+      "error": "Only CPU delegate is supported.",
+      "reason": "The Text Proofreader rejects the GPU delegate."
+    }
+  ],
+  "tests": [
+    {
+      "about": "Each text is proofread. The typo of the first must be fixed, the second must become a correct sentence, and the list of corrections must lead from the input to the proofread text.",
+      "note": "The two texts of the notebook. The first has one typo and exactly one correct fix. The second can be fixed in several ways, so only what every fix has in common is checked.",
+      "steps": [
+        {
+          "key": "text 1",
+          "text": "I am a studnt.",
+          "caption": "Expected: I am a student.",
+          "expect": {"exact": "I am a student."}
+        },
+        {
+          "key": "text 2",
+          "text": "i hope you doing . theyre a great addition on any families.",
+          "caption": "Several fixes are correct",
+          "expect": {"startsWith": "I hope you", "containsAny": ["They're", "They are"]}
+        }
+      ],
+      "expect": {"type": "proofreading"}
+    }
+  ]
+}

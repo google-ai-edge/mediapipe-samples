@@ -1,0 +1,108 @@
+{
+  "domain": "vision",
+  "task": "gesture_recognizer",
+  "heading": "Gesture Recognizer",
+  "samples": {
+    "python": "examples/gesture_recognizer/python/gesture_recognizer.py",
+    "android": "examples/gesture_recognizer/android",
+    "ios": "examples/gesture_recognizer/ios"
+  },
+  "models": [{"id": "gesture_recognizer", "asset": "gesture_recognizer.task"}],
+  "modes": [
+    {"id": "image", "options": {"runningMode": "IMAGE"}},
+    {"id": "video", "options": {"runningMode": "VIDEO"}}
+  ],
+  "tests": [
+    {
+      "name": "four gestures",
+      "about": "Four photos, each of one hand making a gesture. Every gesture must be recognized, with the 21 hand landmarks on the hand.",
+      "note": "The four photos of the notebook. Each shows one hand making the gesture its file is named after.",
+      "files": {"figure": "annotated.png"},
+      "steps": [
+        {
+          "key": "thumbs_down.jpg",
+          "image": "thumbs_down.jpg",
+          "caption": "Expected: Thumb_Down",
+          "note": "The thumb points down; its tip is near the bottom edge.",
+          "expect": {
+            "groups": [
+              {
+                "key": "hands",
+                "name": "hand",
+                "landmarkCount": 21,
+                "instances": [
+                  {
+                    "points": {"thumb tip": {"x": 0.635, "y": 0.93, "tolerance": 0.06, "index": 4}},
+                    "fields": {"gesture": "Thumb_Down"},
+                    "minScore": 0.5
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "key": "victory.jpg",
+          "image": "victory.jpg",
+          "caption": "Expected: Victory",
+          "expect": {
+            "groups": [
+              {
+                "key": "hands",
+                "name": "hand",
+                "landmarkCount": 21,
+                "instances": [
+                  {"points": {}, "fields": {"gesture": "Victory"}, "minScore": 0.5}
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "key": "thumbs_up.jpg",
+          "image": "thumbs_up.jpg",
+          "caption": "Expected: Thumb_Up",
+          "expect": {
+            "groups": [
+              {
+                "key": "hands",
+                "name": "hand",
+                "landmarkCount": 21,
+                "instances": [
+                  {
+                    "points": {"thumb tip": {"x": 0.648, "y": 0.535, "tolerance": 0.06, "index": 4}},
+                    "fields": {"gesture": "Thumb_Up"},
+                    "minScore": 0.5
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "key": "pointing_up.jpg",
+          "image": "pointing_up.jpg",
+          "caption": "Expected: Pointing_Up",
+          "note": "The index finger points up; its tip is near the top edge.",
+          "expect": {
+            "groups": [
+              {
+                "key": "hands",
+                "name": "hand",
+                "landmarkCount": 21,
+                "instances": [
+                  {
+                    "points": {"index finger tip": {"x": 0.713, "y": 0.07, "tolerance": 0.06, "index": 8}},
+                    "fields": {"gesture": "Pointing_Up"},
+                    "minScore": 0.5
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "expect": {"type": "landmarks"}
+    }
+  ]
+}

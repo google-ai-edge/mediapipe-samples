@@ -1,0 +1,86 @@
+{
+  "domain": "retrieval",
+  "task": "semantic_retriever",
+  "heading": "Semantic Retriever",
+  "samples": {
+    "python": "examples/semantic_retriever/python/semantic_retriever.py",
+    "android": "examples/semantic_retriever/android",
+    "ios": "examples/semantic_retriever/ios"
+  },
+  "models": [{"id": "embeddinggemma2_text_vision_440m", "asset": "embeddinggemma-2-text-vision-440m.litertlm", "large": true}],
+  "modes": [
+    {"id": "index-and-search", "options": {}}
+  ],
+  "tests": [
+    {
+      "about": "Five photos and two short texts are indexed, then each query is searched. The best match must be the record the query describes.",
+      "note": "The index holds five photos of clearly different things (a cheeseburger, a cat, a man doing yoga on a beach, two girls on a horse, a man in a suit) and two short texts. The ID of an image record is its file name; the texts are \"document 1\" and \"document 2\". Each query describes exactly one record. \"minSimilarity\" 0 returns the best matches whatever their score.",
+      "options": {"limit": 3, "minSimilarity": 0.0},
+      "index": {
+        "images": [
+          "classifier_burger.jpg",
+          "classifier_cat.jpg",
+          "pose.jpg",
+          "segmentation_input_rotation0.jpg",
+          "portrait.jpg"
+        ],
+        "documents": [
+          "The quarterly tax filing deadline is next Tuesday.",
+          "Whisk the eggs, then fold in the flour and the melted butter."
+        ]
+      },
+      "inputs": [
+        {"kind": "text", "label": "Expected best match: classifier_burger.jpg", "value": "a cheeseburger"},
+        {"kind": "text", "label": "Expected best match: classifier_cat.jpg", "value": "a striped cat"},
+        {"kind": "text", "label": "Expected best match: pose.jpg", "value": "a man doing yoga on the beach"},
+        {
+          "kind": "text",
+          "label": "Expected best match: segmentation_input_rotation0.jpg",
+          "value": "children riding a horse"
+        },
+        {"kind": "text", "label": "Expected best match: document 1", "value": "when are my taxes due?"},
+        {"kind": "text", "label": "Expected best match: document 2", "value": "how do I bake a cake?"},
+        {"asset": "classifier_burger.jpg", "kind": "image", "label": "classifier_burger.jpg"},
+        {"asset": "classifier_cat.jpg", "kind": "image", "label": "classifier_cat.jpg"},
+        {"asset": "pose.jpg", "kind": "image", "label": "pose.jpg"},
+        {"asset": "segmentation_input_rotation0.jpg", "kind": "image", "label": "segmentation_input_rotation0.jpg"},
+        {"asset": "portrait.jpg", "kind": "image", "label": "portrait.jpg"},
+        {"kind": "text", "label": "document 1", "value": "The quarterly tax filing deadline is next Tuesday."},
+        {
+          "kind": "text",
+          "label": "document 2",
+          "value": "Whisk the eggs, then fold in the flour and the melted butter."
+        }
+      ],
+      "steps": [
+        {"key": "a cheeseburger", "query": "a cheeseburger", "expect": {"top": "classifier_burger.jpg"}},
+        {"key": "a striped cat", "query": "a striped cat", "expect": {"top": "classifier_cat.jpg"}},
+        {
+          "key": "a man doing yoga on the beach",
+          "query": "a man doing yoga on the beach",
+          "expect": {"top": "pose.jpg"}
+        },
+        {
+          "key": "children riding a horse",
+          "query": "children riding a horse",
+          "expect": {"top": "segmentation_input_rotation0.jpg"}
+        },
+        {"key": "when are my taxes due?", "query": "when are my taxes due?", "expect": {"top": "document 1"}},
+        {"key": "how do I bake a cake?", "query": "how do I bake a cake?", "expect": {"top": "document 2"}}
+      ],
+      "expect": {
+        "type": "retrieval",
+        "limit": 3,
+        "records": [
+          "classifier_burger.jpg",
+          "classifier_cat.jpg",
+          "pose.jpg",
+          "segmentation_input_rotation0.jpg",
+          "portrait.jpg",
+          "document 1",
+          "document 2"
+        ]
+      }
+    }
+  ]
+}

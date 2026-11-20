@@ -1,0 +1,42 @@
+{
+  "domain": "vision",
+  "task": "image_classifier",
+  "heading": "Image Classifier",
+  "samples": {
+    "python": "examples/image_classification/python/image_classifier.py",
+    "android": "examples/image_classification/android",
+    "ios": "examples/image_classification/ios"
+  },
+  "models": [
+    {"id": "efficientnet_lite0", "asset": "efficientnet_lite0.tflite"},
+    {"id": "efficientnet_lite2", "asset": "efficientnet_lite2.tflite"}
+  ],
+  "modes": [
+    {"id": "image", "options": {"runningMode": "IMAGE"}},
+    {"id": "video", "options": {"runningMode": "VIDEO"}}
+  ],
+  "tests": [
+    {
+      "name": "burger and cat",
+      "about": "Two photos are classified. The burger must be labelled a cheeseburger, and the cat one of the ImageNet classes for a striped cat.",
+      "note": "The two photos of the notebook. cat.jpg shows a silver tabby Scottish Fold; ImageNet has no class for that breed, and a correct classifier spreads its score over the three ImageNet classes for a striped domestic cat, so their combined score is checked too.",
+      "options": {"maxResults": 4},
+      "files": {"figure": "annotated.png"},
+      "steps": [
+        {
+          "key": "classifier_burger.jpg",
+          "image": "classifier_burger.jpg",
+          "caption": "A cheeseburger",
+          "expect": {"labels": ["cheeseburger"], "minScore": 0.3}
+        },
+        {
+          "key": "classifier_cat.jpg",
+          "image": "classifier_cat.jpg",
+          "caption": "A tabby cat",
+          "expect": {"labels": ["tabby", "tiger cat", "Egyptian cat"], "minScore": 0.15, "minGroupScore": 0.4}
+        }
+      ],
+      "expect": {"type": "classification", "maxResults": 4}
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "domain": "text",
+  "task": "text_summarizer",
+  "heading": "Text Summarization",
+  "samples": {
+    "python": "examples/text_summarizer/python/text_summarizer.py",
+    "android": "examples/text_summarizer/android",
+    "ios": "examples/text_summarizer/ios"
+  },
+  "models": [{"id": "gemma_200m", "asset": "summarization_quant_200m_2modes.litertlm"}],
+  "modes": [
+    {"id": "keypoints", "options": {"summaryMode": "KEYPOINTS"}},
+    {"id": "tldr", "options": {"summaryMode": "TLDR"}}
+  ],
+  "unsupported": [
+    {
+      "platform": "python",
+      "delegate": "GPU",
+      "error": "Only CPU delegate is supported.",
+      "reason": "The Text Summarizer rejects the GPU delegate."
+    }
+  ],
+  "tests": [
+    {
+      "note": "The text of the notebook: a station in the European quarter of Brussels, named after the Schuman roundabout.",
+      "steps": [
+        {
+          "key": "text",
+          "text": "This station is in the centre of the European quarter of Brussels, being adjacent to the Berlaymont building (headquarters of the European Commission), the Justus Lipsius building (Council of the European Union) and numerous other EU offices. The station is named after the area around the Schuman roundabout, which was named after Robert Schuman. The station sits on the Rue de la Loi/Wetstraat, a major city thoroughfare, and is close to Parc du Cinquantenaire/Jubelpark.",
+          "caption": "Text to summarize"
+        }
+      ],
+      "expect": {"type": "summary", "mentionsAll": ["Brussels"], "mentionsAny": ["Schuman", "European", "EU"]},
+      "inMode": {
+        "keypoints": {
+          "about": "The text is summarized as a list of key points. The summary must be shorter than the text and say where the station is.",
+          "expect": {"format": "bullets", "minBullets": 2, "maxLengthRatio": 1.0}
+        },
+        "tldr": {
+          "about": "The text is summarized as a short paragraph. The summary must be shorter than the text and say where the station is.",
+          "expect": {"format": "prose", "maxLengthRatio": 0.5}
+        }
+      }
+    }
+  ]
+}

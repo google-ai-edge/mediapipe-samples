@@ -1,0 +1,39 @@
+{
+  "domain": "audio",
+  "task": "audio_classifier",
+  "heading": "Audio Classifier",
+  "samples": {
+    "python": "examples/audio_classifier/python/audio_classification.py",
+    "android": "examples/audio_classifier/android",
+    "ios": "examples/audio_classifier/ios"
+  },
+  "models": [{"id": "yamnet", "asset": "yamnet.tflite"}],
+  "modes": [
+    {"id": "file", "options": {"runningMode": "AUDIO_CLIPS"}},
+    {"id": "stream", "options": {"runningMode": "AUDIO_STREAM"}}
+  ],
+  "tests": [
+    {
+      "about": "The 4.27 s speech clip is classified in one call. Each of its four full windows must be labelled Speech.",
+      "note": "YAMNet classifies windows of 0.975 s. The clip of 4.27 s has four full windows and a shorter fifth one, which is not checked. In stream mode the task flushes that last window when it is closed, with the largest possible timestamp, so only the timestamps of the full windows are checked.",
+      "options": {"maxResults": 4},
+      "steps": [{"key": "speech_16000_hz_mono.wav", "audio": "speech_16000_hz_mono.wav", "caption": "Speech clip (4.27 s)"}],
+      "expect": {
+        "type": "audioClassification",
+        "label": "Speech",
+        "minScore": 0.5,
+        "fullWindows": 4,
+        "results": 5,
+        "windowMs": 975,
+        "maxResults": 4,
+        "stream": false
+      },
+      "inMode": {
+        "stream": {
+          "about": "The 4.27 s speech clip is classified asynchronously, as a stream. Each of its four full windows must be labelled Speech.",
+          "expect": {"stream": true}
+        }
+      }
+    }
+  ]
+}
