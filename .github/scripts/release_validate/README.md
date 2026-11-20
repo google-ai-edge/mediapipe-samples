@@ -141,8 +141,6 @@ MediaPipe itself declares unsupported, with the text of the error it raises:
   detection on the GPU is validated with the float models instead.
 - Text Classifier, Language Detector and Text Embedder on the macOS GPU:
   `not supported by the macOS/iOS GPU delegate (only float32 input/output tensors are supported).`
-- Audio Classifier (YAMNet) on the macOS GPU:
-  `Model contains operations or configurations not supported by the GPU delegate:`
 
 Such a case is `UNSUPPORTED` only while it fails with exactly that error. If it
 fails in any other way it is a `FAIL`. If it starts to work, it is checked like

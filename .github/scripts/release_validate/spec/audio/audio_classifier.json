@@ -12,16 +12,6 @@
     {"id": "file", "options": {"runningMode": "AUDIO_CLIPS"}},
     {"id": "stream", "options": {"runningMode": "AUDIO_STREAM"}}
   ],
-  "unsupported": [
-    {
-      "platform": "python",
-      "system": "Darwin",
-      "model": "yamnet",
-      "delegate": "GPU",
-      "error": "Model contains operations or configurations not supported by the GPU delegate:",
-      "reason": "YAMNet contains STFT/FFT operations (RFFT2D, COMPLEX64) that the macOS GPU delegate rejects."
-    }
-  ],
   "tests": [
     {
       "about": "The 4.27 s speech clip is classified in one call. Each of its four full windows must be labelled Speech.",

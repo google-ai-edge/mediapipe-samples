@@ -1052,7 +1052,7 @@ class MatrixTest(unittest.TestCase):
     self.assertEqual(spec.known_unsupported(summarizer)['task'], 'text_summarizer')
     self.assertIsNone(spec.known_unsupported(summarizer, platform='android'))
     entries = [entry for task in spec.tasks() for entry in task.get('unsupported', [])]
-    self.assertEqual(len(entries), 9)
+    self.assertEqual(len(entries), 8)
     for entry in entries:
       self.assertTrue(entry['error'] and entry['reason'])
 
