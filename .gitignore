@@ -125,3 +125,6 @@ lint/tmp/
 # Python release validation (.github/scripts/release_validate)
 .release_validation/
 release-validation-report/
+
+# Reports of verify_observations.py for other platforms
+release-validation-report-*/

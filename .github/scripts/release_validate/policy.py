@@ -13,7 +13,8 @@
 # limitations under the License.
 """What the outcome of a case means: its status, and what counts as evidence.
 
-Kept apart from run_local.py so that self_test.py can test it.
+Kept apart from the runners so that self_test.py can test it, and so that the
+observations of every platform are judged the same way (see judge()).
 """
 
 import hashlib
@@ -87,8 +88,8 @@ def decide(case, worker, verification, gpu_evidence, unsupported):
     return 'FAIL', short_error(error), None
   note = None
   if unsupported:
-    note = ('This combination is listed in cases.KNOWN_UNSUPPORTED, but it ran. If the checks pass, remove it '
-            'from that list.')
+    note = ('This combination is listed as "unsupported" in the spec of the task, but it ran. If the checks '
+            'pass, remove it from that list.')
   if verification['status'] == verify.FAILED:
     return 'FAIL', verification['reason'], note
   if verification['status'] == verify.UNVERIFIED:
@@ -99,3 +100,30 @@ def decide(case, worker, verification, gpu_evidence, unsupported):
   if case['delegate'] == 'CPU' and gpu_evidence:
     return 'FAIL', f"the CPU was requested, but the native log shows a GPU delegate: {gpu_evidence[0]}", note
   return 'PASS', verification['summary'], note
+
+
+def judge(case, expectation, outcome, gpu_evidence, unsupported):
+  """Checks what a runner observed for a case, and decides its status.
+
+  Args:
+    case: the case, from spec.build_matrix().
+    expectation: its expectation, from spec.resolve().
+    outcome: what the runner reports: `runs`, the observations, and `error`,
+      the error that ended the case, if any.
+    gpu_evidence: the lines of the native log that show a GPU delegate.
+    unsupported: the "unsupported" entry of the spec for the case, if any.
+
+  Returns:
+    The fields of the result record that say how the case went.
+  """
+  runs = outcome.get('runs') or []
+  verification = {'status': verify.UNVERIFIED, 'reason': '', 'checks': [], 'summary': '-'}
+  digest = None
+  if not outcome.get('error'):
+    verification = verify.verify_case(expectation, runs)
+    passed = sum(1 for c in verification['checks'] if c['pass'])
+    verification['summary'] = f"{passed}/{len(verification['checks'])} checks" if verification['checks'] else '-'
+    digest = observation_digest(runs)
+  status, details, note = decide(case, outcome, verification, gpu_evidence, unsupported)
+  return {'verification': verification, 'observationDigest': digest, 'status': status, 'details': details,
+          'note': note}

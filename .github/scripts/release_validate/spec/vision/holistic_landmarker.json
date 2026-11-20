@@ -1,0 +1,77 @@
+{
+  "domain": "vision",
+  "task": "holistic_landmarker",
+  "heading": "Holistic Landmarker",
+  "samples": {
+    "python": "examples/holistic_landmarker/python/holistic_landmarker.py",
+    "android": "examples/holistic_landmarker/android",
+    "ios": "examples/holistic_landmarker/ios"
+  },
+  "models": [{"id": "holistic_landmarker", "asset": "holistic_landmarker.task"}],
+  "modes": [
+    {"id": "image", "options": {"runningMode": "IMAGE"}},
+    {"id": "video", "options": {"runningMode": "VIDEO"}}
+  ],
+  "tests": [
+    {
+      "about": "The photo shows a woman from the waist up, her right hand raised and holding glasses. Her pose, her face mesh and her right hand must be found where they are, with 52 face blendshapes and a segmentation mask of her.",
+      "note": "The same photo as the Face Landmarker. Her right hand is raised in front of her chest and holds a pair of glasses; her left arm lies across her waist with the hand tucked behind her right elbow, mostly hidden, so the left hand is not asserted. She fills a little over half of the frame. The photo ends at her hips. Pose landmarks 0 to 24 are the head, arms and hips; 25 to 32 are the knees, ankles and feet, which are not in the photo. A correct model places those below the bottom edge, where her legs would be, so only landmarks 0 to 24 (\"inFrame\") have to lie in the frame.",
+      "options": {"outputFaceBlendshapes": true, "outputSegmentationMask": true},
+      "steps": [
+        {
+          "key": "business-person.png",
+          "image": "business-person.png",
+          "caption": "A woman holding glasses in her right hand",
+          "files": {"annotated": "annotated.png", "figure": "blendshapes.png", "mask": "mask.png"},
+          "expect": {
+            "groups": [
+              {
+                "key": "pose",
+                "name": "pose",
+                "landmarkCount": 33,
+                "inFrame": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
+                "inFrameName": "landmarks from the head to the hips",
+                "instances": [
+                  {
+                    "points": {
+                      "nose": {"x": 0.535, "y": 0.252, "tolerance": 0.06, "index": 0},
+                      "left shoulder": {"x": 0.76, "y": 0.48, "tolerance": 0.08, "index": 11},
+                      "right shoulder": {"x": 0.2, "y": 0.47, "tolerance": 0.08, "index": 12}
+                    }
+                  }
+                ]
+              },
+              {
+                "key": "face",
+                "name": "face",
+                "landmarkCount": 478,
+                "instances": [
+                  {
+                    "points": {"nose tip": {"x": 0.535, "y": 0.252, "tolerance": 0.05, "index": 1}}
+                  }
+                ]
+              },
+              {
+                "key": "rightHand",
+                "name": "right hand",
+                "landmarkCount": 21,
+                "instances": [
+                  {
+                    "points": {"wrist": {"x": 0.54, "y": 0.59, "tolerance": 0.08, "index": 0}}
+                  }
+                ]
+              }
+            ],
+            "equals": [{"key": "blendshapeCount", "name": "face blendshapes", "value": 52}],
+            "mask": {
+              "name": "segmentation mask of the person",
+              "fraction": [0.4, 0.7],
+              "centroidWithin": {"minX": 0.35, "maxX": 0.65, "minY": 0.45, "maxY": 0.8}
+            }
+          }
+        }
+      ],
+      "expect": {"type": "landmarks"}
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "domain": "audio",
+  "task": "text_to_speech",
+  "heading": "Text to Speech",
+  "samples": {
+    "python": "examples/text_to_speech/python/text_to_speech.py",
+    "android": "examples/text_to_speech/android",
+    "ios": "examples/text_to_speech/ios"
+  },
+  "models": [
+    {
+      "id": "kokoro_82m_gpu",
+      "asset": "kokoro_int8_gpu_fp16.litertlm",
+      "large": true,
+      "note": "The model the sample downloads. Kokoro is published in a variant for the CPU and one for the GPU; both are run on both delegates. PocketTTS and Phonon are other model families."
+    },
+    {"id": "kokoro_82m_cpu", "asset": "kokoro_int8_fp16.litertlm", "large": true},
+    {"id": "pocket_tts_en", "asset": "pocket_tts_en_int8.litertlm", "large": true},
+    {"id": "phonon_31m_en", "asset": "phonon_int8.litertlm", "large": true}
+  ],
+  "modes": [
+    {"id": "speak", "options": {"stream": false}},
+    {"id": "stream", "options": {"stream": true}}
+  ],
+  "unsupported": [
+    {
+      "platform": "python",
+      "model": "pocket_tts_en",
+      "delegate": "GPU",
+      "error": "Only CPU delegate is supported.",
+      "reason": "PocketTTS rejects the GPU delegate."
+    },
+    {
+      "platform": "python",
+      "model": "phonon_31m_en",
+      "delegate": "GPU",
+      "error": "Only CPU delegate is supported.",
+      "reason": "Phonon rejects the GPU delegate."
+    }
+  ],
+  "tests": [
+    {
+      "about": "The sentence is synthesized in one piece. The audio must be valid, of a plausible length and level, and the Audio Transcriber must hear the sentence in it.",
+      "note": "At a normal speaking rate the 14 words of the sentence take about 4 to 7 seconds. The synthesized audio is checked as audio (length, level, valid samples, word timestamps) and is then transcribed, on the CPU, with the model named in \"listenWith\": what that hears must be the sentence. Without that round trip, noise of the right length would pass.",
+      "listenWith": "parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm",
+      "files": {"audio": "speech.wav"},
+      "steps": [
+        {
+          "key": "sentence",
+          "text": "The quick brown fox jumps over the lazy dog near the quiet river bank.",
+          "caption": "Sentence to speak"
+        }
+      ],
+      "expect": {
+        "type": "speech",
+        "stream": false,
+        "durationSec": [2.5, 12],
+        "sampleRateHz": [8000, 48000],
+        "minRms": 0.005,
+        "maxPeak": 1.0,
+        "maxCharErrorRate": 0.2
+      },
+      "inMode": {
+        "stream": {
+          "about": "The sentence is synthesized piece by piece. The audio must be valid, of a plausible length and level, and the Audio Transcriber must hear the sentence in it.",
+          "expect": {"stream": true}
+        }
+      }
+    }
+  ]
+}

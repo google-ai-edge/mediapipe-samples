@@ -13,10 +13,16 @@
 # limitations under the License.
 """Output verification.
 
-Pure functions that compare what a sample returned and wrote to disk (as
-observed by worker.py) with an expectation from expectations.py. Nothing here
-imports MediaPipe, so every verifier is unit-tested by self_test.py with both a
-correct and an incorrect output.
+Pure functions that compare what a sample returned and wrote to disk (the
+observation of a runner, for the Python samples the one of worker.py) with an
+expectation of the spec (see spec.resolve). Nothing here imports MediaPipe or
+is specific to a platform, so every verifier is unit-tested by self_test.py
+with both a correct and an incorrect output.
+
+The files a sample writes are checked only where the expectation names them
+(`annotatedFile`, `figureFile`, `maskFile`, `blurFile`, `overlayFile`,
+`wavFile`, and `fileName` of a mask). The spec names them for the platforms
+whose samples write files.
 """
 
 import itertools
@@ -320,7 +326,8 @@ def _verify_detections(runs, expectation):
     others = sorted({str(d.get('label')) for d in detections if d.get('label') not in expectation['onlyLabels']})
     checks.append(_check('nothing else is detected', not others, 'only ' + ', '.join(expectation['onlyLabels']),
                          ', '.join(others) or 'nothing else'))
-  checks += _verify_annotated_file(data.get('annotatedFile'))
+  if expectation.get('annotatedFile'):
+    checks += _verify_annotated_file(data.get('annotatedFile'), expectation['annotatedFile'])
   return checks
 
 
@@ -346,7 +353,8 @@ def _verify_faces(runs, expectation):
   px, py = expectation['boxContains']['x'] * width, expectation['boxContains']['y'] * height
   contains = bool(box) and box['x'] <= px <= box['x'] + box['width'] and box['y'] <= py <= box['y'] + box['height']
   checks.append(_check('face box contains the nose', contains, True, contains))
-  checks += _verify_annotated_file(data.get('annotatedFile'))
+  if expectation.get('annotatedFile'):
+    checks += _verify_annotated_file(data.get('annotatedFile'), expectation['annotatedFile'])
   return checks
 
 
@@ -398,8 +406,9 @@ def _verify_classification(runs, expectation):
                            f">= {expected['minGroupScore']}", group_score))
     valid = all(_in_range(c['score'], 0, 1) for c in categories)
     checks.append(_check(f'{tag}: scores are probabilities', valid, True, valid))
-  first_data = (runs[0].get('data') or {}) if runs else {}
-  checks += _verify_figure_file(first_data.get('figureFile'), 'annotated.png')
+  if expectation.get('figureFile'):
+    first_data = (runs[0].get('data') or {}) if runs else {}
+    checks += _verify_figure_file(first_data.get('figureFile'), expectation['figureFile'])
   return checks
 
 
@@ -513,7 +522,7 @@ def _verify_transcript(runs, expectation):
 
 
 def _verify_speech(runs, expectation):
-  """Speech synthesis: valid audio and speech.wav file that say the text."""
+  """Speech synthesis: valid audio (and .wav file) that say the text."""
   data = (runs[0].get('data') or {}) if runs else {}
   pieces = data.get('pieces') or []
   if expectation['stream']:
@@ -542,19 +551,22 @@ def _verify_speech(runs, expectation):
   checks.append(_check('within -1 to 1 (peak level)', _in_range(data.get('peak'), 0, expectation['maxPeak'] + 1e-6),
                        f"<= {expectation['maxPeak']}", data.get('peak', 'none')))
 
-  # On-disk WAV file verification.
-  wav = data.get('wavFile') or {}
-  total_samples = sum(p.get('samples', 0) for p in pieces)
-  pcm_ok = wav.get('exists') is True and wav.get('channels') == 1 and wav.get('sampleWidth') == 2
-  actual_pcm = (f"{wav.get('channels')} ch, {wav.get('sampleWidth')} B/sample" if wav.get('exists') else 'missing')
-  checks.append(_check('speech.wav is mono 16-bit PCM', pcm_ok, '1 ch, 2 B/sample', actual_pcm))
-  header_ok = (bool(pieces) and wav.get('exists') is True and wav.get('sampleRateHz') == data.get('sampleRateHz')
-               and wav.get('samples') == total_samples and total_samples > 0)
-  actual_header = (f"{wav.get('samples')} samples at {wav.get('sampleRateHz')} Hz" if wav.get('exists') else 'missing')
-  checks.append(_check('speech.wav has the sample rate and length of the audio', header_ok,
-                       f"{total_samples} samples at {data.get('sampleRateHz')} Hz", actual_header))
-  checks.append(_check('speech.wav matches the returned samples', _in_range(wav.get('maxDiff'), 0, 0.0002),
-                       '<= 0.0002 max diff', 'none' if wav.get('maxDiff') is None else wav.get('maxDiff')))
+  # The .wav file the sample wrote.
+  wav_name = expectation.get('wavFile')
+  if wav_name:
+    wav = data.get('wavFile') or {}
+    total_samples = sum(p.get('samples', 0) for p in pieces)
+    pcm_ok = wav.get('exists') is True and wav.get('channels') == 1 and wav.get('sampleWidth') == 2
+    actual_pcm = (f"{wav.get('channels')} ch, {wav.get('sampleWidth')} B/sample" if wav.get('exists') else 'missing')
+    checks.append(_check(f'{wav_name} is mono 16-bit PCM', pcm_ok, '1 ch, 2 B/sample', actual_pcm))
+    header_ok = (bool(pieces) and wav.get('exists') is True and wav.get('sampleRateHz') == data.get('sampleRateHz')
+                 and wav.get('samples') == total_samples and total_samples > 0)
+    actual_header = (f"{wav.get('samples')} samples at {wav.get('sampleRateHz')} Hz" if wav.get('exists')
+                     else 'missing')
+    checks.append(_check(f'{wav_name} has the sample rate and length of the audio', header_ok,
+                         f"{total_samples} samples at {data.get('sampleRateHz')} Hz", actual_header))
+    checks.append(_check(f'{wav_name} matches the returned samples', _in_range(wav.get('maxDiff'), 0, 0.0002),
+                         '<= 0.0002 max diff', 'none' if wav.get('maxDiff') is None else wav.get('maxDiff')))
 
   if not expectation['stream']:
     # One timestamp per word of the text, in order, inside the clip.
@@ -569,14 +581,16 @@ def _verify_speech(runs, expectation):
     valid = valid and starts == sorted(starts)
     checks.append(_check('word timestamps are in order and inside the clip', valid, f'0 to {duration} s, ascending',
                          f'{times[0][0]} to {times[-1][1]} s' if times else 'none'))
-  # Round trip of speech.wav through the Audio Transcriber.
+  # Round trip of the audio (the file, where one is written) through the Audio
+  # Transcriber.
   heard = data.get('heard')
+  source = wav_name or 'the audio'
   if data.get('heardError') or heard is None:
-    checks.append(_check('speech recognition of speech.wav ran', False, 'a transcript',
+    checks.append(_check(f'speech recognition of {source} ran', False, 'a transcript',
                          data.get('heardError') or 'none'))
   else:
     rate = char_error_rate(expectation['text'], heard)
-    checks.append(_check('speech recognition hears the text in speech.wav (letter error rate)',
+    checks.append(_check(f'speech recognition hears the text in {source} (letter error rate)',
                          bool(heard.strip()) and rate <= expectation['maxCharErrorRate'],
                          f"\"{expectation['text']}\" with a letter error rate <= {expectation['maxCharErrorRate']}",
                          f'"{heard}" (letter error rate {rate:.2f})'))
@@ -658,7 +672,7 @@ def _verify_decisions(runs, expectation):
 
 
 def _verify_segmentation(runs, expectation):
-  """Image segmentation: category mask, optional confidence mask, and output PNGs."""
+  """Image segmentation: category mask, optional confidence mask, and the PNGs written."""
   data = (runs[0].get('data') or {}) if runs else {}
   img_w, img_h = data.get('imageWidth') or 0, data.get('imageHeight') or 0
   checks = [
@@ -698,33 +712,38 @@ def _verify_segmentation(runs, expectation):
     checks.append(_check(f'confidence mask of "{conf_exp["label"]}": peak confidence',
                          _in_range(conf.get('max'), conf_exp['minPeak'], 1),
                          f">= {conf_exp['minPeak']}", conf.get('max', 'none')))
-    checks += _verify_grayscale_mask_file(data.get('maskFile'), img_w, img_h, 'mask.png')
-  else:
+  mask_name = expectation.get('maskFile')
+  if mask_name and conf_exp:
+    # In this mode the sample writes the confidence mask.
+    checks += _verify_grayscale_mask_file(data.get('maskFile'), img_w, img_h, mask_name)
+  elif mask_name:
     mask_file = data.get('maskFile') or {}
     mask_ok = (mask_file.get('exists') is True and img_w > 0 and mask_file.get('width') == img_w
                and mask_file.get('height') == img_h and mask_file.get('channels') == 3
                and mask_file.get('grayscale') is True)
     actual_mask = (f"{mask_file.get('width')}x{mask_file.get('height')}x{mask_file.get('channels')}, "
                    f"grayscale={mask_file.get('grayscale')}" if mask_file.get('exists') else 'missing')
-    checks.append(_check(f'mask.png was written as a grayscale mask of {img_w}x{img_h}', mask_ok,
+    checks.append(_check(f'{mask_name} was written as a grayscale mask of {img_w}x{img_h}', mask_ok,
                          f'{img_w}x{img_h}x3, grayscale=True', actual_mask))
-    checks.append(_check('mask.png foreground matches the category mask',
+    checks.append(_check(f'{mask_name} foreground matches the category mask',
                          _in_range(mask_file.get('fgDiff'), 0, 0.005), '<= 0.005 foreground diff',
                          'none' if mask_file.get('fgDiff') is None else mask_file.get('fgDiff')))
 
-  blur_file = data.get('blurFile') or {}
-  blur_ok = (blur_file.get('exists') is True and img_w > 0 and blur_file.get('width') == img_w
-             and blur_file.get('height') == img_h and blur_file.get('channels') == 3)
-  actual_blur = (f"{blur_file.get('width')}x{blur_file.get('height')}x{blur_file.get('channels')}"
-                 if blur_file.get('exists') else 'missing')
-  checks.append(_check(f'blurred_background.png was written with size {img_w}x{img_h}', blur_ok,
-                       f'{img_w}x{img_h}x3', actual_blur))
-  checks.append(_check('blurred_background.png keeps the foreground sharp',
-                       _in_range(blur_file.get('fgMeanDiff'), 0, 0.5), '<= 0.5 mean pixel diff',
-                       'none' if blur_file.get('fgMeanDiff') is None else blur_file.get('fgMeanDiff')))
-  checks.append(_check('blurred_background.png blurs the background',
-                       _in_range(blur_file.get('bgMeanDiff'), 1.5, 255), '>= 1.5 mean pixel diff',
-                       'none' if blur_file.get('bgMeanDiff') is None else blur_file.get('bgMeanDiff')))
+  blur_name = expectation.get('blurFile')
+  if blur_name:
+    blur_file = data.get('blurFile') or {}
+    blur_ok = (blur_file.get('exists') is True and img_w > 0 and blur_file.get('width') == img_w
+               and blur_file.get('height') == img_h and blur_file.get('channels') == 3)
+    actual_blur = (f"{blur_file.get('width')}x{blur_file.get('height')}x{blur_file.get('channels')}"
+                   if blur_file.get('exists') else 'missing')
+    checks.append(_check(f'{blur_name} was written with size {img_w}x{img_h}', blur_ok,
+                         f'{img_w}x{img_h}x3', actual_blur))
+    checks.append(_check(f'{blur_name} keeps the foreground sharp',
+                         _in_range(blur_file.get('fgMeanDiff'), 0, 0.5), '<= 0.5 mean pixel diff',
+                         'none' if blur_file.get('fgMeanDiff') is None else blur_file.get('fgMeanDiff')))
+    checks.append(_check(f'{blur_name} blurs the background',
+                         _in_range(blur_file.get('bgMeanDiff'), 1.5, 255), '>= 1.5 mean pixel diff',
+                         'none' if blur_file.get('bgMeanDiff') is None else blur_file.get('bgMeanDiff')))
   return checks
 
 
@@ -769,6 +788,8 @@ def _verify_selection(runs, expectation):
       checks.append(_check(f'{tag}: {name} is not selected', probes.get(name) is False, False,
                            probes.get(name, 'none')))
 
+    if not expected.get('overlayFile'):
+      continue
     overlay = data.get('overlayFile') or {}
     overlay_ok = (overlay.get('exists') is True and img_w > 0 and overlay.get('width') == img_w
                   and overlay.get('height') == img_h and overlay.get('channels') == 3)

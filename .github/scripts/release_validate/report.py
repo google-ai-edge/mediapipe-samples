@@ -11,7 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Writes the validation report: status.json, report.md and index.html."""
+"""Writes the validation report: status.json, report.md and index.html.
+
+The same report is written for every platform: for the Python samples by
+run_local.py, and for the observations of another runner by
+verify_observations.py.
+"""
 
 import html
 import json
@@ -26,6 +31,21 @@ STATUSES = {
     'UNVERIFIED': ('\u2754', 'the sample ran, but no output check is defined'),
 }
 ORDER = ['FAIL', 'GPU_UNCONFIRMED', 'UNVERIFIED', 'UNSUPPORTED', 'PASS']
+
+PLATFORM_NAMES = {'python': 'Python', 'android': 'Android', 'ios': 'iOS'}
+
+
+def _platform(state):
+  return state.get('platform', 'python')
+
+
+def _platform_name(state):
+  return PLATFORM_NAMES.get(_platform(state), _platform(state))
+
+
+def _gpu_name(state):
+  """What the GPU delegate is called where the evidence for it was found."""
+  return 'Metal' if _platform(state) == 'python' else 'GPU'
 
 
 def summarize_counts(results):
@@ -50,14 +70,18 @@ def _status_class(status):
 
 def _environment_lines(state):
   env = state['environment']
+  times = f"Started: {state['startedAt']}, finished: {state['finishedAt']}"
+  if _platform(state) != 'python':
+    # Whatever the runner of the platform reported about itself.
+    return [f'{key}: {value}' for key, value in env.items()] + [times]
   lines = [
-      f"MediaPipe under test: {env.get('mediapipeVersion') or 'not installed'} (requested: {env['mediapipeSpec']})",
+      f"MediaPipe under test: {env.get('mediapipeVersion') or 'not installed'} (requested: {env.get('mediapipeSpec')})",
       f"Python: {env.get('pythonVersion')}",
       f"System: {env.get('system')}",
       f"Processor: {env.get('processor')}",
       f"GPU: {env.get('gpu')}",
       f"Samples: commit {env.get('gitCommit')}{' with local changes' if env.get('gitDirty') else ''}",
-      f"Started: {state['startedAt']}, finished: {state['finishedAt']}",
+      times,
   ]
   if env.get('pythonPinned') and not env.get('pythonMatchesPins'):
     lines.append(f"Note: the pinned dependencies were resolved for Python {env['pythonPinned']}; "
@@ -70,7 +94,7 @@ def _environment_lines(state):
 def format_markdown(state):
   results = state['results']
   counts = summarize_counts(results)
-  lines = ['# MediaPipe Python release validation', '']
+  lines = [f'# MediaPipe {_platform_name(state)} release validation', '']
   lines += [f'- {line}' for line in _environment_lines(state)]
   lines += ['', '## Summary', '', f"**{state['verdict']}**", '']
   for status in ORDER:
@@ -390,7 +414,7 @@ function renderReview() {
   var sub = el('div', 'sub');
   sub.appendChild(el('span', 'badge badge-' + c.status.toLowerCase().replace(/_/g, '-'), c.status));
   var gpuInfo = c.delegate === 'GPU'
-    ? (c.gpuEvidence && c.gpuEvidence.length ? 'GPU (Metal confirmed)' : 'GPU')
+    ? (c.gpuEvidence && c.gpuEvidence.length ? 'GPU (' + gpuName + ' confirmed)' : 'GPU')
     : 'CPU';
   sub.appendChild(el('span', '', 'Delegate: ' + gpuInfo + ' \\u00b7 ' + c.durationSec.toFixed(1) + 's'));
   if (c.baseline) {
@@ -417,7 +441,7 @@ function renderReview() {
   }
   if (c.traceback) {
     var tb = el('details');
-    tb.appendChild(el('summary', '', 'Python traceback'));
+    tb.appendChild(el('summary', '', 'Traceback'));
     tb.appendChild(el('pre', '', c.traceback));
     left.appendChild(tb);
   }
@@ -587,12 +611,12 @@ def _read_stdout_fallback(report_dir, result):
   return ''
 
 
-def _table_row_html(index, r):
+def _table_row_html(index, r, gpu_name='Metal'):
   e = html.escape
   status = r['status']
   badge = f'<span class="badge badge-{_status_class(status)}">{e(status)}</span>'
   if r['delegate'] == 'GPU':
-    gpu_cell = 'Metal' if r.get('gpuEvidence') else ('rejected' if status == 'UNSUPPORTED' else '-')
+    gpu_cell = gpu_name if r.get('gpuEvidence') else ('rejected' if status == 'UNSUPPORTED' else '-')
   else:
     gpu_cell = 'CPU'
 
@@ -666,13 +690,19 @@ def format_html(state, report_dir=None):
   else:
     ordered_results = list(results)
 
-  pills = [
-      f'mediapipe@{env.get("mediapipeVersion") or "unknown"}',
-      f'python@{env.get("pythonVersion") or "unknown"}',
-      f'requested: {env.get("mediapipeSpec", "")}',
-      'constraints: pinned' if env.get('constraints') else 'constraints: unpinned',
-      f'commit@{env.get("gitCommit", "unknown")}{" (dirty)" if env.get("gitDirty") else ""}',
-  ]
+  if _platform(state) == 'python':
+    pills = [
+        f'mediapipe@{env.get("mediapipeVersion") or "unknown"}',
+        f'python@{env.get("pythonVersion") or "unknown"}',
+        f'requested: {env.get("mediapipeSpec", "")}',
+        'constraints: pinned' if env.get('constraints') else 'constraints: unpinned',
+        f'commit@{env.get("gitCommit", "unknown")}{" (dirty)" if env.get("gitDirty") else ""}',
+    ]
+    machine = (f'<div>System: <code>{e(str(env.get("system")))}</code> | Processor: '
+               f'<code>{e(str(env.get("processor")))}</code> | GPU: <code>{e(str(env.get("gpu")))}</code></div>')
+  else:
+    pills = [f'{key}: {value}' for key, value in env.items()]
+    machine = ''
   pills_html = ''.join(f'<span class="pkg-pill">{e(p)}</span>' for p in pills)
 
   baseline_html = ''
@@ -714,7 +744,7 @@ def format_html(state, report_dir=None):
       f'<button onclick="setFilter(\'delegate\', \'{e(d)}\', this)">{e(d)}</button>' for d in delegates_seen
   ]
 
-  rows_html = '\n'.join(_table_row_html(idx, r) for idx, r in enumerate(ordered_results))
+  rows_html = '\n'.join(_table_row_html(idx, r, _gpu_name(state)) for idx, r in enumerate(ordered_results))
 
   cases_payload = [
       {
@@ -755,14 +785,14 @@ def format_html(state, report_dir=None):
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>MediaPipe Python Release Validation: {e(str(env.get('mediapipeVersion')))}</title>
+  <title>MediaPipe {e(_platform_name(state))} Release Validation: {e(str(env.get('mediapipeVersion')))}</title>
   <style>{_CSS}</style>
 </head>
 <body>
-  <h1>MediaPipe Python Release Validation Report</h1>
+  <h1>MediaPipe {e(_platform_name(state))} Release Validation Report</h1>
   <div class="meta">
     <div>Started: {e(state['startedAt'])} | Finished: {e(state['finishedAt'])}</div>
-    <div>System: <code>{e(str(env.get('system')))}</code> | Processor: <code>{e(str(env.get('processor')))}</code> | GPU: <code>{e(str(env.get('gpu')))}</code></div>
+    {machine}
     {baseline_html}
     <div class="pills">{pills_html}</div>
   </div>
@@ -804,6 +834,7 @@ def format_html(state, report_dir=None):
     installed packages are listed in <a href="pip-freeze.txt">pip-freeze.txt</a>.
   </div>
   <script type="application/json" id="cases-data">{cases_json}</script>
+  <script>var gpuName = {json.dumps(_gpu_name(state))};</script>
   <script>{_SCRIPT}</script>
 </body>
 </html>

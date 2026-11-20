@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "delegates": ["CPU", "GPU"],
+  "platforms": {"python": {"files": true}, "android": {"files": false}, "ios": {"files": false}},
+  "tasks": [
+    "vision/object_detector",
+    "vision/face_detector",
+    "vision/face_landmarker",
+    "vision/hand_landmarker",
+    "vision/pose_landmarker",
+    "vision/holistic_landmarker",
+    "vision/image_classifier",
+    "vision/gesture_recognizer",
+    "vision/interactive_segmenter",
+    "vision/image_segmenter",
+    "vision/image_embedder",
+    "audio/audio_classifier",
+    "audio/audio_transcriber",
+    "audio/text_to_speech",
+    "text/text_classifier",
+    "text/language_detector",
+    "text/text_embedder",
+    "text/text_proofreader",
+    "text/text_summarizer",
+    "retrieval/universal_embedder",
+    "retrieval/semantic_retriever",
+    "decision/decision_maker"
+  ]
+}

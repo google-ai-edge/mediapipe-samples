@@ -1,0 +1,129 @@
+{
+  "domain": "vision",
+  "task": "interactive_segmenter",
+  "heading": "Interactive Segmenter",
+  "samples": {
+    "python": "examples/interactive_segmentation/python/interactive_segmenter.py",
+    "android": "examples/interactive_segmentation/android",
+    "ios": "examples/interactive_segmentation/ios"
+  },
+  "models": [{"id": "magic_touch", "asset": "interactive_segmentation.task"}],
+  "modes": [
+    {"id": "point", "options": {"select": "point"}},
+    {"id": "negative", "options": {"select": "point"}},
+    {"id": "lasso", "options": {"select": "lasso"}}
+  ],
+  "tests": [
+    {
+      "modes": ["point", "lasso"],
+      "about": "A positive click is placed on the corgi and on the poodle in turn; each time the mask must select that animal and none of the others.",
+      "note": "cats_and_dogs.jpg (1200x600): four pets in a row in front of a pink wall. From the left: a cat lying down, a grey poodle, a corgi, and a second cat. \"probes\" names what lies at each position; the runner reports for every probe whether the mask selects it.",
+      "inputs": [{"asset": "cats_and_dogs.jpg", "kind": "image", "label": "From the left: a cat, a poodle, a corgi, a cat"}],
+      "probes": {
+        "corgi chest": [0.68, 0.68],
+        "corgi face": [0.65, 0.45],
+        "corgi ear": [0.59, 0.33],
+        "poodle face": [0.42, 0.5],
+        "poodle chest": [0.44, 0.75],
+        "left cat face": [0.3, 0.8],
+        "right cat face": [0.84, 0.8],
+        "wall, upper left": [0.1, 0.2],
+        "wall, upper right": [0.9, 0.3]
+      },
+      "steps": [
+        {
+          "key": "corgi",
+          "image": "cats_and_dogs.jpg",
+          "point": [0.68, 0.68],
+          "lasso": [0.5, 0.24, 0.77, 0.98],
+          "files": {"overlay": "selected_corgi.png"},
+          "expect": {
+            "fraction": [0.07, 0.2],
+            "centroidWithin": {"minX": 0.57, "maxX": 0.7, "minY": 0.5, "maxY": 0.8},
+            "boundsWithin": {"minX": 0.46, "maxX": 0.81, "minY": 0.18, "maxY": 1.0},
+            "selected": ["corgi chest", "corgi face", "corgi ear"],
+            "notSelected": [
+              "poodle face",
+              "poodle chest",
+              "left cat face",
+              "right cat face",
+              "wall, upper left",
+              "wall, upper right"
+            ]
+          }
+        },
+        {
+          "key": "poodle",
+          "image": "cats_and_dogs.jpg",
+          "point": [0.44, 0.75],
+          "lasso": [0.32, 0.33, 0.54, 0.98],
+          "files": {"overlay": "selected_poodle.png"},
+          "expect": {
+            "fraction": [0.04, 0.16],
+            "centroidWithin": {"minX": 0.36, "maxX": 0.5, "minY": 0.5, "maxY": 0.85},
+            "boundsWithin": {"minX": 0.28, "maxX": 0.58, "minY": 0.3, "maxY": 1.0},
+            "selected": ["poodle chest", "poodle face"],
+            "notSelected": [
+              "corgi chest",
+              "corgi face",
+              "corgi ear",
+              "left cat face",
+              "right cat face",
+              "wall, upper left",
+              "wall, upper right"
+            ]
+          }
+        }
+      ],
+      "expect": {"type": "selection"},
+      "inMode": {
+        "lasso": {
+          "about": "A lasso box is drawn around the corgi and around the poodle in turn; each time the mask must select that animal and none of the others."
+        }
+      }
+    },
+    {
+      "modes": ["negative"],
+      "about": "A positive click on the corgi chest is paired with a negative stroke across its head: the body must stay selected while the ear and face are excluded.",
+      "note": "A click on the corgi's chest plus a negative stroke across its head and face: the chest remains selected while the ear and face are excluded.",
+      "inputs": [{"asset": "cats_and_dogs.jpg", "kind": "image", "label": "From the left: a cat, a poodle, a corgi, a cat"}],
+      "probes": {
+        "corgi chest": [0.68, 0.68],
+        "corgi face": [0.65, 0.45],
+        "corgi ear": [0.59, 0.33],
+        "poodle face": [0.42, 0.5],
+        "poodle chest": [0.44, 0.75],
+        "left cat face": [0.3, 0.8],
+        "right cat face": [0.84, 0.8],
+        "wall, upper left": [0.1, 0.2],
+        "wall, upper right": [0.9, 0.3]
+      },
+      "steps": [
+        {
+          "key": "corgi body without head",
+          "image": "cats_and_dogs.jpg",
+          "point": [0.68, 0.68],
+          "negativeStroke": [0.57, 0.3, 0.68, 0.5],
+          "files": {"overlay": "selected_negative.png"},
+          "expect": {
+            "fraction": [0.04, 0.11],
+            "centroidWithin": {"minX": 0.55, "maxX": 0.7, "minY": 0.6, "maxY": 0.9},
+            "boundsWithin": {"minX": 0.46, "maxX": 0.81, "minY": 0.3, "maxY": 1.0},
+            "selected": ["corgi chest"],
+            "notSelected": [
+              "corgi face",
+              "corgi ear",
+              "poodle face",
+              "poodle chest",
+              "left cat face",
+              "right cat face",
+              "wall, upper left",
+              "wall, upper right"
+            ]
+          }
+        }
+      ],
+      "expect": {"type": "selection"}
+    }
+  ]
+}

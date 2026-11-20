@@ -1,0 +1,56 @@
+{
+  "domain": "vision",
+  "task": "hand_landmarker",
+  "heading": "Hand Landmarker",
+  "samples": {
+    "python": "examples/hand_landmarker/python/hand_landmarker.py",
+    "android": "examples/hand_landmarker/android",
+    "ios": "examples/hand_landmarker/ios"
+  },
+  "models": [{"id": "hand_landmarker", "asset": "hand_landmarker.task"}],
+  "modes": [
+    {"id": "image", "options": {"runningMode": "IMAGE"}},
+    {"id": "video", "options": {"runningMode": "VIDEO"}}
+  ],
+  "tests": [
+    {
+      "about": "The photo shows a woman with one hand over her forehead and the other stretched towards the camera. Both hands must be found, each with 21 landmarks on the hand.",
+      "note": "woman_hands.jpg (640x960): a woman holds one hand over her forehead, fingers pointing right, and stretches the other towards the camera, fingers pointing left (blurred, at the left edge). Hand landmarks: 0 wrist, 12 middle fingertip. Which hand is the left one is not asserted.",
+      "options": {"numHands": 2},
+      "steps": [
+        {
+          "key": "woman_hands.jpg",
+          "image": "woman_hands.jpg",
+          "caption": "A woman showing both hands",
+          "files": {"annotated": "annotated.png"},
+          "expect": {
+            "groups": [
+              {
+                "key": "hands",
+                "name": "hand",
+                "landmarkCount": 21,
+                "instances": [
+                  {
+                    "name": "hand over the forehead",
+                    "points": {
+                      "wrist": {"x": 0.45, "y": 0.41, "tolerance": 0.08, "index": 0},
+                      "middle fingertip": {"x": 0.735, "y": 0.39, "tolerance": 0.06, "index": 12}
+                    }
+                  },
+                  {
+                    "name": "hand stretched out",
+                    "points": {
+                      "wrist": {"x": 0.41, "y": 0.7, "tolerance": 0.08, "index": 0},
+                      "middle fingertip": {"x": 0.02, "y": 0.735, "tolerance": 0.06, "index": 12}
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "expect": {"type": "landmarks"}
+    }
+  ]
+}

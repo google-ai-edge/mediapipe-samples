@@ -1,0 +1,155 @@
+{
+  "domain": "retrieval",
+  "task": "universal_embedder",
+  "heading": "Universal Embedder",
+  "samples": {
+    "python": "examples/universal_embedder/python/universal_embedder.py",
+    "android": "examples/universal_embedder/android",
+    "ios": "examples/universal_embedder/ios"
+  },
+  "models": [{"id": "embeddinggemma2_text_vision_440m", "asset": "embeddinggemma-2-text-vision-440m.litertlm", "large": true}],
+  "modes": [
+    {"id": "text-text", "options": {}},
+    {"id": "text-image", "options": {}},
+    {"id": "image-image", "options": {}}
+  ],
+  "note": "Identical inputs must score about 1. A sentence must be closer to a sentence about the same subject than to an unrelated one, and a description closer to the photo it describes than to a photo of something else. The photos are the cat and the cheeseburger of the image classifier notebook.",
+  "tests": [
+    {
+      "modes": ["text-text"],
+      "about": "Each pair of inputs is compared. Identical inputs must score about 1, and inputs about the same subject must score higher than inputs about different ones.",
+      "options": {"l2Normalize": true},
+      "inputs": [
+        {
+          "kind": "text",
+          "label": "the same sentence twice",
+          "value": "\"a photo of a cat\"  |  \"a photo of a cat\""
+        },
+        {
+          "kind": "text",
+          "label": "related sentences",
+          "value": "\"a photo of a cat\"  |  \"an adorable fluffy kitten\""
+        },
+        {
+          "kind": "text",
+          "label": "unrelated sentences",
+          "value": "\"a photo of a cat\"  |  \"the quarterly tax filing deadline\""
+        }
+      ],
+      "steps": [
+        {
+          "key": "the same sentence twice",
+          "pair": [{"text": "a photo of a cat"}, {"text": "a photo of a cat"}],
+          "expect": {"range": [0.99, 1.0001]}
+        },
+        {
+          "key": "related sentences",
+          "pair": [{"text": "a photo of a cat"}, {"text": "an adorable fluffy kitten"}],
+          "expect": {"range": [-1, 1]}
+        },
+        {
+          "key": "unrelated sentences",
+          "pair": [{"text": "a photo of a cat"}, {"text": "the quarterly tax filing deadline"}],
+          "expect": {"range": [-1, 1]}
+        }
+      ],
+      "expect": {
+        "type": "similarity",
+        "ordered": [{"higher": "related sentences", "lower": "unrelated sentences", "by": 0.1}]
+      }
+    },
+    {
+      "modes": ["text-image"],
+      "about": "Each pair of inputs is compared. Identical inputs must score about 1, and inputs about the same subject must score higher than inputs about different ones.",
+      "options": {"l2Normalize": true},
+      "inputs": [
+        {
+          "kind": "text",
+          "label": "cat description and cat photo",
+          "value": "\"a photo of a cat\"  |  photo classifier_cat.jpg"
+        },
+        {
+          "kind": "text",
+          "label": "cat description and burger photo",
+          "value": "\"a photo of a cat\"  |  photo classifier_burger.jpg"
+        },
+        {
+          "kind": "text",
+          "label": "burger description and burger photo",
+          "value": "\"a photo of a cheeseburger\"  |  photo classifier_burger.jpg"
+        },
+        {
+          "kind": "text",
+          "label": "burger description and cat photo",
+          "value": "\"a photo of a cheeseburger\"  |  photo classifier_cat.jpg"
+        },
+        {"asset": "classifier_burger.jpg", "kind": "image", "label": "classifier_burger.jpg"},
+        {"asset": "classifier_cat.jpg", "kind": "image", "label": "classifier_cat.jpg"}
+      ],
+      "steps": [
+        {
+          "key": "cat description and cat photo",
+          "pair": [{"text": "a photo of a cat"}, {"image": "classifier_cat.jpg"}],
+          "expect": {"range": [-1, 1]}
+        },
+        {
+          "key": "cat description and burger photo",
+          "pair": [{"text": "a photo of a cat"}, {"image": "classifier_burger.jpg"}],
+          "expect": {"range": [-1, 1]}
+        },
+        {
+          "key": "burger description and burger photo",
+          "pair": [{"text": "a photo of a cheeseburger"}, {"image": "classifier_burger.jpg"}],
+          "expect": {"range": [-1, 1]}
+        },
+        {
+          "key": "burger description and cat photo",
+          "pair": [{"text": "a photo of a cheeseburger"}, {"image": "classifier_cat.jpg"}],
+          "expect": {"range": [-1, 1]}
+        }
+      ],
+      "expect": {
+        "type": "similarity",
+        "ordered": [
+          {"higher": "cat description and cat photo", "lower": "cat description and burger photo", "by": 0.05},
+          {"higher": "burger description and burger photo", "lower": "burger description and cat photo", "by": 0.05}
+        ]
+      }
+    },
+    {
+      "modes": ["image-image"],
+      "about": "Each pair of inputs is compared. Identical inputs must score about 1, and inputs about the same subject must score higher than inputs about different ones.",
+      "options": {"l2Normalize": true},
+      "inputs": [
+        {
+          "kind": "text",
+          "label": "the same photo twice",
+          "value": "photo classifier_cat.jpg  |  photo classifier_cat.jpg"
+        },
+        {
+          "kind": "text",
+          "label": "a cat photo and a burger photo",
+          "value": "photo classifier_cat.jpg  |  photo classifier_burger.jpg"
+        },
+        {"asset": "classifier_burger.jpg", "kind": "image", "label": "classifier_burger.jpg"},
+        {"asset": "classifier_cat.jpg", "kind": "image", "label": "classifier_cat.jpg"}
+      ],
+      "steps": [
+        {
+          "key": "the same photo twice",
+          "pair": [{"image": "classifier_cat.jpg"}, {"image": "classifier_cat.jpg"}],
+          "expect": {"range": [0.99, 1.0001]}
+        },
+        {
+          "key": "a cat photo and a burger photo",
+          "pair": [{"image": "classifier_cat.jpg"}, {"image": "classifier_burger.jpg"}],
+          "expect": {"range": [-1, 0.9]}
+        }
+      ],
+      "expect": {
+        "type": "similarity",
+        "ordered": [{"higher": "the same photo twice", "lower": "a cat photo and a burger photo", "by": 0.1}]
+      }
+    }
+  ]
+}

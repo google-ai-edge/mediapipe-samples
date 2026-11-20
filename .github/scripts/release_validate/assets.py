@@ -11,15 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The models and inputs of the validation, pinned by SHA-256.
+"""Downloads the models and inputs of the validation, pinned by SHA-256.
 
-Every file is downloaded once into the asset directory and checked against its
-checksum before each run, so that two runs validate exactly the same inputs.
-Hugging Face models are downloaded with `huggingface_hub.hf_hub_download` at an
-immutable commit `revision`; sample media inputs on Google Cloud Storage are
-downloaded with `urllib.request`. A file whose content changed upstream is an
-error: review the new file, then update its entry here (and the expectations
-that depend on it).
+The files are listed in spec/assets.json. Each is downloaded once into the
+asset directory and checked against its checksum before each run, so that two
+runs validate exactly the same inputs. Hugging Face models are downloaded with
+`huggingface_hub.hf_hub_download` at an immutable commit `revision`; sample
+media inputs on Google Cloud Storage are downloaded with `urllib.request`. A
+file whose content changed upstream is an error: review the new file, then
+update its entry in spec/assets.json (and the expectations that depend on it).
 """
 
 import hashlib
@@ -29,10 +29,10 @@ import subprocess
 import tempfile
 import urllib.request
 
-_MODELS = 'https://storage.googleapis.com/mediapipe-models/'
-_ASSETS = 'https://storage.googleapis.com/mediapipe-assets/'
-_TASKS = 'https://storage.googleapis.com/mediapipe-tasks/'
+import spec
 
+# Run with the Python of the validation environment, which has huggingface_hub;
+# the Python that runs run_local.py needs nothing but the standard library.
 _HF_DOWNLOAD_SNIPPET = (
     'import shutil, sys; '
     'from huggingface_hub import hf_hub_download; '
@@ -43,381 +43,8 @@ _HF_DOWNLOAD_SNIPPET = (
     'shutil.move(downloaded, dest)'
 )
 
-ASSETS = {
-    # --- Models on Hugging Face (litert-community), pinned by commit SHA. ---
-    'yamnet.tflite': {
-        'repo_id': 'litert-community/MediaPipe-AudioClassifier-YAMNet',
-        'filename': 'yamnet.tflite',
-        'revision': 'fcd63e19bd0a7a0d3d8c9c070af1898f7dd29675',
-        'sha256': '4d8b4a53282dc83ef04e3e7dbc4fbc98082e34e44ed798e16c3a0cdd4c584faf',
-        'bytes': 4126810,
-    },
-    'blaze_face_short_range.tflite': {
-        'repo_id': 'litert-community/MediaPipe-FaceDetector-BlazeFace-Short-Range',
-        'filename': 'blaze_face_short_range.tflite',
-        'revision': '1ab2d0325e858c9aa0bbf89e85a759ec7e394f25',
-        'sha256': 'b4578f35940bf5a1a655214a1cce5cab13eba73c1297cd78e1a04c2380b0152f',
-        'bytes': 229746,
-    },
-    'blaze_face_full_range.tflite': {
-        'repo_id': 'litert-community/MediaPipe-FaceDetector-BlazeFace-Full-Range',
-        'filename': 'blaze_face_full_range.tflite',
-        'revision': '6bc74b6a14695b84caafcfb763b14ee633f02f60',
-        'sha256': '3698b18f063835bc609069ef052228fbe86d9c9a6dc8dcb7c7c2d69aed2b181b',
-        'bytes': 1083786,
-    },
-    'face_landmarker.task': {
-        'repo_id': 'litert-community/MediaPipe-FaceLandmarker',
-        'filename': 'face_landmarker.task',
-        'revision': 'cfb66f449dc5cb9f8dada3d52174d4cdae1c9ef1',
-        'sha256': '64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff',
-        'bytes': 3758596,
-    },
-    'gesture_recognizer.task': {
-        'repo_id': 'litert-community/MediaPipe-GestureRecognizer',
-        'filename': 'gesture_recognizer.task',
-        'revision': 'cdc67a52ca3c423d75bb32c5e636a94a2163cf73',
-        'sha256': '97952348cf6a6a4915c2ea1496b4b37ebabc50cbbf80571435643c455f2b0482',
-        'bytes': 8373440,
-    },
-    'hand_landmarker.task': {
-        'repo_id': 'litert-community/MediaPipe-HandLandmarker-Full',
-        'filename': 'hand_landmarker.task',
-        'revision': '74806d5014cdd5bd6ce94a80a0e4e93ae4cf2f9b',
-        'sha256': 'fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1',
-        'bytes': 7819105,
-    },
-    'holistic_landmarker.task': {
-        'repo_id': 'litert-community/MediaPipe-HolisticLandmarker',
-        'filename': 'holistic_landmarker.task',
-        'revision': '4f2fac960e1bbb53343073a56ff524a1cfcc177e',
-        'sha256': 'e2dab61191e2dcd0a15f943d8e3ed1dce13c82dfa597b9dd39f562975a50c3f8',
-        'bytes': 13683609,
-    },
-    'efficientnet_lite0.tflite': {
-        'repo_id': 'litert-community/MediaPipe-ImageClassifier-EfficientNet-Lite0',
-        'filename': 'efficientnet_lite0_float32.tflite',
-        'revision': 'a41ac2f251fb8f9e1f0d8cc12eea427d1c379cbc',
-        'sha256': '6c7ab0a6e5dcbf38a8c33b960996a55a3b4300b36a018c4545801de3a3c8bde0',
-        'bytes': 18582189,
-    },
-    'efficientnet_lite2.tflite': {
-        'repo_id': 'litert-community/MediaPipe-ImageClassifier-EfficientNet-Lite2',
-        'filename': 'efficientnet_lite2_float32.tflite',
-        'revision': '12e1bd15b84d3c4d69066c85c5bca3fb7572c921',
-        'sha256': '94b6c84a5d6de20f932558de213b50e0338dcc06ab83d8d64b12128a476b4b83',
-        'bytes': 24325765,
-    },
-    'mobilenet_v3_small.tflite': {
-        'repo_id': 'litert-community/MediaPipe-ImageEmbedder-MobileNet-V3-Small',
-        'filename': 'mobilenet_v3_small.tflite',
-        'revision': '45a8f4237a3175e9d580be1e267b10681f323813',
-        'sha256': 'bbbb4c51a55a53905af1daec995ca1aae355046f8839bb8c9f5ce9271394bc40',
-        'bytes': 4117670,
-    },
-    'mobilenet_v3_large.tflite': {
-        'repo_id': 'litert-community/MediaPipe-ImageEmbedder-MobileNet-V3-Large',
-        'filename': 'mobilenet_v3_large.tflite',
-        'revision': 'c9f46d7bfe7977c7fc0ecf5fe45679fac09f410e',
-        'sha256': '11af3c560dfeed7737cb4c03c23bf52a8403020784192d4dea0b74862a12828d',
-        'bytes': 10889458,
-    },
-    'deeplab_v3.tflite': {
-        'repo_id': 'litert-community/MediaPipe-ImageSegmenter-DeepLab-V3',
-        'filename': 'deeplab_v3.tflite',
-        'revision': '739202fd92e4a822ba439afe91bdf69254227d94',
-        'sha256': 'ff36e24d40547fe9e645e2f4e8745d1876d6e38b332d39a82f0bf0f5d1d561b3',
-        'bytes': 2780176,
-    },
-    'hair_segmenter.tflite': {
-        'repo_id': 'litert-community/MediaPipe-ImageSegmenter-Hair',
-        'filename': 'hair_segmenter.tflite',
-        'revision': '636ae705ff62db7fcdb8af27b19abb8ffc168f34',
-        'sha256': '2628cf3ce5f695f604cbea2841e00befcaa3624bf80caf3664bef2656d59bf84',
-        'bytes': 781618,
-    },
-    'selfie_segmenter.tflite': {
-        'repo_id': 'litert-community/MediaPipe-ImageSegmenter-Selfie-Square',
-        'filename': 'selfie_segmenter.tflite',
-        'revision': '051d3732aad8fd018433520029e00ade7463aaea',
-        'sha256': '191ac9529ae506ee0beefa6b2c945a172dab9d07d1e802a290a4e4038226658b',
-        'bytes': 249537,
-    },
-    'selfie_segmenter_landscape.tflite': {
-        'repo_id': 'litert-community/MediaPipe-ImageSegmenter-Selfie-Landscape',
-        'filename': 'selfie_segmenter_landscape.tflite',
-        'revision': 'f04c07a5598479d0b03c796c0806329e9fab4082',
-        'sha256': '490e9ea734313e0de10fa0cd9e3c6133e36ea4db2b7a49bde9ef019f72796b8e',
-        'bytes': 250177,
-    },
-    'selfie_multiclass_256x256.tflite': {
-        'repo_id': 'litert-community/MediaPipe-ImageSegmenter-Selfie-Multiclass',
-        'filename': 'selfie_multiclass_256x256.tflite',
-        'revision': 'c7b7e9e0f1e73c10a12114379077b5257e60c25c',
-        'sha256': 'c6748b1253a99067ef71f7e26ca71096cd449baefa8f101900ea23016507e0e0',
-        'bytes': 16371837,
-    },
-    'interactive_segmentation.task': {
-        'repo_id': 'litert-community/MediaPipe-InteractiveSegmenter-MagicTouch',
-        'filename': 'interactive_segmentation.task',
-        'revision': '61de3ef0dcf18e1ad21636bb206439dff5cf516d',
-        'sha256': '38431bc66b883404e8397f74c3579404315b9b52b04a46c6346fe906a7309b03',
-        'bytes': 30525312,
-    },
-    'language_detector.tflite': {
-        'repo_id': 'litert-community/MediaPipe-LanguageDetector',
-        'filename': 'language_detector.tflite',
-        'revision': '58112979e05eaf888cfd26e5924a4b9743bfd99f',
-        'sha256': '7db4f23dfe1ad8966b050b419a865da451143fd43eb6b606a256aadeeb1e5417',
-        'bytes': 315294,
-    },
-    'efficientdet_lite0_int8.tflite': {
-        'repo_id': 'litert-community/MediaPipe-ObjectDetector-EfficientDet-Lite0',
-        'filename': 'efficientdet_lite0_int8.tflite',
-        'revision': '2c3b3e2fc45b9fddf8ef8ad03a63ca874458add6',
-        'sha256': '0720bf247bd76e6594ea28fa9c6f7c5242be774818997dbbeffc4da460c723bb',
-        'bytes': 4602795,
-    },
-    # Not used by the notebook; see the object_detector entry in cases.py.
-    'efficientdet_lite0_float32.tflite': {
-        'repo_id': 'litert-community/MediaPipe-ObjectDetector-EfficientDet-Lite0',
-        'filename': 'efficientdet_lite0_float32.tflite',
-        'revision': '2c3b3e2fc45b9fddf8ef8ad03a63ca874458add6',
-        'sha256': '40338edf5ec70d43e318b0a716a84d4564cd1802759a7a07170c7e43796dbf58',
-        'bytes': 13836895,
-    },
-    'efficientdet_lite2_float32.tflite': {
-        'repo_id': 'litert-community/MediaPipe-ObjectDetector-EfficientDet-Lite2',
-        'filename': 'efficientdet_lite2_float32.tflite',
-        'revision': '50785e6df46b2549e3e3608fa9f0d238f345f482',
-        'sha256': 'ad2abbf2b4e10585e15176fd7b5ef03c28dda959ae26fc142549fdd1814db91d',
-        'bytes': 23096891,
-    },
-    'ssd_mobilenet_v2_float32.tflite': {
-        'repo_id': 'litert-community/MediaPipe-ObjectDetector-SSD-MobileNet-V2',
-        'filename': 'ssd_mobilenet_v2_float32.tflite',
-        'revision': 'a9d10f5380cec69294aca48e1ddf350fce3adefe',
-        'sha256': 'b8ccb1a25d45455ba52e85f26531948e1cb75efeb94c7c3d456d54fd4d6fbdd2',
-        'bytes': 11316189,
-    },
-    'ssd_mobilenet_v2_float16.tflite': {
-        'repo_id': 'litert-community/MediaPipe-ObjectDetector-SSD-MobileNet-V2',
-        'filename': 'ssd_mobilenet_v2_float16.tflite',
-        'revision': 'a9d10f5380cec69294aca48e1ddf350fce3adefe',
-        'sha256': 'ee21e12bfdc464100c6008c865ab8294f6a04162e6ed2e11986f1175b02cfab2',
-        'bytes': 5918749,
-    },
-    'pose_landmarker_lite.task': {
-        'repo_id': 'litert-community/MediaPipe-PoseLandmarker-Lite',
-        'filename': 'pose_landmarker_lite.task',
-        'revision': '105f65fd3484e46a25fe517a3722932d4392083c',
-        'sha256': '59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a',
-        'bytes': 5777746,
-    },
-    'pose_landmarker_full.task': {
-        'repo_id': 'litert-community/MediaPipe-PoseLandmarker-Full',
-        'filename': 'pose_landmarker_full.task',
-        'revision': 'e356612f3ba14ec42a14f14d0d7d0a14d450de59',
-        'sha256': '4eaa5eb7a98365221087693fcc286334cf0858e2eb6e15b506aa4a7ecdcec4ad',
-        'bytes': 9398198,
-    },
-    'pose_landmarker_heavy.task': {
-        'repo_id': 'litert-community/MediaPipe-PoseLandmarker-Heavy',
-        'filename': 'pose_landmarker_heavy.task',
-        'revision': '8a9deee6a176119dbaf22006b4a1db71fd889d82',
-        'sha256': '64437af838a65d18e5ba7a0d39b465540069bc8aae8308de3e318aad31fcbc7b',
-        'bytes': 30664242,
-    },
-    'bert_classifier.tflite': {
-        'repo_id': 'litert-community/MediaPipe-TextClassifier-MobileBERT',
-        'filename': 'bert_classifier.tflite',
-        'revision': 'ed51b3985b8cfe3b16e0c70d0c706a0f04bc15d4',
-        'sha256': '9b45012ab143d88d61e10ea501d6c8763f7202b86fa987711519d89bfa2a88b1',
-        'bytes': 25707538,
-    },
-    'average_word_classifier.tflite': {
-        'repo_id': 'litert-community/MediaPipe-TextClassifier-AverageWord',
-        'filename': 'average_word_classifier.tflite',
-        'revision': '22c1175ba45ca7185c2e7f9484c6e705bb3f9230',
-        'sha256': '13bf6f7f35964f1e85d6cc762ee7b1952009b532b233baa5bdb4bf7441097f34',
-        'bytes': 775706,
-    },
-    # Not yet published on Hugging Face under litert-community.
-    'bert_embedder.tflite': {
-        'url': _MODELS + 'text_embedder/bert_embedder/float32/1/bert_embedder.tflite',
-        'sha256': '02ae6279faf86c2cd4ff18f61876c878bcc0b572b472f0678897a184c4ac7ef6',
-        'bytes': 26142232,
-    },
-    'universal_sentence_encoder.tflite': {
-        'repo_id': 'litert-community/MediaPipe-TextEmbedder-Universal-Sentence-Encoder',
-        'filename': 'universal_sentence_encoder.tflite',
-        'revision': '832fd94a3ddabfb9ed79abee611e95040c3c756a',
-        'sha256': '89ad3c74175dd8caa398cc22b657296d94302d20c525c12b58b29420f7249749',
-        'bytes': 6120274,
-    },
-    'embedding_gemma.task': {
-        'repo_id': 'litert-community/MediaPipe-TextEmbedder-EmbeddingGemma-300M',
-        'filename': 'embedding_gemma.task',
-        'revision': '93c96b51d328c85e4cbbfe3039d3cd9b98d8a55d',
-        'sha256': '913b7a1edc7c7c3d1da3979ec1d0648ed9e0a370f181bb59ab177ca4b97707ad',
-        'bytes': 183816181,
-    },
-    'proofread_quant_200m.litertlm': {
-        'repo_id': 'litert-community/MediaPipe-TextProofreader-200M',
-        'filename': 'proofread_quant_200m.litertlm',
-        'revision': '7f5d1124f2adc535113f671268eca8c5b65df77e',
-        'sha256': '2caa317d5a6f951af6e437edce3bb3a9fdedc85a7a8c2a8fcaec96318d7708cc',
-        'bytes': 117587968,
-    },
-    'summarization_quant_200m_2modes.litertlm': {
-        'repo_id': 'litert-community/MediaPipe-TextSummarizer-200M',
-        'filename': 'summarization_quant_200m_2modes.litertlm',
-        'revision': 'e59af6de5d4753422ce706280d0371fdc223b1ba',
-        'sha256': '8b2d4ef09236adb9ead3127325526ba1aa5a59feb7c5de2d3f5958f27479de59',
-        'bytes': 117587968,
-    },
-
-    # --- Speech models (large). The sample of each task downloads the first. ---
-    'parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm': {
-        'repo_id': 'litert-community/parakeet-tdt-0.6b-v3',
-        'filename': 'parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm',
-        'revision': 'cd95f7bb97fd0757ab1bd6d5eff513cfcd7a2a10',
-        'sha256': '66c5a74cf6c2c1d2b990901f6cece5bb53e3214dbceafa0989900a6f0eeb3504',
-        'bytes': 614588752,
-    },
-    'kokoro_int8_fp16.litertlm': {
-        'repo_id': 'litert-community/Kokoro-82M',
-        'filename': 'kokoro_int8_fp16.litertlm',
-        'revision': 'bf1c2405642aa310bd210205c22d3ae1abc253fb',
-        'sha256': 'e7b931ee5d4b7104012a838c9eee240d19ea69cb3ca269041a3274f83dbb7fa1',
-        'bytes': 294783298,
-    },
-    'kokoro_int8_gpu_fp16.litertlm': {
-        'repo_id': 'litert-community/Kokoro-82M',
-        'filename': 'kokoro_int8_gpu_fp16.litertlm',
-        'revision': 'bf1c2405642aa310bd210205c22d3ae1abc253fb',
-        'sha256': '1ef178b127ec48c737daf17eabb4cea5f6b3ffbc510aced270fe5c267bbeac52',
-        'bytes': 294750530,
-    },
-    'pocket_tts_en_int8.litertlm': {
-        'repo_id': 'litert-community/pocket-tts',
-        'filename': 'pocket_tts_en_int8.litertlm',
-        'revision': '03f949ec418ccd4d153008f7ef9c58c754cc0616',
-        'sha256': '465e0083cd61188772aed76160b07af0dcf59057497d7659f43f3f2b13a174a1',
-        'bytes': 162766856,
-    },
-    'phonon_int8.litertlm': {
-        'repo_id': 'litert-community/phonon-31m-en',
-        'filename': 'phonon_int8.litertlm',
-        'revision': '63a6170895a34600560f80dce4c70f7c90e32956',
-        'sha256': 'b33a9a0d65acec36762db38a2bff6d899f4aab34b196bb56d89fab5665eabebe',
-        'bytes': 87205888,
-    },
-
-    # --- Embedding models (large), for the retrieval and decision tasks. ---
-    'embeddinggemma-2-text-270m.litertlm': {
-        'repo_id': 'litert-community/embeddinggemma-2-text-270m-litert-lm',
-        'filename': 'embeddinggemma-2-text-270m.litertlm',
-        'revision': '9be6e8b90982095dc05c2bd162e4b954ee4dbac7',
-        'sha256': '2d079ee2f6f066b1f368e8d7c819f55214eaef1d0513b312321901f30ab286fb',
-        'bytes': 164626432,
-    },
-    'embeddinggemma-2-text-vision-440m.litertlm': {
-        'repo_id': 'litert-community/embeddinggemma-2-text-vision-440m-litert-lm',
-        'filename': 'embeddinggemma-2-text-vision-440m.litertlm',
-        'revision': '538e6574db281b4fe17993a3212f10c73bd678c6',
-        'sha256': '92dcbea108899e5d6e30d919b0744f90d9967e80c67a4ab5503ac16d54f62eb0',
-        'bytes': 387710976,
-    },
-
-    # --- Inputs: the ones the notebooks download, unless noted. ---
-    'speech_16000_hz_mono.wav': {
-        'url': _ASSETS + 'speech_16000_hz_mono.wav',
-        'sha256': '71caf50b8757d6ab9cad5eae4d36669d3c20c225a51660afd7fe0dc44cdb74f6',
-        'bytes': 136798,
-    },
-    # The face detector notebook downloads its photo from i.imgur.com, and the
-    # pose landmarker notebook from cdn.pixabay.com. Neither host serves
-    # scripts, so the samples and the validation use these MediaPipe test
-    # images instead.
-    'portrait.jpg': {
-        'url': _ASSETS + 'portrait.jpg',
-        'sha256': 'a6f11efaa834706db23f275b6115058fa87fc7f14362681e6abe14e82749de3e',
-        'bytes': 176561,
-    },
-    'pose.jpg': {
-        'url': _ASSETS + 'pose.jpg',
-        'sha256': 'c8a830ed683c0276d713dd5aeda28f415f10cd6291972084a40d0d8b934ed62b',
-        'bytes': 44100,
-    },
-    'business-person.png': {
-        'url': _ASSETS + 'business-person.png',
-        'sha256': '1f61cf0603cef77ffca4e24848ddf8290b5651d03b957e93b742c9ef963b5c11',
-        'bytes': 1094717,
-    },
-    'thumbs_down.jpg': {
-        'url': _TASKS + 'gesture_recognizer/thumbs_down.jpg',
-        'sha256': '080b589bf3b91ba10cc6c03645be3b5b491a8ca8c8f7d65b5f32c563ae266af9',
-        'bytes': 46651,
-    },
-    'victory.jpg': {
-        'url': _TASKS + 'gesture_recognizer/victory.jpg',
-        'sha256': '6ac265f3ace6a6c4ac4a9079b63fcce4ab6517272afb1e430857f55ef324fde6',
-        'bytes': 19125,
-    },
-    'thumbs_up.jpg': {
-        'url': _TASKS + 'gesture_recognizer/thumbs_up.jpg',
-        'sha256': '2aee0e3a69ba5f0d3287597e61d265f4f3ac2a44ccec198dddd2639b0c8ef7ba',
-        'bytes': 28894,
-    },
-    'pointing_up.jpg': {
-        'url': _TASKS + 'gesture_recognizer/pointing_up.jpg',
-        'sha256': 'f4a701316b63dd8fa56e622f2b3042766369ccc189f0d89513f803cd985b993b',
-        'bytes': 36757,
-    },
-    'woman_hands.jpg': {
-        'url': _TASKS + 'hand_landmarker/woman_hands.jpg',
-        'sha256': '70cbeb38e198c9862202e0979c21a99b40ca980d3e7b250176c85b1636a40f12',
-        'bytes': 67719,
-    },
-    # Two different photos are published as "burger.jpg"; this is the one of
-    # the image classifier notebook.
-    'classifier_burger.jpg': {
-        'url': _TASKS + 'image_classifier/burger.jpg',
-        'sha256': '08151ebb48f30a6cfbea02168ec0f3c0f1694d64c8d0f75ca08a63a89302853f',
-        'bytes': 92220,
-    },
-    'classifier_cat.jpg': {
-        'url': _TASKS + 'image_classifier/cat.jpg',
-        'sha256': 'a83aa74a3d1d9bbc8bf92065e6e4d1ba217438a9f4a95f35287b2e8316e83859',
-        'bytes': 69569,
-    },
-    'burger.jpg': {
-        'url': _ASSETS + 'burger.jpg',
-        'sha256': '97c15bbbf3cf3615063b1031c85d669de55839f59262bbe145d15ca75b36ecbf',
-        'bytes': 30300,
-    },
-    'burger_crop.jpg': {
-        'url': _ASSETS + 'burger_crop.jpg',
-        'sha256': '8f58de573f0bf59a49c3d86cfabb9ad4061481f574aa049177e8da3963dddc50',
-        'bytes': 26500,
-    },
-    'segmentation_input_rotation0.jpg': {
-        'url': _ASSETS + 'segmentation_input_rotation0.jpg',
-        'sha256': '5bf58d8af1f1c33224f3f3bc0ce451c8daf0739cc15a86d59d8c3bf2879afb97',
-        'bytes': 16741,
-    },
-    'cats_and_dogs.jpg': {
-        'url': _ASSETS + 'cats_and_dogs.jpg',
-        'sha256': 'a2eaa7ad3a1aae4e623dd362a5f737e8a88d122597ecd1a02b3e1444db56df9c',
-        'bytes': 54472,
-    },
-    'cat_and_dog.jpg': {
-        'url': _TASKS + 'object_detector/cat_and_dog.jpg',
-        'sha256': 'cfa90c34bb93021165e48bd22cfc20dbbb0440ff638a54878939bf30d362e824',
-        'bytes': 69041,
-    },
-}
+# Every pinned file by name: spec/assets.json, read through spec.py.
+ASSETS = spec.assets()
 
 
 class AssetError(Exception):
@@ -432,10 +59,10 @@ def sha256_of(path):
   return digest.hexdigest()
 
 
-def _source_label(spec):
-  if 'repo_id' in spec:
-    return f"{spec['repo_id']}/{spec['filename']}@{spec['revision']}"
-  return spec['url']
+def _source_label(entry):
+  if 'repo' in entry:
+    return f"{entry['repo']}/{entry['file']}@{entry['revision']}"
+  return entry['url']
 
 
 def _download_url(url, path):
@@ -449,9 +76,9 @@ def _download_url(url, path):
   os.replace(partial, path)
 
 
-def _download_hf(spec, path, python_exe=None, hf_cache_dir=None):
+def _download_hf(entry, path, python_exe=None, hf_cache_dir=None):
   """Downloads a pinned Hugging Face asset via `huggingface_hub.hf_hub_download`."""
-  source = _source_label(spec)
+  source = _source_label(entry)
   partial = path + '.download'
   stage_root = hf_cache_dir or os.path.dirname(path)
   os.makedirs(stage_root, exist_ok=True)
@@ -463,8 +90,8 @@ def _download_hf(spec, path, python_exe=None, hf_cache_dir=None):
       if hf_cache_dir:
         env['HF_HOME'] = hf_cache_dir
       completed = subprocess.run(
-          [python_exe, '-c', _HF_DOWNLOAD_SNIPPET, spec['repo_id'], spec['filename'],
-           spec['revision'], stage_dir, hf_cache_dir or '', partial],
+          [python_exe, '-c', _HF_DOWNLOAD_SNIPPET, entry['repo'], entry['file'],
+           entry['revision'], stage_dir, hf_cache_dir or '', partial],
           capture_output=True, text=True, encoding='utf-8', errors='replace', env=env, check=False)
       if completed.returncode != 0:
         detail = (completed.stderr.strip() or completed.stdout.strip() or
@@ -478,9 +105,9 @@ def _download_hf(spec, path, python_exe=None, hf_cache_dir=None):
             f'could not download {source}: huggingface_hub is not installed in this Python'
         ) from error
       downloaded = hf_hub_download(
-          repo_id=spec['repo_id'],
-          filename=spec['filename'],
-          revision=spec['revision'],
+          repo_id=entry['repo'],
+          filename=entry['file'],
+          revision=entry['revision'],
           local_dir=stage_dir,
           cache_dir=hf_cache_dir,
       )
@@ -524,25 +151,25 @@ def ensure_asset(name, directory, log=None, python_exe=None, hf_cache_dir=None):
       pinned content.
   """
   if name not in ASSETS:
-    raise AssetError(f'{name} is not listed in assets.ASSETS')
-  spec = ASSETS[name]
+    raise AssetError(f'{name} is not listed in spec/assets.json')
+  entry = ASSETS[name]
   path = os.path.join(directory, name)
   os.makedirs(directory, exist_ok=True)
-  if os.path.exists(path) and sha256_of(path) != spec['sha256']:
+  if os.path.exists(path) and sha256_of(path) != entry['sha256']:
     # A file from an earlier state of the manifest, or a damaged one.
     os.remove(path)
   if not os.path.exists(path):
     if log:
-      log(f"Downloading {name} ({spec['bytes'] / 1e6:.1f} MB)")
-    if 'repo_id' in spec:
-      _download_hf(spec, path, python_exe=python_exe, hf_cache_dir=hf_cache_dir)
+      log(f"Downloading {name} ({entry['bytes'] / 1e6:.1f} MB)")
+    if 'repo' in entry:
+      _download_hf(entry, path, python_exe=python_exe, hf_cache_dir=hf_cache_dir)
     else:
-      _download_url(spec['url'], path)
+      _download_url(entry['url'], path)
     actual = sha256_of(path)
-    if actual != spec['sha256']:
+    if actual != entry['sha256']:
       os.replace(path, path + '.unexpected')
       raise AssetError(
-          f"{name} is not the pinned file: {_source_label(spec)} now has SHA-256 "
-          f"{actual}, expected {spec['sha256']}. The file changed upstream. "
+          f"{name} is not the pinned file: {_source_label(entry)} now has SHA-256 "
+          f"{actual}, expected {entry['sha256']}. The file changed upstream. "
           f"It was kept as {path}.unexpected for review.")
   return path

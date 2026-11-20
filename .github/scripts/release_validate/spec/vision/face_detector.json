@@ -1,0 +1,38 @@
+{
+  "domain": "vision",
+  "task": "face_detector",
+  "heading": "Face Detection",
+  "samples": {
+    "python": "examples/face_detector/python/face_detector.py",
+    "android": "examples/face_detector/android",
+    "ios": "examples/face_detector/ios"
+  },
+  "models": [
+    {"id": "blaze_face_short_range", "asset": "blaze_face_short_range.tflite"},
+    {"id": "blaze_face_full_range", "asset": "blaze_face_full_range.tflite"}
+  ],
+  "modes": [
+    {"id": "image", "options": {"runningMode": "IMAGE"}},
+    {"id": "video", "options": {"runningMode": "VIDEO"}}
+  ],
+  "tests": [
+    {
+      "about": "The photo shows one man facing the camera. His face must be found, with the eyes and the nose where they are.",
+      "note": "portrait.jpg (820x1024): one man in a suit facing the camera, arms crossed. His right eye is on the left of the image. BlazeFace keypoints: 0 right eye, 1 left eye, 2 nose tip. The face is a little under a third of the image wide.",
+      "files": {"annotated": "annotated.png"},
+      "steps": [{"key": "portrait.jpg", "image": "portrait.jpg", "caption": "A man facing the camera"}],
+      "expect": {
+        "type": "faces",
+        "count": 1,
+        "minScore": 0.5,
+        "keypoints": [
+          {"index": 0, "name": "right eye", "x": 0.452, "y": 0.17, "tolerance": 0.05},
+          {"index": 1, "name": "left eye", "x": 0.548, "y": 0.17, "tolerance": 0.05},
+          {"index": 2, "name": "nose tip", "x": 0.513, "y": 0.232, "tolerance": 0.05}
+        ],
+        "boxWidth": [0.18, 0.4],
+        "boxContains": {"x": 0.513, "y": 0.232}
+      }
+    }
+  ]
+}

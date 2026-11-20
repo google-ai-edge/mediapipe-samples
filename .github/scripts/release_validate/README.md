@@ -20,6 +20,10 @@ This is the Python counterpart of
 [`release_validate` in mediapipe-samples-web](https://github.com/google-ai-edge/mediapipe-samples-web/tree/main/.github/scripts/release_validate),
 and follows its design.
 
+What is run and what is expected is not written in Python: it is defined once,
+in JSON, in [`spec/`](spec/README.md), for every platform. See
+[One spec for every platform](#one-spec-for-every-platform).
+
 ## Requirements
 
 - macOS on Apple silicon (CPU + Metal GPU), or Windows / Linux with `--cpu-only`.
@@ -75,8 +79,8 @@ python3 .github/scripts/release_validate/run_local.py --list
 
 A case is one task, model, mode and delegate, for example
 `vision__face_detector__blaze_face_short_range__image__GPU`. The matrix has 162
-cases for the 22 samples, each on both delegates. `cases.py` lists them, and so
-does `--list`.
+cases for the 22 samples, each on both delegates. The task files in `spec/`
+define them, and `--list` prints them.
 
 | Domain | Tasks | Cases |
 |---|---|---|
@@ -93,12 +97,14 @@ speech, EmbeddingGemma text embedder, retrieval, decision) use models of 90 to
 For every case, `run_local.py` starts a new Python process (`worker.py`) that
 
 1. imports the sample and calls its command line entry point, `main(argv)`, with
-   the model, the input, the delegate and an output path, exactly as
-   `python sample.py --model ... --delegate gpu` would;
-2. turns the MediaPipe result that `main()` returned into plain JSON.
+   the model, the input, the options, the delegate and an output path, exactly
+   as `python sample.py --model ... --delegate gpu` would (`python_adapter.py`
+   derives these arguments from the steps and options of the case in the spec);
+2. turns the MediaPipe result that `main()` returned into plain JSON, the
+   observation.
 
-Back in `run_local.py`, `verify.py` compares that JSON with the expectation of
-the case from `expectations.py`. A fresh process per case means that a crash in
+Back in `run_local.py`, `verify.py` compares that observation with the
+expectation of the case from the spec. A fresh process per case means that a crash in
 native code fails one case, not the run, and that no state carries over from one
 case to the next.
 
@@ -117,7 +123,7 @@ suite.
 | `PASS` | The sample ran and every output check passed. On the GPU: and the log shows a GPU delegate. | no |
 | `FAIL` | The sample raised an error, crashed, timed out, or returned a wrong result. | yes |
 | `GPU_UNCONFIRMED` | The output is correct, but the native log has no sign that a GPU delegate was created. | yes, unless `--allow-unconfirmed-gpu` |
-| `UNSUPPORTED` | MediaPipe rejects the combination with the error listed in `cases.KNOWN_UNSUPPORTED`. | no |
+| `UNSUPPORTED` | MediaPipe rejects the combination with the error listed under `unsupported` in the spec of the task. | no |
 | `UNVERIFIED` | The sample ran, but no expectation is defined for the case. | yes |
 
 `PASS` is the only status that says "this works". `UNSUPPORTED` is never counted
@@ -125,8 +131,8 @@ as a pass; it is listed separately in the summary.
 
 ### Known unsupported combinations
 
-`cases.KNOWN_UNSUPPORTED` lists the combinations that MediaPipe itself declares
-unsupported, with the text of the error it raises:
+The `unsupported` list of a task in `spec/` names the combinations that
+MediaPipe itself declares unsupported, with the text of the error it raises:
 
 - Text Proofreader, Text Summarizer, PocketTTS and Phonon on the GPU:
   `Only CPU delegate is supported.`
@@ -162,9 +168,10 @@ are not listed yet.
 
 ## Ground truths
 
-`expectations.py` states what is true about each input, with tolerances wide
+The tests in `spec/` state what is true about each input, with tolerances wide
 enough to hold for any correct release. The same expectation applies to both
-delegates.
+delegates, and to every platform. The `note` of a test says how its ground
+truth was established.
 
 - Positions (a nose tip, a wrist, a box) were marked by eye on the photos and
   checked by drawing each mark and its tolerance back onto the photo. They were
@@ -188,7 +195,47 @@ delegates.
 it builds a correct output from the expectation, which must pass, and then
 damages it in the ways a broken release would (a missed object, a mirrored
 result, a mask of the wrong format, a score that is not a number), and every
-damaged output must fail.
+damaged output must fail. It also checks the spec itself, and that the Python
+samples can do everything the spec asks of them.
+
+## One spec for every platform
+
+The cases, their inputs and their ground truths are in [`spec/`](spec/README.md)
+as JSON, like the spec tests of the Firebase SDKs: written once, run on every
+platform. A test there names a photo, the task options and what must be found
+in the photo; it does not name a command line or a Python class.
+
+```
+spec/*.json  --+-- python_adapter.py -> examples/*/python -> worker.py --+
+  (one source  |                                                         +--> observations
+   of truth)   +-- spec.py export ----> a runner for the Android or -----+        |
+                                         iOS apps (not written yet)        verify.py, policy.py
+                                                                                  |
+                                                                               report
+```
+
+Each platform has two things of its own: how it drives its sample, and how it
+reads the result. For the Python samples these are `python_adapter.py` and the
+observers of `worker.py`. Everything else is shared: the spec, the verifiers
+(`verify.py`), the rules for a status (`policy.py`) and the report.
+
+```sh
+# Is the spec consistent?
+python3 .github/scripts/release_validate/spec.py check
+
+# The cases of a platform as one flat file, for its runner
+python3 .github/scripts/release_validate/spec.py export --platform android --out cases.json
+
+# Judge what that runner observed, and write the report
+python3 .github/scripts/release_validate/verify_observations.py observations.json
+```
+
+There is no Android or iOS runner yet; `verify_observations.py` has so far only
+judged observations of the Python samples. What differs on those platforms is
+already in the spec: the files that the Python samples write to disk
+(`annotated.png`, `mask.png`, `speech.wav`) are checked for Python only, and
+the `unsupported` entries, which were observed with the Python API, do not
+excuse a failure of an app.
 
 ## Reproducibility
 
@@ -198,9 +245,9 @@ Two runs of the same release validate the same thing:
   release needs a version the pins exclude, the installation fails and says so;
   update the file (its header explains how), or pass `--no-constraints` for a
   run that is explicitly not reproducible.
-- **Models and inputs.** `assets.py` pins every file by SHA-256 and byte size.
-  A file whose content changed upstream fails the cases that use it instead of
-  being validated silently. Every Hugging Face model in `assets.py` is
+- **Models and inputs.** `spec/assets.json` pins every file by SHA-256 and byte
+  size. A file whose content changed upstream fails the cases that use it
+  instead of being validated silently. Every Hugging Face model in it is
   downloaded via `huggingface_hub.hf_hub_download` at an immutable commit
   `revision`.
 - **Processes.** Each case runs in a fresh process with the same arguments.
@@ -248,13 +295,15 @@ output, the native log and the exact arguments.
 
 | File | Purpose |
 |---|---|
-| `run_local.py` | Entry point: environment, downloads, one process per case, report. |
-| `cases.py` | The matrix, and the known unsupported combinations. |
-| `expectations.py` | Ground truths, how each sample is invoked, and the case descriptions. |
-| `verify.py` | Pure functions that check an observed output against an expectation. |
+| `spec/` | **The source of truth, in JSON:** tasks, models, modes, tests with their inputs and ground truths, the known unsupported combinations, and the pinned files. See [`spec/README.md`](spec/README.md). |
+| `spec.py` | Reads the spec, checks it, builds the matrix, and exports the cases of a platform. |
+| `run_local.py` | Entry point for the Python samples: environment, downloads, one process per case, report. |
+| `python_adapter.py` | How a case of the spec becomes the command line of a Python sample. |
+| `worker.py` | Runs one case inside the validation environment, and observes its result. |
+| `verify.py` | Pure functions that check an observation against an expectation. For every platform. |
 | `policy.py` | Turns the outcome of a case into its status; GPU evidence. |
-| `worker.py` | Runs one case inside the validation environment. |
-| `assets.py` | Models and inputs, pinned by checksum. |
+| `verify_observations.py` | Judges the observations of the runner of another platform, and writes the report. |
+| `assets.py` | Downloads the models and inputs, and checks them against their checksums. |
 | `report.py` | Writes `status.json`, `report.md` and `index.html`. |
 | `self_test.py` | Tests of the above; run before every validation. |
 | `constraints.txt` | Pinned package versions. |
@@ -264,11 +313,15 @@ output, the native log and the exact arguments.
 1. Write the sample like the others: a `run(...)` function that returns the
    MediaPipe result, and `main(argv=None)` that parses `--model`, `--delegate`
    and the inputs, and returns what `run()` returned.
-2. Add the task to `TASK_DEFINITIONS` in `cases.py`, and its model and inputs
-   to `assets.py`.
-3. In `expectations.py`, add the invocation to `get_plan()`, the ground truth to
-   `get_expectation()` and a description to `describe_case()`. A case without an
-   expectation is reported as `UNVERIFIED` and fails the run.
+2. Add its model and inputs to `spec/assets.json`, and the task to `spec/`:
+   a file `<domain>/<task>.json` with its models, modes and tests, listed in
+   `spec/index.json`. `spec/README.md` describes the format, and
+   `spec.py check` says what is missing.
+3. In `python_adapter.py`, name the observer of the task, and the command line
+   argument of the sample for each option and each file of the spec.
 4. If the result needs a new shape, add an observer to `worker.py` and a
    verifier to `verify.py`. `self_test.py` fails until the new verifier is
    covered by a correct and by damaged outputs.
+
+To change a ground truth, add a model or add a test, edit the JSON only; see
+"Changing the spec" in `spec/README.md`.

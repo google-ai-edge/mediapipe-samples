@@ -15,10 +15,11 @@
 """Tests of the validation itself. No MediaPipe is needed.
 
 run_local.py runs these before every validation: a verifier that accepts a wrong
-output would make the whole report worthless. For every case of the matrix, a
+output would make the whole report worthless. For every case of the spec, a
 correct output is built from its expectation and must be VERIFIED; then that
 output is damaged in the ways a broken release would damage it, and every
-damaged output must be FAILED.
+damaged output must be FAILED. The spec itself (spec/) is checked too: that it
+is consistent, and that the Python samples can do what it asks.
 
   python3 .github/scripts/release_validate/self_test.py
 """
@@ -29,6 +30,7 @@ import os
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 sys.dont_write_bytecode = True
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -36,12 +38,42 @@ REPO_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..', '..'))
 sys.path.insert(0, SCRIPT_DIR)
 
 import assets  # pylint: disable=g-import-not-at-top,wrong-import-position
-import cases  # pylint: disable=wrong-import-position
-import expectations  # pylint: disable=wrong-import-position
 import policy  # pylint: disable=wrong-import-position
+import python_adapter  # pylint: disable=wrong-import-position
+import spec  # pylint: disable=wrong-import-position
 import verify  # pylint: disable=wrong-import-position
 
 NAN = float('nan')
+
+# What an observation says about the files a sample wrote, and where an
+# expectation names such a file.
+FILE_OBSERVATIONS = ('annotatedFile', 'figureFile', 'maskFile', 'blurFile', 'overlayFile', 'wavFile', 'file')
+FILE_EXPECTATIONS = ('annotatedFile', 'figureFile', 'maskFile', 'blurFile', 'overlayFile', 'wavFile', 'fileName')
+
+
+def expectation_of(task, model=None, mode=None, platform='python'):
+  """The expectation of the first case of a task (and model, and mode)."""
+  case = next(c for c in spec.build_matrix(platform=platform)
+              if c['task'] == task and model in (None, c['modelId']) and mode in (None, c['mode']))
+  return spec.resolve(case)['expectation']
+
+
+def without_keys(value, names):
+  if isinstance(value, dict):
+    return {k: without_keys(v, names) for k, v in value.items() if k not in names}
+  if isinstance(value, list):
+    return [without_keys(v, names) for v in value]
+  return value
+
+
+def keys_of(value):
+  if isinstance(value, dict):
+    for key, item in value.items():
+      yield key
+      yield from keys_of(item)
+  elif isinstance(value, list):
+    for item in value:
+      yield from keys_of(item)
 
 
 def _middle(low, high):
@@ -532,8 +564,8 @@ class VerifierTest(unittest.TestCase):
 
   def test_correct_and_damaged_outputs(self):
     seen = set()
-    for case in cases.build_validation_matrix():
-      expectation = expectations.get_expectation(case)
+    for case in spec.build_matrix():
+      expectation = spec.resolve(case)['expectation']
       self.assertIsNotNone(expectation, f"{case['id']} has no expectation")
       seen.add(expectation['type'])
       with self.subTest(case=case['id'], output='correct'):
@@ -553,13 +585,13 @@ class VerifierTest(unittest.TestCase):
     self.assertEqual(verify.verify_case(None, [{'key': 'k', 'data': {}}])['status'], verify.UNVERIFIED)
 
   def test_instances_are_matched_by_position(self):
-    expectation = expectations.get_expectation({'task': 'hand_landmarker'})
+    expectation = expectation_of('hand_landmarker')
     runs = correct_runs(expectation)
     runs[0]['data']['hands'].reverse()
     self.assertEqual(verify.verify_case(expectation, runs)['status'], verify.VERIFIED)
 
   def test_only_what_the_photo_shows_must_lie_in_the_frame(self):
-    expectation = expectations.get_expectation({'task': 'holistic_landmarker'})
+    expectation = expectation_of('holistic_landmarker')
     runs = correct_runs(expectation)
     pose = runs[0]['data']['pose'][0]['landmarks']
     for index in range(25, 33):
@@ -567,7 +599,7 @@ class VerifierTest(unittest.TestCase):
     self.assertEqual(verify.verify_case(expectation, runs)['status'], verify.VERIFIED)
     pose[13] = [0.5, 1.8]  # An elbow is in the photo.
     self.assertEqual(verify.verify_case(expectation, runs)['status'], verify.FAILED)
-    expectation = expectations.get_expectation({'task': 'pose_landmarker'})
+    expectation = expectation_of('pose_landmarker')
     runs = correct_runs(expectation)
     runs[0]['data']['poses'][0]['landmarks'][30] = [0.5, 1.8]
     verdict = verify.verify_case(expectation, runs)
@@ -575,7 +607,7 @@ class VerifierTest(unittest.TestCase):
     self.assertIn('lie in the image', verdict['reason'])
 
   def test_language_that_shares_its_script_may_rank_second(self):
-    expectation = expectations.get_expectation({'task': 'language_detector'})
+    expectation = expectation_of('language_detector')
     runs = correct_runs(expectation)
     runs[0]['data']['categories'] = [{'label': 'ja', 'score': 0.52}, {'label': 'zh', 'score': 0.46}]
     self.assertEqual(verify.verify_case(expectation, runs)['status'], verify.VERIFIED)
@@ -586,8 +618,10 @@ class VerifierTest(unittest.TestCase):
     self.assertEqual(verify.verify_case(expectation, runs)['status'], verify.FAILED)
 
   def test_any_striped_cat_class_is_accepted(self):
-    expectation = expectations.get_expectation({'task': 'image_classifier'})
-    for label in expectations.TABBY_CAT_LABELS:
+    expectation = expectation_of('image_classifier')
+    tabby_labels = expectation['runs'][1]['labels']
+    self.assertEqual(len(tabby_labels), 3)
+    for label in tabby_labels:
       runs = correct_runs(expectation)
       runs[1]['data']['categories'] = [{'label': label, 'score': 0.3}, {'label': 'tabby', 'score': 0.2}]
       self.assertEqual(verify.verify_case(expectation, runs)['status'], verify.VERIFIED, label)
@@ -607,13 +641,198 @@ class VerifierTest(unittest.TestCase):
     self.assertAlmostEqual(verify.word_error_rate('a b c d', 'a x c'), 0.5)
     self.assertEqual(verify.word_error_rate('a b', ''), 1.0)
     self.assertEqual(verify.char_error_rate('the quiet river bank.', 'The quiet riverbank'), 0)
-    sentence = expectations.TTS_SENTENCE
+    sentence = expectation_of('text_to_speech')['text']
     for heard in ('The quick brown fox jumps over the lazy dog, near the quiet riverbank.',
                   'The quick brown fox jumps over the lazy dog near the quiet riverbank, and',
                   'The quick brown fox jumps over the lazy dog near the quiet riverbank. The'):
       self.assertLess(verify.char_error_rate(sentence, heard), 0.1, heard)
     self.assertGreater(verify.char_error_rate(sentence, 'Ye'), 0.9)
     self.assertGreater(verify.char_error_rate(sentence, ''), 0.9)
+
+
+class SpecTest(unittest.TestCase):
+  """The spec is consistent, and says the same to every platform."""
+
+  def test_spec_is_consistent(self):
+    self.assertEqual(spec.problems(), [])
+    self.assertEqual(set(spec.RUN_TYPES + spec.SINGLE_TYPES), set(verify.VERIFIERS))
+    self.assertNotIn('note', set(keys_of(spec.tasks())) | set(keys_of(spec.assets())))
+
+  def test_python_samples_can_do_what_the_spec_asks(self):
+    self.assertEqual(python_adapter.problems(), [])
+    # A sample that cannot honour an option is reported, not run with another value.
+    case = next(c for c in spec.build_matrix() if c['task'] == 'face_landmarker')
+    with mock.patch.dict(python_adapter.FIXED['face_landmarker'], {'numFaces': (2, 'num_faces=2')}):
+      found = python_adapter.problems()
+    self.assertTrue(any('numFaces' in line and case['id'] in line for line in found), found)
+    self.assertTrue(any('no longer sets num_faces=2' in line for line in found), found)
+
+  def test_a_case_gets_the_options_of_its_mode_and_its_test(self):
+    def resolved(task, model, mode):
+      return spec.resolve(next(c for c in spec.build_matrix()
+                               if (c['task'], c['modelId'], c['mode']) == (task, model, mode)))
+    category = resolved('image_segmenter', 'deeplab_v3', 'image-category')
+    confidence = resolved('image_segmenter', 'deeplab_v3', 'image-confidence')
+    video = resolved('image_segmenter', 'hair_segmenter', 'video')
+    self.assertEqual(category['options'], {'runningMode': 'IMAGE'})
+    self.assertEqual(confidence['options'], {'runningMode': 'IMAGE', 'confidenceCategory': 'person'})
+    self.assertEqual(video['options'], {'runningMode': 'VIDEO'})
+    self.assertIsNone(category['expectation']['confidence'])
+    self.assertEqual(confidence['expectation']['confidence']['label'], 'person')
+    self.assertEqual(confidence['expectation']['classes'], category['expectation']['classes'])
+    self.assertIn('Confidence mask "person"', confidence['description'])
+    self.assertNotIn('Confidence mask', category['description'])
+    # Resolving a case never changes the spec.
+    confidence['expectation']['classes'].clear()
+    self.assertTrue(resolved('image_segmenter', 'deeplab_v3', 'image-category')['expectation']['classes'])
+    # A step is what the verifier is given: its inputs with its expectation.
+    proofread = resolved('text_proofreader', 'gemma_200m', 'proofread')['expectation']['runs'][0]
+    self.assertEqual(proofread, {'key': 'text 1', 'text': 'I am a studnt.', 'exact': 'I am a student.'})
+    stream = resolved('text_to_speech', 'phonon_31m_en', 'stream')
+    self.assertTrue(stream['expectation']['stream'])
+    self.assertEqual(stream['options'], {'stream': True})
+    self.assertEqual(stream['expectation']['text'], stream['steps'][0]['text'])
+
+  def test_results_are_checked_the_same_on_every_platform(self):
+    """Without the files of the Python samples, the checks of the result remain."""
+    python_cases = {case['id']: case for case in spec.build_matrix(platform='python')}
+    with_files = 0
+    for platform in ('android', 'ios'):
+      matrix = spec.build_matrix(platform=platform)
+      self.assertEqual([case['id'] for case in matrix], list(python_cases))
+      for case in matrix:
+        with self.subTest(platform=platform, case=case['id']):
+          self.assertTrue(os.path.isdir(os.path.join(REPO_DIR, case['sample'])), case['sample'])
+          expectation = spec.resolve(case)['expectation']
+          full = spec.resolve(python_cases[case['id']])['expectation']
+          self.assertEqual(sorted(set(keys_of(expectation)) & set(FILE_EXPECTATIONS)), [])
+          self.assertEqual(expectation, without_keys(full, FILE_EXPECTATIONS))
+          # A correct result needs no word about files ...
+          observed = without_keys(correct_runs(expectation), FILE_OBSERVATIONS)
+          verdict = verify.verify_case(expectation, observed)
+          self.assertEqual(verdict['status'], verify.VERIFIED, verdict['reason'])
+          # ... and a wrong result is still caught.
+          for name, runs in damaged_runs(expectation):
+            if not any(word in name for word in ('.png', '.wav', 'PNG')):
+              wrong = verify.verify_case(expectation, without_keys(runs, FILE_OBSERVATIONS))
+              self.assertEqual(wrong['status'], verify.FAILED, f'"{name}" was accepted as correct')
+          # With the Python samples, the files they write are part of the result.
+          if full != expectation:
+            with_files += 1
+            missing = verify.verify_case(full, observed)
+            self.assertEqual(missing['status'], verify.FAILED, 'missing files were accepted')
+    # The ten vision tasks that write an image (100 cases) and Text to Speech (16), on two platforms.
+    self.assertEqual(with_files, 2 * 116)
+
+  def test_export_is_self_contained(self):
+    import json  # pylint: disable=g-import-not-at-top
+    for platform in spec.platforms():
+      exported = json.loads(json.dumps(spec.export(platform)))
+      self.assertEqual(len(exported['cases']), 162)
+      names = set()
+      for case in exported['cases']:
+        self.assertEqual(case['platform'], platform)
+        self.assertTrue(case['steps'] and case['description'] and case['expectation']['type'])
+        self.assertNotIn('expect', set(keys_of(case['steps'])))
+        names.add(case['modelAsset'])
+        names.update(step[kind] for step in case['steps'] for kind in ('image', 'audio') if kind in step)
+      self.assertTrue(names <= set(exported['assets']))
+      self.assertEqual(set(exported['assets']), set(assets.ASSETS))
+    small = spec.export('ios', 'vision/face_detector', ['CPU'])
+    self.assertEqual([case['id'] for case in small['cases']],
+                     ['vision__face_detector__blaze_face_short_range__image__CPU',
+                      'vision__face_detector__blaze_face_short_range__video__CPU',
+                      'vision__face_detector__blaze_face_full_range__image__CPU',
+                      'vision__face_detector__blaze_face_full_range__video__CPU'])
+    self.assertEqual(sorted(small['assets']), ['blaze_face_full_range.tflite', 'blaze_face_short_range.tflite',
+                                               'portrait.jpg'])
+    self.assertEqual(small['cases'][1]['options'], {'runningMode': 'VIDEO'})
+    self.assertEqual(small['cases'][1]['sample'], 'examples/face_detector/ios')
+    with self.assertRaises(spec.SpecError):
+      spec.export('windows')
+
+
+class ObservationsTest(unittest.TestCase):
+  """What the runner of another platform reports is judged like the Python samples."""
+
+  TASKS = 'vision/face_detector,text/text_summarizer'
+
+  def _document(self, platform='android'):
+    results = []
+    for case in spec.build_matrix(self.TASKS, platform=platform):
+      runs = without_keys(correct_runs(spec.resolve(case)['expectation']), FILE_OBSERVATIONS)
+      results.append({'id': case['id'], 'runs': runs, 'durationSec': 0.5,
+                      'gpuEvidence': ['Created a GPU delegate.'] if case['delegate'] == 'GPU' else []})
+    return {'platform': platform, 'environment': {'device': 'Pixel 10', 'mediapipeVersion': '1.3.0'},
+            'results': results}
+
+  def _statuses(self, document, **kwargs):
+    import verify_observations  # pylint: disable=g-import-not-at-top
+    judged = verify_observations.judge_observations(document, self.TASKS, **kwargs)
+    return {result['id']: result for result in judged}
+
+  def test_correct_observations_pass(self):
+    judged = self._statuses(self._document())
+    self.assertEqual(len(judged), 12)
+    self.assertEqual({result['status'] for result in judged.values()}, {'PASS'})
+    # The "unsupported" entries of the Python API do not excuse an app.
+    gpu = judged['text__text_summarizer__gemma_200m__tldr__GPU']
+    self.assertIsNone(gpu['knownUnsupported'])
+    self.assertEqual(gpu['sample'], 'examples/text_summarizer/android')
+
+  def test_what_is_wrong_or_missing_fails(self):
+    document = self._document('ios')
+    by_id = {entry['id']: entry for entry in document['results']}
+    cpu, gpu = ('vision__face_detector__blaze_face_short_range__image__CPU',
+                'vision__face_detector__blaze_face_short_range__image__GPU')
+    by_id[cpu]['runs'][0]['data']['detections'].clear()
+    by_id[gpu]['gpuEvidence'] = []
+    by_id['text__text_summarizer__gemma_200m__tldr__CPU']['error'] = 'NSInvalidArgumentException: no model'
+    document['results'] = [entry for entry in document['results']
+                           if entry['id'] != 'text__text_summarizer__gemma_200m__keypoints__CPU']
+    judged = self._statuses(document)
+    self.assertEqual(judged[cpu]['status'], 'FAIL')
+    self.assertIn('faces found', judged[cpu]['details'])
+    self.assertEqual(judged[gpu]['status'], 'GPU_UNCONFIRMED')
+    self.assertEqual(judged['text__text_summarizer__gemma_200m__tldr__CPU']['status'], 'FAIL')
+    missing = judged['text__text_summarizer__gemma_200m__keypoints__CPU']
+    self.assertEqual(missing['status'], 'FAIL')
+    self.assertIn('no result', missing['details'])
+    statuses = [result['status'] for result in judged.values()]
+    self.assertEqual(statuses.count('PASS'), 8)
+    # Only what was to run is judged.
+    self.assertEqual(len(self._statuses(document, delegates=['CPU'])), 6)
+
+  def test_what_cannot_be_judged_is_an_error(self):
+    import verify_observations  # pylint: disable=g-import-not-at-top
+    document = self._document()
+    document['results'].append({'id': 'vision__face_detector__no_such_model__image__CPU', 'runs': []})
+    with self.assertRaises(verify_observations.ObservationError):
+      self._statuses(document)
+    with self.assertRaises(verify_observations.ObservationError):
+      self._statuses(dict(self._document(), platform='windows'))
+    twice = self._document()
+    twice['results'].append(twice['results'][0])
+    with self.assertRaises(verify_observations.ObservationError):
+      self._statuses(twice)
+
+  def test_the_report_names_the_platform(self):
+    import report  # pylint: disable=g-import-not-at-top
+    document = self._document()
+    results = list(self._statuses(document).values())
+    state = {'platform': 'android', 'startedAt': 'then', 'finishedAt': 'now', 'environment': document['environment'],
+             'baseline': None, 'passed': True, 'verdict': 'PASSED: 12 of 12 cases passed', 'results': results}
+    with tempfile.TemporaryDirectory() as report_dir:
+      report.write_report_files(report_dir, state)
+      with open(os.path.join(report_dir, 'index.html'), encoding='utf-8') as f:
+        page = f.read()
+      with open(os.path.join(report_dir, 'report.md'), encoding='utf-8') as f:
+        text = f.read()
+    self.assertIn('MediaPipe Android Release Validation Report', page)
+    self.assertIn('device: Pixel 10', page)
+    self.assertNotIn('Metal', page.split('<script', 1)[0])
+    self.assertIn('# MediaPipe Android release validation', text)
+    self.assertIn('- device: Pixel 10', text)
 
 
 class PolicyTest(unittest.TestCase):
@@ -648,7 +867,7 @@ class PolicyTest(unittest.TestCase):
     self.assertEqual(self._status('GPU', crashed, self.VERIFIED, [], self.UNSUPPORTED), 'FAIL')
     status, _, note = policy.decide({'delegate': 'GPU'}, {}, self.VERIFIED, self.METAL, self.UNSUPPORTED)
     self.assertEqual(status, 'PASS')
-    self.assertIn('KNOWN_UNSUPPORTED', note)
+    self.assertIn('"unsupported"', note)
     self.assertEqual(self._status('GPU', {}, self.FAILED, self.METAL, self.UNSUPPORTED), 'FAIL')
     self.assertEqual(self._status('GPU', rejected, self.VERIFIED, []), 'FAIL')
 
@@ -690,27 +909,27 @@ class MatrixTest(unittest.TestCase):
   """The inventory is complete and consistent."""
 
   def test_matrix(self):
-    matrix = cases.build_validation_matrix()
+    matrix = spec.build_matrix()
     ids = [case['id'] for case in matrix]
     self.assertEqual(len(ids), len(set(ids)))
-    small = cases.build_validation_matrix(include_large_models=False)
+    small = spec.build_matrix(include_large_models=False)
     self.assertEqual(len(small), 128)
     self.assertFalse(any(case['largeModel'] for case in small))
-    self.assertEqual(len(cases.TASK_DEFINITIONS), 22)
+    self.assertEqual(len(spec.tasks()), 22)
     # Large models: speech recognition (2 modes), speech synthesis (4 models, 2 modes), embedding_gemma,
     # universal embedder (3 modes), semantic retriever and decision maker (2 modes); 2 delegates each = 34.
     self.assertEqual(len(matrix), 128 + 34)
-    self.assertEqual(len(cases.build_validation_matrix(delegates=['CPU'])), 81)
+    self.assertEqual(len(spec.build_matrix(delegates=['CPU'])), 81)
     self.assertEqual({case['domain'] for case in matrix}, {'vision', 'audio', 'text', 'retrieval', 'decision'})
 
   def test_filters(self):
-    tasks = lambda f: {case['task'] for case in cases.build_validation_matrix(f)}
+    tasks = lambda f: {case['task'] for case in spec.build_matrix(f)}
     self.assertEqual(tasks('audio'), {'audio_classifier', 'audio_transcriber', 'text_to_speech'})
     self.assertEqual(tasks('text/text_embedder, face_detector'), {'text_embedder', 'face_detector'})
     self.assertEqual(tasks('text'), {'text_classifier', 'language_detector', 'text_embedder', 'text_proofreader',
                                      'text_summarizer'})
-    self.assertEqual(cases.unknown_task_filters('vision, face_detectr,audio/nope'), ['face_detectr', 'audio/nope'])
-    self.assertEqual(cases.unknown_task_filters(''), [])
+    self.assertEqual(spec.unknown_task_filters('vision, face_detectr,audio/nope'), ['face_detectr', 'audio/nope'])
+    self.assertEqual(spec.unknown_task_filters(''), [])
 
   def test_every_case_can_run(self):
     with open(os.path.join(SCRIPT_DIR, 'worker.py'), encoding='utf-8') as f:
@@ -718,11 +937,11 @@ class MatrixTest(unittest.TestCase):
     observers = next(
         {key.value for key in node.value.keys} for node in tree.body
         if isinstance(node, ast.Assign) and getattr(node.targets[0], 'id', '') == 'OBSERVERS')
-    for case in cases.build_validation_matrix():
+    for case in spec.build_matrix():
       with self.subTest(case=case['id']):
         self.assertTrue(os.path.isfile(os.path.join(REPO_DIR, case['sample'])), case['sample'])
         self.assertIn(case['modelAsset'], assets.ASSETS)
-        plan = expectations.get_plan(case)
+        plan = python_adapter.plan(case)
         self.assertIn(plan['observer'], observers)
         self.assertTrue(plan['invocations'])
         keys = [invocation['key'] for invocation in plan['invocations']]
@@ -733,28 +952,35 @@ class MatrixTest(unittest.TestCase):
           for value in invocation['args']:
             if value.startswith('@asset:'):
               self.assertIn(value[len('@asset:'):], assets.ASSETS)
-        description = expectations.describe_case(case)
-        self.assertTrue(description['inputs'])
-        for item in description['inputs']:
+        # The observations are keyed by the steps of the spec.
+        resolved = spec.resolve(case)
+        observed = [key for invocation in plan['invocations']
+                    for key in invocation.get('params', {}).get('keys', [invocation['key']])]
+        self.assertEqual(observed, [step['key'] for step in resolved['steps']])
+        self.assertTrue(resolved['inputs'])
+        for item in resolved['inputs']:
           if 'asset' in item:
             self.assertIn(item['asset'], assets.ASSETS)
 
   def test_assets_are_pinned(self):
-    for name, spec in assets.ASSETS.items():
+    for name, entry in assets.ASSETS.items():
       with self.subTest(asset=name):
-        self.assertRegex(spec['sha256'], r'^[0-9a-f]{64}$')
-        if 'repo_id' in spec:
-          self.assertNotIn('url', spec)
-          self.assertRegex(spec['repo_id'], r'^litert-community/[\w.-]+$')
-          self.assertRegex(spec['filename'], r'^[\w.-]+$')
-          self.assertRegex(spec['revision'], r'^[0-9a-f]{40}$')
+        self.assertRegex(entry['sha256'], r'^[0-9a-f]{64}$')
+        if 'repo' in entry:
+          self.assertNotIn('url', entry)
+          self.assertRegex(entry['repo'], r'^litert-community/[\w.-]+$')
+          self.assertRegex(entry['file'], r'^[\w.-]+$')
+          self.assertRegex(entry['revision'], r'^[0-9a-f]{40}$')
         else:
-          self.assertRegex(spec['url'], r'^https://storage\.googleapis\.com/mediapipe-')
-        self.assertGreater(spec['bytes'], 0)
-    used = {case['modelAsset'] for case in cases.build_validation_matrix()}
-    for case in cases.build_validation_matrix():
-      for invocation in expectations.get_plan(case)['invocations']:
-        used.update(v[len('@asset:'):] for v in invocation['args'] if v.startswith('@asset:'))
+          self.assertRegex(entry['url'], r'^https://storage\.googleapis\.com/mediapipe-')
+        self.assertGreater(entry['bytes'], 0)
+        self.assertEqual(entry['kind'], 'model' if name.endswith(('.tflite', '.task', '.litertlm')) else 'input')
+    # What the Python samples are given is what is pinned, and all of it.
+    used = {case['modelAsset'] for case in spec.build_matrix()}
+    for case in spec.build_matrix():
+      for invocation in python_adapter.plan(case)['invocations']:
+        values = invocation['args'] + list(invocation.get('params', {}).values())
+        used.update(v[len('@asset:'):] for v in values if isinstance(v, str) and v.startswith('@asset:'))
     self.assertEqual(used, set(assets.ASSETS), 'an asset is pinned but not used, or the reverse')
 
   def test_hf_asset_download_and_checksum_check(self):
@@ -762,9 +988,9 @@ class MatrixTest(unittest.TestCase):
     import hashlib  # pylint: disable=g-import-not-at-top
     payload = b'pinned-hf-model-bytes'
     good_sha = hashlib.sha256(payload).hexdigest()
-    spec = {
-        'repo_id': 'litert-community/Test-Model',
-        'filename': 'remote.tflite',
+    entry = {
+        'repo': 'litert-community/Test-Model',
+        'file': 'remote.tflite',
         'revision': 'a' * 40,
         'sha256': good_sha,
         'bytes': len(payload),
@@ -779,18 +1005,18 @@ class MatrixTest(unittest.TestCase):
           f.write(payload)
         return mock.Mock(returncode=0, stdout='', stderr='')
 
-      with mock.patch.dict(assets.ASSETS, {'local.tflite': spec}), mock.patch.object(
+      with mock.patch.dict(assets.ASSETS, {'local.tflite': entry}), mock.patch.object(
           assets.subprocess, 'run', side_effect=fake_run) as mocked:
         path = assets.ensure_asset('local.tflite', asset_dir, python_exe='venv-python', hf_cache_dir=cache_dir)
         self.assertEqual(path, os.path.join(asset_dir, 'local.tflite'))
         self.assertEqual(assets.sha256_of(path), good_sha)
         args = mocked.call_args[0][0]
         self.assertEqual(args[:6], ['venv-python', '-c', assets._HF_DOWNLOAD_SNIPPET,  # pylint: disable=protected-access
-                                    spec['repo_id'], spec['filename'], spec['revision']])
+                                    entry['repo'], entry['file'], entry['revision']])
 
-      bad_spec = dict(spec, sha256='0' * 64)
+      changed = dict(entry, sha256='0' * 64)
       os.remove(path)
-      with mock.patch.dict(assets.ASSETS, {'local.tflite': bad_spec}), mock.patch.object(
+      with mock.patch.dict(assets.ASSETS, {'local.tflite': changed}), mock.patch.object(
           assets.subprocess, 'run', side_effect=fake_run):
         with self.assertRaises(assets.AssetError):
           assets.ensure_asset('local.tflite', asset_dir, python_exe='venv-python', hf_cache_dir=cache_dir)
@@ -810,20 +1036,25 @@ class MatrixTest(unittest.TestCase):
 
   def test_known_unsupported(self):
     case = lambda task, model, delegate: {'task': task, 'modelId': model, 'delegate': delegate}
-    self.assertIsNotNone(cases.known_unsupported(case('text_summarizer', 'gemma_200m', 'GPU')))
-    self.assertIsNone(cases.known_unsupported(case('text_summarizer', 'gemma_200m', 'CPU')))
-    self.assertIsNone(cases.known_unsupported(case('face_detector', 'blaze_face_short_range', 'GPU')))
-    self.assertIsNotNone(cases.known_unsupported(case('text_to_speech', 'pocket_tts_en', 'GPU')))
-    self.assertIsNone(cases.known_unsupported(case('text_to_speech', 'kokoro_82m_gpu', 'GPU')))
-    self.assertIsNotNone(cases.known_unsupported(case('text_classifier', 'bert_classifier', 'GPU'), system='Darwin'))
-    self.assertIsNone(cases.known_unsupported(case('text_classifier', 'bert_classifier', 'GPU'), system='Linux'))
+    self.assertIsNotNone(spec.known_unsupported(case('text_summarizer', 'gemma_200m', 'GPU')))
+    self.assertIsNone(spec.known_unsupported(case('text_summarizer', 'gemma_200m', 'CPU')))
+    self.assertIsNone(spec.known_unsupported(case('face_detector', 'blaze_face_short_range', 'GPU')))
+    self.assertIsNotNone(spec.known_unsupported(case('text_to_speech', 'pocket_tts_en', 'GPU')))
+    self.assertIsNone(spec.known_unsupported(case('text_to_speech', 'kokoro_82m_gpu', 'GPU')))
+    self.assertIsNotNone(spec.known_unsupported(case('text_classifier', 'bert_classifier', 'GPU'), system='Darwin'))
+    self.assertIsNone(spec.known_unsupported(case('text_classifier', 'bert_classifier', 'GPU'), system='Linux'))
     int8 = case('object_detector', 'efficientdet_lite0_int8', 'GPU')
-    self.assertIsNotNone(cases.known_unsupported(int8, system='Darwin'))
-    self.assertIsNone(cases.known_unsupported(int8, system='Linux'))
-    self.assertIsNone(cases.known_unsupported(case('object_detector', 'efficientdet_lite0_float32', 'GPU'), 'Darwin'))
-    for entry in cases.KNOWN_UNSUPPORTED:
+    self.assertIsNotNone(spec.known_unsupported(int8, system='Darwin'))
+    self.assertIsNone(spec.known_unsupported(int8, system='Linux'))
+    self.assertIsNone(spec.known_unsupported(case('object_detector', 'efficientdet_lite0_float32', 'GPU'), 'Darwin'))
+    # The entries were seen with the Python API; they say nothing about the apps.
+    summarizer = case('text_summarizer', 'gemma_200m', 'GPU')
+    self.assertEqual(spec.known_unsupported(summarizer)['task'], 'text_summarizer')
+    self.assertIsNone(spec.known_unsupported(summarizer, platform='android'))
+    entries = [entry for task in spec.tasks() for entry in task.get('unsupported', [])]
+    self.assertEqual(len(entries), 9)
+    for entry in entries:
       self.assertTrue(entry['error'] and entry['reason'])
-      self.assertTrue(any(d['task'] == entry['task'] for d in cases.TASK_DEFINITIONS))
 
   def test_cli_cpu_only_and_windows_paths(self):
     import contextlib  # pylint: disable=g-import-not-at-top
@@ -844,10 +1075,11 @@ class MatrixTest(unittest.TestCase):
       self.assertTrue(run_local.venv_python('C:\\work').endswith(os.path.join('venv', 'Scripts', 'python.exe')))
 
   def test_samples_use_hf_hub_download(self):
-    for definition in cases.TASK_DEFINITIONS:
+    for task in spec.tasks():
+      definition = {'sample': task['samples']['python']}
       sample_path = os.path.join(REPO_DIR, definition['sample'])
-      first_asset = definition['models'][0]['asset']
-      spec = assets.ASSETS[first_asset]
+      # The first model of a task is the one its sample downloads.
+      entry = assets.ASSETS[task['models'][0]['asset']]
       with self.subTest(sample=definition['sample']):
         with open(sample_path, encoding='utf-8') as f:
           source = f.read()
@@ -867,8 +1099,8 @@ class MatrixTest(unittest.TestCase):
         }
         repo = constants.get('MODEL_REPO') or constants.get('_MODEL_REPO')
         filename = constants.get('MODEL_FILENAME') or constants.get('_MODEL_FILENAME')
-        self.assertEqual(repo, spec['repo_id'])
-        self.assertEqual(filename, spec['filename'])
+        self.assertEqual(repo, entry['repo'])
+        self.assertEqual(filename, entry['file'])
 
   def test_report_writes_table_and_review_views(self):
     import json  # pylint: disable=g-import-not-at-top
@@ -951,7 +1183,8 @@ class MatrixTest(unittest.TestCase):
       self.assertIn('Review cases one by one', html_doc)
       self.assertIn('id="review-view"', html_doc)
       self.assertIn('id="table-view"', html_doc)
-      self.assertEqual(html_doc.count('</script>'), 2)
+      self.assertEqual(html_doc.count('</script>'), 3)
+      self.assertIn('MediaPipe Python Release Validation Report', html_doc)
       match = re.search(r'<script type="application/json" id="cases-data">(.*?)</script>', html_doc, re.DOTALL)
       self.assertIsNotNone(match)
       parsed = json.loads(match.group(1))

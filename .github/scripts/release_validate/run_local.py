@@ -22,8 +22,12 @@
 It creates a Python environment with the MediaPipe under test and pinned
 versions of everything else, downloads the models and inputs (pinned by
 checksum), runs every sample once per delegate in a process of its own, checks
-what each returned against the ground truth in expectations.py, and writes the
-report to --report-dir. The exit code is 0 only if every case passed.
+what each returned against the ground truth of the spec, and writes the report
+to --report-dir. The exit code is 0 only if every case passed.
+
+What is run and what is expected is defined in spec/, in JSON, for every
+platform (see spec/README.md). python_adapter.py says how the Python samples
+are driven from it.
 
 This script itself needs nothing but the Python standard library.
 """
@@ -48,12 +52,11 @@ REPO_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..', '..'))
 sys.path.insert(0, SCRIPT_DIR)
 
 import assets  # pylint: disable=g-import-not-at-top,wrong-import-position
-import cases  # pylint: disable=wrong-import-position
-import expectations  # pylint: disable=wrong-import-position
 import policy  # pylint: disable=wrong-import-position
+import python_adapter  # pylint: disable=wrong-import-position
 import report  # pylint: disable=wrong-import-position
 import self_test  # pylint: disable=wrong-import-position
-import verify  # pylint: disable=wrong-import-position
+import spec  # pylint: disable=wrong-import-position
 
 CONSTRAINTS = os.path.join(SCRIPT_DIR, 'constraints.txt')
 WORKER = os.path.join(SCRIPT_DIR, 'worker.py')
@@ -116,10 +119,10 @@ def parse_options(argv):
   else:
     raw_delegates = 'cpu,gpu' if options.delegates is None else options.delegates
     options.delegates = [d.strip().upper() for d in raw_delegates.split(',') if d.strip()]
-  unknown = [d for d in options.delegates if d not in cases.DELEGATES]
+  unknown = [d for d in options.delegates if d not in spec.DELEGATES]
   if unknown or not options.delegates:
     parser.error(f"--delegates must list cpu and/or gpu, got: {', '.join(unknown) or 'nothing'}")
-  unknown = cases.unknown_task_filters(options.tasks)
+  unknown = spec.unknown_task_filters(options.tasks)
   if unknown:
     parser.error(f"unknown task or domain in --tasks: {', '.join(unknown)}")
   options.report_dir = os.path.abspath(options.report_dir)
@@ -253,14 +256,12 @@ def assets_of(case, plan):
     for value in invocation.get('params', {}).values():
       values += value if isinstance(value, list) else [value]
     names.update(v[len('@asset:'):] for v in values if isinstance(v, str) and v.startswith('@asset:'))
-  for item in expectations.describe_case(case)['inputs']:
-    if 'asset' in item:
-      names.add(item['asset'])
+  names.update(item['asset'] for item in spec.resolve(case)['inputs'] if 'asset' in item)
   return sorted(names)
 
 
 def resolve(value, case, asset_dir, case_dir):
-  """Fills in the "@" placeholders of a plan (see expectations.py)."""
+  """Fills in the "@" placeholders of a plan (see python_adapter.py)."""
   if isinstance(value, list):
     return [resolve(v, case, asset_dir, case_dir) for v in value]
   if isinstance(value, dict):
@@ -282,14 +283,14 @@ def run_case(case, options, python, asset_dir, asset_errors):
   """Runs one case and returns its result record."""
   case_dir = os.path.join(options.report_dir, 'cases', case['id'])
   os.makedirs(case_dir)
-  plan = expectations.get_plan(case)
-  description = expectations.describe_case(case)
-  unsupported = cases.known_unsupported(case)
-  result = dict(case, description=description['description'], inputs=[], outputs=[], logs={}, gpuEvidence=[],
+  plan = python_adapter.plan(case)
+  resolved = spec.resolve(case)
+  unsupported = spec.known_unsupported(case)
+  result = dict(case, description=resolved['description'], inputs=[], outputs=[], logs={}, gpuEvidence=[],
                 runs=[], error=None, traceback=None, note=None, baseline=None, command='',
                 knownUnsupported=unsupported, observationDigest=None, durationSec=0.0,
-                verification={'status': verify.UNVERIFIED, 'reason': '', 'checks': [], 'summary': '-'})
-  for item in description['inputs']:
+                verification={'status': 'UNVERIFIED', 'reason': '', 'checks': [], 'summary': '-'})
+  for item in resolved['inputs']:
     entry = dict(item)
     if 'asset' in item:
       entry['file'] = f"inputs/{item['asset']}"
@@ -365,14 +366,7 @@ def run_case(case, options, python, asset_dir, asset_errors):
   result['gpuEvidence'] = policy.find_gpu_evidence(native_log)
   result['outputs'] = sorted(f"cases/{case['id']}/{name}" for name in os.listdir(case_dir)
                              if name.endswith(('.png', '.wav')))
-  if not result['error']:
-    verification = verify.verify_case(expectations.get_expectation(case), result['runs'])
-    passed = sum(1 for c in verification['checks'] if c['pass'])
-    verification['summary'] = f"{passed}/{len(verification['checks'])} checks" if verification['checks'] else '-'
-    result['verification'] = verification
-    result['observationDigest'] = policy.observation_digest(result['runs'])
-  result['status'], result['details'], result['note'] = policy.decide(
-      case, worker, result['verification'], result['gpuEvidence'], unsupported)
+  result.update(policy.judge(case, resolved['expectation'], worker, result['gpuEvidence'], unsupported))
   return result
 
 
@@ -402,13 +396,13 @@ def main(argv=None):
   if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
   options = parse_options(sys.argv[1:] if argv is None else argv)
-  matrix = cases.build_validation_matrix(options.tasks, options.delegates, not options.small_models_only)
+  matrix = spec.build_matrix(options.tasks, options.delegates, not options.small_models_only)
   if not matrix:
     log(f'No validation case matches --tasks "{options.tasks}".')
     return 2
   if options.list:
     for case in matrix:
-      mark = '  (known unsupported)' if cases.known_unsupported(case) else ''
+      mark = '  (known unsupported)' if spec.known_unsupported(case) else ''
       log(case['id'] + mark)
     log(f'{len(matrix)} cases')
     return 0
@@ -450,7 +444,7 @@ def main(argv=None):
   # Download and check every file the selected cases need.
   asset_dir = os.path.join(options.work_dir, 'assets')
   hf_cache_dir = os.path.join(options.work_dir, 'hf_cache')
-  needed = sorted({name for case in matrix for name in assets_of(case, expectations.get_plan(case))})
+  needed = sorted({name for case in matrix for name in assets_of(case, python_adapter.plan(case))})
   asset_errors, asset_record = {}, {}
   log(f'Checking {len(needed)} models and inputs in {asset_dir}')
   for name in needed:
@@ -485,6 +479,7 @@ def main(argv=None):
   if counts['UNSUPPORTED']:
     verdict += f", {counts['UNSUPPORTED']} unsupported by design"
   state = {
+      'platform': 'python',
       'startedAt': started_at,
       'finishedAt': datetime.datetime.now().astimezone().isoformat(timespec='seconds'),
       'environment': environment,
