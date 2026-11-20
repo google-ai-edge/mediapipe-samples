@@ -8,11 +8,20 @@
     "ios": "examples/text_classification/ios"
   },
   "models": [
-    {"id": "bert_classifier", "asset": "bert_classifier.tflite"},
-    {"id": "average_word_classifier", "asset": "average_word_classifier.tflite"}
+    {
+      "id": "bert_classifier",
+      "asset": "bert_classifier.tflite"
+    },
+    {
+      "id": "average_word_classifier",
+      "asset": "average_word_classifier.tflite"
+    }
   ],
   "modes": [
-    {"id": "classify", "options": {}}
+    {
+      "id": "classify",
+      "options": {}
+    }
   ],
   "unsupported": [
     {
@@ -21,11 +30,19 @@
       "delegate": "GPU",
       "error": "not supported by the macOS/iOS GPU delegate (only float32 input/output tensors are supported).",
       "reason": "The macOS GPU delegate rejects integer token input tensors."
+    },
+    {
+      "platform": "android",
+      "delegate": "GPU",
+      "error": "glMapBufferRange in third_party/tensorflow/lite/delegates/gpu/cl/gl_interop.cc",
+      "reason": "The Android TFLite GPU delegate rejects integer token GATHER/RESHAPE ops and fails GL/CL interop."
     }
   ],
   "tests": [
     {
-      "models": ["bert_classifier"],
+      "models": [
+        "bert_classifier"
+      ],
       "about": "Each sentence is classified. Its sentiment must be correct.",
       "note": "Sentences with their true sentiment. The first is the sentence of the notebook.",
       "steps": [
@@ -33,25 +50,38 @@
           "key": "sentence 1",
           "text": "I'm looking forward to what will come next.",
           "caption": "Expected: positive",
-          "expect": {"label": "positive", "minScore": 0.7}
+          "expect": {
+            "label": "positive",
+            "minScore": 0.7
+          }
         },
         {
           "key": "sentence 2",
           "text": "This MediaPipe release validation test is working wonderfully!",
           "caption": "Expected: positive",
-          "expect": {"label": "positive", "minScore": 0.7}
+          "expect": {
+            "label": "positive",
+            "minScore": 0.7
+          }
         },
         {
           "key": "sentence 3",
           "text": "This is a terrible, broken and disappointing release. I hate it.",
           "caption": "Expected: negative",
-          "expect": {"label": "negative", "minScore": 0.7}
+          "expect": {
+            "label": "negative",
+            "minScore": 0.7
+          }
         }
       ],
-      "expect": {"type": "textLabels"}
+      "expect": {
+        "type": "textLabels"
+      }
     },
     {
-      "models": ["average_word_classifier"],
+      "models": [
+        "average_word_classifier"
+      ],
       "about": "Each sentence is classified. Its sentiment must be correct.",
       "note": "The AverageWord classifier uses \"1\" for positive and \"0\" for negative, and classifies bag-of-words movie-review vocabulary without sentence context.",
       "steps": [
@@ -59,22 +89,33 @@
           "key": "sentence 1",
           "text": "This film is a wonderful, uplifting masterpiece with great acting!",
           "caption": "Expected: 1",
-          "expect": {"label": "1", "minScore": 0.6}
+          "expect": {
+            "label": "1",
+            "minScore": 0.6
+          }
         },
         {
           "key": "sentence 2",
           "text": "This MediaPipe release validation test is working wonderfully!",
           "caption": "Expected: 1",
-          "expect": {"label": "1", "minScore": 0.6}
+          "expect": {
+            "label": "1",
+            "minScore": 0.6
+          }
         },
         {
           "key": "sentence 3",
           "text": "This is a terrible, broken and disappointing release. I hate it.",
           "caption": "Expected: 0",
-          "expect": {"label": "0", "minScore": 0.6}
+          "expect": {
+            "label": "0",
+            "minScore": 0.6
+          }
         }
       ],
-      "expect": {"type": "textLabels"}
+      "expect": {
+        "type": "textLabels"
+      }
     }
   ]
 }

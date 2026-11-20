@@ -8,19 +8,41 @@
     "ios": "examples/object_detection/ios"
   },
   "models": [
-    {"id": "efficientdet_lite0_int8", "asset": "efficientdet_lite0_int8.tflite"},
+    {
+      "id": "efficientdet_lite0_int8",
+      "asset": "efficientdet_lite0_int8.tflite"
+    },
     {
       "id": "efficientdet_lite0_float32",
       "asset": "efficientdet_lite0_float32.tflite",
       "note": "Not the model of the notebook. The int8 model cannot run on the macOS GPU delegate (see \"unsupported\"); the float models validate GPU execution too."
     },
-    {"id": "efficientdet_lite2_float32", "asset": "efficientdet_lite2_float32.tflite"},
-    {"id": "ssd_mobilenet_v2_float32", "asset": "ssd_mobilenet_v2_float32.tflite"},
-    {"id": "ssd_mobilenet_v2_float16", "asset": "ssd_mobilenet_v2_float16.tflite"}
+    {
+      "id": "efficientdet_lite2_float32",
+      "asset": "efficientdet_lite2_float32.tflite"
+    },
+    {
+      "id": "ssd_mobilenet_v2_float32",
+      "asset": "ssd_mobilenet_v2_float32.tflite"
+    },
+    {
+      "id": "ssd_mobilenet_v2_float16",
+      "asset": "ssd_mobilenet_v2_float16.tflite"
+    }
   ],
   "modes": [
-    {"id": "image", "options": {"runningMode": "IMAGE"}},
-    {"id": "video", "options": {"runningMode": "VIDEO"}}
+    {
+      "id": "image",
+      "options": {
+        "runningMode": "IMAGE"
+      }
+    },
+    {
+      "id": "video",
+      "options": {
+        "runningMode": "VIDEO"
+      }
+    }
   ],
   "unsupported": [
     {
@@ -30,32 +52,62 @@
       "delegate": "GPU",
       "error": "Quantized tensors are not supported by the macOS/iOS GPU delegate.",
       "reason": "The macOS GPU delegate rejects quantized (int8) models. Object detection on the GPU is validated with the float models."
+    },
+    {
+      "platform": "android",
+      "model": "efficientdet_lite0_int8",
+      "delegate": "GPU",
+      "error": "glMapBufferRange in third_party/tensorflow/lite/delegates/gpu/cl/gl_interop.cc",
+      "reason": "The Android GPU delegate fails GL/CL buffer interop on quantized (int8) input tensors. Object detection on the GPU is validated with the float models."
     }
   ],
   "tests": [
     {
       "about": "The photo shows a cat and a puppy. Both must be detected, each with a box around it, and nothing else.",
       "note": "cat_and_dog.jpg (640x416): a cat crouching on the left and a puppy sitting on the right, on a concrete floor. The boxes were marked by eye (cat: ear tips to paws; dog: top of the head to the paws); 0.5 IoU is the usual detection criterion. Nothing else is in the photo.",
-      "options": {"scoreThreshold": 0.5},
-      "files": {"annotated": "annotated.png"},
-      "steps": [{"key": "cat_and_dog.jpg", "image": "cat_and_dog.jpg", "caption": "A cat (left) and a puppy (right)"}],
+      "options": {
+        "scoreThreshold": 0.5
+      },
+      "files": {
+        "annotated": "annotated.png"
+      },
+      "steps": [
+        {
+          "key": "cat_and_dog.jpg",
+          "image": "cat_and_dog.jpg",
+          "caption": "A cat (left) and a puppy (right)"
+        }
+      ],
       "expect": {
         "type": "detections",
         "objects": [
           {
             "label": "cat",
             "minScore": 0.5,
-            "box": {"x": 0.12, "y": 0.4, "width": 0.38, "height": 0.45},
+            "box": {
+              "x": 0.12,
+              "y": 0.4,
+              "width": 0.38,
+              "height": 0.45
+            },
             "minIoU": 0.5
           },
           {
             "label": "dog",
             "minScore": 0.5,
-            "box": {"x": 0.49, "y": 0.07, "width": 0.36, "height": 0.82},
+            "box": {
+              "x": 0.49,
+              "y": 0.07,
+              "width": 0.36,
+              "height": 0.82
+            },
             "minIoU": 0.5
           }
         ],
-        "onlyLabels": ["cat", "dog"]
+        "onlyLabels": [
+          "cat",
+          "dog"
+        ]
       }
     }
   ]

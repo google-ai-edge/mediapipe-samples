@@ -4,27 +4,62 @@
   "heading": "Image Segmentation",
   "samples": {
     "python": "examples/image_segmentation/python/image_segmentation.py",
-    "android": "examples/image_segmentation/android",
+    "android": "examples/image_segmentation/android/category_mask",
     "ios": "examples/image_segmentation/ios"
   },
   "models": [
-    {"id": "deeplab_v3", "asset": "deeplab_v3.tflite"},
-    {"id": "hair_segmenter", "asset": "hair_segmenter.tflite"},
-    {"id": "selfie_segmenter", "asset": "selfie_segmenter.tflite"},
-    {"id": "selfie_segmenter_landscape", "asset": "selfie_segmenter_landscape.tflite"},
-    {"id": "selfie_multiclass", "asset": "selfie_multiclass_256x256.tflite"}
+    {
+      "id": "deeplab_v3",
+      "asset": "deeplab_v3.tflite"
+    },
+    {
+      "id": "hair_segmenter",
+      "asset": "hair_segmenter.tflite"
+    },
+    {
+      "id": "selfie_segmenter",
+      "asset": "selfie_segmenter.tflite"
+    },
+    {
+      "id": "selfie_segmenter_landscape",
+      "asset": "selfie_segmenter_landscape.tflite"
+    },
+    {
+      "id": "selfie_multiclass",
+      "asset": "selfie_multiclass_256x256.tflite"
+    }
   ],
   "modes": [
-    {"id": "image-category", "options": {"runningMode": "IMAGE"}},
-    {"id": "image-confidence", "options": {"runningMode": "IMAGE"}},
-    {"id": "video", "options": {"runningMode": "VIDEO"}}
+    {
+      "id": "image-category",
+      "options": {
+        "runningMode": "IMAGE"
+      }
+    },
+    {
+      "id": "image-confidence",
+      "options": {
+        "runningMode": "IMAGE"
+      }
+    },
+    {
+      "id": "video",
+      "options": {
+        "runningMode": "VIDEO"
+      }
+    }
   ],
   "note": "DeepLab runs on the riders/horse photo of the notebook; the hair and selfie models run on business-person.png (a woman from the waist up, hair tied at the top of her head). In mode \"image-confidence\" the confidence masks are requested too, and the one of \"confidenceCategory\" is checked and written to mask.png instead of the category mask.",
   "tests": [
     {
-      "models": ["deeplab_v3"],
+      "models": [
+        "deeplab_v3"
+      ],
       "about": "The category mask must contain person, horse, background in the share of the photo each occupies.",
-      "files": {"mask": "mask.png", "blurred": "blurred_background.png"},
+      "files": {
+        "mask": "mask.png",
+        "blurred": "blurred_background.png"
+      },
       "steps": [
         {
           "key": "segmentation_input_rotation0.jpg",
@@ -38,15 +73,37 @@
         "classes": [
           {
             "label": "person",
-            "fraction": [0.2, 0.45],
-            "centroidWithin": {"minX": 0.15, "maxX": 0.45, "minY": 0.4, "maxY": 0.7}
+            "fraction": [
+              0.2,
+              0.45
+            ],
+            "centroidWithin": {
+              "minX": 0.15,
+              "maxX": 0.45,
+              "minY": 0.4,
+              "maxY": 0.7
+            }
           },
           {
             "label": "horse",
-            "fraction": [0.15, 0.4],
-            "centroidWithin": {"minX": 0.45, "maxX": 0.8, "minY": 0.6, "maxY": 0.9}
+            "fraction": [
+              0.15,
+              0.4
+            ],
+            "centroidWithin": {
+              "minX": 0.45,
+              "maxX": 0.8,
+              "minY": 0.6,
+              "maxY": 0.9
+            }
           },
-          {"label": "background", "fraction": [0.25, 0.5]}
+          {
+            "label": "background",
+            "fraction": [
+              0.25,
+              0.5
+            ]
+          }
         ],
         "maxOther": 0.03,
         "confidence": null
@@ -54,33 +111,68 @@
       "inMode": {
         "image-confidence": {
           "about": "The category mask must contain person, horse, background in the share of the photo each occupies. Confidence mask \"person\" is also verified.",
-          "options": {"confidenceCategory": "person"},
+          "options": {
+            "confidenceCategory": "person"
+          },
           "expect": {
             "confidence": {
               "label": "person",
-              "fraction": [0.2, 0.45],
+              "fraction": [
+                0.2,
+                0.45
+              ],
               "minPeak": 0.8,
-              "centroidWithin": {"minX": 0.15, "maxX": 0.45, "minY": 0.4, "maxY": 0.7}
+              "centroidWithin": {
+                "minX": 0.15,
+                "maxX": 0.45,
+                "minY": 0.4,
+                "maxY": 0.7
+              }
             }
           }
         }
       }
     },
     {
-      "models": ["hair_segmenter"],
+      "models": [
+        "hair_segmenter"
+      ],
       "about": "The category mask must contain hair, background in the share of the photo each occupies.",
-      "files": {"mask": "mask.png", "blurred": "blurred_background.png"},
-      "steps": [{"key": "business-person.png", "image": "business-person.png", "caption": "A woman facing the camera"}],
+      "files": {
+        "mask": "mask.png",
+        "blurred": "blurred_background.png"
+      },
+      "steps": [
+        {
+          "key": "business-person.png",
+          "image": "business-person.png",
+          "caption": "A woman facing the camera"
+        }
+      ],
       "expect": {
         "type": "segmentation",
         "labelCount": 2,
         "classes": [
           {
             "label": "hair",
-            "fraction": [0.01, 0.08],
-            "centroidWithin": {"minX": 0.35, "maxX": 0.65, "minY": 0.02, "maxY": 0.22}
+            "fraction": [
+              0.01,
+              0.08
+            ],
+            "centroidWithin": {
+              "minX": 0.35,
+              "maxX": 0.65,
+              "minY": 0.02,
+              "maxY": 0.22
+            }
           },
-          {"label": "background", "fraction": [0.92, 0.99]}
+          {
+            "label": "background",
+            "fraction": [
+              0.92,
+              0.99
+            ]
+          }
         ],
         "maxOther": 0.01,
         "confidence": null
@@ -88,33 +180,69 @@
       "inMode": {
         "image-confidence": {
           "about": "The category mask must contain hair, background in the share of the photo each occupies. Confidence mask \"hair\" is also verified.",
-          "options": {"confidenceCategory": "hair"},
+          "options": {
+            "confidenceCategory": "hair"
+          },
           "expect": {
             "confidence": {
               "label": "hair",
-              "fraction": [0.01, 0.08],
+              "fraction": [
+                0.01,
+                0.08
+              ],
               "minPeak": 0.8,
-              "centroidWithin": {"minX": 0.35, "maxX": 0.65, "minY": 0.02, "maxY": 0.22}
+              "centroidWithin": {
+                "minX": 0.35,
+                "maxX": 0.65,
+                "minY": 0.02,
+                "maxY": 0.22
+              }
             }
           }
         }
       }
     },
     {
-      "models": ["selfie_segmenter", "selfie_segmenter_landscape"],
+      "models": [
+        "selfie_segmenter",
+        "selfie_segmenter_landscape"
+      ],
       "about": "The category mask must contain selfie, background in the share of the photo each occupies.",
-      "files": {"mask": "mask.png", "blurred": "blurred_background.png"},
-      "steps": [{"key": "business-person.png", "image": "business-person.png", "caption": "A woman facing the camera"}],
+      "files": {
+        "mask": "mask.png",
+        "blurred": "blurred_background.png"
+      },
+      "steps": [
+        {
+          "key": "business-person.png",
+          "image": "business-person.png",
+          "caption": "A woman facing the camera"
+        }
+      ],
       "expect": {
         "type": "segmentation",
         "labelCount": 1,
         "classes": [
           {
             "label": "selfie",
-            "fraction": [0.4, 0.7],
-            "centroidWithin": {"minX": 0.35, "maxX": 0.65, "minY": 0.45, "maxY": 0.8}
+            "fraction": [
+              0.4,
+              0.7
+            ],
+            "centroidWithin": {
+              "minX": 0.35,
+              "maxX": 0.65,
+              "minY": 0.45,
+              "maxY": 0.8
+            }
           },
-          {"label": "background", "fraction": [0.3, 0.6]}
+          {
+            "label": "background",
+            "fraction": [
+              0.3,
+              0.6
+            ]
+          }
         ],
         "maxOther": 0.01,
         "confidence": null
@@ -122,47 +250,106 @@
       "inMode": {
         "image-confidence": {
           "about": "The category mask must contain selfie, background in the share of the photo each occupies. Confidence mask \"selfie\" is also verified.",
-          "options": {"confidenceCategory": "selfie"},
+          "options": {
+            "confidenceCategory": "selfie"
+          },
           "expect": {
             "confidence": {
               "label": "selfie",
-              "fraction": [0.4, 0.7],
+              "fraction": [
+                0.4,
+                0.7
+              ],
               "minPeak": 0.8,
-              "centroidWithin": {"minX": 0.35, "maxX": 0.65, "minY": 0.45, "maxY": 0.8}
+              "centroidWithin": {
+                "minX": 0.35,
+                "maxX": 0.65,
+                "minY": 0.45,
+                "maxY": 0.8
+              }
             }
           }
         }
       }
     },
     {
-      "models": ["selfie_multiclass"],
+      "models": [
+        "selfie_multiclass"
+      ],
       "about": "The category mask must contain background, hair, body-skin, face-skin, clothes in the share of the photo each occupies.",
-      "files": {"mask": "mask.png", "blurred": "blurred_background.png"},
-      "steps": [{"key": "business-person.png", "image": "business-person.png", "caption": "A woman facing the camera"}],
+      "files": {
+        "mask": "mask.png",
+        "blurred": "blurred_background.png"
+      },
+      "steps": [
+        {
+          "key": "business-person.png",
+          "image": "business-person.png",
+          "caption": "A woman facing the camera"
+        }
+      ],
       "expect": {
         "type": "segmentation",
         "labelCount": 6,
         "classes": [
-          {"label": "background", "fraction": [0.3, 0.6]},
+          {
+            "label": "background",
+            "fraction": [
+              0.3,
+              0.6
+            ]
+          },
           {
             "label": "hair",
-            "fraction": [0.01, 0.08],
-            "centroidWithin": {"minX": 0.35, "maxX": 0.65, "minY": 0.02, "maxY": 0.22}
+            "fraction": [
+              0.01,
+              0.08
+            ],
+            "centroidWithin": {
+              "minX": 0.35,
+              "maxX": 0.65,
+              "minY": 0.02,
+              "maxY": 0.22
+            }
           },
           {
             "label": "body-skin",
-            "fraction": [0.02, 0.12],
-            "centroidWithin": {"minX": 0.3, "maxX": 0.65, "minY": 0.4, "maxY": 0.75}
+            "fraction": [
+              0.02,
+              0.12
+            ],
+            "centroidWithin": {
+              "minX": 0.3,
+              "maxX": 0.65,
+              "minY": 0.4,
+              "maxY": 0.75
+            }
           },
           {
             "label": "face-skin",
-            "fraction": [0.03, 0.12],
-            "centroidWithin": {"minX": 0.4, "maxX": 0.62, "minY": 0.12, "maxY": 0.35}
+            "fraction": [
+              0.03,
+              0.12
+            ],
+            "centroidWithin": {
+              "minX": 0.4,
+              "maxX": 0.62,
+              "minY": 0.12,
+              "maxY": 0.35
+            }
           },
           {
             "label": "clothes",
-            "fraction": [0.25, 0.55],
-            "centroidWithin": {"minX": 0.35, "maxX": 0.65, "minY": 0.55, "maxY": 0.85}
+            "fraction": [
+              0.25,
+              0.55
+            ],
+            "centroidWithin": {
+              "minX": 0.35,
+              "maxX": 0.65,
+              "minY": 0.55,
+              "maxY": 0.85
+            }
           }
         ],
         "maxOther": 0.03,
@@ -171,13 +358,23 @@
       "inMode": {
         "image-confidence": {
           "about": "The category mask must contain background, hair, body-skin, face-skin, clothes in the share of the photo each occupies. Confidence mask \"clothes\" is also verified.",
-          "options": {"confidenceCategory": "clothes"},
+          "options": {
+            "confidenceCategory": "clothes"
+          },
           "expect": {
             "confidence": {
               "label": "clothes",
-              "fraction": [0.25, 0.55],
+              "fraction": [
+                0.25,
+                0.55
+              ],
               "minPeak": 0.8,
-              "centroidWithin": {"minX": 0.35, "maxX": 0.65, "minY": 0.55, "maxY": 0.85}
+              "centroidWithin": {
+                "minX": 0.35,
+                "maxX": 0.65,
+                "minY": 0.55,
+                "maxY": 0.85
+              }
             }
           }
         }

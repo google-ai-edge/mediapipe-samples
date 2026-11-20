@@ -7,10 +7,25 @@
     "android": "examples/text_summarizer/android",
     "ios": "examples/text_summarizer/ios"
   },
-  "models": [{"id": "gemma_200m", "asset": "summarization_quant_200m_2modes.litertlm"}],
+  "models": [
+    {
+      "id": "gemma_200m",
+      "asset": "summarization_quant_200m_2modes.litertlm"
+    }
+  ],
   "modes": [
-    {"id": "keypoints", "options": {"summaryMode": "KEYPOINTS"}},
-    {"id": "tldr", "options": {"summaryMode": "TLDR"}}
+    {
+      "id": "keypoints",
+      "options": {
+        "summaryMode": "KEYPOINTS"
+      }
+    },
+    {
+      "id": "tldr",
+      "options": {
+        "summaryMode": "TLDR"
+      }
+    }
   ],
   "unsupported": [
     {
@@ -18,6 +33,12 @@
       "delegate": "GPU",
       "error": "Only CPU delegate is supported.",
       "reason": "The Text Summarizer rejects the GPU delegate."
+    },
+    {
+      "platform": "android",
+      "delegate": "GPU",
+      "error": "Only CPU delegate is supported.",
+      "reason": "TextSummarizerOptions in the MediaPipe Android SDK exposes no GPU delegate option."
     }
   ],
   "tests": [
@@ -30,15 +51,32 @@
           "caption": "Text to summarize"
         }
       ],
-      "expect": {"type": "summary", "mentionsAll": ["Brussels"], "mentionsAny": ["Schuman", "European", "EU"]},
+      "expect": {
+        "type": "summary",
+        "mentionsAll": [
+          "Brussels"
+        ],
+        "mentionsAny": [
+          "Schuman",
+          "European",
+          "EU"
+        ]
+      },
       "inMode": {
         "keypoints": {
           "about": "The text is summarized as a list of key points. The summary must be shorter than the text and say where the station is.",
-          "expect": {"format": "bullets", "minBullets": 2, "maxLengthRatio": 1.0}
+          "expect": {
+            "format": "bullets",
+            "minBullets": 2,
+            "maxLengthRatio": 1.0
+          }
         },
         "tldr": {
           "about": "The text is summarized as a short paragraph. The summary must be shorter than the text and say where the station is.",
-          "expect": {"format": "prose", "maxLengthRatio": 0.5}
+          "expect": {
+            "format": "prose",
+            "maxLengthRatio": 0.5
+          }
         }
       }
     }

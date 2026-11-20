@@ -7,9 +7,17 @@
     "android": "examples/language_detector/android",
     "ios": "examples/language_detector/ios"
   },
-  "models": [{"id": "language_detector", "asset": "language_detector.tflite"}],
+  "models": [
+    {
+      "id": "language_detector",
+      "asset": "language_detector.tflite"
+    }
+  ],
   "modes": [
-    {"id": "detect", "options": {}}
+    {
+      "id": "detect",
+      "options": {}
+    }
   ],
   "unsupported": [
     {
@@ -18,6 +26,12 @@
       "delegate": "GPU",
       "error": "not supported by the macOS/iOS GPU delegate (only float32 input/output tensors are supported).",
       "reason": "The macOS GPU delegate rejects string input tensors."
+    },
+    {
+      "platform": "android",
+      "delegate": "GPU",
+      "error": "Conversion from TfLite model failed.",
+      "reason": "The Android TFLite GPU delegate rejects the dynamic-sized string tensors of the language detector."
     }
   ],
   "tests": [
@@ -29,40 +43,66 @@
           "key": "sentence 1",
           "text": "分久必合合久必分",
           "caption": "Expected: zh",
-          "expect": {"label": "zh", "match": "present", "minScore": 0.3}
+          "expect": {
+            "label": "zh",
+            "match": "present",
+            "minScore": 0.3
+          }
         },
         {
           "key": "sentence 2",
           "text": "To be, or not to be, that is the question",
           "caption": "Expected: en",
-          "expect": {"label": "en", "match": "top", "minScore": 0.5}
+          "expect": {
+            "label": "en",
+            "match": "top",
+            "minScore": 0.5
+          }
         },
         {
           "key": "sentence 3",
           "text": "Bonjour, ceci est un test de validation automatique.",
           "caption": "Expected: fr",
-          "expect": {"label": "fr", "match": "top", "minScore": 0.5}
+          "expect": {
+            "label": "fr",
+            "match": "top",
+            "minScore": 0.5
+          }
         },
         {
           "key": "sentence 4",
           "text": "Hola, esta es una prueba de validación automática para la nueva versión.",
           "caption": "Expected: es",
-          "expect": {"label": "es", "match": "top", "minScore": 0.5}
+          "expect": {
+            "label": "es",
+            "match": "top",
+            "minScore": 0.5
+          }
         },
         {
           "key": "sentence 5",
           "text": "Hallo, dies ist ein automatischer Validierungstest für die neue Version.",
           "caption": "Expected: de",
-          "expect": {"label": "de", "match": "top", "minScore": 0.5}
+          "expect": {
+            "label": "de",
+            "match": "top",
+            "minScore": 0.5
+          }
         },
         {
           "key": "sentence 6",
           "text": "これは新しいリリースの自動検証テストです。",
           "caption": "Expected: ja",
-          "expect": {"label": "ja", "match": "top", "minScore": 0.5}
+          "expect": {
+            "label": "ja",
+            "match": "top",
+            "minScore": 0.5
+          }
         }
       ],
-      "expect": {"type": "textLabels"}
+      "expect": {
+        "type": "textLabels"
+      }
     }
   ]
 }

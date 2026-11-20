@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="validation_app_name">MediaPipe Validation</string>
+    <string name="validation_intro">Every Android sample of the validation spec, in one app. The release validation runs its cases in these samples; here you can open each one as its own app shows it.</string>
+    <string name="validation_versions">Built against</string>
+</resources>
