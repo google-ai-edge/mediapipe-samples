@@ -68,10 +68,7 @@ def download(url: str, path: str) -> None:
 
 def draw_landmarks_on_image(rgb_image, detection_result):
   face_landmarks_list = detection_result.face_landmarks
-  # mp.Image.create_from_file() returns RGBA data; the drawing utilities need
-  # three channels.
-  annotated_image = np.copy(
-      rgb_image[:, :, :3] if rgb_image.shape[2] == 4 else rgb_image)
+  annotated_image = np.copy(rgb_image)
 
   # Loop through the detected faces to visualize.
   for idx in range(len(face_landmarks_list)):

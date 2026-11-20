@@ -69,10 +69,7 @@ def download(url: str, path: str) -> None:
 def draw_landmarks_on_image(rgb_image, detection_result):
   hand_landmarks_list = detection_result.hand_landmarks
   handedness_list = detection_result.handedness
-  # mp.Image.create_from_file() returns RGBA data; the drawing utilities need
-  # three channels.
-  annotated_image = np.copy(
-      rgb_image[:, :, :3] if rgb_image.shape[2] == 4 else rgb_image)
+  annotated_image = np.copy(rgb_image)
 
   # Loop through the detected hands to visualize.
   for idx in range(len(hand_landmarks_list)):

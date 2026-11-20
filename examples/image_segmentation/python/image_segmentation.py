@@ -115,9 +115,7 @@ def run(model: str,
   # Print the share of the image that each category covers.
   mask = category_mask.numpy_view()
   mask = mask.squeeze(-1) if mask.ndim == 3 else mask
-  # mp.Image.create_from_file() returns RGBA data; keep the three color
-  # channels.
-  rgb_image = image.numpy_view()[:, :, :3]
+  rgb_image = image.numpy_view()
   # Single-class selfie models put the person in category 0 and the background
   # in 255; multi-class models put the background in category 0.
   foreground = (mask == 0) if len(labels) == 1 else (mask > 0)

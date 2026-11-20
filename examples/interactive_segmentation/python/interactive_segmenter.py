@@ -177,9 +177,8 @@ def run(model: str,
         f'({matching_pixels / condition.size:.1%}) of {image_file}')
 
   if output:
-    # Generate dynamic transparent overlay on top of the original image;
-    # mp.Image.create_from_file() may have 3 or 4 channels.
-    image_data = image.numpy_view()[:, :, :3]
+    # Generate dynamic transparent overlay on top of the original image
+    image_data = image.numpy_view()
 
     # Convert original image from RGB (MediaPipe) to BGR (OpenCV) for correct
     # color output

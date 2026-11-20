@@ -67,10 +67,7 @@ def download(url: str, path: str) -> None:
 
 def draw_landmarks_on_image(rgb_image, detection_result):
   pose_landmarks_list = detection_result.pose_landmarks
-  # mp.Image.create_from_file() returns RGBA data; the drawing utilities need
-  # three channels.
-  annotated_image = np.copy(
-      rgb_image[:, :, :3] if rgb_image.shape[2] == 4 else rgb_image)
+  annotated_image = np.copy(rgb_image)
 
   pose_landmark_style = drawing_styles.get_default_pose_landmarks_style()
   pose_connection_style = drawing_utils.DrawingSpec(color=(0, 255, 0),

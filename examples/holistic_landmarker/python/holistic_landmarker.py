@@ -77,11 +77,9 @@ def load_resized_image(image_file: str) -> mp.Image:
   new_h = DESIRED_HEIGHT
   new_w = int(round(w * (DESIRED_HEIGHT / h) / 16.0)) * 16
   img = cv2.resize(img, (new_w, new_h))
-  # OpenCV reads BGR. MediaPipe gets RGBA, which is also what
-  # mp.Image.create_from_file() returns: the GPU delegate does not accept
-  # three-channel images.
-  rgba_image = np.ascontiguousarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGBA))
-  return mp.Image(image_format=mp.ImageFormat.SRGBA, data=rgba_image)
+  # OpenCV reads BGR; MediaPipe expects RGB.
+  rgb_image = np.ascontiguousarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+  return mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_image)
 
 
 def draw_landmarks_on_image(rgb_image, detection_result):
@@ -89,8 +87,7 @@ def draw_landmarks_on_image(rgb_image, detection_result):
   face_landmarks = detection_result.face_landmarks
   left_hand_landmarks = detection_result.left_hand_landmarks
   right_hand_landmarks = detection_result.right_hand_landmarks
-  annotated_image = np.copy(
-      rgb_image[:, :, :3] if rgb_image.shape[2] == 4 else rgb_image)
+  annotated_image = np.copy(rgb_image)
 
   # Draw pose landmarks.
   if pose_landmarks:

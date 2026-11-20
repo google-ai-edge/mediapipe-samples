@@ -125,9 +125,7 @@ def display_batch_of_images_with_gestures_and_hand_landmarks(
       zip(images[:rows * cols], gestures[:rows * cols])):
     title = f'{gesture.category_name} ({gesture.score:.2f})'
     dynamic_titlesize = FIGSIZE * SPACING / max(rows, cols) * 40 + 3
-    # mp.Image.create_from_file() returns RGBA data; the drawing utilities
-    # need three channels.
-    annotated_image = np.copy(image[:, :, :3] if image.shape[2] == 4 else image)
+    annotated_image = image.copy()
 
     for hand_landmarks in multi_hand_landmarks_list[i]:
       mp_drawing.draw_landmarks(
