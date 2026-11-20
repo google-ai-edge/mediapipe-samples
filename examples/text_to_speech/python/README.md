@@ -31,7 +31,7 @@ Requires Python 3.10 or newer.
 
 ```bash
 python3 -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
+pip install mediapipe huggingface_hub
 
 # Synthesize the default sentence to tts_output.wav (downloads the model on first run).
 python text_to_speech.py
