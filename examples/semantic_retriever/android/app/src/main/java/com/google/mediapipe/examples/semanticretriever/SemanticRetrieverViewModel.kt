@@ -20,6 +20,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.provider.OpenableColumns
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -100,12 +101,15 @@ data class SemanticRetrieverUiState(
             RetrieverDelegateOption.GPU
         },
     val storeOption: VectorStoreOption = VectorStoreOption.SQLITE,
+    val topK: Int = 5,
+    val minSimilarity: Double = 0.0,
     val isModelLoading: Boolean = true,
     val isIndexing: Boolean = false,
     val isSearching: Boolean = false,
     val indexingProgress: Int = 0,
     val indexingTotal: Int = BundledGalleryItems.size,
     val indexedCount: Int = 0,
+    val hasCustomDocuments: Boolean = false,
     val matches: List<SearchMatchUi> = emptyList(),
     val lastSearchTimeMs: Long? = null,
     val errorMessage: String? = null,
@@ -153,11 +157,38 @@ class SemanticRetrieverViewModel(appContext: Context) : ViewModel() {
         _uiState.update { it.copy(query = suggestion.query) }
     }
 
+    fun updateTopK(limit: Int) {
+        val clamped = limit.coerceIn(1, 10)
+        if (_uiState.value.topK == clamped) return
+        _uiState.update {
+            it.copy(
+                topK = clamped,
+                matches = emptyList(),
+                lastSearchTimeMs = null,
+                errorMessage = null,
+            )
+        }
+    }
+
+    fun updateMinSimilarity(minSimilarity: Double) {
+        val clamped = minSimilarity.coerceIn(0.0, 0.95)
+        if (_uiState.value.minSimilarity == clamped) return
+        _uiState.update {
+            it.copy(
+                minSimilarity = clamped,
+                matches = emptyList(),
+                lastSearchTimeMs = null,
+                errorMessage = null,
+            )
+        }
+    }
+
     fun selectDelegate(option: RetrieverDelegateOption) {
         if (_uiState.value.delegateOption == option || _uiState.value.isBusy) return
         _uiState.update {
             it.copy(
                 delegateOption = option,
+                isModelLoading = true,
                 matches = emptyList(),
                 lastSearchTimeMs = null,
                 errorMessage = null,
@@ -172,6 +203,7 @@ class SemanticRetrieverViewModel(appContext: Context) : ViewModel() {
         _uiState.update {
             it.copy(
                 storeOption = option,
+                isModelLoading = true,
                 matches = emptyList(),
                 lastSearchTimeMs = null,
                 errorMessage = null,
@@ -194,22 +226,41 @@ class SemanticRetrieverViewModel(appContext: Context) : ViewModel() {
     fun clearIndex() {
         if (_uiState.value.isBusy) return
         activeJob?.cancel()
+        _uiState.update {
+            it.copy(
+                isIndexing = true,
+                indexingProgress = 0,
+                indexingTotal = 1,
+                errorMessage = null,
+            )
+        }
         activeJob =
             viewModelScope.launch {
+                var failure: String? = null
                 withContext(engineDispatcher) {
-                    helper?.clearIndex()
+                    runCatching { helper?.clearIndex() }
+                        .onFailure {
+                            Log.e(TAG, "Failed to clear index", it)
+                            failure = it.message ?: "Failed to clear index."
+                        }
                 }
                 _uiState.update {
                     it.copy(
+                        isIndexing = false,
+                        indexingProgress = 1,
                         indexedCount = 0,
+                        hasCustomDocuments = false,
                         matches = emptyList(),
                         lastSearchTimeMs = null,
+                        errorMessage = failure,
                     )
                 }
             }
     }
 
-    fun addCustomPhoto(uri: Uri) {
+    fun addCustomPhoto(uri: Uri) = addCustomPhoto(uri, customId = null)
+
+    fun addCustomPhoto(uri: Uri, customId: String?) {
         if (_uiState.value.isBusy) return
         activeJob?.cancel()
         _uiState.update {
@@ -217,20 +268,35 @@ class SemanticRetrieverViewModel(appContext: Context) : ViewModel() {
         }
         activeJob =
             viewModelScope.launch {
+                var failure: String? = null
                 val indexedCount =
                     withContext(engineDispatcher) {
                         val h = helper ?: return@withContext _uiState.value.indexedCount
-                        val id = "user_photo_${System.currentTimeMillis()}"
-                        h.insertImage(
-                            id = id,
-                            imageUri = uri,
-                            metadata =
-                                mapOf(
-                                    "label" to "Custom Photo",
-                                    "uri" to uri.toString(),
-                                ),
-                        )
-                        decodeUriThumbnail(uri)?.let { thumbnailCache[id] = it }
+                        try {
+                            val existingIds = h.getAllRecordIds().toSet()
+                            val candidateName =
+                                customId?.trim()?.takeIf { it.isNotEmpty() }
+                                    ?: resolveUriDisplayName(uri)?.trim()?.takeIf { it.isNotEmpty() }
+                            val id =
+                                if (candidateName != null && candidateName !in existingIds) {
+                                    candidateName
+                                } else {
+                                    "user_photo_${System.currentTimeMillis()}"
+                                }
+                            h.insertImage(
+                                id = id,
+                                imageUri = uri,
+                                metadata =
+                                    mapOf(
+                                        "label" to (candidateName ?: "Custom Photo"),
+                                        "uri" to uri.toString(),
+                                    ),
+                            )
+                            decodeUriThumbnail(uri)?.let { thumbnailCache[id] = it }
+                        } catch (t: Throwable) {
+                            Log.e(TAG, "Failed to index custom photo $uri", t)
+                            failure = t.message ?: "Failed to index photo."
+                        }
                         h.getAllRecordIds().size
                     }
                 _uiState.update {
@@ -238,6 +304,63 @@ class SemanticRetrieverViewModel(appContext: Context) : ViewModel() {
                         isIndexing = false,
                         indexingProgress = 1,
                         indexedCount = indexedCount,
+                        errorMessage = failure,
+                    )
+                }
+            }
+    }
+
+    fun addCustomDocument(id: String, text: String) {
+        if (_uiState.value.isBusy) return
+        val cleanText = text.trim()
+        if (cleanText.isEmpty()) return
+        activeJob?.cancel()
+        _uiState.update {
+            it.copy(isIndexing = true, indexingProgress = 0, indexingTotal = 1, errorMessage = null)
+        }
+        activeJob =
+            viewModelScope.launch {
+                var failure: String? = null
+                val indexedCount =
+                    withContext(engineDispatcher) {
+                        val h = helper ?: return@withContext _uiState.value.indexedCount
+                        try {
+                            val existingIds = h.getAllRecordIds().toSet()
+                            val trimmedId = id.trim()
+                            val resolvedId =
+                                if (trimmedId.isNotEmpty()) {
+                                    trimmedId
+                                } else {
+                                    var nextIdx = existingIds.size + 1
+                                    while ("document $nextIdx" in existingIds) nextIdx++
+                                    "document $nextIdx"
+                                }
+                            val snippet =
+                                if (cleanText.length <= 60) cleanText
+                                else cleanText.take(57) + "…"
+                            h.insertDocument(
+                                id = resolvedId,
+                                text = cleanText,
+                                metadata =
+                                    mapOf(
+                                        "label" to resolvedId,
+                                        "snippet" to snippet,
+                                        "kind" to "document",
+                                    ),
+                            )
+                        } catch (t: Throwable) {
+                            Log.e(TAG, "Failed to index document $id", t)
+                            failure = t.message ?: "Failed to index document."
+                        }
+                        h.getAllRecordIds().size
+                    }
+                _uiState.update {
+                    it.copy(
+                        isIndexing = false,
+                        indexingProgress = 1,
+                        indexedCount = indexedCount,
+                        hasCustomDocuments = it.hasCustomDocuments || failure == null,
+                        errorMessage = failure,
                     )
                 }
             }
@@ -247,22 +370,41 @@ class SemanticRetrieverViewModel(appContext: Context) : ViewModel() {
         val state = _uiState.value
         if (!state.canSearch) return
         val query = state.query.trim()
+        val limit = state.topK
+        val minSimilarity = state.minSimilarity
 
         activeJob?.cancel()
-        _uiState.update { it.copy(isSearching = true, errorMessage = null) }
+        _uiState.update {
+            it.copy(
+                isSearching = true,
+                matches = emptyList(),
+                lastSearchTimeMs = null,
+                errorMessage = null,
+            )
+        }
         activeJob =
             viewModelScope.launch {
+                var searchError: String? = null
                 val bundle =
                     withContext(engineDispatcher) {
-                        runCatching { helper?.retrieve(query, topK = 5) }
-                            .onFailure { Log.e(TAG, "Search failed", it) }
+                        runCatching {
+                                helper?.retrieve(
+                                    query = query,
+                                    topK = limit,
+                                    minSimilarity = minSimilarity,
+                                )
+                            }
+                            .onFailure {
+                                Log.e(TAG, "Search failed", it)
+                                searchError = it.message
+                            }
                             .getOrNull()
                     }
                 if (bundle == null) {
                     _uiState.update {
                         it.copy(
                             isSearching = false,
-                            errorMessage = lastErrorMessage ?: "Search failed.",
+                            errorMessage = searchError ?: lastErrorMessage ?: "Search failed.",
                         )
                     }
                     return@launch
@@ -272,16 +414,29 @@ class SemanticRetrieverViewModel(appContext: Context) : ViewModel() {
                         val meta = res.metadata()
                         val sample = BundledGalleryItems.firstOrNull { it.id == res.id() }
                         val label = meta["label"] ?: sample?.label ?: res.id()
+                        val isDoc = meta["kind"] == "document"
                         val bmp =
-                            thumbnailCache[res.id()]
-                                ?: sample?.let { loadAssetThumbnail(it.id, it.assetPath) }
-                                ?: meta["uri"]?.let { runCatching { decodeUriThumbnail(Uri.parse(it)) }.getOrNull() }
+                            if (isDoc) {
+                                null
+                            } else {
+                                thumbnailCache[res.id()]
+                                    ?: sample?.let { loadAssetThumbnail(it.id, it.assetPath) }
+                                    ?: meta["uri"]?.let {
+                                        runCatching { decodeUriThumbnail(Uri.parse(it)) }.getOrNull()
+                                    }
+                            }
+                        val sourceTag =
+                            when {
+                                isDoc -> meta["snippet"] ?: "Text note"
+                                sample != null -> "Sample"
+                                else -> "Photo Picker"
+                            }
                         SearchMatchUi(
                             id = res.id(),
                             label = label,
                             score = res.score(),
                             thumbnail = bmp,
-                            sourceTag = if (sample != null) "Sample" else "Photo Picker",
+                            sourceTag = sourceTag,
                         )
                     }
                 _uiState.update {
@@ -355,19 +510,24 @@ class SemanticRetrieverViewModel(appContext: Context) : ViewModel() {
                     withContext(engineDispatcher) {
                         helper?.getAllRecordIds().orEmpty()
                     }
+                val existingSet = existingIds.toSet()
+                val sampleIds = BundledGalleryItems.mapTo(mutableSetOf()) { it.id }
+                val missingSamples = BundledGalleryItems.filter { it.id !in existingSet }
+                val shouldAutoIndex = existingSet.all { it in sampleIds } && missingSamples.isNotEmpty()
                 _uiState.update {
                     it.copy(
                         delegateOption = activeDelegate,
                         isModelLoading = false,
+                        isIndexing = shouldAutoIndex,
+                        indexingProgress = 0,
+                        indexingTotal =
+                            if (shouldAutoIndex) missingSamples.size else it.indexingTotal,
                         noticeMessage = notice,
                         indexedCount = existingIds.size,
                     )
                 }
-                val existingSet = existingIds.toSet()
-                val sampleIds = BundledGalleryItems.mapTo(mutableSetOf()) { it.id }
-                val missingSamples = BundledGalleryItems.filter { it.id !in existingSet }
                 // Resume partial initial indexing if a previous run was interrupted mid-gallery.
-                if (existingSet.all { it in sampleIds } && missingSamples.isNotEmpty()) {
+                if (shouldAutoIndex) {
                     runIndexSampleGallery(missingSamples)
                 }
             }
@@ -432,6 +592,21 @@ class SemanticRetrieverViewModel(appContext: Context) : ViewModel() {
             }
             .onSuccess { bmp -> if (bmp != null) thumbnailCache[id] = bmp }
             .getOrNull()
+    }
+
+    private fun resolveUriDisplayName(uri: Uri): String? {
+        val queried =
+            runCatching {
+                    context.contentResolver
+                        .query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
+                        ?.use { cursor ->
+                            val idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                            if (idx >= 0 && cursor.moveToFirst()) cursor.getString(idx) else null
+                        }
+                }
+                .getOrNull()
+        return queried?.takeIf { it.isNotBlank() }
+            ?: uri.lastPathSegment?.substringAfterLast('/')?.takeIf { it.isNotBlank() }
     }
 
     private fun decodeUriThumbnail(uri: Uri): Bitmap? {

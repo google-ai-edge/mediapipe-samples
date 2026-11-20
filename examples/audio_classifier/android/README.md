@@ -4,8 +4,8 @@
 
 This app continuously classifies sounds recorded from the microphone or loaded from audio clips on device using [YAMNet](https://huggingface.co/litert-community/MediaPipe-AudioClassifier-YAMNet/resolve/main/yamnet.tflite) and the MediaPipe Tasks Audio library (`com.google.mediapipe:tasks-audio`).
 
-* **Audio Clip mode:** Classify the bundled 16 kHz speech clip, a synthesized 440 Hz sine tone, or any audio file picked from device storage, with window-by-window playback and probability bars.
-* **Live Mic mode:** Stream 16 kHz microphone audio in `RunningMode.AUDIO_STREAM` with configurable overlap, max results, and confidence threshold.
+* **Audio Clip mode:** Classify the bundled 16 kHz speech clip, a synthesized 440 Hz sine tone, or any audio file picked from device storage in either `RunningMode.AUDIO_CLIPS` (single call) or `RunningMode.AUDIO_STREAM` (streamed 0.975 s windows), with window-by-window playback and probability bars.
+* **Live Mic mode:** Stream 16 kHz microphone audio in `RunningMode.AUDIO_STREAM` with configurable CPU/GPU delegate, overlap, max results, and confidence threshold (0.0–0.9).
 * **Material 3 Compose UI:** Shared `:android-common:ui` theming and components with edge-to-edge layout and light/dark theme support.
 
 ![Audio Classifier Demo](audioclassifier.png?raw=true "Audio Classifier Demo")

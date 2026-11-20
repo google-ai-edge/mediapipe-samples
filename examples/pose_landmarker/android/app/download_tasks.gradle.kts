@@ -41,19 +41,19 @@ data class VerifiedModelDownload(
 )
 
 val poseLiteTask = VerifiedModelDownload(
-    url = "https://huggingface.co/litert-community/MediaPipe-PoseLandmarker-Lite/resolve/main/pose_landmarker_lite.task",
+    url = "https://huggingface.co/litert-community/MediaPipe-PoseLandmarker-Lite/resolve/105f65fd3484e46a25fe517a3722932d4392083c/pose_landmarker_lite.task",
     destFile = file("$assetDir/pose_landmarker_lite.task"),
     sha256 = "59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a",
 )
 
 val poseFullTask = VerifiedModelDownload(
-    url = "https://huggingface.co/litert-community/MediaPipe-PoseLandmarker-Full/resolve/main/pose_landmarker_full.task",
+    url = "https://huggingface.co/litert-community/MediaPipe-PoseLandmarker-Full/resolve/e356612f3ba14ec42a14f14d0d7d0a14d450de59/pose_landmarker_full.task",
     destFile = file("$assetDir/pose_landmarker_full.task"),
     sha256 = "4eaa5eb7a98365221087693fcc286334cf0858e2eb6e15b506aa4a7ecdcec4ad",
 )
 
 val poseHeavyTask = VerifiedModelDownload(
-    url = "https://huggingface.co/litert-community/MediaPipe-PoseLandmarker-Heavy/resolve/main/pose_landmarker_heavy.task",
+    url = "https://huggingface.co/litert-community/MediaPipe-PoseLandmarker-Heavy/resolve/8a9deee6a176119dbaf22006b4a1db71fd889d82/pose_landmarker_heavy.task",
     destFile = file("$assetDir/pose_landmarker_heavy.task"),
     sha256 = "64437af838a65d18e5ba7a0d39b465540069bc8aae8308de3e318aad31fcbc7b",
 )

@@ -73,7 +73,12 @@ class FaceLandmarkerHelperTest {
 
             assertTrue("Expected face blendshapes output", result.faceBlendshapes().isPresent)
             val blendshapes = result.faceBlendshapes().get().first()
-            assertTrue("Expected 52 blendshape categories", blendshapes.size >= 52)
+            assertEquals("Expected 52 blendshape categories", 52, blendshapes.size)
+            assertTrue(
+                "Expected facial transformation matrix output",
+                result.facialTransformationMatrixes().isPresent,
+            )
+            assertEquals(16, result.facialTransformationMatrixes().get().first().size)
             val topNonNeutral =
                 blendshapes
                     .filter { it.categoryName() != "_neutral" }

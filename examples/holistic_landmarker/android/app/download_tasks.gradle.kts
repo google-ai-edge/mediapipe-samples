@@ -41,7 +41,7 @@ data class VerifiedModelDownload(
 )
 
 val holisticLandmarkerTask = VerifiedModelDownload(
-    url = "https://huggingface.co/litert-community/MediaPipe-HolisticLandmarker/resolve/main/holistic_landmarker.task",
+    url = "https://huggingface.co/litert-community/MediaPipe-HolisticLandmarker/resolve/4f2fac960e1bbb53343073a56ff524a1cfcc177e/holistic_landmarker.task",
     destFile = file("$assetDir/holistic_landmarker.task"),
     sha256 = "e2dab61191e2dcd0a15f943d8e3ed1dce13c82dfa597b9dd39f562975a50c3f8",
 )

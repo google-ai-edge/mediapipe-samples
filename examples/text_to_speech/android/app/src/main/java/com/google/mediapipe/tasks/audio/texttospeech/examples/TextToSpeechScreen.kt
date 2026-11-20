@@ -80,6 +80,7 @@ fun TextToSpeechScreen(
   onStream: () -> Unit,
   onReplay: () -> Unit,
   onStop: () -> Unit,
+  onSelectModel: (TtsModelOption) -> Unit = {},
   onSelectDelegateMode: (TtsDelegateMode) -> Unit,
   onSelectSpeakingRate: (Float) -> Unit,
   onFallbackToCpu: () -> Unit,
@@ -94,7 +95,7 @@ fun TextToSpeechScreen(
     topBar = {
       MediaPipeTopBar(
         title = stringResource(R.string.app_name),
-        subtitle = "Kokoro 82M · ${state.activeDelegateLabel}",
+        subtitle = "${state.selectedModel.displayName} · ${state.activeDelegateLabel}",
         onSettingsClick = { showSettings = true },
       )
     },
@@ -264,6 +265,14 @@ fun TextToSpeechScreen(
           text = "Engine & Voice Settings",
           style = MaterialTheme.typography.titleMedium,
           fontWeight = FontWeight.SemiBold,
+        )
+
+        SegmentedOptionRow(
+          label = "Model",
+          options = TtsModelOption.entries.map { it.shortLabel },
+          selectedIndex = TtsModelOption.entries.indexOf(state.selectedModel).coerceAtLeast(0),
+          enabled = !state.isBusy,
+          onSelect = { idx -> onSelectModel(TtsModelOption.entries[idx]) },
         )
 
         SegmentedOptionRow(

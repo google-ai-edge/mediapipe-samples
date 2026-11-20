@@ -66,6 +66,14 @@ enum class EmbedderModel(
     ),
 }
 
+enum class EmbedderDelegate(
+    val index: Int,
+    val displayName: String,
+) {
+    CPU(TextEmbedderHelper.DELEGATE_CPU, "CPU"),
+    GPU(TextEmbedderHelper.DELEGATE_GPU, "GPU"),
+}
+
 enum class EmbeddingContextMode(
     val id: String,
     val label: String,
@@ -166,12 +174,16 @@ data class TextEmbedderUiState(
     val secondText: String = DefaultPresets.first().secondText,
     val documentTitle: String = DefaultPresets.first().documentTitle,
     val model: EmbedderModel = EmbedderModel.EMBEDDING_GEMMA,
+    val delegate: EmbedderDelegate = EmbedderDelegate.CPU,
+    val l2Normalize: Boolean = false,
+    val quantize: Boolean = false,
     val contextMode: EmbeddingContextMode = EmbeddingContextMode.SIMILARITY,
     val isModelLoading: Boolean = true,
     val isComparing: Boolean = false,
     val isReady: Boolean = false,
     val result: TextEmbedderHelper.ResultBundle? = null,
     val errorMessage: String? = null,
+    val errorCode: Int = TextEmbedderHelper.OTHER_ERROR,
 ) {
     val isBusy: Boolean
         get() = isModelLoading || isComparing
@@ -247,6 +259,7 @@ class TextEmbedderViewModel(appContext: Context) : ViewModel() {
                         isComparing = false,
                         isReady = false,
                         errorMessage = error,
+                        errorCode = errorCode,
                     )
                 }
             }
@@ -306,6 +319,32 @@ class TextEmbedderViewModel(appContext: Context) : ViewModel() {
         prepareEmbedder()
     }
 
+    fun selectDelegate(delegate: EmbedderDelegate) {
+        if (_uiState.value.delegate == delegate) return
+        _uiState.update { it.copy(delegate = delegate, result = null) }
+        prepareEmbedder()
+    }
+
+    fun switchToCpuDelegate() {
+        if (_uiState.value.delegate == EmbedderDelegate.CPU) {
+            prepareEmbedder()
+        } else {
+            selectDelegate(EmbedderDelegate.CPU)
+        }
+    }
+
+    fun setL2Normalize(enabled: Boolean) {
+        if (_uiState.value.l2Normalize == enabled) return
+        _uiState.update { it.copy(l2Normalize = enabled, result = null) }
+        prepareEmbedder()
+    }
+
+    fun setQuantize(enabled: Boolean) {
+        if (_uiState.value.quantize == enabled) return
+        _uiState.update { it.copy(quantize = enabled, result = null) }
+        prepareEmbedder()
+    }
+
     fun retryInitialization() {
         prepareEmbedder()
     }
@@ -325,7 +364,13 @@ class TextEmbedderViewModel(appContext: Context) : ViewModel() {
             }
 
         activeJob?.cancel()
-        _uiState.update { it.copy(isComparing = true, errorMessage = null) }
+        _uiState.update {
+            it.copy(
+                isComparing = true,
+                errorMessage = null,
+                errorCode = TextEmbedderHelper.OTHER_ERROR,
+            )
+        }
         activeJob =
             viewModelScope.launch {
                 val bundle =
@@ -343,7 +388,7 @@ class TextEmbedderViewModel(appContext: Context) : ViewModel() {
                     } else {
                         it.copy(
                             isComparing = false,
-                            errorMessage = "Embedder is not initialized.",
+                            errorMessage = it.errorMessage ?: "Embedder is not initialized.",
                         )
                     }
                 }
@@ -351,13 +396,18 @@ class TextEmbedderViewModel(appContext: Context) : ViewModel() {
     }
 
     private fun prepareEmbedder() {
-        val targetModel = _uiState.value.model
+        val snapshot = _uiState.value
+        val targetModel = snapshot.model
+        val targetDelegate = snapshot.delegate
+        val targetL2Normalize = snapshot.l2Normalize
+        val targetQuantize = snapshot.quantize
         activeJob?.cancel()
         _uiState.update {
             it.copy(
                 isModelLoading = true,
                 isReady = false,
                 errorMessage = null,
+                errorCode = TextEmbedderHelper.OTHER_ERROR,
             )
         }
         activeJob =
@@ -369,15 +419,19 @@ class TextEmbedderViewModel(appContext: Context) : ViewModel() {
                             val created =
                                 TextEmbedderHelper(
                                     context = context,
-                                    currentDelegate = TextEmbedderHelper.DELEGATE_CPU,
+                                    currentDelegate = targetDelegate.index,
                                     currentModel = targetModel.index,
+                                    l2Normalize = targetL2Normalize,
+                                    quantize = targetQuantize,
                                     listener = listener,
                                 )
                             helper = created
                             created.isReady
                         } else {
-                            existing.currentDelegate = TextEmbedderHelper.DELEGATE_CPU
+                            existing.currentDelegate = targetDelegate.index
                             existing.currentModel = targetModel.index
+                            existing.l2Normalize = targetL2Normalize
+                            existing.quantize = targetQuantize
                             existing.setupTextEmbedder()
                         }
                     }

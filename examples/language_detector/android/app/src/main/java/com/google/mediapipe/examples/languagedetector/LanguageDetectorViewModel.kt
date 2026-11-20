@@ -36,6 +36,14 @@ enum class MaxResultsOption(val label: String, val count: Int) {
     TOP_5("5", 5),
 }
 
+enum class DetectorDelegate(
+    val helperConstant: Int,
+    val displayName: String,
+) {
+    CPU(LanguageDetectorHelper.DELEGATE_CPU, "CPU"),
+    GPU(LanguageDetectorHelper.DELEGATE_GPU, "GPU"),
+}
+
 data class TextPreset(
     val id: String,
     val label: String,
@@ -45,11 +53,13 @@ data class TextPreset(
 data class LanguageDetectorUiState(
     val inputText: String = DefaultPresets.first().text,
     val maxResultsOption: MaxResultsOption = MaxResultsOption.TOP_5,
+    val delegate: DetectorDelegate = DetectorDelegate.CPU,
     val isModelLoading: Boolean = true,
     val isDetecting: Boolean = false,
     val isReady: Boolean = false,
     val result: LanguageDetectorHelper.ResultBundle? = null,
     val errorMessage: String? = null,
+    val errorCode: Int = LanguageDetectorHelper.OTHER_ERROR,
 ) {
     val isBusy: Boolean
         get() = isModelLoading || isDetecting
@@ -112,6 +122,7 @@ class LanguageDetectorViewModel(appContext: Context) : ViewModel() {
                         isDetecting = false,
                         isReady = false,
                         errorMessage = error,
+                        errorCode = errorCode,
                     )
                 }
             }
@@ -137,6 +148,20 @@ class LanguageDetectorViewModel(appContext: Context) : ViewModel() {
         prepareDetector()
     }
 
+    fun selectDelegate(delegate: DetectorDelegate) {
+        if (_uiState.value.delegate == delegate) return
+        _uiState.update { it.copy(delegate = delegate, result = null) }
+        prepareDetector()
+    }
+
+    fun switchToCpuDelegate() {
+        if (_uiState.value.delegate == DetectorDelegate.CPU) {
+            prepareDetector()
+        } else {
+            selectDelegate(DetectorDelegate.CPU)
+        }
+    }
+
     fun retryInitialization() {
         prepareDetector()
     }
@@ -146,7 +171,13 @@ class LanguageDetectorViewModel(appContext: Context) : ViewModel() {
         if (!snapshot.canDetect) return
 
         activeJob?.cancel()
-        _uiState.update { it.copy(isDetecting = true, errorMessage = null) }
+        _uiState.update {
+            it.copy(
+                isDetecting = true,
+                errorMessage = null,
+                errorCode = LanguageDetectorHelper.OTHER_ERROR,
+            )
+        }
         activeJob =
             viewModelScope.launch {
                 val bundle = withContext(engineDispatcher) { helper?.detect(snapshot.inputText) }
@@ -156,7 +187,7 @@ class LanguageDetectorViewModel(appContext: Context) : ViewModel() {
                     } else {
                         it.copy(
                             isDetecting = false,
-                            errorMessage = "Language detector is not initialized.",
+                            errorMessage = it.errorMessage ?: "Language detector is not initialized.",
                         )
                     }
                 }
@@ -164,13 +195,16 @@ class LanguageDetectorViewModel(appContext: Context) : ViewModel() {
     }
 
     private fun prepareDetector() {
-        val targetMax = _uiState.value.maxResultsOption.count
+        val snapshot = _uiState.value
+        val targetMax = snapshot.maxResultsOption.count
+        val targetDelegate = snapshot.delegate
         activeJob?.cancel()
         _uiState.update {
             it.copy(
                 isModelLoading = true,
                 isReady = false,
                 errorMessage = null,
+                errorCode = LanguageDetectorHelper.OTHER_ERROR,
             )
         }
         activeJob =
@@ -183,14 +217,14 @@ class LanguageDetectorViewModel(appContext: Context) : ViewModel() {
                                 LanguageDetectorHelper(
                                     context = context,
                                     maxResults = targetMax,
-                                    currentDelegate = LanguageDetectorHelper.DELEGATE_CPU,
+                                    currentDelegate = targetDelegate.helperConstant,
                                     listener = listener,
                                 )
                             helper = created
                             created.isReady
                         } else {
                             existing.maxResults = targetMax
-                            existing.currentDelegate = LanguageDetectorHelper.DELEGATE_CPU
+                            existing.currentDelegate = targetDelegate.helperConstant
                             existing.initDetector()
                         }
                     }

@@ -36,6 +36,8 @@
     <string name="label_segments">Segments</string>
     <string name="label_model">Model</string>
     <string name="label_delegate">Delegate</string>
+    <string name="label_mask_output">Mask output</string>
+    <string name="mask_all_categories">All categories</string>
 
     <string name="settings_title">Segmenter settings</string>
     <string name="cd_open_settings">Model and hardware settings</string>

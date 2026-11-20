@@ -45,6 +45,11 @@ enum class BrushMode(val labelRes: Int) {
     LASSO(R.string.brush_lasso),
 }
 
+enum class SegmenterDelegate(val index: Int, val displayName: String) {
+    CPU(InteractiveSegmentationHelper.DELEGATE_CPU, "CPU"),
+    GPU(InteractiveSegmentationHelper.DELEGATE_GPU, "GPU"),
+}
+
 /** Stroke drawn by the user in normalized `[0f..1f]` image coordinates. */
 data class DrawnStroke(
     val mode: BrushMode,
@@ -67,12 +72,15 @@ data class DrawnStroke(
 }
 
 data class InteractiveSegmentationUiState(
+    val delegate: SegmenterDelegate = SegmenterDelegate.CPU,
     val brushMode: BrushMode = BrushMode.POSITIVE,
     val inputBitmap: Bitmap? = null,
     val strokes: List<DrawnStroke> = emptyList(),
     val result: InteractiveSegmentationHelper.ResultBundle? = null,
+    val isInitializing: Boolean = false,
     val isSegmenting: Boolean = false,
     val errorMessage: String? = null,
+    val errorCode: Int = InteractiveSegmentationHelper.OTHER_ERROR,
 )
 
 /** ViewModel managing interactive segmentation state and serialized native inference calls. */
@@ -92,8 +100,15 @@ class InteractiveSegmentationViewModel(appContext: Context) : ViewModel() {
 
     private val listener =
         object : InteractiveSegmentationHelper.InteractiveSegmentationListener {
-            override fun onError(error: String) {
-                _uiState.update { it.copy(isSegmenting = false, errorMessage = error) }
+            override fun onError(error: String, errorCode: Int) {
+                _uiState.update {
+                    it.copy(
+                        isInitializing = false,
+                        isSegmenting = false,
+                        errorMessage = error,
+                        errorCode = errorCode,
+                    )
+                }
             }
 
             override fun onResults(result: InteractiveSegmentationHelper.ResultBundle?) = Unit
@@ -104,15 +119,89 @@ class InteractiveSegmentationViewModel(appContext: Context) : ViewModel() {
     }
 
     fun initializeSegmenter() {
-        viewModelScope.launch {
-            withContext(engineDispatcher) {
-                if (helper == null || helper?.isClosed == true) {
-                    helper = InteractiveSegmentationHelper(context, listener)
-                } else {
-                    helper?.setupInteractiveSegmenter()
+        val gen = ++requestGeneration
+        activeJob?.cancel()
+        _uiState.update {
+            it.copy(
+                isInitializing = true,
+                isSegmenting = it.inputBitmap != null && it.strokes.isNotEmpty(),
+                errorMessage = null,
+                errorCode = InteractiveSegmentationHelper.OTHER_ERROR,
+            )
+        }
+        activeJob =
+            viewModelScope.launch {
+                val (ready, updatedResult) =
+                    withContext(engineDispatcher) {
+                        val targetDelegate = _uiState.value.delegate.index
+                        val existing = helper
+                        val ok =
+                            if (existing == null) {
+                                val created =
+                                    InteractiveSegmentationHelper(
+                                        context = context,
+                                        listener = listener,
+                                        currentDelegate = targetDelegate,
+                                    )
+                                helper = created
+                                !created.isClosed
+                            } else {
+                                existing.currentDelegate = targetDelegate
+                                existing.setupInteractiveSegmenter()
+                            }
+                        if (!ok) {
+                            false to null
+                        } else {
+                            val currentState = _uiState.value
+                            val bitmap = currentState.inputBitmap
+                            val reboundResult =
+                                if (bitmap != null && helper?.setInputImage(bitmap) == true) {
+                                    if (currentState.strokes.isNotEmpty()) {
+                                        helper?.segment(
+                                            currentState.strokes.map { it.toMediaPipeStroke() }
+                                        )
+                                    } else {
+                                        null
+                                    }
+                                } else {
+                                    null
+                                }
+                            true to reboundResult
+                        }
+                    }
+                if (gen == requestGeneration) {
+                    _uiState.update {
+                        it.copy(
+                            isInitializing = false,
+                            isSegmenting = false,
+                            result = if (ready && it.strokes.isNotEmpty()) updatedResult else it.result,
+                        )
+                    }
                 }
             }
+    }
+
+    fun selectDelegate(delegate: SegmenterDelegate) {
+        if (
+            _uiState.value.delegate == delegate &&
+                helper != null &&
+                helper?.isClosed == false &&
+                _uiState.value.errorMessage == null
+        ) {
+            return
         }
+        _uiState.update {
+            it.copy(
+                delegate = delegate,
+                errorMessage = null,
+                errorCode = InteractiveSegmentationHelper.OTHER_ERROR,
+            )
+        }
+        initializeSegmenter()
+    }
+
+    fun switchToCpuDelegate() {
+        selectDelegate(SegmenterDelegate.CPU)
     }
 
     fun selectBrushMode(mode: BrushMode) {
@@ -120,6 +209,7 @@ class InteractiveSegmentationViewModel(appContext: Context) : ViewModel() {
     }
 
     fun loadSampleImage() {
+        val gen = ++requestGeneration
         activeJob?.cancel()
         _uiState.update {
             it.copy(
@@ -127,13 +217,14 @@ class InteractiveSegmentationViewModel(appContext: Context) : ViewModel() {
                 strokes = emptyList(),
                 result = null,
                 errorMessage = null,
+                errorCode = InteractiveSegmentationHelper.OTHER_ERROR,
             )
         }
         activeJob =
             viewModelScope.launch {
                 val bitmap =
                     withContext(engineDispatcher) {
-                        val segmenter = ensureHelper()
+                        val segmenter = ensureHelper() ?: return@withContext null
                         val raw =
                             runCatching {
                                 context.assets
@@ -143,64 +234,73 @@ class InteractiveSegmentationViewModel(appContext: Context) : ViewModel() {
                         raw?.let { decoded ->
                             val prepared = prepareBitmap(decoded)
                             if (prepared !== decoded) decoded.recycle()
-                            segmenter.setInputImage(prepared)
-                            prepared
+                            if (segmenter.setInputImage(prepared)) prepared else null
                         }
                     }
-                if (bitmap == null) {
-                    _uiState.update {
-                        it.copy(
-                            isSegmenting = false,
-                            errorMessage = "Failed to load sample image.",
-                        )
-                    }
-                } else {
-                    _uiState.update {
-                        it.copy(
-                            isSegmenting = false,
-                            inputBitmap = bitmap,
-                            strokes = emptyList(),
-                            result = null,
-                        )
+                if (gen == requestGeneration) {
+                    if (bitmap == null) {
+                        _uiState.update {
+                            it.copy(
+                                isInitializing = false,
+                                isSegmenting = false,
+                                errorMessage = it.errorMessage ?: "Failed to load sample image.",
+                            )
+                        }
+                    } else {
+                        _uiState.update {
+                            it.copy(
+                                isInitializing = false,
+                                isSegmenting = false,
+                                inputBitmap = bitmap,
+                                strokes = emptyList(),
+                                result = null,
+                            )
+                        }
                     }
                 }
             }
     }
 
     fun loadImageUri(uri: Uri) {
+        val gen = ++requestGeneration
         activeJob?.cancel()
         _uiState.update {
             it.copy(
                 isSegmenting = true,
+                inputBitmap = null,
                 strokes = emptyList(),
                 result = null,
                 errorMessage = null,
+                errorCode = InteractiveSegmentationHelper.OTHER_ERROR,
             )
         }
         activeJob =
             viewModelScope.launch {
                 val bitmap =
                     withContext(engineDispatcher) {
-                        val segmenter = ensureHelper()
+                        val segmenter = ensureHelper() ?: return@withContext null
                         val decoded = decodeUriBitmap(uri) ?: return@withContext null
-                        segmenter.setInputImage(decoded)
-                        decoded
+                        if (segmenter.setInputImage(decoded)) decoded else null
                     }
-                if (bitmap == null) {
-                    _uiState.update {
-                        it.copy(
-                            isSegmenting = false,
-                            errorMessage = "Unable to decode selected image.",
-                        )
-                    }
-                } else {
-                    _uiState.update {
-                        it.copy(
-                            isSegmenting = false,
-                            inputBitmap = bitmap,
-                            strokes = emptyList(),
-                            result = null,
-                        )
+                if (gen == requestGeneration) {
+                    if (bitmap == null) {
+                        _uiState.update {
+                            it.copy(
+                                isInitializing = false,
+                                isSegmenting = false,
+                                errorMessage = it.errorMessage ?: "Unable to decode selected image.",
+                            )
+                        }
+                    } else {
+                        _uiState.update {
+                            it.copy(
+                                isInitializing = false,
+                                isSegmenting = false,
+                                inputBitmap = bitmap,
+                                strokes = emptyList(),
+                                result = null,
+                            )
+                        }
                     }
                 }
             }
@@ -210,7 +310,12 @@ class InteractiveSegmentationViewModel(appContext: Context) : ViewModel() {
         if (_uiState.value.inputBitmap == null || stroke.points.isEmpty()) return
         val updatedStrokes = _uiState.value.strokes + stroke
         _uiState.update {
-            it.copy(strokes = updatedStrokes, isSegmenting = true, errorMessage = null)
+            it.copy(
+                strokes = updatedStrokes,
+                isSegmenting = true,
+                errorMessage = null,
+                errorCode = InteractiveSegmentationHelper.OTHER_ERROR,
+            )
         }
         runSegmentation(updatedStrokes)
     }
@@ -222,7 +327,14 @@ class InteractiveSegmentationViewModel(appContext: Context) : ViewModel() {
         if (updated.isEmpty()) {
             clearStrokes()
         } else {
-            _uiState.update { it.copy(strokes = updated, isSegmenting = true, errorMessage = null) }
+            _uiState.update {
+                it.copy(
+                    strokes = updated,
+                    isSegmenting = true,
+                    errorMessage = null,
+                    errorCode = InteractiveSegmentationHelper.OTHER_ERROR,
+                )
+            }
             runSegmentation(updated)
         }
     }
@@ -231,12 +343,17 @@ class InteractiveSegmentationViewModel(appContext: Context) : ViewModel() {
         requestGeneration++
         activeJob?.cancel()
         _uiState.update {
-            it.copy(strokes = emptyList(), result = null, isSegmenting = false, errorMessage = null)
+            it.copy(
+                strokes = emptyList(),
+                result = null,
+                isSegmenting = false,
+                errorMessage = null,
+                errorCode = InteractiveSegmentationHelper.OTHER_ERROR,
+            )
         }
     }
 
     fun retryInitialization() {
-        _uiState.update { it.copy(errorMessage = null) }
         initializeSegmenter()
     }
 
@@ -247,7 +364,7 @@ class InteractiveSegmentationViewModel(appContext: Context) : ViewModel() {
             viewModelScope.launch {
                 val resultBundle =
                     withContext(engineDispatcher) {
-                        val segmenter = ensureHelper()
+                        val segmenter = ensureHelper() ?: return@withContext null
                         segmenter.segment(strokes.map { it.toMediaPipeStroke() })
                     }
                 if (gen == requestGeneration) {
@@ -258,10 +375,24 @@ class InteractiveSegmentationViewModel(appContext: Context) : ViewModel() {
             }
     }
 
-    private fun ensureHelper(): InteractiveSegmentationHelper {
+    private fun ensureHelper(): InteractiveSegmentationHelper? {
+        val targetDelegate = _uiState.value.delegate.index
         val existing = helper
-        if (existing != null && !existing.isClosed) return existing
-        return InteractiveSegmentationHelper(context, listener).also { helper = it }
+        if (existing != null && !existing.isClosed && existing.currentDelegate == targetDelegate) {
+            return existing
+        }
+        if (existing != null) {
+            existing.currentDelegate = targetDelegate
+            return if (existing.setupInteractiveSegmenter()) existing else null
+        }
+        val created =
+            InteractiveSegmentationHelper(
+                context = context,
+                listener = listener,
+                currentDelegate = targetDelegate,
+            )
+        helper = created
+        return if (!created.isClosed) created else null
     }
 
     private fun prepareBitmap(raw: Bitmap): Bitmap {
@@ -311,7 +442,7 @@ class InteractiveSegmentationViewModel(appContext: Context) : ViewModel() {
     }
 
     companion object {
-        private const val MAX_INPUT_WIDTH = 640
+        private const val MAX_INPUT_WIDTH = 1280
 
         fun factory(appContext: Context): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {

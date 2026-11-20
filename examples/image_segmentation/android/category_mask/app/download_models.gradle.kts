@@ -41,27 +41,33 @@ data class VerifiedModelDownload(
 )
 
 val deeplabV3Model = VerifiedModelDownload(
-    url = "https://huggingface.co/litert-community/MediaPipe-ImageSegmenter-DeepLab-V3/resolve/main/deeplab_v3.tflite",
+    url = "https://huggingface.co/litert-community/MediaPipe-ImageSegmenter-DeepLab-V3/resolve/739202fd92e4a822ba439afe91bdf69254227d94/deeplab_v3.tflite",
     destFile = file("$assetDir/deeplabv3.tflite"),
     sha256 = "ff36e24d40547fe9e645e2f4e8745d1876d6e38b332d39a82f0bf0f5d1d561b3",
 )
 
 val hairSegmenterModel = VerifiedModelDownload(
-    url = "https://huggingface.co/litert-community/MediaPipe-ImageSegmenter-Hair/resolve/main/hair_segmenter.tflite",
+    url = "https://huggingface.co/litert-community/MediaPipe-ImageSegmenter-Hair/resolve/636ae705ff62db7fcdb8af27b19abb8ffc168f34/hair_segmenter.tflite",
     destFile = file("$assetDir/hair_segmenter.tflite"),
     sha256 = "2628cf3ce5f695f604cbea2841e00befcaa3624bf80caf3664bef2656d59bf84",
 )
 
 val selfieMulticlassModel = VerifiedModelDownload(
-    url = "https://huggingface.co/litert-community/MediaPipe-ImageSegmenter-Selfie-Multiclass/resolve/main/selfie_multiclass_256x256.tflite",
+    url = "https://huggingface.co/litert-community/MediaPipe-ImageSegmenter-Selfie-Multiclass/resolve/c7b7e9e0f1e73c10a12114379077b5257e60c25c/selfie_multiclass_256x256.tflite",
     destFile = file("$assetDir/selfie_multiclass.tflite"),
     sha256 = "c6748b1253a99067ef71f7e26ca71096cd449baefa8f101900ea23016507e0e0",
 )
 
 val selfieSegmenterModel = VerifiedModelDownload(
-    url = "https://huggingface.co/litert-community/MediaPipe-ImageSegmenter-Selfie-Square/resolve/main/selfie_segmenter.tflite",
+    url = "https://huggingface.co/litert-community/MediaPipe-ImageSegmenter-Selfie-Square/resolve/051d3732aad8fd018433520029e00ade7463aaea/selfie_segmenter.tflite",
     destFile = file("$assetDir/selfie_segmenter.tflite"),
     sha256 = "191ac9529ae506ee0beefa6b2c945a172dab9d07d1e802a290a4e4038226658b",
+)
+
+val selfieSegmenterLandscapeModel = VerifiedModelDownload(
+    url = "https://huggingface.co/litert-community/MediaPipe-ImageSegmenter-Selfie-Landscape/resolve/f04c07a5598479d0b03c796c0806329e9fab4082/selfie_segmenter_landscape.tflite",
+    destFile = file("$assetDir/selfie_segmenter_landscape.tflite"),
+    sha256 = "490e9ea734313e0de10fa0cd9e3c6133e36ea4db2b7a49bde9ef019f72796b8e",
 )
 
 fun registerVerifiedDownload(taskName: String, spec: VerifiedModelDownload) =
@@ -92,11 +98,24 @@ val downloadDeeplabV3 = registerVerifiedDownload("downloadModelFile", deeplabV3M
 val downloadHairSegmenter = registerVerifiedDownload("downloadHairSegmenterModelFile", hairSegmenterModel)
 val downloadSelfieMulticlass = registerVerifiedDownload("downloadSelfieMulticlassSegmenterModelFile", selfieMulticlassModel)
 val downloadSelfieSegmenter = registerVerifiedDownload("downloadSelfieSegmenterModelFile", selfieSegmenterModel)
+val downloadSelfieLandscapeSegmenter = registerVerifiedDownload("downloadSelfieLandscapeSegmenterModelFile", selfieSegmenterLandscapeModel)
 
 tasks.register("verifyModels") {
-    dependsOn(downloadDeeplabV3, downloadHairSegmenter, downloadSelfieMulticlass, downloadSelfieSegmenter)
+    dependsOn(
+        downloadDeeplabV3,
+        downloadHairSegmenter,
+        downloadSelfieMulticlass,
+        downloadSelfieSegmenter,
+        downloadSelfieLandscapeSegmenter,
+    )
     doLast {
-        listOf(deeplabV3Model, hairSegmenterModel, selfieMulticlassModel, selfieSegmenterModel).forEach { spec ->
+        listOf(
+            deeplabV3Model,
+            hairSegmenterModel,
+            selfieMulticlassModel,
+            selfieSegmenterModel,
+            selfieSegmenterLandscapeModel,
+        ).forEach { spec ->
             if (!spec.destFile.exists() || spec.destFile.length() == 0L) {
                 throw GradleException(
                     "Model ${spec.destFile.name} is missing or empty (stubbed?). Delete it and re-run to download."
@@ -113,5 +132,11 @@ tasks.register("verifyModels") {
 }
 
 tasks.named("preBuild") {
-    dependsOn(downloadDeeplabV3, downloadHairSegmenter, downloadSelfieMulticlass, downloadSelfieSegmenter)
+    dependsOn(
+        downloadDeeplabV3,
+        downloadHairSegmenter,
+        downloadSelfieMulticlass,
+        downloadSelfieSegmenter,
+        downloadSelfieLandscapeSegmenter,
+    )
 }

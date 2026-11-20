@@ -102,6 +102,7 @@ fun DecisionMakerScreen(
     onSelectDelegate: (DecisionDelegateOption) -> Unit,
     onSelectModel: (DecisionModelOption) -> Unit,
     onRetryInitialization: () -> Unit,
+    onLoadSupportTriagePreset: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var showSettings by rememberSaveable { mutableStateOf(false) }
@@ -162,37 +163,47 @@ fun DecisionMakerScreen(
                 minLines = 3,
             )
 
-            if (uiState.questionType == QuestionType.BOOLEAN) {
-                InputFieldCard(
-                    title = stringResource(R.string.label_condition),
-                    value = draft.condition,
-                    onValueChange = onConditionChange,
-                    testTag = "condition_text",
-                    minLines = 2,
-                )
+            when (uiState.questionType) {
+                QuestionType.BOOLEAN -> {
+                    InputFieldCard(
+                        title = stringResource(R.string.label_condition),
+                        value = draft.condition,
+                        onValueChange = onConditionChange,
+                        testTag = "condition_text",
+                        minLines = 2,
+                    )
 
-                ThresholdCard(
-                    threshold = draft.threshold,
-                    onValueChange = onThresholdChange,
-                    onValueChangeFinished = onThresholdChangeFinished,
-                )
-            } else {
-                ItemsEditorSection(
-                    questionType = uiState.questionType,
-                    items = draft.items,
-                    onAddItem = onAddItem,
-                    onUpdateLabel = onUpdateItemLabel,
-                    onUpdateDescription = onUpdateItemDescription,
-                    onRemoveItem = onRemoveItem,
-                )
+                    ThresholdCard(
+                        threshold = draft.threshold,
+                        onValueChange = onThresholdChange,
+                        onValueChangeFinished = onThresholdChangeFinished,
+                    )
+                }
+                QuestionType.TRIAGE -> {
+                    TriageSchemaSummaryCard(
+                        drafts = uiState.drafts,
+                        onLoadPreset = onLoadSupportTriagePreset,
+                    )
+                }
+                QuestionType.CHOICE,
+                QuestionType.SCORE -> {
+                    ItemsEditorSection(
+                        questionType = uiState.questionType,
+                        items = draft.items,
+                        onAddItem = onAddItem,
+                        onUpdateLabel = onUpdateItemLabel,
+                        onUpdateDescription = onUpdateItemDescription,
+                        onRemoveItem = onRemoveItem,
+                    )
 
-                InputFieldCard(
-                    title = stringResource(R.string.label_instructions),
-                    value = draft.instructions,
-                    onValueChange = onInstructionsChange,
-                    testTag = "instructions_text",
-                    minLines = 2,
-                )
+                    InputFieldCard(
+                        title = stringResource(R.string.label_instructions),
+                        value = draft.instructions,
+                        onValueChange = onInstructionsChange,
+                        testTag = "instructions_text",
+                        minLines = 2,
+                    )
+                }
             }
 
             Button(
@@ -265,7 +276,69 @@ private fun QuestionTypeTabs(
                 shape = SegmentedButtonDefaults.itemShape(index = index, count = types.size),
                 modifier = Modifier.testTag("tab_${type.name.lowercase()}"),
             ) {
-                Text(type.label)
+                Text(type.label, maxLines = 1)
+            }
+        }
+    }
+}
+
+@Composable
+private fun TriageSchemaSummaryCard(
+    drafts: Map<QuestionType, QuestionDraftUi>,
+    onLoadPreset: () -> Unit,
+) {
+    val boolCondition = drafts[QuestionType.BOOLEAN]?.condition.orEmpty()
+    val choiceKeys =
+        drafts[QuestionType.CHOICE]
+            ?.items
+            ?.map { it.label.trim() }
+            ?.filter { it.isNotEmpty() }
+            .orEmpty()
+    val scoreLevels =
+        drafts[QuestionType.SCORE]
+            ?.items
+            ?.count { it.label.isNotBlank() || it.description.isNotBlank() }
+            ?: 0
+
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = RoundedCornerShape(18.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.title_triage_schema),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Text(
+                text = stringResource(R.string.helper_triage_schema),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = "• urgent (Boolean): $boolCondition",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Text(
+                text = "• department (Choice): ${choiceKeys.joinToString(", ")}",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Text(
+                text = "• severity (Score): $scoreLevels rubric levels (0..${(scoreLevels - 1).coerceAtLeast(0)})",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            OutlinedButton(
+                onClick = onLoadPreset,
+                shape = RoundedCornerShape(14.dp),
+                modifier = Modifier.fillMaxWidth().testTag("load_triage_preset_button"),
+            ) {
+                Text(stringResource(R.string.btn_load_triage_preset))
             }
         }
     }

@@ -31,11 +31,13 @@
     <string name="label_code">Code</string>
     <string name="settings_title">Detector Settings</string>
     <string name="label_max_results">Max results</string>
+    <string name="label_delegate">Delegate</string>
     <string name="max_results_description">Maximum number of top language candidates returned above 0.1% confidence.</string>
     <string name="label_accelerator_cpu">Accelerator: CPU</string>
     <string name="delegate_hint">Language detection runs on CPU (TFLite GPU delegate is not supported for this graph).</string>
     <string name="action_done">Done</string>
     <string name="action_retry">Retry</string>
+    <string name="action_use_cpu">Use CPU</string>
     <string name="cd_open_settings">Open detector settings</string>
     <string name="cd_clear_text">Clear text</string>
 </resources>

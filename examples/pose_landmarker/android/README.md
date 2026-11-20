@@ -2,7 +2,7 @@
 
 ## Overview
 
-This sample demonstrates the MediaPipe [Pose Landmarker](https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker/android) task in a Jetpack Compose Material 3 app. It detects 33 3D human body pose landmarks across:
+This sample demonstrates the MediaPipe [Pose Landmarker](https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker/android) task in a Jetpack Compose Material 3 app. It detects 33 3D human body pose landmarks and person segmentation masks across:
 
 - **Camera:** Live front/back CameraX feed with real-time pose skeleton overlays and inference latency telemetry.
 - **Gallery:** Bundled outdoor pose sample (`Try sample`) as well as user-selected images and videos from the device gallery.

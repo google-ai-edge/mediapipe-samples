@@ -105,6 +105,16 @@ private fun AudioTranscriberRoute(viewModel: AudioTranscriberViewModel) {
       },
     )
 
+  val openAudioLauncher =
+    rememberLauncherForActivityResult(
+      contract = ActivityResultContracts.OpenDocument(),
+      onResult = { uri: Uri? ->
+        if (uri != null) {
+          viewModel.transcribeAudioUri(uri)
+        }
+      },
+    )
+
   AudioTranscriberScreen(
     state = state,
     onTranscribeSample = viewModel::transcribeSampleClip,
@@ -123,6 +133,8 @@ private fun AudioTranscriberRoute(viewModel: AudioTranscriberViewModel) {
     },
     onClearTranscripts = viewModel::clearTranscripts,
     onSelectModelFile = { openModelLauncher.launch(arrayOf("*/*")) },
+    onPickAudioFile = { openAudioLauncher.launch(arrayOf("audio/*")) },
+    onSelectClipMode = viewModel::setClipTranscriptionMode,
     onSelectDelegate = viewModel::setDelegate,
     onFallbackToCpu = viewModel::fallbackToCpu,
   )

@@ -76,6 +76,7 @@ import com.google.mediapipe.examples.common.ui.MediaPipeTopBar
 import com.google.mediapipe.examples.common.ui.MetadataBadge
 import com.google.mediapipe.examples.common.ui.SegmentedOptionRow
 import com.google.mediapipe.examples.common.ui.StatusErrorBanner
+import com.google.mediapipe.tasks.audio.core.RunningMode
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -85,11 +86,13 @@ fun AudioClassifierScreen(
     uiState: AudioClassifierUiState,
     onSelectInputMode: (ClassifierInputMode) -> Unit,
     onSelectClipSource: (SampleClipSource) -> Unit,
+    onSelectClipRunningMode: (RunningMode) -> Unit = {},
     onPickCustomAudio: () -> Unit,
     onClassifyClip: () -> Unit,
     onStopPlayback: () -> Unit,
     onToggleMicrophone: () -> Unit,
     onSelectWindow: (Int) -> Unit,
+    onSelectDelegate: (ClassifierDelegate) -> Unit = {},
     onUpdateMaxResults: (Int) -> Unit,
     onUpdateThreshold: (Float) -> Unit,
     onUpdateOverlap: (OverlapOption) -> Unit,
@@ -103,7 +106,7 @@ fun AudioClassifierScreen(
             MediaPipeTopBar(
                 title = stringResource(R.string.app_name),
                 subtitle =
-                    "YAMNet · Top ${uiState.maxResults} · ≥${String.format(Locale.US, "%.1f", uiState.threshold)}",
+                    "YAMNet · ${uiState.delegate.label} · Top ${uiState.maxResults} · ≥${String.format(Locale.US, "%.1f", uiState.threshold)}",
                 onSettingsClick = { showSettings = true },
                 settingsContentDescription = stringResource(R.string.cd_open_settings),
             )
@@ -146,9 +149,11 @@ fun AudioClassifierScreen(
                 ClassifierInputMode.CLIP ->
                     ClipControlsCard(
                         selectedSource = uiState.selectedSource,
+                        clipRunningMode = uiState.clipRunningMode,
                         isBusy = uiState.isBusy,
                         isPlaying = uiState.isPlaying,
                         onSelectClipSource = onSelectClipSource,
+                        onSelectClipRunningMode = onSelectClipRunningMode,
                         onPickCustomAudio = onPickCustomAudio,
                         onClassifyClip = onClassifyClip,
                         onStopPlayback = onStopPlayback,
@@ -177,9 +182,13 @@ fun AudioClassifierScreen(
             modifier = Modifier.testTag("settings_sheet"),
         ) {
             SettingsSheetContent(
+                delegate = uiState.delegate,
+                clipRunningMode = uiState.clipRunningMode,
                 maxResults = uiState.maxResults,
                 threshold = uiState.threshold,
                 overlapOption = uiState.overlapOption,
+                onSelectDelegate = onSelectDelegate,
+                onSelectClipRunningMode = onSelectClipRunningMode,
                 onUpdateMaxResults = onUpdateMaxResults,
                 onUpdateThreshold = onUpdateThreshold,
                 onUpdateOverlap = onUpdateOverlap,
@@ -231,14 +240,17 @@ private fun InputModeSelector(
 @Composable
 private fun ClipControlsCard(
     selectedSource: SampleClipSource,
+    clipRunningMode: RunningMode,
     isBusy: Boolean,
     isPlaying: Boolean,
     onSelectClipSource: (SampleClipSource) -> Unit,
+    onSelectClipRunningMode: (RunningMode) -> Unit,
     onPickCustomAudio: () -> Unit,
     onClassifyClip: () -> Unit,
     onStopPlayback: () -> Unit,
 ) {
     val builtInSources = listOf(SampleClipSource.BundledSpeech, SampleClipSource.SyntheticTone)
+    val clipModes = listOf(RunningMode.AUDIO_CLIPS, RunningMode.AUDIO_STREAM)
 
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -278,6 +290,18 @@ private fun ClipControlsCard(
                     )
                 }
             }
+
+            SegmentedOptionRow(
+                label = stringResource(R.string.label_clip_running_mode),
+                options =
+                    listOf(
+                        stringResource(R.string.clip_mode_clips),
+                        stringResource(R.string.clip_mode_stream),
+                    ),
+                selectedIndex = clipModes.indexOf(clipRunningMode).coerceAtLeast(0),
+                enabled = !isBusy,
+                onSelect = { index -> onSelectClipRunningMode(clipModes[index]) },
+            )
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -552,25 +576,52 @@ private fun CategoryProbabilityRow(category: AudioCategoryUi) {
 
 @Composable
 private fun SettingsSheetContent(
+    delegate: ClassifierDelegate,
+    clipRunningMode: RunningMode,
     maxResults: Int,
     threshold: Float,
     overlapOption: OverlapOption,
+    onSelectDelegate: (ClassifierDelegate) -> Unit,
+    onSelectClipRunningMode: (RunningMode) -> Unit,
     onUpdateMaxResults: (Int) -> Unit,
     onUpdateThreshold: (Float) -> Unit,
     onUpdateOverlap: (OverlapOption) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val delegates = ClassifierDelegate.entries
+    val clipModes = listOf(RunningMode.AUDIO_CLIPS, RunningMode.AUDIO_STREAM)
     val maxResultOptions = listOf(1, 2, 3, 4, 5)
     val overlaps = OverlapOption.entries
 
     Column(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp),
+        modifier =
+            Modifier.fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Text(
             text = stringResource(R.string.settings_title),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
+        )
+
+        SegmentedOptionRow(
+            label = stringResource(R.string.label_delegate),
+            options = delegates.map { it.label },
+            selectedIndex = delegates.indexOf(delegate).coerceAtLeast(0),
+            onSelect = { index -> onSelectDelegate(delegates[index]) },
+        )
+
+        SegmentedOptionRow(
+            label = stringResource(R.string.label_clip_running_mode),
+            options =
+                listOf(
+                    stringResource(R.string.clip_mode_clips),
+                    stringResource(R.string.clip_mode_stream),
+                ),
+            selectedIndex = clipModes.indexOf(clipRunningMode).coerceAtLeast(0),
+            onSelect = { index -> onSelectClipRunningMode(clipModes[index]) },
         )
 
         SegmentedOptionRow(
@@ -619,34 +670,12 @@ private fun SettingsSheetContent(
                 value = threshold,
                 onValueChange = { raw ->
                     val stepped = (raw * 10f).roundToInt() / 10f
-                    onUpdateThreshold(stepped.coerceIn(0.1f, 0.8f))
+                    onUpdateThreshold(stepped.coerceIn(0.0f, 0.9f))
                 },
-                valueRange = 0.1f..0.8f,
-                steps = 6,
+                valueRange = 0.0f..0.9f,
+                steps = 8,
                 modifier = Modifier.testTag("threshold_slider"),
             )
-        }
-
-        Surface(
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.label_delegate_cpu),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Medium,
-                )
-                Text(
-                    text = stringResource(R.string.delegate_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
         }
 
         Button(

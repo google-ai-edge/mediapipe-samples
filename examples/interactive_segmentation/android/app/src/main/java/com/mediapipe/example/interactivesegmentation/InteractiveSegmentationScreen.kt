@@ -37,12 +37,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -53,6 +58,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -77,6 +83,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.google.mediapipe.examples.common.ui.MediaPipeTopBar
 import com.google.mediapipe.examples.common.ui.MetadataBadge
+import com.google.mediapipe.examples.common.ui.SegmentedOptionRow
 import com.google.mediapipe.examples.common.ui.StatusErrorBanner
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -85,10 +92,13 @@ private val PositiveColor = Color(0xFF4CAF50)
 private val NegativeColor = Color(0xFFE53935)
 private val LassoColor = Color(0xFF2196F3)
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InteractiveSegmentationScreen(
     uiState: InteractiveSegmentationUiState,
     onSelectBrushMode: (BrushMode) -> Unit,
+    onSelectDelegate: (SegmenterDelegate) -> Unit = {},
+    onUseCpuDelegate: () -> Unit = {},
     onAddStroke: (DrawnStroke) -> Unit,
     onUndoStroke: () -> Unit,
     onClearStrokes: () -> Unit,
@@ -98,12 +108,17 @@ fun InteractiveSegmentationScreen(
     onRetryInitialization: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var showSettings by rememberSaveable { mutableStateOf(false) }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
             MediaPipeTopBar(
                 title = stringResource(R.string.app_name),
-                subtitle = stringResource(R.string.subtitle_magic_touch),
+                subtitle =
+                    "${stringResource(R.string.subtitle_magic_touch)} · ${uiState.delegate.displayName}",
+                onSettingsClick = { showSettings = true },
+                settingsContentDescription = stringResource(R.string.cd_open_settings),
             )
         },
     ) { innerPadding ->
@@ -117,10 +132,14 @@ fun InteractiveSegmentationScreen(
                 exit = fadeOut() + shrinkVertically(),
             ) {
                 uiState.errorMessage?.let { message ->
+                    val isGpuError = uiState.errorCode == InteractiveSegmentationHelper.GPU_ERROR
                     StatusErrorBanner(
                         message = message,
-                        actionLabel = stringResource(R.string.action_retry),
-                        onAction = onRetryInitialization,
+                        actionLabel =
+                            stringResource(
+                                if (isGpuError) R.string.action_use_cpu else R.string.action_retry
+                            ),
+                        onAction = if (isGpuError) onUseCpuDelegate else onRetryInitialization,
                     )
                 }
             }
@@ -317,6 +336,61 @@ fun InteractiveSegmentationScreen(
                     )
                 }
             }
+        }
+    }
+
+    if (showSettings) {
+        ModalBottomSheet(
+            onDismissRequest = { showSettings = false },
+            modifier = Modifier.testTag("settings_sheet"),
+        ) {
+            SettingsSheetContent(
+                selectedDelegate = uiState.delegate,
+                onSelectDelegate = onSelectDelegate,
+                onDismiss = { showSettings = false },
+            )
+        }
+    }
+}
+
+@Composable
+private fun SettingsSheetContent(
+    selectedDelegate: SegmenterDelegate,
+    onSelectDelegate: (SegmenterDelegate) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val delegates = SegmenterDelegate.entries
+
+    Column(
+        modifier =
+            Modifier.fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.settings_title),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold,
+        )
+
+        SegmentedOptionRow(
+            label = stringResource(R.string.label_delegate),
+            options = delegates.map { it.displayName },
+            selectedIndex = delegates.indexOf(selectedDelegate),
+            onSelect = { idx -> onSelectDelegate(delegates[idx]) },
+        )
+
+        HorizontalDivider()
+
+        Button(
+            onClick = onDismiss,
+            modifier =
+                Modifier.fillMaxWidth()
+                    .padding(bottom = 12.dp)
+                    .testTag("settings_done_button"),
+        ) {
+            Text(stringResource(R.string.action_done))
         }
     }
 }

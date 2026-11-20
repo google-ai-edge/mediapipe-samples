@@ -55,13 +55,15 @@ class MainActivity : ComponentActivity() {
                     uiState = uiState,
                     onPickImage = { slot ->
                         pendingSlot = slot
-                        imagePickerLauncher.launch(arrayOf("image/*"))
+                        imagePickerLauncher.launch(arrayOf("image/*", "video/*"))
                     },
                     onSelectPreset = embedderViewModel::selectPreset,
                     onSwapImages = embedderViewModel::swapImages,
                     onCompare = embedderViewModel::compareImages,
                     onSelectModel = embedderViewModel::selectModel,
                     onSelectDelegate = embedderViewModel::selectDelegate,
+                    onSetL2Normalize = embedderViewModel::setL2Normalize,
+                    onSetQuantize = embedderViewModel::setQuantize,
                     onUseCpuDelegate = embedderViewModel::switchToCpuDelegate,
                     onRetryInitialization = embedderViewModel::retryInitialization,
                 )

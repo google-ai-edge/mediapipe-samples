@@ -73,6 +73,8 @@ class MainActivity : ComponentActivity() {
                 InteractiveSegmentationScreen(
                     uiState = uiState,
                     onSelectBrushMode = segmenterViewModel::selectBrushMode,
+                    onSelectDelegate = segmenterViewModel::selectDelegate,
+                    onUseCpuDelegate = segmenterViewModel::switchToCpuDelegate,
                     onAddStroke = segmenterViewModel::addStroke,
                     onUndoStroke = segmenterViewModel::undoLastStroke,
                     onClearStrokes = segmenterViewModel::clearStrokes,

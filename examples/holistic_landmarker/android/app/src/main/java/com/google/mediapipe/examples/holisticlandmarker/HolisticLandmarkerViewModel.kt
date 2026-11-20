@@ -56,6 +56,8 @@ data class HolisticLandmarkerFrame(
     val poseLandmarks: List<Pair<Float, Float>>,
     val leftHandLandmarks: List<Pair<Float, Float>>,
     val rightHandLandmarks: List<Pair<Float, Float>>,
+    val faceBlendshapeCount: Int = 0,
+    val segmentationMask: HolisticLandmarkerHelper.SegmentationMaskSummary? = null,
     val inferenceTimeMs: Long,
     val imageWidth: Int,
     val imageHeight: Int,
@@ -112,7 +114,6 @@ class HolisticLandmarkerViewModel(appContext: Context) : ViewModel() {
             override fun onError(error: String, errorCode: Int) {
                 _uiState.update {
                     it.copy(
-                        isDetectingGallery = false,
                         errorMessage = error,
                         errorCode = errorCode,
                     )
@@ -293,10 +294,17 @@ class HolisticLandmarkerViewModel(appContext: Context) : ViewModel() {
                             helper.clearHolisticLandmarker()
                         }
                     }
+                val frame = bundle?.let { b -> toHolisticFrame(b, frameIndex = 0) }
                 _uiState.update {
                     it.copy(
                         isDetectingGallery = false,
-                        galleryResult = bundle?.let { b -> toHolisticFrame(b, frameIndex = 0) },
+                        galleryResult = frame,
+                        errorMessage =
+                            if (frame == null) {
+                                it.errorMessage ?: "Failed to detect holistic landmarks in sample image."
+                            } else {
+                                it.errorMessage
+                            },
                     )
                 }
             }
@@ -310,11 +318,12 @@ class HolisticLandmarkerViewModel(appContext: Context) : ViewModel() {
         val mimeType = context.contentResolver.getType(uri) ?: ""
         val snapshot = _uiState.value
 
-        if (mimeType.startsWith("image/")) {
+        if (mimeType.startsWith("image")) {
             _uiState.update {
                 it.copy(
                     isDetectingGallery = true,
                     galleryVideoUri = null,
+                    galleryResult = null,
                     errorMessage = null,
                 )
             }
@@ -340,15 +349,21 @@ class HolisticLandmarkerViewModel(appContext: Context) : ViewModel() {
                                 helper.clearHolisticLandmarker()
                             }
                         }
+                    val frame = bundle?.let { b -> toHolisticFrame(b, frameIndex = 0) }
                     _uiState.update {
                         it.copy(
                             isDetectingGallery = false,
-                            galleryResult =
-                                bundle?.let { b -> toHolisticFrame(b, frameIndex = 0) },
+                            galleryResult = frame,
+                            errorMessage =
+                                if (frame == null) {
+                                    it.errorMessage ?: "Failed to detect holistic landmarks in image."
+                                } else {
+                                    it.errorMessage
+                                },
                         )
                     }
                 }
-        } else if (mimeType.startsWith("video/")) {
+        } else if (mimeType.startsWith("video")) {
             _uiState.update {
                 it.copy(
                     isDetectingGallery = true,
@@ -456,11 +471,16 @@ class HolisticLandmarkerViewModel(appContext: Context) : ViewModel() {
             ): List<Pair<Float, Float>> =
                 landmarks.orEmpty().map { lm -> (lm.x() * width) to (lm.y() * height) }
 
+            val faceBlendshapeCount =
+                result?.faceBlendshapes()?.orElse(emptyList())?.size ?: 0
+
             return HolisticLandmarkerFrame(
                 faceLandmarks = mapLandmarks(result?.faceLandmarks()),
                 poseLandmarks = mapLandmarks(result?.poseLandmarks()),
                 leftHandLandmarks = mapLandmarks(result?.leftHandLandmarks()),
                 rightHandLandmarks = mapLandmarks(result?.rightHandLandmarks()),
+                faceBlendshapeCount = faceBlendshapeCount,
+                segmentationMask = bundle.segmentationMasks.getOrNull(frameIndex),
                 inferenceTimeMs = bundle.inferenceTime,
                 imageWidth = width,
                 imageHeight = height,

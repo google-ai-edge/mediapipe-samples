@@ -17,6 +17,7 @@
 package com.google.mediapipe.tasks.examples.audiotranscriber
 
 import android.content.Context
+import android.net.Uri
 import android.os.SystemClock
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -24,6 +25,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.mediapipe.tasks.audio.audiotranscriber.AudioTranscriberResult
 import java.io.File
+import kotlin.math.roundToLong
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -43,16 +45,24 @@ import kotlinx.coroutines.withContext
 val AudioTranscriberResult.Segment.durationSeconds: Double
   get() = (toTimestampMs() - fromTimestampMs()).coerceAtLeast(0L) / 1_000.0
 
+/** How pre-recorded audio clips are fed into [AudioTranscriber]. */
+enum class ClipTranscriptionMode(val label: String) {
+  STREAMING("Stream"),
+  FULL_CLIP("Full clip"),
+}
+
 /** Immutable UI state published by [AudioTranscriberViewModel]. */
 data class AudioTranscriberUiState(
   val isRecording: Boolean = false,
   val isTranscribingSample: Boolean = false,
   val isModelReady: Boolean = false,
   val currentDelegate: Int = AudioTranscriberHelper.DELEGATE_CPU,
+  val clipTranscriptionMode: ClipTranscriptionMode = ClipTranscriptionMode.STREAMING,
   val interimTranscript: String = "",
   val finalizedSegments: List<AudioTranscriberResult.Segment> = emptyList(),
   val audioLevel: Float = 0.0f,
   val lastLatencyMs: Long? = null,
+  val lastClipDurationMs: Long? = null,
   val statusMessage: String = AudioTranscriberViewModel.STATUS_LOADING,
   val errorMessage: String? = null,
   val activeModelName: String = AudioTranscriberHelper.DEFAULT_MODEL_FILE_NAME,
@@ -68,6 +78,7 @@ class AudioTranscriberViewModel(
   private val sampleAudioProvider: (suspend () -> DecodedWavAudio)? = null,
   private val transcriberLoader: suspend (File, Int) -> AudioTranscriberHelper,
   private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+  private val uriAudioDecoder: (suspend (Uri) -> DecodedWavAudio)? = null,
 ) : ViewModel() {
 
   private val _uiState = MutableStateFlow(AudioTranscriberUiState())
@@ -118,9 +129,31 @@ class AudioTranscriberViewModel(
     setDelegate(AudioTranscriberHelper.DELEGATE_CPU)
   }
 
-  fun transcribeSampleClip() {
+  fun setClipTranscriptionMode(mode: ClipTranscriptionMode) {
     if (_uiState.value.isRecording || _uiState.value.isTranscribingSample) return
+    if (_uiState.value.clipTranscriptionMode == mode) return
+    _uiState.update { it.copy(clipTranscriptionMode = mode, errorMessage = null) }
+  }
+
+  fun setStreamingClip(streaming: Boolean) {
+    setClipTranscriptionMode(
+      if (streaming) ClipTranscriptionMode.STREAMING else ClipTranscriptionMode.FULL_CLIP
+    )
+  }
+
+  fun transcribeSampleClip() {
     val provider = sampleAudioProvider ?: return
+    transcribeClipInternal(provider)
+  }
+
+  fun transcribeAudioUri(uri: Uri) {
+    val decoder = uriAudioDecoder ?: return
+    transcribeClipInternal { decoder(uri) }
+  }
+
+  private fun transcribeClipInternal(audioLoader: suspend () -> DecodedWavAudio) {
+    if (_uiState.value.isRecording || _uiState.value.isTranscribingSample) return
+    val mode = _uiState.value.clipTranscriptionMode
 
     _uiState.update {
       it.copy(
@@ -129,6 +162,7 @@ class AudioTranscriberViewModel(
         errorMessage = null,
         interimTranscript = "",
         finalizedSegments = emptyList(),
+        lastClipDurationMs = null,
       )
     }
 
@@ -145,54 +179,65 @@ class AudioTranscriberViewModel(
           return@launchTask
         }
 
-        val audio = withContext(ioDispatcher) { provider() }
-        val chunkSize = AudioTranscriberHelper.SAMPLE_RATE_HZ / 2 // 500 ms chunks at 16 kHz
+        val audio = withContext(ioDispatcher) { audioLoader() }
+        val clipDurationMs =
+          if (audio.sampleRateHz > 0) {
+            (audio.samples.size * 1000.0 / audio.sampleRateHz).roundToLong()
+          } else {
+            0L
+          }
         val startMs = SystemClock.uptimeMillis()
 
-        val resultSegments =
+        val trailingSegments =
           withTranscriber {
             val active = transcriber ?: return@withTranscriber emptyList()
-            val accumulated = mutableListOf<AudioTranscriberResult.Segment>()
-            var offset = 0
-            while (offset < audio.samples.size) {
-              val end = (offset + chunkSize).coerceAtMost(audio.samples.size)
-              val chunk = audio.samples.copyOfRange(offset, end)
-              val isLast = end == audio.samples.size
-              val partial = active.transcribe(chunk, endOfStream = isLast)
-              val chunkLevel = chunk.calculateRmsLevel()
-              _uiState.update { state ->
-                val nextFinal = state.finalizedSegments.toMutableList()
-                var nextInterim = state.interimTranscript
-                for (segment in partial.segments()) {
-                  if (segment.isFinal) {
-                    nextFinal.add(segment)
-                    accumulated.add(segment)
-                    nextInterim = ""
-                  } else {
-                    nextInterim = segment.transcript()
+            if (mode == ClipTranscriptionMode.FULL_CLIP) {
+              val fullLevel = audio.samples.calculateRmsLevel()
+              _uiState.update { it.copy(audioLevel = fullLevel) }
+              val result = active.transcribe(audio.samples, endOfStream = true)
+              active.prewarm()
+              result.segments()
+            } else {
+              val chunkSize = (audio.sampleRateHz / 2).coerceAtLeast(1) // 500 ms chunks
+              var offset = 0
+              while (offset < audio.samples.size) {
+                val end = (offset + chunkSize).coerceAtMost(audio.samples.size)
+                val chunk = audio.samples.copyOfRange(offset, end)
+                val partial = active.transcribe(chunk, endOfStream = false)
+                val chunkLevel = chunk.calculateRmsLevel()
+                _uiState.update { state ->
+                  val nextFinal = state.finalizedSegments.toMutableList()
+                  var nextInterim = state.interimTranscript
+                  for (segment in partial.segments()) {
+                    if (segment.isFinal) {
+                      nextFinal.add(segment)
+                      nextInterim = ""
+                    } else {
+                      nextInterim = segment.transcript()
+                    }
                   }
+                  state.copy(
+                    audioLevel = chunkLevel,
+                    finalizedSegments = nextFinal,
+                    interimTranscript = nextInterim,
+                  )
                 }
-                state.copy(
-                  audioLevel = chunkLevel,
-                  finalizedSegments = nextFinal,
-                  interimTranscript = nextInterim,
-                )
+                offset = end
               }
-              offset = end
+              val finished = active.finishStream()
+              active.prewarm()
+              finished.segments()
             }
-            val finished = active.finishStream()
-            active.prewarm()
-            accumulated.addAll(finished.segments())
-            finished.segments()
           }
 
         val elapsedMs = (SystemClock.uptimeMillis() - startMs).coerceAtLeast(1L)
         _uiState.update { current ->
           current.copy(
-            finalizedSegments = current.finalizedSegments + resultSegments,
+            finalizedSegments = current.finalizedSegments + trailingSegments,
             interimTranscript = "",
             audioLevel = 0.0f,
             lastLatencyMs = elapsedMs,
+            lastClipDurationMs = clipDurationMs,
             statusMessage = STATUS_SAMPLE_COMPLETE,
           )
         }
@@ -462,6 +507,12 @@ class AudioTranscriberViewModel(
             },
             transcriberLoader = { file, delegate ->
               AudioTranscriberHelper.create(appContext, file, delegate)
+            },
+            uriAudioDecoder = { uri ->
+              val stream =
+                appContext.contentResolver.openInputStream(uri)
+                  ?: throw IllegalArgumentException("Unable to open audio URI: $uri")
+              stream.use { WavAudioLoader.decode(it) }
             },
           )
             as T

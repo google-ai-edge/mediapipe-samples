@@ -18,6 +18,10 @@
     <string name="app_name">Image Embedder</string>
     <string name="label_model">Model</string>
     <string name="label_delegate">Delegate</string>
+    <string name="label_l2_normalize">L2 normalize</string>
+    <string name="label_quantize">Scalar quantization</string>
+    <string name="option_off">Off</string>
+    <string name="option_on">On</string>
     <string name="label_inference_time">Inference</string>
     <string name="label_similarity">Similarity</string>
     <string name="label_image_one">First image</string>

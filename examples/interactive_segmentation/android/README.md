@@ -4,7 +4,7 @@
 
 This Jetpack Compose Android app lets users load a sample photo, pick an image from the device, or
 capture a camera photo, then draw **Positive**, **Negative**, or **Lasso** strokes to isolate objects
-using the MagicTouch interactive segmentation model (`interactive_segmentation.task`).
+using the MagicTouch interactive segmentation model (`interactive_segmentation.task`) on CPU or GPU.
 
 ![Interactive Segmenter Demo](interactive_segmenter.png)
 

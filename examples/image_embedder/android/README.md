@@ -3,11 +3,11 @@
 ### Overview
 
 This Android app computes feature embeddings and cosine similarity between two
-images on-device using the MediaPipe `ImageEmbedder` task, with a choice of
+images or video frames on-device using the MediaPipe `ImageEmbedder` task, with a choice of
 [MobileNet V3 Small](https://huggingface.co/litert-community/MediaPipe-ImageEmbedder-MobileNet-V3-Small/resolve/main/mobilenet_v3_small.tflite)
 or
 [MobileNet V3 Large](https://huggingface.co/litert-community/MediaPipe-ImageEmbedder-MobileNet-V3-Large/resolve/main/mobilenet_v3_large.tflite)
-models.
+models, CPU/GPU hardware delegate selection, and optional L2 normalization and scalar quantization.
 
 ![Image Embedder Demo](imageembedder.png?raw=true "Image Embedder Demo")
 

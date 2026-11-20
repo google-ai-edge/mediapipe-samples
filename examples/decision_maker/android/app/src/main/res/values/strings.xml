@@ -21,6 +21,11 @@
     <string name="tab_boolean">Boolean</string>
     <string name="tab_choice">Choice</string>
     <string name="tab_score">Score</string>
+    <string name="tab_triage">Triage</string>
+
+    <string name="title_triage_schema">Schema evaluation (evaluateJson)</string>
+    <string name="helper_triage_schema">Evaluates the Boolean (urgent), Choice (department), and Score (severity) tabs together in a single schema call.</string>
+    <string name="btn_load_triage_preset">Load support ticket preset</string>
 
     <string name="label_input_text">Input text</string>
     <string name="label_condition">Condition</string>

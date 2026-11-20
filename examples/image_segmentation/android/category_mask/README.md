@@ -4,8 +4,8 @@
 
 This Jetpack Compose Android app segments people and objects in live camera frames (`CameraX` +
 `RunningMode.LIVE_STREAM`), bundled sample media, or device photos and videos (`RunningMode.IMAGE`
-/ `RunningMode.VIDEO`) using color-coded category masks across DeepLabV3, Hair Segmenter, Selfie
-Segmenter, and Selfie Multiclass models.
+/ `RunningMode.VIDEO`) using color-coded category masks and optional per-category confidence masks
+across DeepLabV3, Hair Segmenter, Selfie Segmenter, Selfie Landscape, and Selfie Multiclass models.
 
 ![Image segmentation Category Mask Demo](imagesegmenter.png)
 
@@ -19,7 +19,7 @@ Segmenter, and Selfie Multiclass models.
 From `examples/image_segmentation/android/category_mask`:
 
 ```bash
-# Download and verify SHA-256 checksums for all 4 segmentation models
+# Download and verify SHA-256 checksums for all 5 segmentation models
 ./gradlew :app:verifyModels
 
 # Run unit tests

@@ -35,5 +35,11 @@
     <string name="label_inference_time">Inference</string>
     <string name="label_strokes">Strokes</string>
     <string name="label_coverage">Selected</string>
+    <string name="label_delegate">Delegate</string>
     <string name="status_segmenting">Segmenting…</string>
+
+    <string name="settings_title">Segmenter settings</string>
+    <string name="cd_open_settings">Model and hardware settings</string>
+    <string name="action_done">Done</string>
+    <string name="action_use_cpu">Use CPU</string>
 </resources>

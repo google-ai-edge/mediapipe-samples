@@ -5,7 +5,7 @@ This sample app demonstrates real-time, on-device automatic speech recognition (
 ## Features
 
 - **On-device Streaming ASR:** Low-latency speech-to-text recognition running on CPU or GPU via `AudioTranscriber`.
-- **Bundled Sample Clip:** Tap **Transcribe Sample** to run Parakeet TDT on the verified `speech_16000_hz_mono.wav` sample speech clip.
+- **Bundled & Custom WAV Clips:** Tap **Transcribe Sample** to run Parakeet TDT on the verified `speech_16000_hz_mono.wav` speech clip, or **Open WAV…** to transcribe any PCM WAV file in either streaming (500 ms chunks) or single full-clip mode.
 - **Real-time Microphone Capture:** Captures 16 kHz mono audio via Android `AudioRecord` and streams chunks into `AudioTranscriber.transcribe()`.
 - **Settings & Custom Model Loading:** Switch between CPU and GPU delegates or load a sideloaded `.litertlm` model from device storage.
 

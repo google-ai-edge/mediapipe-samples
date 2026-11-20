@@ -88,6 +88,8 @@ fun LanguageDetectorScreen(
     onApplyPreset: (TextPreset) -> Unit,
     onDetect: () -> Unit,
     onSelectMaxResults: (MaxResultsOption) -> Unit,
+    onSelectDelegate: (DetectorDelegate) -> Unit,
+    onUseCpuDelegate: () -> Unit,
     onRetryInitialization: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -99,7 +101,7 @@ fun LanguageDetectorScreen(
         topBar = {
             MediaPipeTopBar(
                 title = stringResource(R.string.app_name),
-                subtitle = "Top ${uiState.maxResultsOption.count} · CPU",
+                subtitle = "Top ${uiState.maxResultsOption.count} · ${uiState.delegate.displayName}",
                 onSettingsClick = { showSettings = true },
                 settingsContentDescription = stringResource(R.string.cd_open_settings),
             )
@@ -120,10 +122,14 @@ fun LanguageDetectorScreen(
                 exit = fadeOut() + shrinkVertically(),
             ) {
                 uiState.errorMessage?.let { message ->
+                    val isGpuError = uiState.errorCode == LanguageDetectorHelper.GPU_ERROR
                     StatusErrorBanner(
                         message = message,
-                        actionLabel = stringResource(R.string.action_retry),
-                        onAction = onRetryInitialization,
+                        actionLabel =
+                            stringResource(
+                                if (isGpuError) R.string.action_use_cpu else R.string.action_retry
+                            ),
+                        onAction = if (isGpuError) onUseCpuDelegate else onRetryInitialization,
                     )
                 }
             }
@@ -170,8 +176,10 @@ fun LanguageDetectorScreen(
         ) {
             SettingsSheetContent(
                 selectedMaxResults = uiState.maxResultsOption,
+                selectedDelegate = uiState.delegate,
                 isBusy = uiState.isBusy,
                 onSelectMaxResults = onSelectMaxResults,
+                onSelectDelegate = onSelectDelegate,
                 onDismiss = { showSettings = false },
             )
         }
@@ -458,11 +466,14 @@ private fun LanguageBreakdownRow(prediction: LanguageDetectorHelper.LanguagePred
 @Composable
 private fun SettingsSheetContent(
     selectedMaxResults: MaxResultsOption,
+    selectedDelegate: DetectorDelegate,
     isBusy: Boolean,
     onSelectMaxResults: (MaxResultsOption) -> Unit,
+    onSelectDelegate: (DetectorDelegate) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val options = MaxResultsOption.entries
+    val delegates = DetectorDelegate.entries
 
     Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp),
@@ -490,27 +501,13 @@ private fun SettingsSheetContent(
 
         HorizontalDivider()
 
-        Surface(
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.label_accelerator_cpu),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Medium,
-                )
-                Text(
-                    text = stringResource(R.string.delegate_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
+        SegmentedOptionRow(
+            label = stringResource(R.string.label_delegate),
+            options = delegates.map { it.displayName },
+            selectedIndex = delegates.indexOf(selectedDelegate),
+            enabled = !isBusy,
+            onSelect = { index -> onSelectDelegate(delegates[index]) },
+        )
 
         Button(
             onClick = onDismiss,

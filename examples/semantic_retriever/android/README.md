@@ -4,8 +4,8 @@ This Android sample app demonstrates local semantic image search using MediaPipe
 
 ## Features
 
-* **Automatic Sample Gallery Indexing:** Indexes 10 bundled photos into the local vector store (`SQLite` or `AppSearch`), plus Photo Picker support for adding custom photos.
-* **Natural-Language Search:** Query indexed photos with freeform text or quick suggestion chips (`Beach`, `Cat`, `Mountain`, `Coffee`, `Sports car`, `Apple`).
+* **Automatic Sample Gallery & Document Indexing:** Indexes 10 bundled photos into the local vector store (`SQLite` or `AppSearch`), plus Photo Picker support for adding custom photos and text notes.
+* **Natural-Language Search:** Query indexed photos and documents with freeform text or quick suggestion chips (`Beach`, `Cat`, `Mountain`, `Coffee`, `Sports car`, `Apple`), with configurable result `limit` and `minSimilarity` threshold.
 * **Vector Store & Hardware Settings:** Switch between `SQLite` (`SqliteVectorStore`) and `AppSearch` (`AppSearchVectorStore`) backends and `GPU` (with automatic `CPU` fallback) / `CPU` delegates.
 
 ![Semantic Retriever Demo](semanticretriever.png?raw=true "Semantic Retriever Demo")

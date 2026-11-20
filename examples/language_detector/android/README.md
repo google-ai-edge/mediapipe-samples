@@ -4,7 +4,7 @@
 
 This Android app detects the language of input text on-device across 100+ languages
 using the MediaPipe `LanguageDetector` task and displays ranked BCP-47 language codes
-and confidence scores.
+and confidence scores, with configurable max results (`1`, `3`, `5`) and CPU / GPU delegate selection in settings.
 
 ![Language Detector Demo](language_detector.png?raw=true "Language Detector Demo")
 

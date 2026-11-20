@@ -22,9 +22,11 @@
     <string name="start_recording" translatable="false">Record Mic</string>
     <string name="stop_recording" translatable="false">Stop Mic</string>
     <string name="transcribe_sample" translatable="false">Transcribe Sample</string>
+    <string name="pick_wav_file" translatable="false">Open WAV…</string>
     <string name="clear_all" translatable="false">Clear All</string>
     <string name="load_model" translatable="false">Load Model…</string>
     <string name="settings_title" translatable="false">Model &amp; Hardware</string>
     <string name="delegate_label" translatable="false">Delegate</string>
+    <string name="clip_mode_label" translatable="false">Clip Mode</string>
     <string name="done" translatable="false">Done</string>
 </resources>

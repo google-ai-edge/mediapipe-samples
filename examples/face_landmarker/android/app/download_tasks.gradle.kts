@@ -41,7 +41,7 @@ data class VerifiedModelDownload(
 )
 
 val faceLandmarkerTask = VerifiedModelDownload(
-    url = "https://huggingface.co/litert-community/MediaPipe-FaceLandmarker/resolve/main/face_landmarker.task",
+    url = "https://huggingface.co/litert-community/MediaPipe-FaceLandmarker/resolve/cfb66f449dc5cb9f8dada3d52174d4cdae1c9ef1/face_landmarker.task",
     destFile = file("$assetDir/face_landmarker.task"),
     sha256 = "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff",
 )

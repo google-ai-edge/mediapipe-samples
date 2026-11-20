@@ -125,6 +125,7 @@ class ImageSegmentationTest {
             listOf(
                 ImageSegmenterHelper.MODEL_HAIR_SEGMENTER,
                 ImageSegmenterHelper.MODEL_SELFIE_SEGMENTER,
+                ImageSegmenterHelper.MODEL_SELFIE_LANDSCAPE,
                 ImageSegmenterHelper.MODEL_SELFIE_MULTICLASS,
             ).forEach { modelId ->
                 val helper =

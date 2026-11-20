@@ -45,6 +45,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -57,7 +58,9 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -78,6 +81,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.google.mediapipe.examples.common.ui.MediaPipeTopBar
@@ -86,6 +90,7 @@ import com.google.mediapipe.examples.common.ui.R as CommonUiR
 import com.google.mediapipe.examples.common.ui.SegmentedOptionRow
 import com.google.mediapipe.examples.common.ui.StatusErrorBanner
 import java.util.Locale
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,12 +102,18 @@ fun SemanticRetrieverScreen(
     onReindexSamples: () -> Unit,
     onClearIndex: () -> Unit,
     onAddCustomPhoto: (Uri) -> Unit,
+    onAddCustomDocument: (String, String) -> Unit = { _, _ -> },
+    onUpdateTopK: (Int) -> Unit = {},
+    onUpdateMinSimilarity: (Double) -> Unit = {},
     onSelectDelegate: (RetrieverDelegateOption) -> Unit,
     onSelectStore: (VectorStoreOption) -> Unit,
     onRetryInitialization: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showSettings by rememberSaveable { mutableStateOf(false) }
+    var showAddNoteDialog by rememberSaveable { mutableStateOf(false) }
+    var noteIdDraft by rememberSaveable { mutableStateOf("") }
+    var noteTextDraft by rememberSaveable { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
 
     val photoPicker =
@@ -169,6 +180,11 @@ fun SemanticRetrieverScreen(
                     photoPicker.launch(
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                     )
+                },
+                onOpenAddNote = {
+                    noteIdDraft = ""
+                    noteTextDraft = ""
+                    showAddNoteDialog = true
                 },
             )
 
@@ -248,6 +264,49 @@ fun SemanticRetrieverScreen(
         }
     }
 
+    if (showAddNoteDialog) {
+        AlertDialog(
+            onDismissRequest = { showAddNoteDialog = false },
+            title = { Text(stringResource(R.string.dialog_add_note_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedTextField(
+                        value = noteIdDraft,
+                        onValueChange = { noteIdDraft = it },
+                        singleLine = true,
+                        label = { Text(stringResource(R.string.hint_note_id)) },
+                        modifier = Modifier.fillMaxWidth().testTag("note_id_input"),
+                    )
+                    OutlinedTextField(
+                        value = noteTextDraft,
+                        onValueChange = { noteTextDraft = it },
+                        minLines = 3,
+                        maxLines = 5,
+                        label = { Text(stringResource(R.string.hint_note_text)) },
+                        modifier = Modifier.fillMaxWidth().testTag("note_text_input"),
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onAddCustomDocument(noteIdDraft, noteTextDraft)
+                        showAddNoteDialog = false
+                    },
+                    enabled = noteTextDraft.isNotBlank() && !uiState.isBusy,
+                    modifier = Modifier.testTag("confirm_add_note_button"),
+                ) {
+                    Text(stringResource(R.string.action_add))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddNoteDialog = false }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+        )
+    }
+
     if (showSettings) {
         ModalBottomSheet(
             onDismissRequest = { showSettings = false },
@@ -256,9 +315,13 @@ fun SemanticRetrieverScreen(
             SettingsSheetContent(
                 selectedDelegate = uiState.delegateOption,
                 selectedStore = uiState.storeOption,
+                topK = uiState.topK,
+                minSimilarity = uiState.minSimilarity,
                 isBusy = uiState.isBusy,
                 onSelectDelegate = onSelectDelegate,
                 onSelectStore = onSelectStore,
+                onUpdateTopK = onUpdateTopK,
+                onUpdateMinSimilarity = onUpdateMinSimilarity,
                 onDismiss = { showSettings = false },
             )
         }
@@ -271,6 +334,7 @@ private fun IndexStatusCard(
     onReindexSamples: () -> Unit,
     onClearIndex: () -> Unit,
     onAddCustomPhoto: () -> Unit,
+    onOpenAddNote: () -> Unit,
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -287,7 +351,7 @@ private fun IndexStatusCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text =
                             if (uiState.isIndexing) {
@@ -296,6 +360,8 @@ private fun IndexStatusCard(
                                     uiState.indexingProgress,
                                     uiState.indexingTotal.coerceAtLeast(1),
                                 )
+                            } else if (uiState.hasCustomDocuments) {
+                                "${uiState.indexedCount} records indexed"
                             } else {
                                 "${uiState.indexedCount} images indexed"
                             },
@@ -310,13 +376,23 @@ private fun IndexStatusCard(
                     )
                 }
 
-                OutlinedButton(
-                    onClick = onAddCustomPhoto,
-                    enabled = !uiState.isBusy,
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.testTag("add_photo_button"),
-                ) {
-                    Text(stringResource(R.string.action_add_photo))
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    OutlinedButton(
+                        onClick = onAddCustomPhoto,
+                        enabled = !uiState.isBusy,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.testTag("add_photo_button"),
+                    ) {
+                        Text(stringResource(R.string.action_add_photo))
+                    }
+                    OutlinedButton(
+                        onClick = onOpenAddNote,
+                        enabled = !uiState.isBusy,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.testTag("add_note_button"),
+                    ) {
+                        Text(stringResource(R.string.action_add_note))
+                    }
                 }
             }
 
@@ -558,16 +634,23 @@ private fun MatchResultCard(
 private fun SettingsSheetContent(
     selectedDelegate: RetrieverDelegateOption,
     selectedStore: VectorStoreOption,
+    topK: Int,
+    minSimilarity: Double,
     isBusy: Boolean,
     onSelectDelegate: (RetrieverDelegateOption) -> Unit,
     onSelectStore: (VectorStoreOption) -> Unit,
+    onUpdateTopK: (Int) -> Unit,
+    onUpdateMinSimilarity: (Double) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val delegates = RetrieverDelegateOption.entries
     val stores = VectorStoreOption.entries
 
     Column(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp),
+        modifier =
+            Modifier.fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         Text(
@@ -591,6 +674,65 @@ private fun SettingsSheetContent(
             enabled = !isBusy,
             onSelect = { idx -> onSelectDelegate(delegates[idx]) },
         )
+
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(R.string.label_top_k),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = topK.toString(),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+            Slider(
+                value = topK.toFloat(),
+                onValueChange = { onUpdateTopK(it.roundToInt().coerceIn(1, 10)) },
+                valueRange = 1f..10f,
+                steps = 8,
+                enabled = !isBusy,
+                modifier = Modifier.testTag("top_k_slider"),
+            )
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(R.string.label_min_similarity),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = String.format(Locale.US, "%.2f", minSimilarity),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+            Slider(
+                value = minSimilarity.toFloat(),
+                onValueChange = { raw ->
+                    val stepped = (raw * 20f).roundToInt() / 20.0
+                    onUpdateMinSimilarity(stepped.coerceIn(0.0, 0.9))
+                },
+                valueRange = 0f..0.9f,
+                steps = 17,
+                enabled = !isBusy,
+                modifier = Modifier.testTag("min_similarity_slider"),
+            )
+        }
 
         Surface(
             color = MaterialTheme.colorScheme.surfaceContainerHigh,

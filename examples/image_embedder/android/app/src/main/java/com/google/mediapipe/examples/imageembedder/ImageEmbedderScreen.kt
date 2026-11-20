@@ -92,6 +92,8 @@ fun ImageEmbedderScreen(
     onSelectDelegate: (EmbedderDelegate) -> Unit,
     onUseCpuDelegate: () -> Unit,
     onRetryInitialization: () -> Unit,
+    onSetL2Normalize: (Boolean) -> Unit = {},
+    onSetQuantize: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var showSettings by rememberSaveable { mutableStateOf(false) }
@@ -241,8 +243,12 @@ fun ImageEmbedderScreen(
             SettingsSheetContent(
                 selectedModel = uiState.model,
                 selectedDelegate = uiState.delegate,
+                l2Normalize = uiState.l2Normalize,
+                quantize = uiState.quantize,
                 onSelectModel = onSelectModel,
                 onSelectDelegate = onSelectDelegate,
+                onSetL2Normalize = onSetL2Normalize,
+                onSetQuantize = onSetQuantize,
                 onDismiss = { showSettings = false },
             )
         }
@@ -375,16 +381,24 @@ private fun ImageSimilarityResultCard(
 private fun SettingsSheetContent(
     selectedModel: ImageEmbedderModel,
     selectedDelegate: EmbedderDelegate,
+    l2Normalize: Boolean,
+    quantize: Boolean,
     onSelectModel: (ImageEmbedderModel) -> Unit,
     onSelectDelegate: (EmbedderDelegate) -> Unit,
+    onSetL2Normalize: (Boolean) -> Unit,
+    onSetQuantize: (Boolean) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val models = ImageEmbedderModel.entries
     val delegates = EmbedderDelegate.entries
+    val toggleOptions = listOf(stringResource(R.string.option_off), stringResource(R.string.option_on))
 
     Column(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(18.dp),
+        modifier =
+            Modifier.fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Text(
             text = stringResource(R.string.settings_title),
@@ -399,13 +413,27 @@ private fun SettingsSheetContent(
             onSelect = { index -> onSelectModel(models[index]) },
         )
 
-        HorizontalDivider()
-
         SegmentedOptionRow(
             label = stringResource(R.string.label_delegate),
             options = delegates.map { it.displayName },
             selectedIndex = delegates.indexOf(selectedDelegate),
             onSelect = { index -> onSelectDelegate(delegates[index]) },
+        )
+
+        HorizontalDivider()
+
+        SegmentedOptionRow(
+            label = stringResource(R.string.label_l2_normalize),
+            options = toggleOptions,
+            selectedIndex = if (l2Normalize) 1 else 0,
+            onSelect = { index -> onSetL2Normalize(index == 1) },
+        )
+
+        SegmentedOptionRow(
+            label = stringResource(R.string.label_quantize),
+            options = toggleOptions,
+            selectedIndex = if (quantize) 1 else 0,
+            onSelect = { index -> onSetQuantize(index == 1) },
         )
 
         Button(

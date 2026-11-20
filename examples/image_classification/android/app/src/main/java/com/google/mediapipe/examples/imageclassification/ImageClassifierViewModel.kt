@@ -166,14 +166,14 @@ class ImageClassifierViewModel(appContext: Context) : ViewModel() {
     }
 
     fun selectMaxResults(maxResults: Int) {
-        val clamped = maxResults.coerceIn(1, 3)
+        val clamped = maxResults.coerceIn(1, 5)
         if (_uiState.value.maxResults == clamped) return
         _uiState.update { it.copy(maxResults = clamped, errorMessage = null) }
         reapplySettings()
     }
 
     fun updateThreshold(threshold: Float) {
-        val clamped = threshold.coerceIn(0.1f, 0.9f)
+        val clamped = threshold.coerceIn(0.0f, 0.9f)
         if (_uiState.value.threshold == clamped) return
         _uiState.update { it.copy(threshold = clamped, errorMessage = null) }
         reapplySettings()
@@ -282,8 +282,9 @@ class ImageClassifierViewModel(appContext: Context) : ViewModel() {
                                 imageClassifierListener = listener,
                             )
                         try {
-                            val bundle = helper.classifyImage(bitmap)
-                            bitmap to bundle?.let { toClassificationFrame(it, frameIndex = 0) }
+                            val bundle =
+                                helper.classifyImage(bitmap) ?: return@withContext null
+                            bitmap to toClassificationFrame(bundle, frameIndex = 0)
                         } finally {
                             helper.clearImageClassifier()
                         }
@@ -340,8 +341,9 @@ class ImageClassifierViewModel(appContext: Context) : ViewModel() {
                                     imageClassifierListener = listener,
                                 )
                             try {
-                                val bundle = helper.classifyImage(bitmap)
-                                bitmap to bundle?.let { toClassificationFrame(it, frameIndex = 0) }
+                                val bundle =
+                                    helper.classifyImage(bitmap) ?: return@withContext null
+                                bitmap to toClassificationFrame(bundle, frameIndex = 0)
                             } finally {
                                 helper.clearImageClassifier()
                             }

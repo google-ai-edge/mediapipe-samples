@@ -46,6 +46,9 @@
     <string name="label_sample_rate">Sample Rate</string>
     <string name="label_delegate">Accelerator</string>
     <string name="label_delegate_cpu">CPU (YAMNet)</string>
+    <string name="label_clip_running_mode">Clip running mode</string>
+    <string name="clip_mode_clips">AUDIO_CLIPS</string>
+    <string name="clip_mode_stream">AUDIO_STREAM</string>
 
     <string name="settings_title">Classifier settings</string>
     <string name="label_threshold">Confidence threshold</string>

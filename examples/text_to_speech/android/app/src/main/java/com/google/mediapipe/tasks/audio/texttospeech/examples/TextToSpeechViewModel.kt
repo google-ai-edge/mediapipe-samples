@@ -27,6 +27,7 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import com.google.mediapipe.tasks.audio.texttospeech.TextToSpeech
 import com.google.mediapipe.tasks.audio.texttospeech.VoiceInfo
+import com.google.mediapipe.tasks.audio.texttospeech.WordTimestamp
 import com.google.mediapipe.tasks.core.Delegate
 import java.io.File
 import java.util.Locale
@@ -34,18 +35,36 @@ import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.sqrt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
 
+/** Metadata for one synthesized audio piece (single unary utterance or streamed clause chunk). */
+data class SynthesizedPieceInfo(
+  val chunkIndex: Int,
+  val isFinal: Boolean,
+  val sampleCount: Int,
+  val sampleRateHz: Int,
+)
+
+/** Wrapper keeping [TtsUiState.toString] compact while retaining synthesized float32 PCM samples. */
+class SynthesizedAudioHolder(val samples: FloatArray) {
+  override fun toString(): String = "SynthesizedAudioHolder(samples=${samples.size})"
+}
+
 /** Immutable Compose UI state for [TextToSpeechViewModel]. */
 data class TtsUiState(
   val isEngineReady: Boolean = false,
+  val isLoadingEngine: Boolean = false,
   val isBusy: Boolean = false,
   val isStreaming: Boolean = false,
+  val selectedModel: TtsModelOption = TtsModelOption.KOKORO_CPU,
   val delegateMode: TtsDelegateMode = TtsDelegateMode.AUTO,
   val activeDelegateLabel: String = "Auto",
   val speakingRate: Float = 1.0f,
@@ -61,11 +80,21 @@ data class TtsUiState(
   val rtf: Double? = null,
   val ttfaMs: Long? = null,
   val chunkCount: Int? = null,
+  val pieces: List<SynthesizedPieceInfo> = emptyList(),
+  val sampleRateHz: Int? = null,
+  val rms: Double? = null,
+  val peak: Double? = null,
+  val nonFiniteCount: Int = 0,
+  val wordTimestamps: List<WordTimestamp> = emptyList(),
+  val synthesizedAudio: SynthesizedAudioHolder? = null,
   val hasReplayableAudio: Boolean = false,
   val lastWavPath: String? = null,
   val errorMessage: String? = null,
   val logLines: List<String> = emptyList(),
-)
+) {
+  val synthesizedSamples: FloatArray?
+    get() = synthesizedAudio?.samples
+}
 
 /**
  * ViewModel managing Kokoro-82M [TextToSpeech] initialization, unary & streaming synthesis,
@@ -77,6 +106,7 @@ class TextToSpeechViewModel(application: Application) : AndroidViewModel(applica
     Thread(r, "mediapipe-tts-demo")
   }
   private val busy = AtomicBoolean(false)
+  private val loadGeneration = AtomicInteger(0)
 
   @Volatile private var stopRequested = false
   @Volatile private var activeTrack: AudioTrack? = null
@@ -84,6 +114,7 @@ class TextToSpeechViewModel(application: Application) : AndroidViewModel(applica
 
   private var allVoices: List<VoiceInfo> = emptyList()
   private var pendingVoiceId: String? = null
+  @Volatile private var explicitVoiceId: String? = null
   private var lastAudioSamples: FloatArray? = null
   private var lastSampleRateHz: Int = 24_000
 
@@ -115,6 +146,7 @@ class TextToSpeechViewModel(application: Application) : AndroidViewModel(applica
     }
     intent.getStringExtra(MainActivity.EXTRA_VOICE)?.let { voiceId ->
       pendingVoiceId = voiceId
+      explicitVoiceId = voiceId
       if (!initialLaunch && allVoices.isNotEmpty()) {
         selectVoice(voiceId)
       }
@@ -176,20 +208,69 @@ class TextToSpeechViewModel(application: Application) : AndroidViewModel(applica
     if (voice == null) {
       if (allVoices.isEmpty()) {
         pendingVoiceId = voiceId
+        explicitVoiceId = voiceId
       } else {
         appendLog("Requested voice '$voiceId' not found; keeping current selection.")
       }
       return
     }
+    explicitVoiceId = voiceId
     pendingVoiceId = voiceId
     selectLanguage(voice.locale)
   }
 
+  fun selectModel(model: TtsModelOption) {
+    if (_uiState.value.isBusy) return
+    if (
+      model == _uiState.value.selectedModel &&
+        _uiState.value.isEngineReady &&
+        !_uiState.value.isLoadingEngine
+    ) {
+      return
+    }
+    explicitVoiceId = null
+    pendingVoiceId = null
+    _uiState.update {
+      it.copy(
+        selectedModel = model,
+        isEngineReady = false,
+        statusBadge = "Loading…",
+        errorMessage = null,
+        pieces = emptyList(),
+        sampleRateHz = null,
+        rms = null,
+        peak = null,
+        nonFiniteCount = 0,
+        wordTimestamps = emptyList(),
+        synthesizedAudio = null,
+      )
+    }
+    loadEngine()
+  }
+
   fun setDelegateMode(mode: TtsDelegateMode) {
     if (_uiState.value.isBusy) return
-    if (mode == _uiState.value.delegateMode && _uiState.value.isEngineReady) return
+    if (
+      mode == _uiState.value.delegateMode &&
+        _uiState.value.isEngineReady &&
+        !_uiState.value.isLoadingEngine
+    ) {
+      return
+    }
     _uiState.update {
-      it.copy(delegateMode = mode, isEngineReady = false, statusBadge = "Loading…", errorMessage = null)
+      it.copy(
+        delegateMode = mode,
+        isEngineReady = false,
+        statusBadge = "Loading…",
+        errorMessage = null,
+        pieces = emptyList(),
+        sampleRateHz = null,
+        rms = null,
+        peak = null,
+        nonFiniteCount = 0,
+        wordTimestamps = emptyList(),
+        synthesizedAudio = null,
+      )
     }
     loadEngine()
   }
@@ -247,19 +328,31 @@ class TextToSpeechViewModel(application: Application) : AndroidViewModel(applica
   }
 
   fun loadEngine() {
-    _uiState.update { it.copy(isEngineReady = false, statusBadge = "Loading…", errorMessage = null) }
+    val generation = loadGeneration.incrementAndGet()
+    _uiState.update {
+      it.copy(
+        isEngineReady = false,
+        isLoadingEngine = true,
+        statusBadge = "Loading…",
+        errorMessage = null,
+      )
+    }
     appendLog(
       "Device : ${Build.MANUFACTURER} ${Build.MODEL}, " +
         "Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})"
     )
     worker.execute {
+      if (generation != loadGeneration.get()) return@execute
+      val selectedModel = _uiState.value.selectedModel
+      val delegateMode = _uiState.value.delegateMode
+      val speakingRate = _uiState.value.speakingRate
       try {
         tts?.close()
         tts = null
 
-        val modelFile = TextToSpeechHelper.findModelFile(app)
+        val modelFile = TextToSpeechHelper.resolveModelFile(app, selectedModel)
         check(modelFile != null && modelFile.isFile && modelFile.length() > 0) {
-          "Kokoro model not found (${TextToSpeechHelper.BUNDLED_MODEL_FILE_NAME} or ${TextToSpeechHelper.LEGACY_MODEL_FILE_NAME})."
+          "TTS model not found (${selectedModel.assetName})."
         }
 
         _uiState.update { it.copy(statusBadge = "Warming…") }
@@ -267,11 +360,15 @@ class TextToSpeechViewModel(application: Application) : AndroidViewModel(applica
           TextToSpeechHelper.createAndWarmUp(
             context = app,
             modelFile = modelFile,
-            delegateMode = _uiState.value.delegateMode,
-            speakingRate = _uiState.value.speakingRate,
+            delegateMode = delegateMode,
+            speakingRate = speakingRate,
             targetBucket = targetBucket,
-            defaultVoiceId = _uiState.value.selectedVoiceId,
+            defaultVoiceId = null,
           )
+        if (generation != loadGeneration.get()) {
+          loaded.engine.close()
+          return@execute
+        }
         tts = loaded.engine
         allVoices = loaded.voices.sortedBy { it.voiceId }
 
@@ -280,33 +377,46 @@ class TextToSpeechViewModel(application: Application) : AndroidViewModel(applica
             .map { it.locale }
             .distinct()
             .sortedWith(compareBy({ it != "en-US" }, { TextToSpeechHelper.languageDisplayName(it) }))
-        val languageOptions = languageTags.map { it to TextToSpeechHelper.languageDisplayName(it) }
+        val languageOptions =
+          if (languageTags.isNotEmpty()) {
+            languageTags.map { it to TextToSpeechHelper.languageDisplayName(it) }
+          } else {
+            listOf("en-US" to TextToSpeechHelper.languageDisplayName("en-US"))
+          }
 
         val delegateLabel = if (loaded.usedDelegate == Delegate.GPU) "GPU" else "CPU"
         appendLog(
-          "Engine created in ${loaded.loadMs} ms ($delegateLabel, threads=$numThreads, " +
-            "bucket=$targetBucket, warmup=${loaded.warmupMs} ms); ${allVoices.size} voices"
+          "Engine created in ${loaded.loadMs} ms (${selectedModel.assetName}, $delegateLabel, " +
+            "threads=$numThreads, bucket=$targetBucket, warmup=${loaded.warmupMs} ms); " +
+            "${allVoices.size} voices"
         )
 
         _uiState.update {
           it.copy(
             isEngineReady = true,
+            isLoadingEngine = false,
             activeDelegateLabel = delegateLabel,
             availableLanguages = languageOptions,
+            voicesForLanguage = emptyList(),
+            selectedVoiceId =
+              if (allVoices.isEmpty()) "default" else TextToSpeechHelper.DEFAULT_VOICE,
             statusBadge = "Ready",
             errorMessage = null,
           )
         }
 
         val wanted = pendingVoiceId
-        if (wanted != null && allVoices.any { it.voiceId == wanted }) {
-          selectVoice(wanted)
-        } else {
-          selectLanguage(
-            TextToSpeechHelper.PRESETS.getOrNull(_uiState.value.selectedPresetIndex)?.languageTag
-              ?: languageTags.firstOrNull()
-              ?: "en-US"
-          )
+        if (allVoices.isNotEmpty()) {
+          if (wanted != null && allVoices.any { it.voiceId == wanted }) {
+            selectVoice(wanted)
+          } else {
+            val preferredTag =
+              TextToSpeechHelper.PRESETS.getOrNull(_uiState.value.selectedPresetIndex)
+                ?.languageTag
+                ?.takeIf { tag -> languageTags.contains(tag) }
+                ?: languageTags.first()
+            selectLanguage(preferredTag)
+          }
         }
 
         if (pendingAutorun) {
@@ -314,7 +424,13 @@ class TextToSpeechViewModel(application: Application) : AndroidViewModel(applica
           synthesize(play = playAudio, streaming = streamMode)
         }
       } catch (t: Throwable) {
-        reportError("Failed to load TTS engine", t)
+        if (generation == loadGeneration.get()) {
+          reportError("Failed to load TTS engine", t)
+        }
+      } finally {
+        if (generation == loadGeneration.get()) {
+          _uiState.update { it.copy(isLoadingEngine = false) }
+        }
       }
     }
   }
@@ -330,13 +446,13 @@ class TextToSpeechViewModel(application: Application) : AndroidViewModel(applica
       reportError("Please enter some text to speak", null)
       return
     }
-    val voice =
-      allVoices.firstOrNull { it.voiceId == _uiState.value.selectedVoiceId }
-        ?: _uiState.value.voicesForLanguage.firstOrNull()
-    if (voice == null) {
-      reportError("No voice selected", null)
-      return
-    }
+    val effectiveVoiceId: String? =
+      explicitVoiceId?.takeIf { id -> allVoices.any { it.voiceId == id } }
+        ?: TextToSpeechHelper.DEFAULT_VOICE.takeIf { id -> allVoices.any { it.voiceId == id } }
+    val voiceLabel = effectiveVoiceId ?: _uiState.value.selectedVoiceId.ifBlank { "default" }
+    val localeLabel =
+      allVoices.firstOrNull { it.voiceId == effectiveVoiceId }?.locale
+        ?: _uiState.value.selectedLanguageTag
     if (!busy.compareAndSet(false, true)) {
       _uiState.update { it.copy(statusBadge = "Busy") }
       return
@@ -348,13 +464,20 @@ class TextToSpeechViewModel(application: Application) : AndroidViewModel(applica
         isBusy = true,
         isStreaming = streaming,
         statusBadge = if (streaming) "Streaming…" else "Synthesizing",
+        pieces = emptyList(),
+        sampleRateHz = null,
+        rms = null,
+        peak = null,
+        nonFiniteCount = 0,
+        wordTimestamps = emptyList(),
+        synthesizedAudio = null,
         errorMessage = null,
       )
     }
 
     appendLog("---")
     appendLog("Text   : \"$text\"")
-    appendLog("Voice  : ${voice.voiceId} (${voice.locale}) [mode=${if (streaming) "stream" else "unary"}]")
+    appendLog("Voice  : $voiceLabel ($localeLabel) [mode=${if (streaming) "stream" else "unary"}]")
 
     worker.execute {
       try {
@@ -367,16 +490,31 @@ class TextToSpeechViewModel(application: Application) : AndroidViewModel(applica
           var sampleRateHz = 24_000
           var streamTrack: AudioTrack? = null
           val bufferedChunks = mutableListOf<FloatArray>()
+          val pieceList = mutableListOf<SynthesizedPieceInfo>()
+          val streamWordTimestamps = mutableListOf<WordTimestamp>()
           val synthEnd: Long
           try {
             runBlocking {
-              engine.streamText(text, voice.voiceId).collect { chunk ->
+              engine.streamText(text, effectiveVoiceId).collect { chunk ->
                 if (stopRequested) throw UserCancelledException()
                 val now = SystemClock.elapsedRealtime()
                 val elapsed = max(0L, now - synthStart - playbackWaitMs)
                 if (ttfaMs < 0) ttfaMs = elapsed
                 chunks += 1
-                sampleRateHz = chunk.sampleRateHz
+                if (chunk.sampleRateHz > 0) {
+                  sampleRateHz = chunk.sampleRateHz
+                }
+                pieceList.add(
+                  SynthesizedPieceInfo(
+                    chunkIndex = chunk.chunkIndex,
+                    isFinal = chunk.isFinal,
+                    sampleCount = chunk.samples.size,
+                    sampleRateHz = chunk.sampleRateHz,
+                  )
+                )
+                if (pieceList.size == 1) {
+                  streamWordTimestamps.addAll(chunk.wordTimestamps)
+                }
                 player.enqueue(chunk)
                 if (chunk.samples.isNotEmpty()) {
                   bufferedChunks.add(chunk.samples)
@@ -435,6 +573,7 @@ class TextToSpeechViewModel(application: Application) : AndroidViewModel(applica
           }
           lastAudioSamples = combined
           lastSampleRateHz = sampleRateHz
+          val stats = computeSignalStats(combined)
 
           val durationSec = totalSamples.toFloat() / sampleRateHz.toFloat()
           val audioMs = (durationSec * 1000f).toLong()
@@ -446,8 +585,8 @@ class TextToSpeechViewModel(application: Application) : AndroidViewModel(applica
           appendLog(
             "${MainActivity.RESULT_MARKER} status=OK mode=stream ttfa_ms=$ttfaMs chunks=$chunks " +
               "synth_ms=$synthMs audio_ms=$audioMs rtf=${"%.4f".format(Locale.US, rtf)} " +
-              "samples=$totalSamples sample_rate_hz=$sampleRateHz voice=${voice.voiceId} " +
-              "locale=${voice.locale} play=$playState wav=${wavFile.absolutePath}"
+              "samples=$totalSamples sample_rate_hz=$sampleRateHz voice=$voiceLabel " +
+              "locale=$localeLabel play=$playState wav=${wavFile.absolutePath}"
           )
           _uiState.update {
             it.copy(
@@ -457,18 +596,35 @@ class TextToSpeechViewModel(application: Application) : AndroidViewModel(applica
               rtf = rtf,
               ttfaMs = ttfaMs,
               chunkCount = chunks,
+              pieces = pieceList.toList(),
+              sampleRateHz = sampleRateHz,
+              rms = stats.rms,
+              peak = stats.peak,
+              nonFiniteCount = stats.nonFiniteCount,
+              wordTimestamps = streamWordTimestamps.toList(),
+              synthesizedAudio = SynthesizedAudioHolder(combined),
               hasReplayableAudio = true,
               lastWavPath = wavFile.name,
             )
           }
         } else {
-          val audio = engine.synthesizeText(text, voice.voiceId)
+          val audio = engine.synthesizeText(text, effectiveVoiceId)
           val synthMs = (SystemClock.elapsedRealtime() - synthStart).coerceAtLeast(1L)
           if (stopRequested) throw UserCancelledException()
           check(audio.samples.isNotEmpty()) { "The engine returned no audio samples." }
 
           lastAudioSamples = audio.samples
           lastSampleRateHz = audio.sampleRateHz
+          val stats = computeSignalStats(audio.samples)
+          val unaryPieces =
+            listOf(
+              SynthesizedPieceInfo(
+                chunkIndex = 0,
+                isFinal = true,
+                sampleCount = audio.samples.size,
+                sampleRateHz = audio.sampleRateHz,
+              )
+            )
 
           val audioMs = (audio.durationSeconds * 1000f).toLong()
           val rtf = if (audioMs > 0) synthMs.toDouble() / audioMs.toDouble() else Double.NaN
@@ -483,6 +639,13 @@ class TextToSpeechViewModel(application: Application) : AndroidViewModel(applica
               rtf = rtf,
               ttfaMs = null,
               chunkCount = null,
+              pieces = unaryPieces,
+              sampleRateHz = audio.sampleRateHz,
+              rms = stats.rms,
+              peak = stats.peak,
+              nonFiniteCount = stats.nonFiniteCount,
+              wordTimestamps = audio.wordTimestamps,
+              synthesizedAudio = SynthesizedAudioHolder(audio.samples),
               hasReplayableAudio = true,
               lastWavPath = wavFile.name,
             )
@@ -509,8 +672,8 @@ class TextToSpeechViewModel(application: Application) : AndroidViewModel(applica
           appendLog(
             "${MainActivity.RESULT_MARKER} status=OK synth_ms=$synthMs audio_ms=$audioMs " +
               "rtf=${"%.4f".format(Locale.US, rtf)} samples=${audio.samples.size} " +
-              "sample_rate_hz=${audio.sampleRateHz} voice=${voice.voiceId} " +
-              "locale=${voice.locale} play=$playState wav=${wavFile.absolutePath}"
+              "sample_rate_hz=${audio.sampleRateHz} voice=$voiceLabel " +
+              "locale=$localeLabel play=$playState wav=${wavFile.absolutePath}"
           )
           _uiState.update {
             it.copy(statusBadge = if (stopRequested) "Stopped" else "Done")
@@ -529,6 +692,30 @@ class TextToSpeechViewModel(application: Application) : AndroidViewModel(applica
         _uiState.update { it.copy(isBusy = false, isStreaming = false) }
       }
     }
+  }
+
+  private data class SignalStats(val rms: Double, val peak: Double, val nonFiniteCount: Int)
+
+  private fun computeSignalStats(samples: FloatArray): SignalStats {
+    if (samples.isEmpty()) return SignalStats(rms = 0.0, peak = 0.0, nonFiniteCount = 0)
+    var sumSq = 0.0
+    var peak = 0.0
+    var nonFinite = 0
+    for (sample in samples) {
+      if (sample.isFinite()) {
+        val value = sample.toDouble()
+        sumSq += value * value
+        val absValue = abs(value)
+        if (absValue > peak) peak = absValue
+      } else {
+        nonFinite += 1
+      }
+    }
+    return SignalStats(
+      rms = sqrt(sumSq / samples.size.toDouble()),
+      peak = peak,
+      nonFiniteCount = nonFinite,
+    )
   }
 
   private fun appendLog(line: String) {

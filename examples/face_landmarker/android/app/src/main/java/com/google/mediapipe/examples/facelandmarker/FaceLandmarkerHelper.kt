@@ -41,6 +41,8 @@ class FaceLandmarkerHelper(
     var minFaceTrackingConfidence: Float = DEFAULT_FACE_TRACKING_CONFIDENCE,
     var minFacePresenceConfidence: Float = DEFAULT_FACE_PRESENCE_CONFIDENCE,
     var maxNumFaces: Int = DEFAULT_NUM_FACES,
+    var outputFaceBlendshapes: Boolean = DEFAULT_OUTPUT_FACE_BLENDSHAPES,
+    var outputFacialTransformationMatrixes: Boolean = DEFAULT_OUTPUT_FACIAL_TRANSFORMATION_MATRIXES,
     var currentDelegate: Int = DELEGATE_CPU,
     var runningMode: RunningMode = RunningMode.IMAGE,
     val context: Context,
@@ -97,7 +99,8 @@ class FaceLandmarkerHelper(
                     .setMinTrackingConfidence(minFaceTrackingConfidence)
                     .setMinFacePresenceConfidence(minFacePresenceConfidence)
                     .setNumFaces(maxNumFaces)
-                    .setOutputFaceBlendshapes(true)
+                    .setOutputFaceBlendshapes(outputFaceBlendshapes)
+                    .setOutputFacialTransformationMatrixes(outputFacialTransformationMatrixes)
                     .setRunningMode(runningMode)
 
             if (runningMode == RunningMode.LIVE_STREAM) {
@@ -187,6 +190,7 @@ class FaceLandmarkerHelper(
         }
         require(inferenceIntervalMs > 0L) { "inferenceIntervalMs must be positive." }
 
+        val landmarker = faceLandmarker ?: return null
         val startTime = SystemClock.uptimeMillis()
         var didErrorOccur = false
 
@@ -195,14 +199,16 @@ class FaceLandmarkerHelper(
             retriever.setDataSource(context, videoUri)
             val videoLengthMs =
                 retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
-            val firstFrame = retriever.getFrameAtTime(0)
-            val width = firstFrame?.width
-            val height = firstFrame?.height
-            firstFrame?.recycle()
-
-            if (videoLengthMs == null || width == null || height == null) {
+            val firstFrame =
+                retriever.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST)
+                    ?: retriever.getFrameAtTime(0)
+            if (videoLengthMs == null || firstFrame == null) {
+                firstFrame?.recycle()
                 return null
             }
+            var width: Int = firstFrame.width
+            var height: Int = firstFrame.height
+            firstFrame.recycle()
 
             val resultList = mutableListOf<FaceLandmarkerResult>()
             val lastFrameIndex = videoLengthMs / inferenceIntervalMs
@@ -225,8 +231,10 @@ class FaceLandmarkerHelper(
                     if (frame.config == Bitmap.Config.ARGB_8888) frame
                     else frame.copy(Bitmap.Config.ARGB_8888, false)
                 try {
+                    width = argbFrame.width
+                    height = argbFrame.height
                     val mpImage = BitmapImageBuilder(argbFrame).build()
-                    val detectionResult = faceLandmarker?.detectForVideo(mpImage, timestampMs)
+                    val detectionResult = landmarker.detectForVideo(mpImage, timestampMs)
                     if (detectionResult != null) {
                         resultList.add(detectionResult)
                     } else {
@@ -235,6 +243,12 @@ class FaceLandmarkerHelper(
                             "ResultBundle could not be returned in detectVideoFile"
                         )
                     }
+                } catch (e: RuntimeException) {
+                    didErrorOccur = true
+                    val detail = e.message ?: "RuntimeException"
+                    faceLandmarkerHelperListener?.onError("Face Landmarker failed on video frame: $detail")
+                    Log.e(TAG, "Face Landmarker failed on video frame with error: $detail", e)
+                    break
                 } finally {
                     if (argbFrame !== frame) argbFrame.recycle()
                     frame.recycle()
@@ -261,13 +275,14 @@ class FaceLandmarkerHelper(
                 "Attempting to call detectImage while not using RunningMode.IMAGE"
             )
         }
+        val landmarker = faceLandmarker ?: return null
         val argbImage =
             if (image.config == Bitmap.Config.ARGB_8888) image
             else image.copy(Bitmap.Config.ARGB_8888, false)
         return try {
             val startTime = SystemClock.uptimeMillis()
             val mpImage = BitmapImageBuilder(argbImage).build()
-            val landmarkResult = faceLandmarker?.detect(mpImage)
+            val landmarkResult = landmarker.detect(mpImage)
             if (landmarkResult != null) {
                 val inferenceTimeMs = SystemClock.uptimeMillis() - startTime
                 ResultBundle(
@@ -280,6 +295,11 @@ class FaceLandmarkerHelper(
                 faceLandmarkerHelperListener?.onError("Face Landmarker failed to detect.")
                 null
             }
+        } catch (e: RuntimeException) {
+            val detail = e.message ?: "RuntimeException"
+            faceLandmarkerHelperListener?.onError("Face Landmarker failed to detect: $detail")
+            Log.e(TAG, "Face Landmarker failed to detect image with error: $detail", e)
+            null
         } finally {
             if (argbImage !== image) argbImage.recycle()
         }
@@ -307,7 +327,7 @@ class FaceLandmarkerHelper(
 
     companion object {
         const val TAG = "FaceLandmarkerHelper"
-        private const val MP_FACE_LANDMARKER_TASK = "face_landmarker.task"
+        const val MP_FACE_LANDMARKER_TASK = "face_landmarker.task"
         const val SAMPLE_IMAGE_ASSET = "sample_face.png"
 
         const val DELEGATE_CPU = 0
@@ -316,6 +336,8 @@ class FaceLandmarkerHelper(
         const val DEFAULT_FACE_TRACKING_CONFIDENCE = 0.5F
         const val DEFAULT_FACE_PRESENCE_CONFIDENCE = 0.5F
         const val DEFAULT_NUM_FACES = 1
+        const val DEFAULT_OUTPUT_FACE_BLENDSHAPES = true
+        const val DEFAULT_OUTPUT_FACIAL_TRANSFORMATION_MATRIXES = true
         const val MAX_FACES_LIMIT = 2
         const val OTHER_ERROR = 0
         const val GPU_ERROR = 1

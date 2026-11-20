@@ -25,6 +25,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MediaPipeSample">
 
+        <!-- Required on Android 12+ to dlopen the vendor OpenCL driver preferred by LiteRT GPU. -->
+        <uses-native-library android:name="libOpenCL.so" android:required="false" />
+        <uses-native-library android:name="libOpenCL-car.so" android:required="false" />
+        <uses-native-library android:name="libOpenCL-pixel.so" android:required="false" />
+        <uses-native-library android:name="libGLES_mali.so" android:required="false" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

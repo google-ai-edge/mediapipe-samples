@@ -31,7 +31,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
@@ -77,6 +79,8 @@ fun AudioTranscriberScreen(
   onToggleRecording: () -> Unit,
   onClearTranscripts: () -> Unit,
   onSelectModelFile: () -> Unit,
+  onPickAudioFile: () -> Unit = {},
+  onSelectClipMode: (ClipTranscriptionMode) -> Unit = {},
   onSelectDelegate: (Int) -> Unit = {},
   onFallbackToCpu: () -> Unit = {},
   modifier: Modifier = Modifier,
@@ -84,7 +88,7 @@ fun AudioTranscriberScreen(
   var showSettings by rememberSaveable { mutableStateOf(false) }
   val delegateLabel =
     if (state.currentDelegate == AudioTranscriberHelper.DELEGATE_GPU) "GPU" else "CPU"
-  val subtitle = "Parakeet TDT 0.6B · $delegateLabel"
+  val subtitle = "Parakeet TDT 0.6B · $delegateLabel · ${state.clipTranscriptionMode.label}"
 
   Scaffold(
     modifier = modifier.fillMaxSize(),
@@ -152,6 +156,7 @@ fun AudioTranscriberScreen(
         hasTranscriptContent =
           state.finalizedSegments.isNotEmpty() || state.interimTranscript.isNotEmpty(),
         onTranscribeSample = onTranscribeSample,
+        onPickAudioFile = onPickAudioFile,
         onToggleRecording = onToggleRecording,
         onClearTranscripts = onClearTranscripts,
       )
@@ -159,9 +164,13 @@ fun AudioTranscriberScreen(
   }
 
   if (showSettings) {
+    val clipModes = ClipTranscriptionMode.entries
     ModalBottomSheet(onDismissRequest = { showSettings = false }) {
       Column(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),
+        modifier =
+          Modifier.fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
       ) {
         Text(
@@ -183,6 +192,13 @@ fun AudioTranscriberScreen(
           selectedIndex = state.currentDelegate,
           enabled = !state.isRecording && !state.isTranscribingSample,
           onSelect = onSelectDelegate,
+        )
+        SegmentedOptionRow(
+          label = stringResource(R.string.clip_mode_label),
+          options = clipModes.map { it.label },
+          selectedIndex = clipModes.indexOf(state.clipTranscriptionMode).coerceAtLeast(0),
+          enabled = !state.isRecording && !state.isTranscribingSample,
+          onSelect = { index -> onSelectClipMode(clipModes[index]) },
         )
         OutlinedButton(
           onClick = {
@@ -352,23 +368,42 @@ private fun ControlButtonsRow(
   state: AudioTranscriberUiState,
   hasTranscriptContent: Boolean,
   onTranscribeSample: () -> Unit,
+  onPickAudioFile: () -> Unit,
   onToggleRecording: () -> Unit,
   onClearTranscripts: () -> Unit,
 ) {
   val busy = state.isRecording || state.isTranscribingSample
   Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-    Button(
-      onClick = onTranscribeSample,
-      enabled = state.isModelReady && !busy,
-      shape = RoundedCornerShape(28.dp),
-      contentPadding = PaddingValues(vertical = 14.dp),
-      modifier = Modifier.fillMaxWidth().testTag("transcribe_sample_button"),
-    ) {
-      Text(
-        text = stringResource(R.string.transcribe_sample),
-        style = MaterialTheme.typography.titleMedium,
-        fontWeight = FontWeight.Bold,
-      )
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+      Button(
+        onClick = onTranscribeSample,
+        enabled = state.isModelReady && !busy,
+        shape = RoundedCornerShape(28.dp),
+        contentPadding = PaddingValues(vertical = 14.dp),
+        modifier = Modifier.weight(1.4f).testTag("transcribe_sample_button"),
+      ) {
+        Text(
+          text = stringResource(R.string.transcribe_sample),
+          style = MaterialTheme.typography.titleMedium,
+          fontWeight = FontWeight.Bold,
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis,
+        )
+      }
+
+      OutlinedButton(
+        onClick = onPickAudioFile,
+        enabled = state.isModelReady && !busy,
+        shape = RoundedCornerShape(28.dp),
+        contentPadding = PaddingValues(vertical = 14.dp),
+        modifier = Modifier.weight(1f).testTag("pick_wav_button"),
+      ) {
+        Text(
+          text = stringResource(R.string.pick_wav_file),
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis,
+        )
+      }
     }
 
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {

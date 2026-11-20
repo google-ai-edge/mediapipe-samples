@@ -29,14 +29,23 @@ import com.google.mediapipe.tasks.components.containers.AudioData
 import com.google.mediapipe.tasks.components.containers.AudioData.AudioDataFormat
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
+import java.util.Collections
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
+import kotlin.math.roundToInt
+
+enum class ClassifierDelegate(val label: String) {
+    CPU("CPU"),
+    GPU("GPU"),
+}
 
 class AudioClassifierHelper(
     val context: Context,
     var classificationThreshold: Float = DISPLAY_THRESHOLD,
     var overlap: Int = DEFAULT_OVERLAP,
     var numOfResults: Int = DEFAULT_NUM_OF_RESULTS,
+    var currentDelegate: ClassifierDelegate = ClassifierDelegate.CPU,
     var runningMode: RunningMode = RunningMode.AUDIO_CLIPS,
     var listener: ClassifierListener? = null,
     initOnCreate: Boolean = true,
@@ -47,6 +56,8 @@ class AudioClassifierHelper(
     private var executor: ScheduledThreadPoolExecutor? = null
     private var audioClassifier: AudioClassifier? = null
     @Volatile private var lastStreamStartMs: Long = 0L
+    @Volatile var lastError: String? = null
+        private set
 
     private val classifyRunnable = Runnable {
         val currentRecorder: AudioRecord?
@@ -63,13 +74,19 @@ class AudioClassifierHelper(
     }
 
     @SuppressLint("MissingPermission")
-    fun initClassifier(): Boolean {
+    fun initClassifier(startMicrophone: Boolean = true): Boolean {
         synchronized(lock) {
             stopAudioClassificationLocked()
+            lastError = null
+            val mpDelegate =
+                when (currentDelegate) {
+                    ClassifierDelegate.CPU -> Delegate.CPU
+                    ClassifierDelegate.GPU -> Delegate.GPU
+                }
             val baseOptions =
                 BaseOptions.builder()
                     .setModelAssetPath(YAMNET_MODEL)
-                    .setDelegate(Delegate.CPU)
+                    .setDelegate(mpDelegate)
                     .build()
 
             return try {
@@ -89,7 +106,7 @@ class AudioClassifierHelper(
                 val classifier = AudioClassifier.createFromOptions(context, optionsBuilder.build())
                 audioClassifier = classifier
 
-                if (runningMode == RunningMode.AUDIO_STREAM) {
+                if (runningMode == RunningMode.AUDIO_STREAM && startMicrophone) {
                     val audioRecord =
                         classifier.createAudioRecord(
                             AudioFormat.CHANNEL_IN_DEFAULT,
@@ -154,7 +171,9 @@ class AudioClassifierHelper(
         synchronized(lock) {
             val classifier = audioClassifier
             if (classifier == null) {
-                notifyError("Audio classifier is not initialized.")
+                if (lastError == null) {
+                    notifyError("Audio classifier is not initialized.")
+                }
                 return null
             }
             val startTime = SystemClock.uptimeMillis()
@@ -163,9 +182,94 @@ class AudioClassifierHelper(
                 val inferenceTime = SystemClock.uptimeMillis() - startTime
                 ResultBundle(listOf(result), inferenceTime)
             } catch (e: RuntimeException) {
-                Log.e(TAG, "Audio classification failed", e)
+                Log.e(TAG, "Audio classification failed: ${e.message}", e)
                 notifyError("Audio classifier failed to classify: ${e.message}")
                 null
+            }
+        }
+    }
+
+    /**
+     * Streams mono PCM [samples] at [sampleRateHz] through [RunningMode.AUDIO_STREAM] in 0.975 s
+     * windows via [AudioClassifier.classifyAsync], returning every emitted window result in order.
+     */
+    fun classifyAudioStream(samples: FloatArray, sampleRateHz: Int): ResultBundle? {
+        synchronized(lock) {
+            stopAudioClassificationLocked()
+            lastError = null
+            val mpDelegate =
+                when (currentDelegate) {
+                    ClassifierDelegate.CPU -> Delegate.CPU
+                    ClassifierDelegate.GPU -> Delegate.GPU
+                }
+            val streamedResults = Collections.synchronizedList(mutableListOf<AudioClassifierResult>())
+            val streamException = AtomicReference<RuntimeException?>(null)
+
+            val baseOptions =
+                BaseOptions.builder()
+                    .setModelAssetPath(YAMNET_MODEL)
+                    .setDelegate(mpDelegate)
+                    .build()
+
+            val startTime = SystemClock.uptimeMillis()
+            var streamClassifier: AudioClassifier? = null
+            return try {
+                val options =
+                    AudioClassifier.AudioClassifierOptions.builder()
+                        .setScoreThreshold(classificationThreshold)
+                        .setMaxResults(numOfResults)
+                        .setBaseOptions(baseOptions)
+                        .setRunningMode(RunningMode.AUDIO_STREAM)
+                        .setResultListener { result -> streamedResults.add(result) }
+                        .setErrorListener { error ->
+                            Log.e(TAG, "Audio stream error: ${error.message}", error)
+                            streamException.compareAndSet(null, error)
+                        }
+                        .build()
+
+                val classifier =
+                    try {
+                        AudioClassifier.createFromOptions(context, options)
+                    } catch (e: RuntimeException) {
+                        Log.e(TAG, "MP task failed to load with error: ${e.message}", e)
+                        notifyError("Audio Classifier failed to initialize: ${e.message}")
+                        return null
+                    }
+                streamClassifier = classifier
+                val chunkSize = (sampleRateHz * EXPECTED_INPUT_LENGTH).roundToInt().coerceAtLeast(1)
+                val format =
+                    AudioDataFormat.builder()
+                        .setNumOfChannels(1)
+                        .setSampleRate(sampleRateHz.toFloat())
+                        .build()
+
+                var start = 0
+                while (start < samples.size) {
+                    streamException.get()?.let { throw it }
+                    val end = (start + chunkSize).coerceAtMost(samples.size)
+                    val chunk = samples.copyOfRange(start, end)
+                    val audioBlock = AudioData.create(format, chunk.size).apply { load(chunk) }
+                    val timestampMs = Math.round(start * 1000.0 / sampleRateHz)
+                    classifier.classifyAsync(audioBlock, timestampMs)
+                    Thread.sleep(20L)
+                    start = end
+                }
+                Thread.sleep(100L)
+                classifier.close()
+                streamClassifier = null
+                streamException.get()?.let { throw it }
+                val inferenceTime = SystemClock.uptimeMillis() - startTime
+                ResultBundle(streamedResults.toList(), inferenceTime)
+            } catch (e: IllegalStateException) {
+                Log.e(TAG, "MP task failed in stream mode: ${e.message}", e)
+                notifyError("Audio Classifier failed to initialize: ${e.message}")
+                null
+            } catch (e: RuntimeException) {
+                Log.e(TAG, "Audio stream classification failed: ${e.message}", e)
+                notifyError("Audio classifier failed to classify: ${e.message}")
+                null
+            } finally {
+                runCatching { streamClassifier?.close() }
             }
         }
     }
@@ -202,10 +306,12 @@ class AudioClassifierHelper(
     }
 
     private fun streamAudioErrorListener(e: RuntimeException) {
+        Log.e(TAG, "Live audio classification failed: ${e.message}", e)
         notifyError(e.message ?: "Live audio classification failed.")
     }
 
     private fun notifyError(message: String) {
+        lastError = message
         listener?.onError(message)
     }
 

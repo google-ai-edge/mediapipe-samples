@@ -7,7 +7,7 @@ using the MediaPipe `TextClassifier` task, with a choice of
 [MobileBERT](https://huggingface.co/litert-community/MediaPipe-TextClassifier-MobileBERT/resolve/main/bert_classifier.tflite)
 or
 [Average WordVec](https://huggingface.co/litert-community/MediaPipe-TextClassifier-AverageWord/resolve/main/average_word_classifier.tflite)
-classification models.
+classification models and selectable CPU / GPU delegates in the settings sheet.
 
 ![Text Classification Demo](textclassification.png?raw=true "Text Classification Demo")
 

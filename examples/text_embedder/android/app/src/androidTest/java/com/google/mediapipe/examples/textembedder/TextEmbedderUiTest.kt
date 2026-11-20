@@ -67,7 +67,7 @@ class TextEmbedderUiTest {
     @Test
     fun defaultComparison_displaysScoreAndMetrics() {
         waitForCompareReady()
-        composeRule.onNodeWithTag("top_bar_subtitle").assertTextContains("Gemma 300M · 768d")
+        composeRule.onNodeWithTag("top_bar_subtitle").assertTextContains("Gemma 300M · 768d", substring = true)
 
         composeRule.onNodeWithTag("compare_button").performScrollTo().performClick()
         val score = waitForResultCard()
@@ -153,7 +153,7 @@ class TextEmbedderUiTest {
         composeRule.onNodeWithTag("option_Model_MobileBERT").performClick()
         composeRule.onNodeWithTag("settings_done_button").performClick()
 
-        composeRule.onNodeWithTag("top_bar_subtitle").assertTextContains("MobileBERT · 512d")
+        composeRule.onNodeWithTag("top_bar_subtitle").assertTextContains("MobileBERT · 512d", substring = true)
         waitForCompareReady()
         composeRule.onNodeWithTag("preset_similar").performScrollTo().performClick()
         composeRule.onNodeWithTag("compare_button").assertIsEnabled().performScrollTo().performClick()
@@ -166,7 +166,7 @@ class TextEmbedderUiTest {
         composeRule.onNodeWithTag("option_Model_Universal").performClick()
         composeRule.onNodeWithTag("settings_done_button").performClick()
 
-        composeRule.onNodeWithTag("top_bar_subtitle").assertTextContains("Universal · 100d")
+        composeRule.onNodeWithTag("top_bar_subtitle").assertTextContains("Universal · 100d", substring = true)
         waitForCompareReady()
 
         composeRule.onNodeWithTag("preset_similar").performScrollTo().performClick()

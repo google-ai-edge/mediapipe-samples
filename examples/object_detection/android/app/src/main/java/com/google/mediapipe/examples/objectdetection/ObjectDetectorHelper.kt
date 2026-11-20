@@ -60,8 +60,13 @@ class ObjectDetectorHelper(
     }
 
     fun clearObjectDetector() {
-        objectDetector?.close()
-        objectDetector = null
+        try {
+            objectDetector?.close()
+        } catch (e: RuntimeException) {
+            Log.e(TAG, "Error closing object detector: ${e.message}", e)
+        } finally {
+            objectDetector = null
+        }
     }
 
     /**
@@ -76,6 +81,9 @@ class ObjectDetectorHelper(
             when (currentModel) {
                 MODEL_EFFICIENTDETV0 -> MODEL_EFFICIENTDETV0_NAME
                 MODEL_EFFICIENTDETV2 -> MODEL_EFFICIENTDETV2_NAME
+                MODEL_EFFICIENTDETV0_INT8 -> MODEL_EFFICIENTDETV0_INT8_NAME
+                MODEL_SSD_MOBILENETV2_FP32 -> MODEL_SSD_MOBILENETV2_FP32_NAME
+                MODEL_SSD_MOBILENETV2_FP16 -> MODEL_SSD_MOBILENETV2_FP16_NAME
                 else -> {
                     objectDetectorListener?.onError("Unsupported model index: $currentModel")
                     return false
@@ -116,21 +124,21 @@ class ObjectDetectorHelper(
             true
         } catch (e: IllegalStateException) {
             val detail = e.message ?: "IllegalStateException"
-            objectDetectorListener?.onError("Object detector failed to initialize: $detail")
             Log.e(TAG, "TFLite failed to load model with error: $detail", e)
+            objectDetectorListener?.onError("Object detector failed to initialize: $detail")
             false
         } catch (e: RuntimeException) {
             val detail = e.message ?: "RuntimeException"
             val errorCode = if (currentDelegate == DELEGATE_GPU) GPU_ERROR else OTHER_ERROR
+            Log.e(TAG, "Object detector failed to load model with error: $detail", e)
             objectDetectorListener?.onError(
                 if (errorCode == GPU_ERROR) {
-                    "This model or device does not support GPU acceleration."
+                    "This model or device does not support GPU acceleration: $detail"
                 } else {
                     "Object detector failed to initialize: $detail"
                 },
                 errorCode,
             )
-            Log.e(TAG, "Object detector failed to load model with error: $detail", e)
             false
         }
     }
@@ -193,6 +201,16 @@ class ObjectDetectorHelper(
                             "ResultBundle could not be returned in detectVideoFile"
                         )
                     }
+                } catch (e: RuntimeException) {
+                    didErrorOccur = true
+                    val detail = e.message ?: "RuntimeException"
+                    val errorCode = if (currentDelegate == DELEGATE_GPU) GPU_ERROR else OTHER_ERROR
+                    Log.e(TAG, "Object detector failed to detect video frame with error: $detail", e)
+                    objectDetectorListener?.onError(
+                        "Object detector failed in video mode: $detail",
+                        errorCode,
+                    )
+                    break
                 } finally {
                     if (argbFrame !== frame) argbFrame.recycle()
                     frame.recycle()
@@ -287,6 +305,12 @@ class ObjectDetectorHelper(
                 objectDetectorListener?.onError("Object detector failed to detect.")
                 null
             }
+        } catch (e: RuntimeException) {
+            val detail = e.message ?: "RuntimeException"
+            val errorCode = if (currentDelegate == DELEGATE_GPU) GPU_ERROR else OTHER_ERROR
+            Log.e(TAG, "Object detector failed to detect image with error: $detail", e)
+            objectDetectorListener?.onError("Object detector failed: $detail", errorCode)
+            null
         } finally {
             if (argbImage !== image) argbImage.recycle()
         }
@@ -322,8 +346,14 @@ class ObjectDetectorHelper(
         const val DELEGATE_GPU = 1
         const val MODEL_EFFICIENTDETV0 = 0
         const val MODEL_EFFICIENTDETV2 = 1
+        const val MODEL_EFFICIENTDETV0_INT8 = 2
+        const val MODEL_SSD_MOBILENETV2_FP32 = 3
+        const val MODEL_SSD_MOBILENETV2_FP16 = 4
         const val MODEL_EFFICIENTDETV0_NAME = "efficientdet-lite0.tflite"
         const val MODEL_EFFICIENTDETV2_NAME = "efficientdet-lite2.tflite"
+        const val MODEL_EFFICIENTDETV0_INT8_NAME = "efficientdet_lite0_int8.tflite"
+        const val MODEL_SSD_MOBILENETV2_FP32_NAME = "ssd_mobilenet_v2_float32.tflite"
+        const val MODEL_SSD_MOBILENETV2_FP16_NAME = "ssd_mobilenet_v2_float16.tflite"
         const val SAMPLE_IMAGE_ASSET = "sample_objects.jpg"
         const val MAX_RESULTS_DEFAULT = 3
         const val THRESHOLD_DEFAULT = 0.5F

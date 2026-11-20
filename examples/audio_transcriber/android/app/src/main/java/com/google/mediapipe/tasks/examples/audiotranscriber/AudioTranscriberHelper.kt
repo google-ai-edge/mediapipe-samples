@@ -54,6 +54,8 @@ interface AudioTranscriberHelper : AutoCloseable {
       context: Context,
       modelFile: File,
       delegateIndex: Int = DELEGATE_CPU,
+      enableInterimResults: Boolean = true,
+      sampleRateHz: Int = SAMPLE_RATE_HZ,
     ): AudioTranscriberHelper {
       val delegate =
         if (delegateIndex == DELEGATE_GPU) Delegate.GPU else Delegate.CPU
@@ -65,8 +67,8 @@ interface AudioTranscriberHelper : AutoCloseable {
       val options =
         AudioTranscriberOptions.builder()
           .setBaseOptions(baseOptions)
-          .setSampleRateHz(SAMPLE_RATE_HZ)
-          .setEnableInterimResults(true)
+          .setSampleRateHz(sampleRateHz)
+          .setEnableInterimResults(enableInterimResults)
           .setModelArchitecture(AudioTranscriber.ModelArchitecture.AUTO)
           .setCacheDir(context.cacheDir.absolutePath)
           .build()
