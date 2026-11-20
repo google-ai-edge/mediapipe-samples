@@ -22,8 +22,9 @@ and follows its design.
 
 ## Requirements
 
-- macOS on Apple silicon. The GPU cases are confirmed through the log of the
-  Metal delegate, see [GPU cases](#gpu-cases).
+- macOS on Apple silicon (CPU + Metal GPU), or Windows / Linux with `--cpu-only`.
+  The GPU cases are confirmed through the log of the Metal delegate, see
+  [GPU cases](#gpu-cases).
 - Python 3.12, the version the dependency pins were resolved for. With another
   version the run stops before it installs anything; see `--python`.
 - Network access on the first run, to install the packages and to download
@@ -44,6 +45,9 @@ python3 .github/scripts/release_validate/run_local.py --mediapipe mediapipe==1.2
 python3 .github/scripts/release_validate/run_local.py --mediapipe mediapipe==1.3.0rc1 --pip-arg=--pre
 python3 .github/scripts/release_validate/run_local.py --mediapipe ~/Downloads/mediapipe-1.3.0-py3-none-macosx_11_0_arm64.whl
 
+# CPU-only validation (for example on Windows or headless CI)
+python .github/scripts/release_validate/run_local.py --cpu-only
+
 # Part of the matrix
 python3 .github/scripts/release_validate/run_local.py --tasks vision/face_detector,audio --delegates cpu
 python3 .github/scripts/release_validate/run_local.py --list
@@ -55,6 +59,7 @@ python3 .github/scripts/release_validate/run_local.py --list
 | `--pip-arg ARG` | Extra argument for that `pip install`, repeatable (`--pip-arg=--pre`, `--pip-arg=--extra-index-url=...`). |
 | `--tasks LIST` | Comma-separated domains (`vision`), tasks (`face_detector`) or both (`text/text_embedder`). Default: all. |
 | `--delegates LIST` | `cpu`, `gpu` or `cpu,gpu` (default). |
+| `--cpu-only` | Run only the CPU delegate cases (equivalent to `--delegates cpu`; used on Windows). |
 | `--small-models-only` | Leave out the cases of the large models: speech recognition, speech synthesis, and the embedding models of the retrieval and decision tasks. |
 | `--report-dir DIR` | Default: `release-validation-report` in the repo. It is deleted and written anew by every run. |
 | `--work-dir DIR` | Python environment and downloaded files. Default: `.release_validation` in the repo. |

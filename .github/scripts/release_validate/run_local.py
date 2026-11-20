@@ -16,6 +16,7 @@
 
   python3 .github/scripts/release_validate/run_local.py
   python3 .github/scripts/release_validate/run_local.py --mediapipe mediapipe==1.2.3
+  python3 .github/scripts/release_validate/run_local.py --cpu-only
   python3 .github/scripts/release_validate/run_local.py --tasks vision/face_detector,audio --delegates cpu
 
 It creates a Python environment with the MediaPipe under test and pinned
@@ -31,6 +32,7 @@ import argparse
 import datetime
 import json
 import os
+import pathlib
 import platform
 import re
 import shlex
@@ -75,7 +77,11 @@ def parse_options(argv):
       help='Comma-separated domains ("vision"), tasks ("face_detector") or both ("text/text_embedder"). '
       'Default: all tasks.')
   parser.add_argument(
-      '--delegates', default='cpu,gpu', metavar='LIST', help='Comma-separated delegates to validate. Default: cpu,gpu.')
+      '--delegates', default=None, metavar='LIST',
+      help='Comma-separated delegates to validate. Default: cpu,gpu (or cpu when --cpu-only is given).')
+  parser.add_argument(
+      '--cpu-only', action='store_true',
+      help='Run only the CPU delegate cases (equivalent to --delegates cpu; useful on Windows or headless CI).')
   parser.add_argument(
       '--small-models-only', action='store_true',
       help='Leave out the cases of the large models (speech recognition and synthesis), which are several hundred '
@@ -101,7 +107,15 @@ def parse_options(argv):
   parser.add_argument('--list', action='store_true', help='Print the cases that would run, and exit.')
   options = parser.parse_args(argv)
 
-  options.delegates = [d.strip().upper() for d in options.delegates.split(',') if d.strip()]
+  if options.cpu_only:
+    if options.delegates is not None:
+      requested = [d.strip().upper() for d in options.delegates.split(',') if d.strip()]
+      if requested != ['CPU']:
+        parser.error(f'--cpu-only cannot be combined with --delegates {options.delegates}')
+    options.delegates = ['CPU']
+  else:
+    raw_delegates = 'cpu,gpu' if options.delegates is None else options.delegates
+    options.delegates = [d.strip().upper() for d in raw_delegates.split(',') if d.strip()]
   unknown = [d for d in options.delegates if d not in cases.DELEGATES]
   if unknown or not options.delegates:
     parser.error(f"--delegates must list cpu and/or gpu, got: {', '.join(unknown) or 'nothing'}")
@@ -113,21 +127,30 @@ def parse_options(argv):
   return options
 
 
+def _quote_command(args):
+  if os.name == 'nt':
+    return subprocess.list2cmdline(args)
+  return ' '.join(shlex.quote(a) for a in args)
+
+
 def log(message=''):
   print(message, flush=True)
 
 
 def run(command, **kwargs):
-  return subprocess.run(command, capture_output=True, text=True, check=False, **kwargs)
+  return subprocess.run(command, capture_output=True, text=True, encoding='utf-8', errors='replace',
+                        check=False, **kwargs)
 
 
 def venv_python(work_dir):
+  if os.name == 'nt':
+    return os.path.join(work_dir, 'venv', 'Scripts', 'python.exe')
   return os.path.join(work_dir, 'venv', 'bin', 'python')
 
 
 def constraint_python():
   """The Python version the pins of constraints.txt were resolved for."""
-  with open(CONSTRAINTS) as f:
+  with open(CONSTRAINTS, encoding='utf-8') as f:
     match = re.search(r'^# Python (\d+\.\d+)', f.read(), re.MULTILINE)
   return match.group(1) if match else None
 
@@ -162,7 +185,7 @@ def prepare_environment(options):
   if not options.no_constraints:
     command += ['--constraint', CONSTRAINTS]
   command += options.pip_arg
-  log('Installing: ' + ' '.join(shlex.quote(c) for c in command[3:]))
+  log('Installing: ' + _quote_command(command[3:]))
   installed = run(command)
   if installed.returncode != 0:
     log(installed.stdout + installed.stderr)
@@ -204,7 +227,7 @@ def describe_environment(options, python):
   env = describe_machine()
   env.update({'mediapipeSpec': ' '.join([options.mediapipe] + options.pip_arg), 'mediapipeVersion': None,
               'pythonVersion': None, 'constraints': not options.no_constraints, 'pythonPinned': constraint_python(),
-              'command': ' '.join(shlex.quote(a) for a in sys.argv)})
+              'command': _quote_command(sys.argv)})
   probe = run([python, '-c', 'import platform, mediapipe; print(platform.python_version(), mediapipe.__version__)'])
   if probe.returncode == 0:
     env['pythonVersion'], env['mediapipeVersion'] = probe.stdout.split()[-2:]
@@ -277,15 +300,15 @@ def run_case(case, options, python, asset_dir, asset_errors):
 
   job = {
       'caseId': case['id'],
-      'sample': os.path.join(REPO_DIR, case['sample']),
+      'sample': os.path.normpath(os.path.join(REPO_DIR, case['sample'])),
       'observer': plan['observer'],
       'invocations': resolve(plan['invocations'], case, asset_dir, case_dir),
   }
   job_path, out_path = os.path.join(case_dir, 'job.json'), os.path.join(case_dir, 'result.json')
-  with open(job_path, 'w') as f:
+  with open(job_path, 'w', encoding='utf-8') as f:
     json.dump(job, f, indent=1, ensure_ascii=False)
   result['command'] = ' ; '.join(
-      ' '.join(shlex.quote(a) for a in ['python', case['sample']] + invocation['args'])
+      _quote_command(['python', case['sample']] + invocation['args'])
       for invocation in job['invocations'])
 
   # Every case starts from the pinned files only (see assets.remove_derived_files),
@@ -295,12 +318,13 @@ def run_case(case, options, python, asset_dir, asset_errors):
   os.makedirs(case_tmp, exist_ok=True)
   env = {k: v for k, v in os.environ.items() if k not in LOG_SILENCERS}
   env.update({'PYTHONDONTWRITEBYTECODE': '1', 'PYTHONHASHSEED': '0', 'PYTHONUNBUFFERED': '1',
+              'PYTHONUTF8': '1', 'PYTHONIOENCODING': 'utf-8',
               'TMPDIR': case_tmp, 'TEMP': case_tmp, 'TMP': case_tmp})
   stdout_path, native_path = os.path.join(case_dir, 'stdout.txt'), os.path.join(case_dir, 'native.log')
   started = time.perf_counter()
   timed_out = False
   try:
-    with open(stdout_path, 'w') as out, open(native_path, 'w') as err:
+    with open(stdout_path, 'w', encoding='utf-8') as out, open(native_path, 'w', encoding='utf-8') as err:
       try:
         process = subprocess.run([python, WORKER, '--job', job_path, '--out', out_path], cwd=case_dir, env=env,
                                  stdout=out, stderr=err, timeout=options.timeout, check=False)
@@ -316,7 +340,7 @@ def run_case(case, options, python, asset_dir, asset_errors):
   worker = {}
   if os.path.exists(out_path):
     try:
-      with open(out_path) as f:
+      with open(out_path, encoding='utf-8') as f:
         worker = json.load(f)
     except ValueError:
       worker = {}
@@ -326,7 +350,7 @@ def run_case(case, options, python, asset_dir, asset_errors):
     # The process died before it could report: a crash in native code.
     how = f'signal {-exit_code}' if exit_code is not None and exit_code < 0 else f'exit code {exit_code}'
     worker['error'] = f'the sample process crashed ({how}); see the native log'
-  with open(native_path, errors='replace') as f:
+  with open(native_path, encoding='utf-8', errors='replace') as f:
     native_log = f.read()
 
   result['runs'] = worker.get('runs', [])
@@ -348,7 +372,7 @@ def run_case(case, options, python, asset_dir, asset_errors):
 
 def compare_with_baseline(results, path):
   """Marks each result as identical to, or different from, an earlier run."""
-  with open(path) as f:
+  with open(path, encoding='utf-8') as f:
     earlier = {r['id']: r for r in json.load(f)['results']}
   summary = {'path': path, 'same': 0, 'different': 0, 'new': 0}
   for result in results:
@@ -369,6 +393,8 @@ def compare_with_baseline(results, path):
 
 
 def main(argv=None):
+  if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
   options = parse_options(sys.argv[1:] if argv is None else argv)
   matrix = cases.build_validation_matrix(options.tasks, options.delegates, not options.small_models_only)
   if not matrix:
@@ -412,7 +438,7 @@ def main(argv=None):
     shutil.rmtree(options.report_dir)
   os.makedirs(os.path.join(options.report_dir, 'inputs'))
   freeze = run([python, '-m', 'pip', 'freeze', '--disable-pip-version-check'])
-  with open(os.path.join(options.report_dir, 'pip-freeze.txt'), 'w') as f:
+  with open(os.path.join(options.report_dir, 'pip-freeze.txt'), 'w', encoding='utf-8') as f:
     f.write(freeze.stdout)
 
   # Download and check every file the selected cases need.
@@ -457,7 +483,7 @@ def main(argv=None):
       'environment': environment,
       'assets': asset_record,
       'assetErrors': asset_errors,
-      'options': {'tasks': options.tasks, 'delegates': options.delegates,
+      'options': {'tasks': options.tasks, 'delegates': options.delegates, 'cpuOnly': options.cpu_only,
                   'smallModelsOnly': options.small_models_only,
                   'allowUnconfirmedGpu': options.allow_unconfirmed_gpu, 'timeout': options.timeout},
       'baseline': baseline,
@@ -476,7 +502,8 @@ def main(argv=None):
     log(f"Compared with {baseline['path']}: {baseline['same']} identical, {baseline['different']} different, "
         f"{baseline['new']} not in the baseline")
   log(f'\n{verdict}')
-  log(f"Report: file://{os.path.join(options.report_dir, 'index.html')}")
+  report_uri = pathlib.Path(options.report_dir, 'index.html').resolve().as_uri()
+  log(f'Report: {report_uri}')
   return 0 if passed else 1
 
 

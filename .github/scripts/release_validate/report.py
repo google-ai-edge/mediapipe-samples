@@ -211,10 +211,10 @@ def format_html(state):
 
 def write_report_files(report_dir, state):
   os.makedirs(report_dir, exist_ok=True)
-  with open(os.path.join(report_dir, 'status.json'), 'w') as f:
+  with open(os.path.join(report_dir, 'status.json'), 'w', encoding='utf-8') as f:
     json.dump(state, f, indent=1, ensure_ascii=False)
     f.write('\n')
-  with open(os.path.join(report_dir, 'report.md'), 'w') as f:
+  with open(os.path.join(report_dir, 'report.md'), 'w', encoding='utf-8') as f:
     f.write(format_markdown(state))
-  with open(os.path.join(report_dir, 'index.html'), 'w') as f:
+  with open(os.path.join(report_dir, 'index.html'), 'w', encoding='utf-8') as f:
     f.write(format_html(state))

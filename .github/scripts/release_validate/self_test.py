@@ -713,7 +713,7 @@ class MatrixTest(unittest.TestCase):
     self.assertEqual(cases.unknown_task_filters(''), [])
 
   def test_every_case_can_run(self):
-    with open(os.path.join(SCRIPT_DIR, 'worker.py')) as f:
+    with open(os.path.join(SCRIPT_DIR, 'worker.py'), encoding='utf-8') as f:
       tree = ast.parse(f.read())
     observers = next(
         {key.value for key in node.value.keys} for node in tree.body
@@ -757,7 +757,7 @@ class MatrixTest(unittest.TestCase):
       names = ['yamnet.tflite', 'kokoro_int8_fp16.litertlm_1795107260_294783298.xnnpack_cache', 'pose.jpg.unexpected',
                'notes.txt']
       for name in names:
-        with open(os.path.join(directory, name), 'w') as f:
+        with open(os.path.join(directory, name), 'w', encoding='utf-8') as f:
           f.write('x')
       os.mkdir(os.path.join(directory, 'subdirectory'))
       removed = assets.remove_derived_files(directory)
@@ -780,6 +780,24 @@ class MatrixTest(unittest.TestCase):
     for entry in cases.KNOWN_UNSUPPORTED:
       self.assertTrue(entry['error'] and entry['reason'])
       self.assertTrue(any(d['task'] == entry['task'] for d in cases.TASK_DEFINITIONS))
+
+  def test_cli_cpu_only_and_windows_paths(self):
+    import contextlib  # pylint: disable=g-import-not-at-top
+    import io  # pylint: disable=g-import-not-at-top
+    import run_local  # pylint: disable=g-import-not-at-top
+    from unittest import mock  # pylint: disable=g-import-not-at-top
+    self.assertEqual(run_local.parse_options([]).delegates, ['CPU', 'GPU'])
+    cpu_opts = run_local.parse_options(['--cpu-only'])
+    self.assertTrue(cpu_opts.cpu_only)
+    self.assertEqual(cpu_opts.delegates, ['CPU'])
+    self.assertEqual(run_local.parse_options(['--cpu-only', '--delegates', 'cpu']).delegates, ['CPU'])
+    with contextlib.redirect_stderr(io.StringIO()):
+      with self.assertRaises(SystemExit):
+        run_local.parse_options(['--cpu-only', '--delegates', 'gpu'])
+      with self.assertRaises(SystemExit):
+        run_local.parse_options(['--cpu-only', '--delegates', 'cpu,gpu'])
+    with mock.patch.object(run_local.os, 'name', 'nt'):
+      self.assertTrue(run_local.venv_python('C:\\work').endswith(os.path.join('venv', 'Scripts', 'python.exe')))
 
 
 def run(verbosity=0):

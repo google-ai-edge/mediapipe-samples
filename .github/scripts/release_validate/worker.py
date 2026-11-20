@@ -544,12 +544,16 @@ def _load_sample(path):
 
 
 def _write(path, state):
-  with open(path + '.tmp', 'w') as f:
+  with open(path + '.tmp', 'w', encoding='utf-8') as f:
     json.dump(state, f, indent=1, ensure_ascii=False)
   os.replace(path + '.tmp', path)
 
 
 def main():
+  if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+  if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
   parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
   parser.add_argument('--job', required=True)
   parser.add_argument('--out', required=True)
@@ -557,7 +561,7 @@ def main():
   # A crash in native code then leaves a Python traceback in the log.
   faulthandler.enable()
 
-  with open(args.job) as f:
+  with open(args.job, encoding='utf-8') as f:
     job = json.load(f)
   # The result file is rewritten after every step: if this process dies, what
   # it had finished is still on disk, and `finished` is still false.
