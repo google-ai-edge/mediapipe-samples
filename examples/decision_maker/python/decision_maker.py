@@ -76,14 +76,16 @@ def download(url: str, path: str) -> None:
 
 def run(model: str,
         input_text: str,
-        delegate: python.BaseOptions.Delegate = python.BaseOptions.Delegate.CPU
-        ) -> Dict[str, Any]:
+        delegate: python.BaseOptions.Delegate = python.BaseOptions.Delegate.CPU,
+        mode: str = 'schema') -> Dict[str, Any]:
   """Triages a support ticket.
 
   Args:
     model: Path of the model.
     input_text: The text of the ticket.
     delegate: The hardware to run the model on.
+    mode: "schema" to evaluate all questions in one call, or "individual" to
+      call evaluate_boolean, evaluate_choice and evaluate_score separately.
 
   Returns:
     The answers, by the name of the question: a `BooleanResult` for "urgent",
@@ -94,12 +96,19 @@ def run(model: str,
   options = decision.DecisionMakerOptions(base_options=base_options)
 
   with decision.DecisionMaker.create_from_options(options) as decision_maker:
-    # Ask all questions about the text at once
-    decision_result = decision_maker.evaluate_schema(input_text, {
-        'urgent': URGENT,
-        'department': DEPARTMENT,
-        'severity': SEVERITY,
-    })
+    if mode == 'individual':
+      decision_result = {
+          'urgent': decision_maker.evaluate_boolean(input_text, URGENT),
+          'department': decision_maker.evaluate_choice(input_text, DEPARTMENT),
+          'severity': decision_maker.evaluate_score(input_text, SEVERITY),
+      }
+    else:
+      # Ask all questions about the text at once
+      decision_result = decision_maker.evaluate_schema(input_text, {
+          'urgent': URGENT,
+          'department': DEPARTMENT,
+          'severity': SEVERITY,
+      })
 
   # Print the answers
   urgent = decision_result['urgent']
@@ -130,6 +139,12 @@ def main(argv: Optional[Sequence[str]] = None) -> Dict[str, Any]:
   parser.add_argument(
       '--text', help='The support ticket to triage.', default=INPUT_TEXT)
   parser.add_argument(
+      '--mode',
+      help='Evaluate all questions at once ("schema") or separately '
+      '("individual").',
+      choices=['individual', 'schema'],
+      default='schema')
+  parser.add_argument(
       '--delegate',
       help='Hardware to run the model on.',
       choices=sorted(DELEGATES),
@@ -138,7 +153,7 @@ def main(argv: Optional[Sequence[str]] = None) -> Dict[str, Any]:
 
   download(MODEL_URL, args.model)
 
-  return run(args.model, args.text, DELEGATES[args.delegate])
+  return run(args.model, args.text, DELEGATES[args.delegate], args.mode)
 
 
 if __name__ == '__main__':

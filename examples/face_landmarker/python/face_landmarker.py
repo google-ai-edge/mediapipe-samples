@@ -49,6 +49,10 @@ DELEGATES = {
     'cpu': python.BaseOptions.Delegate.CPU,
     'gpu': python.BaseOptions.Delegate.GPU,
 }
+RUNNING_MODES = {
+    'image': vision.RunningMode.IMAGE,
+    'video': vision.RunningMode.VIDEO,
+}
 
 
 def download(url: str, path: str) -> None:
@@ -140,7 +144,8 @@ def run(model: str,
         image_file: str,
         delegate: python.BaseOptions.Delegate = python.BaseOptions.Delegate.CPU,
         output: Optional[str] = None,
-        blendshapes_output: Optional[str] = None
+        blendshapes_output: Optional[str] = None,
+        running_mode: vision.RunningMode = vision.RunningMode.IMAGE
         ) -> vision.FaceLandmarkerResult:
   """Detects the face landmarks in an image.
 
@@ -150,6 +155,7 @@ def run(model: str,
     delegate: The hardware to run the model on.
     output: Where to write the image with the face mesh drawn on it.
     blendshapes_output: Where to write the bar graph of the face blendshapes.
+    running_mode: IMAGE for a single image, or VIDEO to feed video frames.
 
   Returns:
     The detection result.
@@ -158,6 +164,7 @@ def run(model: str,
   base_options = python.BaseOptions(model_asset_path=model, delegate=delegate)
   options = vision.FaceLandmarkerOptions(
       base_options=base_options,
+      running_mode=running_mode,
       output_face_blendshapes=True,
       output_facial_transformation_matrixes=True,
       num_faces=1)
@@ -167,7 +174,11 @@ def run(model: str,
   image = mp.Image.create_from_file(image_file)
 
   # STEP 4: Detect face landmarks from the input image.
-  detection_result = detector.detect(image)
+  if running_mode == vision.RunningMode.VIDEO:
+    for timestamp_ms in (0, 33, 66):
+      detection_result = detector.detect_for_video(image, timestamp_ms)
+  else:
+    detection_result = detector.detect(image)
   detector.close()
 
   # STEP 5: Process the detection result. In this case, visualize it.
@@ -209,6 +220,11 @@ def main(argv: Optional[Sequence[str]] = None) -> vision.FaceLandmarkerResult:
       choices=sorted(DELEGATES),
       default='cpu')
   parser.add_argument(
+      '--running_mode',
+      help='Task running mode.',
+      choices=sorted(RUNNING_MODES),
+      default='image')
+  parser.add_argument(
       '--output',
       help='Where to write the annotated image.',
       default='face_landmarker_result.png')
@@ -225,7 +241,7 @@ def main(argv: Optional[Sequence[str]] = None) -> vision.FaceLandmarkerResult:
     download(IMAGE_URL, image_file)
 
   return run(args.model, image_file, DELEGATES[args.delegate], args.output,
-             args.blendshapes_output)
+             args.blendshapes_output, RUNNING_MODES[args.running_mode])
 
 
 if __name__ == '__main__':

@@ -30,18 +30,32 @@ _HF = 'https://huggingface.co/litert-community/'
 # Hugging Face repositories are mutable, so these URLs name a commit.
 _YAMNET = _HF + 'MediaPipe-AudioClassifier-YAMNet/resolve/fcd63e19bd0a7a0d3d8c9c070af1898f7dd29675/'
 _BLAZEFACE_SHORT = _HF + 'MediaPipe-FaceDetector-BlazeFace-Short-Range/resolve/1ab2d0325e858c9aa0bbf89e85a759ec7e394f25/'
+_BLAZEFACE_FULL = _HF + 'MediaPipe-FaceDetector-BlazeFace-Full-Range/resolve/6bc74b6a14695b84caafcfb763b14ee633f02f60/'
 _FACE_LANDMARKER = _HF + 'MediaPipe-FaceLandmarker/resolve/cfb66f449dc5cb9f8dada3d52174d4cdae1c9ef1/'
 _GESTURE_RECOGNIZER = _HF + 'MediaPipe-GestureRecognizer/resolve/cdc67a52ca3c423d75bb32c5e636a94a2163cf73/'
 _HAND_LANDMARKER = _HF + 'MediaPipe-HandLandmarker-Full/resolve/74806d5014cdd5bd6ce94a80a0e4e93ae4cf2f9b/'
 _HOLISTIC_LANDMARKER = _HF + 'MediaPipe-HolisticLandmarker/resolve/4f2fac960e1bbb53343073a56ff524a1cfcc177e/'
 _EFFICIENTNET_LITE0 = _HF + 'MediaPipe-ImageClassifier-EfficientNet-Lite0/resolve/a41ac2f251fb8f9e1f0d8cc12eea427d1c379cbc/'
+_EFFICIENTNET_LITE2 = _HF + 'MediaPipe-ImageClassifier-EfficientNet-Lite2/resolve/12e1bd15b84d3c4d69066c85c5bca3fb7572c921/'
 _MOBILENET_V3_SMALL = _HF + 'MediaPipe-ImageEmbedder-MobileNet-V3-Small/resolve/45a8f4237a3175e9d580be1e267b10681f323813/'
+_MOBILENET_V3_LARGE = _HF + 'MediaPipe-ImageEmbedder-MobileNet-V3-Large/resolve/c9f46d7bfe7977c7fc0ecf5fe45679fac09f410e/'
 _DEEPLAB_V3 = _HF + 'MediaPipe-ImageSegmenter-DeepLab-V3/resolve/739202fd92e4a822ba439afe91bdf69254227d94/'
+_HAIR_SEGMENTER = _HF + 'MediaPipe-ImageSegmenter-Hair/resolve/636ae705ff62db7fcdb8af27b19abb8ffc168f34/'
+_SELFIE_SQUARE = _HF + 'MediaPipe-ImageSegmenter-Selfie-Square/resolve/051d3732aad8fd018433520029e00ade7463aaea/'
+_SELFIE_LANDSCAPE = _HF + 'MediaPipe-ImageSegmenter-Selfie-Landscape/resolve/f04c07a5598479d0b03c796c0806329e9fab4082/'
+_SELFIE_MULTICLASS = _HF + 'MediaPipe-ImageSegmenter-Selfie-Multiclass/resolve/c7b7e9e0f1e73c10a12114379077b5257e60c25c/'
 _MAGIC_TOUCH = _HF + 'MediaPipe-InteractiveSegmenter-MagicTouch/resolve/61de3ef0dcf18e1ad21636bb206439dff5cf516d/'
 _LANGUAGE_DETECTOR = _HF + 'MediaPipe-LanguageDetector/resolve/58112979e05eaf888cfd26e5924a4b9743bfd99f/'
 _EFFICIENTDET_LITE0 = _HF + 'MediaPipe-ObjectDetector-EfficientDet-Lite0/resolve/2c3b3e2fc45b9fddf8ef8ad03a63ca874458add6/'
+_EFFICIENTDET_LITE2 = _HF + 'MediaPipe-ObjectDetector-EfficientDet-Lite2/resolve/50785e6df46b2549e3e3608fa9f0d238f345f482/'
+_SSD_MOBILENET_V2 = _HF + 'MediaPipe-ObjectDetector-SSD-MobileNet-V2/resolve/a9d10f5380cec69294aca48e1ddf350fce3adefe/'
+_POSE_LITE = _HF + 'MediaPipe-PoseLandmarker-Lite/resolve/105f65fd3484e46a25fe517a3722932d4392083c/'
+_POSE_FULL = _HF + 'MediaPipe-PoseLandmarker-Full/resolve/e356612f3ba14ec42a14f14d0d7d0a14d450de59/'
 _POSE_HEAVY = _HF + 'MediaPipe-PoseLandmarker-Heavy/resolve/8a9deee6a176119dbaf22006b4a1db71fd889d82/'
 _BERT_CLASSIFIER = _HF + 'MediaPipe-TextClassifier-MobileBERT/resolve/ed51b3985b8cfe3b16e0c70d0c706a0f04bc15d4/'
+_AVGWORD_CLASSIFIER = _HF + 'MediaPipe-TextClassifier-AverageWord/resolve/22c1175ba45ca7185c2e7f9484c6e705bb3f9230/'
+_USE_EMBEDDER = _HF + 'MediaPipe-TextEmbedder-Universal-Sentence-Encoder/resolve/832fd94a3ddabfb9ed79abee611e95040c3c756a/'
+_EMBEDDING_GEMMA_300M = _HF + 'MediaPipe-TextEmbedder-EmbeddingGemma-300M/resolve/93c96b51d328c85e4cbbfe3039d3cd9b98d8a55d/'
 _TEXT_PROOFREADER = _HF + 'MediaPipe-TextProofreader-200M/resolve/7f5d1124f2adc535113f671268eca8c5b65df77e/'
 _TEXT_SUMMARIZER = _HF + 'MediaPipe-TextSummarizer-200M/resolve/e59af6de5d4753422ce706280d0371fdc223b1ba/'
 _PARAKEET = _HF + 'parakeet-tdt-0.6b-v3/resolve/cd95f7bb97fd0757ab1bd6d5eff513cfcd7a2a10/'
@@ -62,6 +76,11 @@ ASSETS = {
         'url': _BLAZEFACE_SHORT + 'blaze_face_short_range.tflite',
         'sha256': 'b4578f35940bf5a1a655214a1cce5cab13eba73c1297cd78e1a04c2380b0152f',
         'bytes': 229746,
+    },
+    'blaze_face_full_range.tflite': {
+        'url': _BLAZEFACE_FULL + 'blaze_face_full_range.tflite',
+        'sha256': '3698b18f063835bc609069ef052228fbe86d9c9a6dc8dcb7c7c2d69aed2b181b',
+        'bytes': 1083786,
     },
     'face_landmarker.task': {
         'url': _FACE_LANDMARKER + 'face_landmarker.task',
@@ -88,15 +107,45 @@ ASSETS = {
         'sha256': '6c7ab0a6e5dcbf38a8c33b960996a55a3b4300b36a018c4545801de3a3c8bde0',
         'bytes': 18582189,
     },
+    'efficientnet_lite2.tflite': {
+        'url': _EFFICIENTNET_LITE2 + 'efficientnet_lite2_float32.tflite',
+        'sha256': '94b6c84a5d6de20f932558de213b50e0338dcc06ab83d8d64b12128a476b4b83',
+        'bytes': 24325765,
+    },
     'mobilenet_v3_small.tflite': {
         'url': _MOBILENET_V3_SMALL + 'mobilenet_v3_small.tflite',
         'sha256': 'bbbb4c51a55a53905af1daec995ca1aae355046f8839bb8c9f5ce9271394bc40',
         'bytes': 4117670,
     },
+    'mobilenet_v3_large.tflite': {
+        'url': _MOBILENET_V3_LARGE + 'mobilenet_v3_large.tflite',
+        'sha256': '11af3c560dfeed7737cb4c03c23bf52a8403020784192d4dea0b74862a12828d',
+        'bytes': 10889458,
+    },
     'deeplab_v3.tflite': {
         'url': _DEEPLAB_V3 + 'deeplab_v3.tflite',
         'sha256': 'ff36e24d40547fe9e645e2f4e8745d1876d6e38b332d39a82f0bf0f5d1d561b3',
         'bytes': 2780176,
+    },
+    'hair_segmenter.tflite': {
+        'url': _HAIR_SEGMENTER + 'hair_segmenter.tflite',
+        'sha256': '2628cf3ce5f695f604cbea2841e00befcaa3624bf80caf3664bef2656d59bf84',
+        'bytes': 781618,
+    },
+    'selfie_segmenter.tflite': {
+        'url': _SELFIE_SQUARE + 'selfie_segmenter.tflite',
+        'sha256': '191ac9529ae506ee0beefa6b2c945a172dab9d07d1e802a290a4e4038226658b',
+        'bytes': 249537,
+    },
+    'selfie_segmenter_landscape.tflite': {
+        'url': _SELFIE_LANDSCAPE + 'selfie_segmenter_landscape.tflite',
+        'sha256': '490e9ea734313e0de10fa0cd9e3c6133e36ea4db2b7a49bde9ef019f72796b8e',
+        'bytes': 250177,
+    },
+    'selfie_multiclass_256x256.tflite': {
+        'url': _SELFIE_MULTICLASS + 'selfie_multiclass_256x256.tflite',
+        'sha256': 'c6748b1253a99067ef71f7e26ca71096cd449baefa8f101900ea23016507e0e0',
+        'bytes': 16371837,
     },
     'interactive_segmentation.task': {
         'url': _MAGIC_TOUCH + 'interactive_segmentation.task',
@@ -119,6 +168,31 @@ ASSETS = {
         'sha256': '40338edf5ec70d43e318b0a716a84d4564cd1802759a7a07170c7e43796dbf58',
         'bytes': 13836895,
     },
+    'efficientdet_lite2_float32.tflite': {
+        'url': _EFFICIENTDET_LITE2 + 'efficientdet_lite2_float32.tflite',
+        'sha256': 'ad2abbf2b4e10585e15176fd7b5ef03c28dda959ae26fc142549fdd1814db91d',
+        'bytes': 23096891,
+    },
+    'ssd_mobilenet_v2_float32.tflite': {
+        'url': _SSD_MOBILENET_V2 + 'ssd_mobilenet_v2_float32.tflite',
+        'sha256': 'b8ccb1a25d45455ba52e85f26531948e1cb75efeb94c7c3d456d54fd4d6fbdd2',
+        'bytes': 11316189,
+    },
+    'ssd_mobilenet_v2_float16.tflite': {
+        'url': _SSD_MOBILENET_V2 + 'ssd_mobilenet_v2_float16.tflite',
+        'sha256': 'ee21e12bfdc464100c6008c865ab8294f6a04162e6ed2e11986f1175b02cfab2',
+        'bytes': 5918749,
+    },
+    'pose_landmarker_lite.task': {
+        'url': _POSE_LITE + 'pose_landmarker_lite.task',
+        'sha256': '59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a',
+        'bytes': 5777746,
+    },
+    'pose_landmarker_full.task': {
+        'url': _POSE_FULL + 'pose_landmarker_full.task',
+        'sha256': '4eaa5eb7a98365221087693fcc286334cf0858e2eb6e15b506aa4a7ecdcec4ad',
+        'bytes': 9398198,
+    },
     'pose_landmarker_heavy.task': {
         'url': _POSE_HEAVY + 'pose_landmarker_heavy.task',
         'sha256': '64437af838a65d18e5ba7a0d39b465540069bc8aae8308de3e318aad31fcbc7b',
@@ -129,11 +203,26 @@ ASSETS = {
         'sha256': '9b45012ab143d88d61e10ea501d6c8763f7202b86fa987711519d89bfa2a88b1',
         'bytes': 25707538,
     },
+    'average_word_classifier.tflite': {
+        'url': _AVGWORD_CLASSIFIER + 'average_word_classifier.tflite',
+        'sha256': '13bf6f7f35964f1e85d6cc762ee7b1952009b532b233baa5bdb4bf7441097f34',
+        'bytes': 775706,
+    },
     # Not yet published on Hugging Face under litert-community.
     'bert_embedder.tflite': {
         'url': _MODELS + 'text_embedder/bert_embedder/float32/1/bert_embedder.tflite',
         'sha256': '02ae6279faf86c2cd4ff18f61876c878bcc0b572b472f0678897a184c4ac7ef6',
         'bytes': 26142232,
+    },
+    'universal_sentence_encoder.tflite': {
+        'url': _USE_EMBEDDER + 'universal_sentence_encoder.tflite',
+        'sha256': '89ad3c74175dd8caa398cc22b657296d94302d20c525c12b58b29420f7249749',
+        'bytes': 6120274,
+    },
+    'embedding_gemma.task': {
+        'url': _EMBEDDING_GEMMA_300M + 'embedding_gemma.task',
+        'sha256': '913b7a1edc7c7c3d1da3979ec1d0648ed9e0a370f181bb59ab177ca4b97707ad',
+        'bytes': 183816181,
     },
     'proofread_quant_200m.litertlm': {
         'url': _TEXT_PROOFREADER + 'proofread_quant_200m.litertlm',

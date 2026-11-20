@@ -39,12 +39,20 @@ def _near(x, y, tolerance, index):
 
 # --- Text inputs -----------------------------------------------------------
 
-# Sentences given to the Text Classifier, with their true sentiment. The first
-# is the sentence of the notebook.
+# Sentences given to the MobileBERT Text Classifier, with their true sentiment.
+# The first is the sentence of the notebook.
 TEXT_CLASSIFIER_INPUTS = [
     {'text': "I'm looking forward to what will come next.", 'label': 'positive'},
     {'text': 'This MediaPipe release validation test is working wonderfully!', 'label': 'positive'},
     {'text': 'This is a terrible, broken and disappointing release. I hate it.', 'label': 'negative'},
+]
+
+# The AverageWord classifier uses "1" for positive and "0" for negative, and
+# classifies bag-of-words movie-review vocabulary without sentence context.
+AVERAGE_WORD_INPUTS = [
+    {'text': 'This film is a wonderful, uplifting masterpiece with great acting!', 'label': '1'},
+    {'text': 'This MediaPipe release validation test is working wonderfully!', 'label': '1'},
+    {'text': 'This is a terrible, broken and disappointing release. I hate it.', 'label': '0'},
 ]
 
 # Sentences given to the Language Detector, with the language they are written
@@ -61,9 +69,17 @@ LANGUAGE_DETECTOR_INPUTS = [
     {'text': '\u3053\u308c\u306f\u65b0\u3057\u3044\u30ea\u30ea\u30fc\u30b9\u306e\u81ea\u52d5\u691c\u8a3c\u30c6\u30b9\u30c8\u3067\u3059\u3002', 'label': 'ja'},
 ]
 
-# The two sentences of the Text Embedder notebook.
+# The two sentences of the Text Embedder notebook (used for bert_embedder).
 TEXT_EMBEDDER_FIRST = "I'm feeling so good"
 TEXT_EMBEDDER_SECOND = "I'm okay I guess"
+
+# Semantic sentence pairs for Universal Sentence Encoder and EmbeddingGemma.
+_BEACH_TEXT = 'I love watching sunny sunsets at the beach.'
+TEXT_EMBEDDER_SEMANTIC_PAIRS = [
+    ('identical sentences', _BEACH_TEXT, _BEACH_TEXT, [0.99, 1.0001]),
+    ('related sentences', _BEACH_TEXT, 'Warm ocean evenings are wonderful.', [-1, 1]),
+    ('unrelated sentences', _BEACH_TEXT, 'The quarterly tax filing deadline is next Tuesday.', [-1, 1]),
+]
 
 # Texts given to the Text Proofreader: the two of the notebook. The first has
 # one typo and exactly one correct fix. The second can be fixed in several
@@ -201,15 +217,12 @@ PET_PROBES = {
     'wall, upper right': [0.90, 0.30],
 }
 
-# The clicks given to the Interactive Segmenter, and what each must select. The
-# first is the point of the notebook, on the chest of the corgi. The corgi
-# stands 0.51 to 0.76 across and from 0.25 down to the bottom edge, and fills
-# roughly an eighth of the photo; the poodle 0.33 to 0.53 across and from 0.36
-# down, roughly a twelfth.
+# Selections given to the Interactive Segmenter, per mode.
 INTERACTIVE_SEGMENTER_CLICKS = [
     {
         'key': 'corgi',
         'point': PET_PROBES['corgi chest'],
+        'lasso': [0.50, 0.24, 0.77, 0.98],
         'fraction': [0.07, 0.2],
         'centroidWithin': {'minX': 0.57, 'maxX': 0.70, 'minY': 0.5, 'maxY': 0.8},
         'boundsWithin': {'minX': 0.46, 'maxX': 0.81, 'minY': 0.18, 'maxY': 1.0},
@@ -220,12 +233,29 @@ INTERACTIVE_SEGMENTER_CLICKS = [
     {
         'key': 'poodle',
         'point': PET_PROBES['poodle chest'],
+        'lasso': [0.32, 0.33, 0.54, 0.98],
         'fraction': [0.04, 0.16],
         'centroidWithin': {'minX': 0.36, 'maxX': 0.50, 'minY': 0.5, 'maxY': 0.85},
         'boundsWithin': {'minX': 0.28, 'maxX': 0.58, 'minY': 0.3, 'maxY': 1.0},
         'selected': ['poodle chest', 'poodle face'],
         'notSelected': ['corgi chest', 'corgi face', 'corgi ear', 'left cat face', 'right cat face',
                         'wall, upper left', 'wall, upper right'],
+    },
+]
+
+# Click on the corgi's chest plus a negative stroke across its head and face:
+# the chest remains selected while the ear and face are excluded.
+INTERACTIVE_NEGATIVE_RUNS = [
+    {
+        'key': 'corgi body without head',
+        'point': PET_PROBES['corgi chest'],
+        'negativeStroke': [0.57, 0.30, 0.68, 0.50],
+        'fraction': [0.04, 0.11],
+        'centroidWithin': {'minX': 0.55, 'maxX': 0.70, 'minY': 0.60, 'maxY': 0.90},
+        'boundsWithin': {'minX': 0.46, 'maxX': 0.81, 'minY': 0.30, 'maxY': 1.0},
+        'selected': ['corgi chest'],
+        'notSelected': ['corgi face', 'corgi ear', 'poodle face', 'poodle chest',
+                        'left cat face', 'right cat face', 'wall, upper left', 'wall, upper right'],
     },
 ]
 
@@ -245,9 +275,110 @@ GESTURE_IMAGES = [
 # spreads its score over these three.
 TABBY_CAT_LABELS = ['tabby', 'tiger cat', 'Egyptian cat']
 
+# Per-model ground truths for Image Segmenter. DeepLab runs on the riders/horse
+# photo of the notebook; the hair and selfie models run on business-person.png
+# (a woman from the waist up, hair tied at the top of her head).
+IMAGE_SEGMENTER_PLANS = {
+    'deeplab_v3': {
+        'asset': 'segmentation_input_rotation0.jpg',
+        'photoLabel': 'Two girls on a horse, and a woman',
+        'labelCount': 21,
+        'classes': [
+            {'label': 'person', 'fraction': [0.2, 0.45],
+             'centroidWithin': {'minX': 0.15, 'maxX': 0.45, 'minY': 0.4, 'maxY': 0.7}},
+            {'label': 'horse', 'fraction': [0.15, 0.4],
+             'centroidWithin': {'minX': 0.45, 'maxX': 0.8, 'minY': 0.6, 'maxY': 0.9}},
+            {'label': 'background', 'fraction': [0.25, 0.5]},
+        ],
+        'maxOther': 0.03,
+        'confidence': {
+            'label': 'person',
+            'fraction': [0.2, 0.45],
+            'minPeak': 0.8,
+            'centroidWithin': {'minX': 0.15, 'maxX': 0.45, 'minY': 0.4, 'maxY': 0.7},
+        },
+    },
+    'hair_segmenter': {
+        'asset': 'business-person.png',
+        'photoLabel': 'A woman facing the camera',
+        'labelCount': 2,
+        'classes': [
+            {'label': 'hair', 'fraction': [0.01, 0.08],
+             'centroidWithin': {'minX': 0.35, 'maxX': 0.65, 'minY': 0.02, 'maxY': 0.22}},
+            {'label': 'background', 'fraction': [0.92, 0.99]},
+        ],
+        'maxOther': 0.01,
+        'confidence': {
+            'label': 'hair',
+            'fraction': [0.01, 0.08],
+            'minPeak': 0.8,
+            'centroidWithin': {'minX': 0.35, 'maxX': 0.65, 'minY': 0.02, 'maxY': 0.22},
+        },
+    },
+    'selfie_segmenter': {
+        'asset': 'business-person.png',
+        'photoLabel': 'A woman facing the camera',
+        'labelCount': 1,
+        'classes': [
+            {'label': 'selfie', 'fraction': [0.4, 0.7],
+             'centroidWithin': {'minX': 0.35, 'maxX': 0.65, 'minY': 0.45, 'maxY': 0.8}},
+            {'label': 'background', 'fraction': [0.3, 0.6]},
+        ],
+        'maxOther': 0.01,
+        'confidence': {
+            'label': 'selfie',
+            'fraction': [0.4, 0.7],
+            'minPeak': 0.8,
+            'centroidWithin': {'minX': 0.35, 'maxX': 0.65, 'minY': 0.45, 'maxY': 0.8},
+        },
+    },
+    'selfie_segmenter_landscape': {
+        'asset': 'business-person.png',
+        'photoLabel': 'A woman facing the camera',
+        'labelCount': 1,
+        'classes': [
+            {'label': 'selfie', 'fraction': [0.4, 0.7],
+             'centroidWithin': {'minX': 0.35, 'maxX': 0.65, 'minY': 0.45, 'maxY': 0.8}},
+            {'label': 'background', 'fraction': [0.3, 0.6]},
+        ],
+        'maxOther': 0.01,
+        'confidence': {
+            'label': 'selfie',
+            'fraction': [0.4, 0.7],
+            'minPeak': 0.8,
+            'centroidWithin': {'minX': 0.35, 'maxX': 0.65, 'minY': 0.45, 'maxY': 0.8},
+        },
+    },
+    'selfie_multiclass': {
+        'asset': 'business-person.png',
+        'photoLabel': 'A woman facing the camera',
+        'labelCount': 6,
+        'classes': [
+            {'label': 'background', 'fraction': [0.3, 0.6]},
+            {'label': 'hair', 'fraction': [0.01, 0.08],
+             'centroidWithin': {'minX': 0.35, 'maxX': 0.65, 'minY': 0.02, 'maxY': 0.22}},
+            {'label': 'body-skin', 'fraction': [0.02, 0.12],
+             'centroidWithin': {'minX': 0.30, 'maxX': 0.65, 'minY': 0.40, 'maxY': 0.75}},
+            {'label': 'face-skin', 'fraction': [0.03, 0.12],
+             'centroidWithin': {'minX': 0.40, 'maxX': 0.62, 'minY': 0.12, 'maxY': 0.35}},
+            {'label': 'clothes', 'fraction': [0.25, 0.55],
+             'centroidWithin': {'minX': 0.35, 'maxX': 0.65, 'minY': 0.55, 'maxY': 0.85}},
+        ],
+        'maxOther': 0.03,
+        'confidence': {
+            'label': 'clothes',
+            'fraction': [0.25, 0.55],
+            'minPeak': 0.8,
+            'centroidWithin': {'minX': 0.35, 'maxX': 0.65, 'minY': 0.55, 'maxY': 0.85},
+        },
+    },
+}
 
-def _vision_args(image_asset, outputs=('annotated.png',), output_flags=('--output',)):
+
+def _vision_args(image_asset, outputs=('annotated.png',), output_flags=('--output',), mode='image'):
   args = ['--model', '@model', '--image', f'@asset:{image_asset}', '--delegate', '@delegate']
+  if mode == 'video':
+    args += ['--running_mode', 'video']
   for flag, name in zip(output_flags, outputs):
     args += [flag, f'@out:{name}']
   return args
@@ -261,46 +392,70 @@ def get_plan(case):
   `params` is passed to the observer.
   """
   task = case['task']
+  mode = case['mode']
   text_args = ['--model', '@model', '--delegate', '@delegate']
 
   if task == 'object_detector':
     return {'observer': 'detections', 'invocations': [
-        {'key': 'cat_and_dog.jpg', 'args': _vision_args('cat_and_dog.jpg')}]}
+        {'key': 'cat_and_dog.jpg', 'args': _vision_args('cat_and_dog.jpg', mode=mode)}]}
   if task == 'face_detector':
     return {'observer': 'faces', 'invocations': [
-        {'key': 'portrait.jpg', 'args': _vision_args('portrait.jpg')}]}
+        {'key': 'portrait.jpg', 'args': _vision_args('portrait.jpg', mode=mode)}]}
   if task == 'face_landmarker':
     return {'observer': 'face_landmarks', 'invocations': [
         {'key': 'business-person.png',
          'args': _vision_args('business-person.png', ('annotated.png', 'blendshapes.png'),
-                              ('--output', '--blendshapes_output'))}]}
+                              ('--output', '--blendshapes_output'), mode=mode)}]}
   if task == 'hand_landmarker':
     return {'observer': 'hand_landmarks', 'invocations': [
-        {'key': 'woman_hands.jpg', 'args': _vision_args('woman_hands.jpg')}]}
+        {'key': 'woman_hands.jpg', 'args': _vision_args('woman_hands.jpg', mode=mode)}]}
   if task == 'pose_landmarker':
     return {'observer': 'pose_landmarks', 'invocations': [
         {'key': 'pose.jpg',
-         'args': _vision_args('pose.jpg', ('annotated.png', 'mask.png'), ('--output', '--mask_output'))}]}
+         'args': _vision_args('pose.jpg', ('annotated.png', 'mask.png'),
+                              ('--output', '--mask_output'), mode=mode)}]}
   if task == 'holistic_landmarker':
     return {'observer': 'holistic_landmarks', 'invocations': [
         {'key': 'business-person.png',
          'args': _vision_args('business-person.png', ('annotated.png', 'blendshapes.png', 'mask.png'),
-                              ('--output', '--blendshapes_output', '--mask_output'))}]}
+                              ('--output', '--blendshapes_output', '--mask_output'), mode=mode)}]}
   if task == 'image_classifier':
-    # One call with both photos, as in the notebook.
+    args = ['--model', '@model', '--images', '@asset:classifier_burger.jpg', '@asset:classifier_cat.jpg',
+            '--delegate', '@delegate', '--output', '@out:annotated.png']
+    if mode == 'video':
+      args += ['--running_mode', 'video']
     return {'observer': 'image_classifications', 'invocations': [
-        {'key': 'burger and cat',
-         'args': ['--model', '@model', '--images', '@asset:classifier_burger.jpg', '@asset:classifier_cat.jpg',
-                  '--delegate', '@delegate', '--output', '@out:annotated.png'],
+        {'key': 'burger and cat', 'args': args,
          'params': {'keys': ['classifier_burger.jpg', 'classifier_cat.jpg']}}]}
   if task == 'gesture_recognizer':
-    # One call with the four photos, as in the notebook.
+    args = (['--model', '@model', '--images'] + [f"@asset:{g['asset']}" for g in GESTURE_IMAGES] +
+            ['--delegate', '@delegate', '--output', '@out:annotated.png'])
+    if mode == 'video':
+      args += ['--running_mode', 'video']
     return {'observer': 'gestures', 'invocations': [
-        {'key': 'four gestures',
-         'args': ['--model', '@model', '--images'] + [f"@asset:{g['asset']}" for g in GESTURE_IMAGES] +
-                 ['--delegate', '@delegate', '--output', '@out:annotated.png'],
+        {'key': 'four gestures', 'args': args,
          'params': {'keys': [g['asset'] for g in GESTURE_IMAGES]}}]}
   if task == 'interactive_segmenter':
+    if mode == 'negative':
+      invocations = []
+      for item in INTERACTIVE_NEGATIVE_RUNS:
+        invocations.append({
+            'key': item['key'],
+            'args': ['--model', '@model', '--image', '@asset:cats_and_dogs.jpg',
+                     '--x', str(item['point'][0]), '--y', str(item['point'][1]),
+                     '--negative_stroke', *[str(v) for v in item['negativeStroke']],
+                     '--delegate', '@delegate', '--output', '@out:selected_negative.png'],
+            'params': {'probes': PET_PROBES},
+        })
+      return {'observer': 'selection_mask', 'invocations': invocations}
+    if mode == 'lasso':
+      return {'observer': 'selection_mask', 'invocations': [
+          {'key': click['key'],
+           'args': ['--model', '@model', '--image', '@asset:cats_and_dogs.jpg',
+                    '--lasso', *[str(v) for v in click['lasso']],
+                    '--delegate', '@delegate', '--output', f"@out:selected_{click['key']}.png"],
+           'params': {'probes': PET_PROBES}}
+          for click in INTERACTIVE_SEGMENTER_CLICKS]}
     return {'observer': 'selection_mask', 'invocations': [
         {'key': click['key'],
          'args': ['--model', '@model', '--image', '@asset:cats_and_dogs.jpg', '--x', str(click['point'][0]),
@@ -309,38 +464,42 @@ def get_plan(case):
          'params': {'probes': PET_PROBES}}
         for click in INTERACTIVE_SEGMENTER_CLICKS]}
   if task == 'image_segmenter':
-    return {'observer': 'category_mask', 'invocations': [
-        {'key': 'segmentation_input_rotation0.jpg',
-         'args': _vision_args('segmentation_input_rotation0.jpg', ('mask.png', 'blurred_background.png'),
-                              ('--output', '--blur_output'))}]}
+    plan = IMAGE_SEGMENTER_PLANS[case['modelId']]
+    args = _vision_args(plan['asset'], ('mask.png', 'blurred_background.png'),
+                        ('--output', '--blur_output'), mode='video' if mode == 'video' else 'image')
+    if mode == 'image-confidence':
+      args += ['--confidence_category', plan['confidence']['label']]
+    return {'observer': 'category_mask', 'invocations': [{'key': plan['asset'], 'args': args}]}
   if task == 'image_embedder':
     pairs = [('same photo, cropped', 'burger.jpg', 'burger_crop.jpg'),
              ('the same photo twice', 'burger.jpg', 'burger.jpg'),
              ('a burger and a cat', 'burger.jpg', 'classifier_cat.jpg')]
+    extra = ['--running_mode', 'video'] if mode == 'video-pair' else []
     return {'observer': 'similarity', 'invocations': [
         {'key': key, 'args': ['--model', '@model', '--images', f'@asset:{first}', f'@asset:{second}',
-                              '--delegate', '@delegate']}
+                              '--delegate', '@delegate'] + extra}
         for key, first, second in pairs]}
   if task == 'audio_classifier':
-    return {'observer': 'audio_classifications', 'invocations': [
-        {'key': 'speech_16000_hz_mono.wav',
-         'args': ['--model', '@model', '--audio', '@asset:speech_16000_hz_mono.wav', '--delegate', '@delegate']}]}
+    args = ['--model', '@model', '--audio', '@asset:speech_16000_hz_mono.wav', '--delegate', '@delegate']
+    if mode == 'stream':
+      args.append('--stream')
+    return {'observer': 'audio_classifications', 'invocations': [{'key': 'speech_16000_hz_mono.wav', 'args': args}]}
   if task == 'audio_transcriber':
-    return {'observer': 'transcription', 'invocations': [
-        {'key': 'speech_16000_hz_mono.wav',
-         'args': ['--model', '@model', '--audio', '@asset:speech_16000_hz_mono.wav', '--delegate', '@delegate']}]}
+    args = ['--model', '@model', '--audio', '@asset:speech_16000_hz_mono.wav', '--delegate', '@delegate']
+    if mode == 'stream':
+      args.append('--stream')
+    return {'observer': 'transcription', 'invocations': [{'key': 'speech_16000_hz_mono.wav', 'args': args}]}
   if task == 'text_to_speech':
     args = [TTS_SENTENCE] + text_args + ['--output', '@out:speech.wav']
-    if case['mode'] == 'stream':
+    if mode == 'stream':
       args.append('--stream')
     return {'observer': 'speech', 'invocations': [
-        {'key': case['mode'], 'args': args, 'params': {'transcriber': f'@asset:{ROUND_TRIP_TRANSCRIBER}'}}]}
+        {'key': mode, 'args': args, 'params': {'transcriber': f'@asset:{ROUND_TRIP_TRANSCRIBER}'}}]}
   if task == 'universal_embedder':
     return {'observer': 'similarity', 'invocations': [
         {'key': run['key'], 'args': ['--model', '@model', '--inputs'] + run['inputs'] + ['--delegate', '@delegate']}
-        for run in UNIVERSAL_EMBEDDER_PLANS[case['mode']]['runs']]}
+        for run in UNIVERSAL_EMBEDDER_PLANS[mode]['runs']]}
   if task == 'semantic_retriever':
-    # One call per query; each call indexes the photos and texts anew.
     return {'observer': 'retrieval_results', 'invocations': [
         {'key': item['query'],
          'args': ['--model', '@model', '--images'] + [f'@asset:{name}' for name in RETRIEVER_PHOTOS] +
@@ -348,19 +507,25 @@ def get_plan(case):
                  ['--query', item['query'], '--limit', str(RETRIEVER_LIMIT), '--delegate', '@delegate']}
         for item in RETRIEVER_QUERIES]}
   if task == 'decision_maker':
+    extra = ['--mode', 'individual'] if mode == 'individual' else []
     return {'observer': 'decisions', 'invocations': [
-        {'key': ticket['key'], 'args': text_args + ['--text', ticket['text']]} for ticket in DECISION_TICKETS]}
+        {'key': ticket['key'], 'args': text_args + ['--text', ticket['text']] + extra}
+        for ticket in DECISION_TICKETS]}
   if task == 'text_classifier':
+    inputs = AVERAGE_WORD_INPUTS if case['modelId'] == 'average_word_classifier' else TEXT_CLASSIFIER_INPUTS
     return {'observer': 'text_classification', 'invocations': [
         {'key': f'sentence {i + 1}', 'args': text_args + ['--text', item['text']]}
-        for i, item in enumerate(TEXT_CLASSIFIER_INPUTS)]}
+        for i, item in enumerate(inputs)]}
   if task == 'language_detector':
     return {'observer': 'language_detection', 'invocations': [
         {'key': f'sentence {i + 1}', 'args': text_args + ['--text', item['text']]}
         for i, item in enumerate(LANGUAGE_DETECTOR_INPUTS)]}
   if task == 'text_embedder':
-    pairs = [('the two sentences of the notebook', TEXT_EMBEDDER_FIRST, TEXT_EMBEDDER_SECOND),
-             ('the same sentence twice', TEXT_EMBEDDER_FIRST, TEXT_EMBEDDER_FIRST)]
+    if case['modelId'] == 'bert_embedder':
+      pairs = [('the two sentences of the notebook', TEXT_EMBEDDER_FIRST, TEXT_EMBEDDER_SECOND),
+               ('the same sentence twice', TEXT_EMBEDDER_FIRST, TEXT_EMBEDDER_FIRST)]
+    else:
+      pairs = [(key, first, second) for key, first, second, _ in TEXT_EMBEDDER_SEMANTIC_PAIRS]
     return {'observer': 'similarity', 'invocations': [
         {'key': key, 'args': text_args + ['--texts', first, second]} for key, first, second in pairs]}
   if task == 'text_proofreader':
@@ -369,7 +534,7 @@ def get_plan(case):
         for i, item in enumerate(PROOFREADER_INPUTS)]}
   if task == 'text_summarizer':
     return {'observer': 'summary', 'invocations': [
-        {'key': case['mode'], 'args': text_args + ['--text', SUMMARIZER_TEXT, '--mode', case['mode']]}]}
+        {'key': mode, 'args': text_args + ['--text', SUMMARIZER_TEXT, '--mode', mode]}]}
   return None
 
 
@@ -432,6 +597,8 @@ _BUSINESS_PERSON_FACE = {
             {'key': 'eyeBlinkRight', 'name': 'right eye is open (eyeBlinkRight)', 'range': [0, 0.5]},
             {'key': 'jawOpen', 'name': 'mouth is closed (jawOpen)', 'range': [0, 0.3]},
         ],
+        'annotatedFile': 'annotated.png',
+        'figureFile': 'blendshapes.png',
     }],
 }
 
@@ -454,6 +621,7 @@ _TWO_HANDS = {
                     'wrist': _near(0.41, 0.70, 0.08, 0), 'middle fingertip': _near(0.02, 0.735, 0.06, 12)}},
             ],
         }],
+        'annotatedFile': 'annotated.png',
     }],
 }
 
@@ -481,7 +649,9 @@ _WARRIOR_POSE = {
             }}],
         }],
         'mask': {'name': 'segmentation mask of the person', 'fraction': [0.03, 0.12],
-                 'centroidWithin': {'minX': 0.4, 'maxX': 0.6, 'minY': 0.5, 'maxY': 0.8}},
+                 'centroidWithin': {'minX': 0.4, 'maxX': 0.6, 'minY': 0.5, 'maxY': 0.8},
+                 'fileName': 'mask.png'},
+        'annotatedFile': 'annotated.png',
     }],
 }
 
@@ -512,32 +682,20 @@ _BUSINESS_PERSON_HOLISTIC = {
         ],
         'equals': [{'key': 'blendshapeCount', 'name': 'face blendshapes', 'value': 52}],
         'mask': {'name': 'segmentation mask of the person', 'fraction': [0.4, 0.7],
-                 'centroidWithin': {'minX': 0.35, 'maxX': 0.65, 'minY': 0.45, 'maxY': 0.8}},
+                 'centroidWithin': {'minX': 0.35, 'maxX': 0.65, 'minY': 0.45, 'maxY': 0.8},
+                 'fileName': 'mask.png'},
+        'annotatedFile': 'annotated.png',
+        'figureFile': 'blendshapes.png',
     }],
-}
-
-# segmentation_input_rotation0.jpg (257x257): two girls riding a horse in the
-# upper left, a woman in the foreground at the bottom, the horse's body and head
-# across the lower right, and trees behind. People and horse each cover about a
-# third of the frame; the people are in the left half, the horse lower and to
-# the right. DeepLab v3 has the 21 Pascal VOC categories.
-_RIDERS = {
-    'type': 'segmentation',
-    'labelCount': 21,
-    'classes': [
-        {'label': 'person', 'fraction': [0.2, 0.45],
-         'centroidWithin': {'minX': 0.15, 'maxX': 0.45, 'minY': 0.4, 'maxY': 0.7}},
-        {'label': 'horse', 'fraction': [0.15, 0.4],
-         'centroidWithin': {'minX': 0.45, 'maxX': 0.8, 'minY': 0.6, 'maxY': 0.9}},
-        {'label': 'background', 'fraction': [0.25, 0.5]},
-    ],
-    'maxOther': 0.03,
 }
 
 
 def get_expectation(case):
   """The expectation for a case, or None when none is defined yet."""
   task = case['task']
+  mode = case.get('mode', 'image')
+  model_id = case.get('modelId', '')
+
   if task == 'object_detector':
     return _CAT_AND_DOG
   if task == 'face_detector':
@@ -550,30 +708,36 @@ def get_expectation(case):
     return _WARRIOR_POSE
   if task == 'holistic_landmarker':
     return _BUSINESS_PERSON_HOLISTIC
+
   if task == 'image_segmenter':
-    return _RIDERS
+    plan = IMAGE_SEGMENTER_PLANS[model_id]
+    return {
+        'type': 'segmentation',
+        'labelCount': plan['labelCount'],
+        'classes': plan['classes'],
+        'maxOther': plan['maxOther'],
+        'confidence': plan['confidence'] if mode == 'image-confidence' else None,
+    }
 
   if task == 'image_classifier':
-    # burger.jpg is a cheeseburger (the slice of cheese is visible), which is an
-    # ImageNet class. The sample asks for at most four categories per photo.
     return {'type': 'classification', 'maxResults': 4, 'runs': [
         {'key': 'classifier_burger.jpg', 'labels': ['cheeseburger'], 'minScore': 0.3},
         {'key': 'classifier_cat.jpg', 'labels': TABBY_CAT_LABELS, 'minScore': 0.15, 'minGroupScore': 0.4},
     ]}
 
   if task == 'gesture_recognizer':
-    return {'type': 'landmarks', 'runs': [
+    return {'type': 'landmarks', 'figureFile': 'annotated.png', 'runs': [
         {'key': g['asset'], 'groups': [{
             'key': 'hands', 'name': 'hand', 'landmarkCount': 21,
             'instances': [{'points': g['points'], 'fields': {'gesture': g['gesture']}, 'minScore': 0.5}],
         }]} for g in GESTURE_IMAGES]}
 
   if task == 'interactive_segmenter':
+    if mode == 'negative':
+      return {'type': 'selection', 'runs': INTERACTIVE_NEGATIVE_RUNS}
     return {'type': 'selection', 'runs': INTERACTIVE_SEGMENTER_CLICKS}
 
   if task == 'image_embedder':
-    # burger_crop.jpg is burger.jpg with a strip cut off its right side, so the
-    # two must be very similar; a burger and a cat must not be.
     return {'type': 'similarity', 'runs': [
         {'key': 'same photo, cropped', 'range': [0.8, 1.0001]},
         {'key': 'the same photo twice', 'range': [0.99, 1.0001]},
@@ -581,33 +745,19 @@ def get_expectation(case):
     ], 'ordered': [{'higher': 'same photo, cropped', 'lower': 'a burger and a cat', 'by': 0.3}]}
 
   if task == 'audio_classifier':
-    # The clip is 4.27 s of speech (68360 samples at 16 kHz). YAMNet classifies
-    # windows of 0.975 s, so there are four full windows and a fifth, partial
-    # one; the notebook asserts those five results. The partial window is
-    # mostly padding, so its label is not asserted.
     return {'type': 'audioClassification', 'label': 'Speech', 'minScore': 0.5, 'fullWindows': 4,
-            'results': 5, 'windowMs': 975, 'maxResults': 4}
+            'results': 5, 'windowMs': 975, 'maxResults': 4, 'stream': mode == 'stream'}
 
   if task == 'audio_transcriber':
-    # The whole clip is transcribed in one call, so nearly every word must
-    # match, every segment must be final, and the segments must lie in the clip.
     return {'type': 'transcript', 'reference': SPEECH_TRANSCRIPT, 'maxWordErrorRate': 0.2}
 
   if task == 'text_to_speech':
-    # Synthesized speech is checked as audio: a plausible length for the
-    # sentence (generously, 2.5 to 12 seconds), audible, within -1 to 1, and
-    # free of invalid samples. That alone would accept noise of the right
-    # length, so the audio is also given to the Audio Transcriber (on the CPU):
-    # what it hears must be the sentence. Speech recognition writes "riverbank"
-    # where the sentence has "river bank", and may add a short word at the end,
-    # so the two are compared letter by letter, ignoring spaces, with a margin.
-    # Synthesized in one piece, the result also carries one timestamp per word.
-    return {'type': 'speech', 'text': TTS_SENTENCE, 'stream': case['mode'] == 'stream',
+    return {'type': 'speech', 'text': TTS_SENTENCE, 'stream': mode == 'stream',
             'durationSec': [2.5, 12], 'sampleRateHz': [8000, 48000], 'minRms': 0.005, 'maxPeak': 1.0,
             'maxCharErrorRate': 0.2}
 
   if task == 'universal_embedder':
-    plan = UNIVERSAL_EMBEDDER_PLANS[case['mode']]
+    plan = UNIVERSAL_EMBEDDER_PLANS[mode]
     return {'type': 'similarity', 'runs': [{'key': run['key'], 'range': run['range']} for run in plan['runs']],
             'ordered': plan['ordered']}
 
@@ -617,8 +767,6 @@ def get_expectation(case):
             'runs': [{'key': item['query'], 'top': item['top']} for item in RETRIEVER_QUERIES]}
 
   if task == 'decision_maker':
-    # The severity is a position on the five-level scale of the sample, counted
-    # from 0. The outage must lie at least one level above the other tickets.
     return {'type': 'decisions', 'departments': ['bug', 'billing', 'feature_request'], 'levels': 5,
             'runs': [{'key': t['key'], 'urgent': t['urgent'], 'department': t['department']}
                      for t in DECISION_TICKETS],
@@ -626,6 +774,10 @@ def get_expectation(case):
                               {'higher': 'outage ticket', 'lower': 'feature request', 'by': 1.0}]}
 
   if task == 'text_classifier':
+    if model_id == 'average_word_classifier':
+      return {'type': 'textLabels', 'runs': [
+          {'key': f'sentence {i + 1}', 'text': item['text'], 'label': item['label'], 'minScore': 0.6}
+          for i, item in enumerate(AVERAGE_WORD_INPUTS)]}
     return {'type': 'textLabels', 'runs': [
         {'key': f'sentence {i + 1}', 'text': item['text'], 'label': item['label'], 'minScore': 0.7}
         for i, item in enumerate(TEXT_CLASSIFIER_INPUTS)]}
@@ -637,29 +789,30 @@ def get_expectation(case):
         for i, item in enumerate(LANGUAGE_DETECTOR_INPUTS)]}
 
   if task == 'text_embedder':
-    # The BERT embedder of the notebook does not order sentences by meaning: on
-    # release 1.2.3 an unrelated pair of sentences scored higher (0.99) than a
-    # related one (0.97). So no ordering by meaning is asserted. Different
-    # sentences must score below identical ones, and the similarity of the two
-    # sentences of the notebook is compared with a BASELINE measured on release
-    # 1.2.3 (CPU): it is not an independent truth, it detects a change.
-    return {'type': 'similarity', 'runs': [
-        {'key': 'the two sentences of the notebook', 'range': [-1, 0.99],
-         'baseline': {'value': 0.9191, 'tolerance': 0.03, 'release': '1.2.3'}},
-        {'key': 'the same sentence twice', 'range': [0.99, 1.0001]},
-    ]}
+    if model_id == 'bert_embedder':
+      # The BERT embedder of the notebook does not order sentences by meaning: on
+      # release 1.2.3 an unrelated pair of sentences scored higher (0.99) than a
+      # related one (0.97). So no ordering by meaning is asserted, and the
+      # similarity is compared with a BASELINE measured on release 1.2.3 (CPU).
+      return {'type': 'similarity', 'runs': [
+          {'key': 'the two sentences of the notebook', 'range': [-1, 0.99],
+           'baseline': {'value': 0.9191, 'tolerance': 0.03, 'release': '1.2.3'}},
+          {'key': 'the same sentence twice', 'range': [0.99, 1.0001]},
+      ]}
+    return {
+        'type': 'similarity',
+        'runs': [{'key': key, 'range': rng} for key, _, _, rng in TEXT_EMBEDDER_SEMANTIC_PAIRS],
+        'ordered': [{'higher': 'related sentences', 'lower': 'unrelated sentences', 'by': 0.15}],
+    }
 
   if task == 'text_proofreader':
     return {'type': 'proofreading', 'runs': [
         dict(item, key=f'text {i + 1}') for i, item in enumerate(PROOFREADER_INPUTS)]}
 
   if task == 'text_summarizer':
-    # Any summary of the text names the city and what the station is next to or
-    # named after, and is shorter than the text. Key points are a list of
-    # bullets; the TL;DR is a short paragraph, at most half as long as the text.
     common = {'type': 'summary', 'text': SUMMARIZER_TEXT, 'mentionsAll': ['Brussels'],
               'mentionsAny': ['Schuman', 'European', 'EU']}
-    if case['mode'] == 'keypoints':
+    if mode == 'keypoints':
       return dict(common, format='bullets', minBullets=2, maxLengthRatio=1.0)
     return dict(common, format='prose', maxLengthRatio=0.5)
 
@@ -676,77 +829,90 @@ def _text(value, label):
 
 def describe_case(case):
   """A plain-language description of a case and its inputs, for the report."""
-  setup = (f"Runs {case['sample']} with model \"{case['modelId']}\" on the "
-           f"{case['delegate']} delegate.")
+  setup = (f"Runs {case['sample']} with model \"{case['modelId']}\" in mode "
+           f"\"{case['mode']}\" on the {case['delegate']} delegate.")
   task = case['task']
+  mode = case['mode']
   if task == 'object_detector':
     return {'description': f'{setup} The photo shows a cat and a puppy. Both must be detected, each '
-                           'with a box around it, and nothing else.',
+                           'with a box around it, and nothing else, and annotated.png must be written.',
             'inputs': [_image('cat_and_dog.jpg', 'A cat (left) and a puppy (right)')]}
   if task == 'face_detector':
     return {'description': f'{setup} The photo shows one man facing the camera. His face must be found, '
-                           'with the eyes and the nose where they are.',
+                           'with the eyes and the nose where they are, and annotated.png must be written.',
             'inputs': [_image('portrait.jpg', 'A man facing the camera')]}
   if task == 'face_landmarker':
     return {'description': f'{setup} The photo shows one woman facing the camera. The 478-point face mesh '
                            'must lie on her face, with 52 blendshapes that say her eyes are open and her '
-                           'mouth is closed, and one transformation matrix.',
+                           'mouth is closed, one transformation matrix, and valid annotated/chart PNGs.',
             'inputs': [_image('business-person.png', 'A woman facing the camera')]}
   if task == 'hand_landmarker':
     return {'description': f'{setup} The photo shows a woman with one hand over her forehead and the other '
                            'stretched towards the camera. Both hands must be found, each with 21 landmarks '
-                           'on the hand.',
+                           'on the hand, and annotated.png must be written.',
             'inputs': [_image('woman_hands.jpg', 'A woman showing both hands')]}
   if task == 'pose_landmarker':
     return {'description': f'{setup} The photo shows a man in a wide lunge with his arms stretched out. '
-                           'His 33 pose landmarks must lie on his body, and the segmentation mask must cover '
-                           'him and nothing else.',
+                           'His 33 pose landmarks must lie on his body, the segmentation mask must cover '
+                           'him and nothing else, and both annotated.png and mask.png must match.',
             'inputs': [_image('pose.jpg', 'A man in a warrior pose')]}
   if task == 'holistic_landmarker':
     return {'description': f'{setup} The photo shows a woman from the waist up, her right hand raised and '
                            'holding glasses. Her pose, her face mesh and her right hand must be found where '
-                           'they are, with 52 face blendshapes and a segmentation mask that covers her.',
+                           'they are, with 52 face blendshapes, a segmentation mask, and three valid PNGs.',
             'inputs': [_image('business-person.png', 'A woman holding glasses in her right hand')]}
   if task == 'image_classifier':
     return {'description': f'{setup} Two photos are classified. The burger must be labelled a cheeseburger, '
-                           'and the cat one of the ImageNet classes for a striped cat.',
+                           'the cat one of the ImageNet classes for a striped cat, and annotated.png written.',
             'inputs': [_image('classifier_burger.jpg', 'A cheeseburger'), _image('classifier_cat.jpg', 'A tabby cat')]}
   if task == 'gesture_recognizer':
     return {'description': f'{setup} Four photos, each of one hand making a gesture. Every gesture must be '
-                           'recognized, with the 21 hand landmarks on the hand.',
+                           'recognized, with the 21 hand landmarks on the hand, and annotated.png written.',
             'inputs': [_image(g['asset'], f"Expected: {g['gesture']}") for g in GESTURE_IMAGES]}
   if task == 'interactive_segmenter':
-    return {'description': f'{setup} The photo shows two cats and two dogs. The sample is run twice, with a '
-                           'click on the corgi and with a click on the poodle. Each time the mask must select '
-                           'the animal that was clicked, all of it, and none of the others.',
+    if mode == 'negative':
+      detail = ('A positive click on the corgi chest is paired with a negative stroke across its head: '
+                'the body must stay selected while the ear and face are excluded.')
+    elif mode == 'lasso':
+      detail = ('A lasso box is drawn around the corgi and around the poodle in turn; each time the mask '
+                'and overlay PNG must select that animal and none of the others.')
+    else:
+      detail = ('A positive click is placed on the corgi and on the poodle in turn; each time the mask '
+                'and overlay PNG must select that animal and none of the others.')
+    return {'description': f'{setup} {detail}',
             'inputs': [_image('cats_and_dogs.jpg', 'From the left: a cat, a poodle, a corgi, a cat')]}
   if task == 'image_segmenter':
-    return {'description': f'{setup} The photo shows two girls on a horse and a woman in front of it. The '
-                           'category mask must contain people, horse and background in the share of the '
-                           'photo each occupies, and no other category.',
-            'inputs': [_image('segmentation_input_rotation0.jpg', 'Two girls on a horse, and a woman')]}
+    plan = IMAGE_SEGMENTER_PLANS[case['modelId']]
+    classes = ', '.join(c['label'] for c in plan['classes'])
+    extra = (f" Confidence mask \"{plan['confidence']['label']}\" is also verified."
+             if mode == 'image-confidence' else '')
+    return {'description': f'{setup} The category mask must contain {classes} in the share of the photo '
+                           f'each occupies, and both mask.png and blurred_background.png must match.{extra}',
+            'inputs': [_image(plan['asset'], plan['photoLabel'])]}
   if task == 'image_embedder':
     return {'description': f'{setup} Three pairs of photos are compared. A photo and a crop of it must be '
                            'very similar, a photo and itself identical, and a burger and a cat dissimilar.',
             'inputs': [_image('burger.jpg', 'A burger'), _image('burger_crop.jpg', 'The same photo, cropped'),
                        _image('classifier_cat.jpg', 'A cat')]}
   if task == 'audio_classifier':
-    return {'description': f'{setup} The clip is 4.27 seconds of a person speaking. Each of its four full '
+    how = 'asynchronously in AUDIO_STREAM mode (--stream)' if mode == 'stream' else 'in one call'
+    return {'description': f'{setup} The 4.27 s speech clip is classified {how}. Each of its four full '
                            'windows must be labelled Speech.',
             'inputs': [{'kind': 'audio', 'asset': 'speech_16000_hz_mono.wav', 'label': 'Speech clip (4.27 s)'}]}
   if task == 'audio_transcriber':
-    return {'description': f'{setup} The clip is 4.27 seconds of a person speaking one sentence. The transcript '
-                           'must match what is said.',
+    how = 'chunk by chunk (--stream)' if mode == 'stream' else 'in one call'
+    return {'description': f'{setup} The 4.27 s speech clip is transcribed {how}. The transcript must '
+                           'match what is said.',
             'inputs': [{'kind': 'audio', 'asset': 'speech_16000_hz_mono.wav', 'label': 'Speech clip (4.27 s)'},
                        _text(SPEECH_TRANSCRIPT, 'Reference transcript')]}
   if task == 'text_to_speech':
-    how = 'piece by piece (--stream)' if case['mode'] == 'stream' else 'in one piece'
-    return {'description': f'{setup} The sentence is synthesized {how}. The audio must have a plausible length '
-                           'for the sentence, be audible and free of invalid samples, and the Audio Transcriber '
-                           'must hear the sentence in it.',
+    how = 'piece by piece (--stream)' if mode == 'stream' else 'in one piece'
+    return {'description': f'{setup} The sentence is synthesized {how}. Both the returned samples and '
+                           'speech.wav on disk must be valid mono 16-bit PCM audio, and the Audio '
+                           'Transcriber must hear the sentence in speech.wav.',
             'inputs': [_text(TTS_SENTENCE, 'Sentence to speak')]}
   if task == 'universal_embedder':
-    plan = UNIVERSAL_EMBEDDER_PLANS[case['mode']]
+    plan = UNIVERSAL_EMBEDDER_PLANS[mode]
     shown = lambda value: 'photo ' + value[len('@asset:'):] if value.startswith('@asset:') else f'"{value}"'
     photos = sorted({v[len('@asset:'):] for run in plan['runs'] for v in run['inputs'] if v.startswith('@asset:')})
     return {'description': f'{setup} Each pair of inputs is compared. Identical inputs must score about 1, and '
@@ -760,23 +926,28 @@ def describe_case(case):
                       [_image(name, name) for name in RETRIEVER_PHOTOS] +
                       [_text(document, f'document {i + 1}') for i, document in enumerate(RETRIEVER_DOCUMENTS)]}
   if task == 'decision_maker':
-    return {'description': f'{setup} Each support ticket is triaged with the three questions of the sample. The '
-                           'outage must be judged an urgent outage, a bug and the most severe; the others not '
-                           'urgent, and assigned to their department.',
+    how = 'via evaluate_boolean/choice/score' if mode == 'individual' else 'via evaluate_schema'
+    return {'description': f'{setup} Each support ticket is triaged {how}. The outage must be judged an '
+                           'urgent outage, a bug and the most severe; the others not urgent, and assigned '
+                           'to their department.',
             'inputs': [_text(t['text'], f"{t['key']}: urgent={t['urgent']}, department={t['department']}")
                        for t in DECISION_TICKETS]}
   if task == 'text_classifier':
+    inputs = AVERAGE_WORD_INPUTS if case['modelId'] == 'average_word_classifier' else TEXT_CLASSIFIER_INPUTS
     return {'description': f'{setup} Each sentence is classified. Its sentiment must be correct.',
-            'inputs': [_text(i['text'], f"Expected: {i['label']}") for i in TEXT_CLASSIFIER_INPUTS]}
+            'inputs': [_text(i['text'], f"Expected: {i['label']}") for i in inputs]}
   if task == 'language_detector':
     return {'description': f'{setup} The language of each sentence is detected. It must be correct.',
             'inputs': [_text(i['text'], f"Expected: {i['label']}") for i in LANGUAGE_DETECTOR_INPUTS]}
   if task == 'text_embedder':
-    return {'description': f'{setup} The two sentences of the notebook are compared, and one of them with '
-                           'itself. Identical sentences must score 1 and different ones less. This model does '
-                           'not order sentences by meaning, so the similarity of the two sentences is also '
-                           'compared with a baseline measured on release 1.2.3.',
-            'inputs': [_text(TEXT_EMBEDDER_FIRST, 'First sentence'), _text(TEXT_EMBEDDER_SECOND, 'Second sentence')]}
+    if case['modelId'] == 'bert_embedder':
+      return {'description': f'{setup} The two sentences of the notebook are compared, and one of them with '
+                             'itself. Identical sentences must score 1 and different ones less, within the '
+                             'baseline measured on release 1.2.3.',
+              'inputs': [_text(TEXT_EMBEDDER_FIRST, 'First sentence'), _text(TEXT_EMBEDDER_SECOND, 'Second sentence')]}
+    return {'description': f'{setup} Identical, related and unrelated sentence pairs are compared. Identical '
+                           'sentences must score about 1, and related sentences clearly higher than unrelated ones.',
+            'inputs': [_text(f'{a}  |  {b}', name) for name, a, b, _ in TEXT_EMBEDDER_SEMANTIC_PAIRS]}
   if task == 'text_proofreader':
     return {'description': f'{setup} Each text is proofread. The typo of the first must be fixed, the '
                            'second must become a correct sentence, and the list of corrections must lead '
@@ -784,7 +955,7 @@ def describe_case(case):
             'inputs': [_text(i['text'], f"Expected: {i['exact']}" if 'exact' in i else 'Several fixes are correct')
                        for i in PROOFREADER_INPUTS]}
   if task == 'text_summarizer':
-    kind = 'a list of key points' if case['mode'] == 'keypoints' else 'a short paragraph'
+    kind = 'a list of key points' if mode == 'keypoints' else 'a short paragraph'
     return {'description': f'{setup} The text is summarized as {kind}. The summary must be shorter than the '
                            'text and say where the station is.',
             'inputs': [_text(SUMMARIZER_TEXT, 'Text to summarize')]}

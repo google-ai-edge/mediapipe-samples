@@ -25,6 +25,7 @@ printed.
 
 import argparse
 import os
+import time
 import urllib.request
 from typing import List, Optional, Sequence
 
@@ -55,8 +56,8 @@ def download(url: str, path: str) -> None:
 def run(model: str,
         audio_file: str,
         max_results: int = 4,
-        delegate: python.BaseOptions.Delegate = python.BaseOptions.Delegate.CPU
-        ) -> List[audio.AudioClassifierResult]:
+        delegate: python.BaseOptions.Delegate = python.BaseOptions.Delegate.CPU,
+        stream: bool = False) -> List[audio.AudioClassifierResult]:
   """Classifies the sounds in a 16-bit PCM WAV file.
 
   Args:
@@ -64,22 +65,43 @@ def run(model: str,
     audio_file: Path of the WAV file to classify.
     max_results: The maximum number of categories to return per chunk.
     delegate: The hardware to run the model on.
+    stream: If true, feed chunks to the AUDIO_STREAM mode via classify_async.
 
   Returns:
     The classification result of each chunk of the clip, in order. The last
     chunk may be shorter than the others.
   """
-  # Customize and associate model for Classifier
   base_options = python.BaseOptions(model_asset_path=model, delegate=delegate)
-  options = audio.AudioClassifierOptions(
-      base_options=base_options, max_results=max_results)
+  sample_rate, wav_data = wavfile.read(audio_file)
+  samples = wav_data.astype(float) / np.iinfo(np.int16).max
 
-  # Create classifier, segment audio clips, and classify
-  with audio.AudioClassifier.create_from_options(options) as classifier:
-    sample_rate, wav_data = wavfile.read(audio_file)
-    audio_clip = containers.AudioData.create_from_array(
-        wav_data.astype(float) / np.iinfo(np.int16).max, sample_rate)
-    classification_result_list = classifier.classify(audio_clip)
+  if stream:
+    classification_result_list: List[audio.AudioClassifierResult] = []
+
+    def save_result(result: audio.AudioClassifierResult, timestamp_ms: int):
+      result.timestamp_ms = timestamp_ms
+      classification_result_list.append(result)
+
+    options = audio.AudioClassifierOptions(
+        base_options=base_options,
+        running_mode=audio.RunningMode.AUDIO_STREAM,
+        max_results=max_results,
+        result_callback=save_result)
+    chunk_size = int(sample_rate * 0.975)
+    with audio.AudioClassifier.create_from_options(options) as classifier:
+      for start in range(0, len(samples), chunk_size):
+        chunk = samples[start:start + chunk_size]
+        audio_block = containers.AudioData.create_from_array(chunk, sample_rate)
+        classifier.classify_async(audio_block,
+                                  int(round(start * 1000 / sample_rate)))
+        time.sleep(0.02)
+      time.sleep(0.2)
+  else:
+    options = audio.AudioClassifierOptions(
+        base_options=base_options, max_results=max_results)
+    with audio.AudioClassifier.create_from_options(options) as classifier:
+      audio_clip = containers.AudioData.create_from_array(samples, sample_rate)
+      classification_result_list = classifier.classify(audio_clip)
 
   # Iterate through clips to display classifications
   for classification_result in classification_result_list:
@@ -111,6 +133,10 @@ def main(argv: Optional[Sequence[str]] = None
       type=int,
       default=4)
   parser.add_argument(
+      '--stream',
+      help='Feed audio chunks asynchronously in AUDIO_STREAM mode.',
+      action='store_true')
+  parser.add_argument(
       '--delegate',
       help='Hardware to run the model on.',
       choices=sorted(DELEGATES),
@@ -123,7 +149,8 @@ def main(argv: Optional[Sequence[str]] = None
     audio_file = 'speech_16000_hz_mono.wav'
     download(AUDIO_URL, audio_file)
 
-  return run(args.model, audio_file, args.max_results, DELEGATES[args.delegate])
+  return run(args.model, audio_file, args.max_results,
+             DELEGATES[args.delegate], args.stream)
 
 
 if __name__ == '__main__':

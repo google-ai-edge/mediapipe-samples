@@ -78,13 +78,23 @@ def _normalized_to_pixel_coordinates(
   return x_px, y_px
 
 
+def _line_points(x0: float, y0: float, x1: float, y1: float, steps: int = 25):
+  """Evenly spaced stroke points from `(x0, y0)` to `(x1, y1)`."""
+  return [
+      StrokePoint(x=float(px), y=float(py))
+      for px, py in zip(np.linspace(x0, x1, steps), np.linspace(y0, y1, steps))
+  ]
+
+
 def run(model: str,
         image_file: str,
         x: float = 0.68,
         y: float = 0.68,
         delegate: python.BaseOptions.Delegate = python.BaseOptions.Delegate.CPU,
-        output: Optional[str] = None) -> mp.Image:
-  """Selects the object at a point of an image.
+        output: Optional[str] = None,
+        negative_stroke: Optional[Sequence[float]] = None,
+        lasso: Optional[Sequence[float]] = None) -> mp.Image:
+  """Selects the object at a point or within a lasso of an image.
 
   Args:
     model: Path of the interactive segmentation model.
@@ -94,6 +104,10 @@ def run(model: str,
     y: Vertical position of the point of interest, like `x`.
     delegate: The hardware to run the model on.
     output: Where to write the image with the selection drawn over it.
+    negative_stroke: Optional `(x0, y0, x1, y1)` normalized stroke to exclude
+      from the selection.
+    lasso: Optional `(x0, y0, x1, y1)` normalized box to select with a lasso
+      stroke instead of `x` and `y`.
 
   Returns:
     The confidence mask of the selected object.
@@ -115,14 +129,38 @@ def run(model: str,
     # Set the image (calculates and caches the image embeddings)
     segmenter.set_image(image)
 
-    # Define the stroke (using normalized coordinates)
-    strokes = [
-        Stroke(
-            brush_mode=BrushMode.POSITIVE,
-            points=[StrokePoint(x=norm_x, y=norm_y)],
-            is_completed=True,
-        )
-    ]
+    # Define the stroke(s) (using normalized coordinates)
+    if lasso is not None:
+      lx0, ly0, lx1, ly1 = lasso
+      strokes = [
+          Stroke(
+              brush_mode=BrushMode.LASSO,
+              points=[
+                  StrokePoint(x=lx0, y=ly0),
+                  StrokePoint(x=lx1, y=ly0),
+                  StrokePoint(x=lx1, y=ly1),
+                  StrokePoint(x=lx0, y=ly1),
+                  StrokePoint(x=lx0, y=ly0),
+              ],
+              is_completed=True,
+          )
+      ]
+    else:
+      strokes = [
+          Stroke(
+              brush_mode=BrushMode.POSITIVE,
+              points=[StrokePoint(x=norm_x, y=norm_y)],
+              is_completed=True,
+          )
+      ]
+    if negative_stroke is not None:
+      nx0, ny0, nx1, ny1 = negative_stroke
+      strokes.append(
+          Stroke(
+              brush_mode=BrushMode.NEGATIVE,
+              points=_line_points(nx0, ny0, nx1, ny1),
+              is_completed=True,
+          ))
 
     # Retrieve the masks for the segmented image using the strokes
     category_mask = segmenter.segment(strokes)
@@ -130,14 +168,16 @@ def run(model: str,
   mask_array = category_mask.numpy_view()
 
   # Apply tuned threshold
-  condition = mask_array.squeeze(-1) > CONFIDENCE_THRESHOLD
+  plane = mask_array.squeeze(-1) if mask_array.ndim == 3 else mask_array
+  condition = plane > CONFIDENCE_THRESHOLD
   matching_pixels = np.sum(condition)
   print(f'Selected {matching_pixels} of {condition.size} pixels '
         f'({matching_pixels / condition.size:.1%}) of {image_file}')
 
   if output:
-    # Generate dynamic transparent overlay on top of the original image
-    image_data = image.numpy_view()
+    # Generate dynamic transparent overlay on top of the original image;
+    # mp.Image.create_from_file() may have 3 or 4 channels.
+    image_data = image.numpy_view()[:, :, :3]
 
     # Convert original image from RGB (MediaPipe) to BGR (OpenCV) for correct
     # color output
@@ -150,14 +190,27 @@ def run(model: str,
     # Blend original image and the green overlay (70% original, 30% green mask)
     output_image = cv2.addWeighted(output_image, 0.7, colored_overlay, 0.3, 0)
 
-    # Draw a white dot with black border to denote the point of interest
-    thickness, radius = 6, -1
-    keypoint_px = _normalized_to_pixel_coordinates(norm_x, norm_y, image.width,
-                                                   image.height)
-
-    if keypoint_px is not None:
-      cv2.circle(output_image, keypoint_px, thickness + 5, (0, 0, 0), radius)
-      cv2.circle(output_image, keypoint_px, thickness, (255, 255, 255), radius)
+    if lasso is not None:
+      lx0, ly0, lx1, ly1 = lasso
+      p0 = _normalized_to_pixel_coordinates(lx0, ly0, image.width, image.height)
+      p1 = _normalized_to_pixel_coordinates(lx1, ly1, image.width, image.height)
+      if p0 is not None and p1 is not None:
+        cv2.rectangle(output_image, p0, p1, (255, 255, 255), 2)
+    else:
+      # Draw a white dot with black border to denote the point of interest
+      thickness, radius = 6, -1
+      keypoint_px = _normalized_to_pixel_coordinates(norm_x, norm_y,
+                                                     image.width, image.height)
+      if keypoint_px is not None:
+        cv2.circle(output_image, keypoint_px, thickness + 5, (0, 0, 0), radius)
+        cv2.circle(output_image, keypoint_px, thickness, (255, 255, 255),
+                   radius)
+    if negative_stroke is not None:
+      nx0, ny0, nx1, ny1 = negative_stroke
+      p0 = _normalized_to_pixel_coordinates(nx0, ny0, image.width, image.height)
+      p1 = _normalized_to_pixel_coordinates(nx1, ny1, image.width, image.height)
+      if p0 is not None and p1 is not None:
+        cv2.line(output_image, p0, p1, (0, 0, 255), 3)
 
     cv2.imwrite(output, output_image)
     print(f'Wrote {output}')
@@ -191,6 +244,20 @@ def main(argv: Optional[Sequence[str]] = None) -> mp.Image:
       type=float,
       default=0.68)
   parser.add_argument(
+      '--negative_stroke',
+      help='Normalized x0 y0 x1 y1 line to exclude from the selection.',
+      type=float,
+      nargs=4,
+      metavar=('X0', 'Y0', 'X1', 'Y1'),
+      default=None)
+  parser.add_argument(
+      '--lasso',
+      help='Normalized x0 y0 x1 y1 box to select with a lasso stroke.',
+      type=float,
+      nargs=4,
+      metavar=('X0', 'Y0', 'X1', 'Y1'),
+      default=None)
+  parser.add_argument(
       '--delegate',
       help='Hardware to run the model on.',
       choices=sorted(DELEGATES),
@@ -208,7 +275,7 @@ def main(argv: Optional[Sequence[str]] = None) -> mp.Image:
     download(IMAGE_URL, image_file)
 
   return run(args.model, image_file, args.x, args.y, DELEGATES[args.delegate],
-             args.output)
+             args.output, args.negative_stroke, args.lasso)
 
 
 if __name__ == '__main__':

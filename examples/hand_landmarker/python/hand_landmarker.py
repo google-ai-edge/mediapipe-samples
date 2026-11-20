@@ -40,6 +40,10 @@ DELEGATES = {
     'cpu': python.BaseOptions.Delegate.CPU,
     'gpu': python.BaseOptions.Delegate.GPU,
 }
+RUNNING_MODES = {
+    'image': vision.RunningMode.IMAGE,
+    'video': vision.RunningMode.VIDEO,
+}
 
 mp_hands = mp.tasks.vision.HandLandmarksConnections
 mp_drawing = mp.tasks.vision.drawing_utils
@@ -100,7 +104,9 @@ def run(model: str,
         image_file: str,
         num_hands: int = 2,
         delegate: python.BaseOptions.Delegate = python.BaseOptions.Delegate.CPU,
-        output: Optional[str] = None) -> vision.HandLandmarkerResult:
+        output: Optional[str] = None,
+        running_mode: vision.RunningMode = vision.RunningMode.IMAGE
+        ) -> vision.HandLandmarkerResult:
   """Detects the hand landmarks in an image.
 
   Args:
@@ -109,6 +115,7 @@ def run(model: str,
     num_hands: The maximum number of hands to detect.
     delegate: The hardware to run the model on.
     output: Where to write the image with the hand landmarks drawn on it.
+    running_mode: IMAGE for a single image, or VIDEO to feed video frames.
 
   Returns:
     The detection result.
@@ -116,6 +123,7 @@ def run(model: str,
   # STEP 2: Create an HandLandmarker object.
   base_options = python.BaseOptions(model_asset_path=model, delegate=delegate)
   options = vision.HandLandmarkerOptions(base_options=base_options,
+                                         running_mode=running_mode,
                                          num_hands=num_hands)
   detector = vision.HandLandmarker.create_from_options(options)
 
@@ -123,7 +131,11 @@ def run(model: str,
   image = mp.Image.create_from_file(image_file)
 
   # STEP 4: Detect hand landmarks from the input image.
-  detection_result = detector.detect(image)
+  if running_mode == vision.RunningMode.VIDEO:
+    for timestamp_ms in (0, 33, 66):
+      detection_result = detector.detect_for_video(image, timestamp_ms)
+  else:
+    detection_result = detector.detect(image)
   detector.close()
 
   # STEP 5: Process the classification result. In this case, visualize it.
@@ -164,6 +176,11 @@ def main(argv: Optional[Sequence[str]] = None) -> vision.HandLandmarkerResult:
       choices=sorted(DELEGATES),
       default='cpu')
   parser.add_argument(
+      '--running_mode',
+      help='Task running mode.',
+      choices=sorted(RUNNING_MODES),
+      default='image')
+  parser.add_argument(
       '--output',
       help='Where to write the annotated image.',
       default='hand_landmarker_result.png')
@@ -176,7 +193,7 @@ def main(argv: Optional[Sequence[str]] = None) -> vision.HandLandmarkerResult:
     download(IMAGE_URL, image_file)
 
   return run(args.model, image_file, args.num_hands, DELEGATES[args.delegate],
-             args.output)
+             args.output, RUNNING_MODES[args.running_mode])
 
 
 if __name__ == '__main__':

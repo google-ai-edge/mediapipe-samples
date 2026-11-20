@@ -42,6 +42,10 @@ DELEGATES = {
     'cpu': python.BaseOptions.Delegate.CPU,
     'gpu': python.BaseOptions.Delegate.GPU,
 }
+RUNNING_MODES = {
+    'image': vision.RunningMode.IMAGE,
+    'video': vision.RunningMode.VIDEO,
+}
 
 BG_COLOR = (192, 192, 192)  # gray
 MASK_COLOR = (255, 255, 255)  # white
@@ -60,7 +64,9 @@ def run(model: str,
         image_file: str,
         delegate: python.BaseOptions.Delegate = python.BaseOptions.Delegate.CPU,
         output: Optional[str] = None,
-        blur_output: Optional[str] = None
+        blur_output: Optional[str] = None,
+        confidence_category: Optional[str] = None,
+        running_mode: vision.RunningMode = vision.RunningMode.IMAGE
         ) -> Tuple[image_segmenter.ImageSegmenterResult, List[str]]:
   """Segments an image into the categories of the model.
 
@@ -70,6 +76,9 @@ def run(model: str,
     delegate: The hardware to run the model on.
     output: Where to write the segmentation mask.
     blur_output: Where to write the image with a blurred background.
+    confidence_category: If set, also request confidence masks and write the
+      confidence mask of this category name.
+    running_mode: IMAGE for a single image, or VIDEO to feed video frames.
 
   Returns:
     The segmentation result, and the category names of the model: the value of
@@ -77,31 +86,57 @@ def run(model: str,
   """
   # Create the options that will be used for ImageSegmenter
   base_options = python.BaseOptions(model_asset_path=model, delegate=delegate)
-  options = vision.ImageSegmenterOptions(base_options=base_options,
-                                         output_category_mask=True)
+  options = vision.ImageSegmenterOptions(
+      base_options=base_options,
+      running_mode=running_mode,
+      output_category_mask=True,
+      output_confidence_masks=confidence_category is not None)
 
   # Create the image segmenter
   with vision.ImageSegmenter.create_from_options(options) as segmenter:
     labels = list(segmenter.labels)
+    if confidence_category is not None and confidence_category not in labels:
+      raise ValueError(f'Unknown category {confidence_category!r}; model has '
+                       f'{labels}')
 
     # Create the MediaPipe image file that will be segmented
     image = mp.Image.create_from_file(image_file)
 
     # Retrieve the masks for the segmented image
-    segmentation_result = segmenter.segment(image)
+    if running_mode == vision.RunningMode.VIDEO:
+      for timestamp_ms in (0, 33, 66):
+        segmentation_result = segmenter.segment_for_video(image, timestamp_ms)
+    else:
+      segmentation_result = segmenter.segment(image)
     category_mask = segmentation_result.category_mask
 
   # Print the share of the image that each category covers.
-  mask = category_mask.numpy_view().squeeze(-1)
+  mask = category_mask.numpy_view()
+  mask = mask.squeeze(-1) if mask.ndim == 3 else mask
   # mp.Image.create_from_file() returns RGBA data; keep the three color
   # channels.
   rgb_image = image.numpy_view()[:, :, :3]
+  # Single-class selfie models put the person in category 0 and the background
+  # in 255; multi-class models put the background in category 0.
+  foreground = (mask == 0) if len(labels) == 1 else (mask > 0)
   print(f'Categories found in {image_file}:')
   for index in np.unique(mask):
-    name = labels[index] if index < len(labels) else str(index)
+    name = labels[index] if index < len(labels) else 'background'
     print(f'  {name}: {np.mean(mask == index):.1%}')
 
-  if output:
+  if confidence_category is not None:
+    category_index = labels.index(confidence_category)
+    confidence_view = segmentation_result.confidence_masks[
+        category_index].numpy_view()
+    confidence = (
+        confidence_view.squeeze(-1)
+        if confidence_view.ndim == 3 else confidence_view)
+    foreground = confidence > 0.5
+    if output:
+      visualized = (np.clip(confidence, 0.0, 1.0) * 255).astype(np.uint8)
+      cv2.imwrite(output, np.stack([visualized] * 3, axis=-1))
+      print(f'Wrote {output}')
+  elif output:
     # Generate solid color images for showing the output segmentation mask.
     image_data = rgb_image
     fg_image = np.zeros(image_data.shape, dtype=np.uint8)
@@ -109,10 +144,7 @@ def run(model: str,
     bg_image = np.zeros(image_data.shape, dtype=np.uint8)
     bg_image[:] = BG_COLOR
 
-    # Category 0 is the background.
-    condition = mask > 0.2
-
-    output_image = np.where(condition[..., None], fg_image, bg_image)
+    output_image = np.where(foreground[..., None], fg_image, bg_image)
     cv2.imwrite(output, output_image)
     print(f'Wrote {output}')
 
@@ -123,9 +155,8 @@ def run(model: str,
 
     # Apply effects
     blurred_image = cv2.GaussianBlur(image_data, (55, 55), 0)
-    condition = mask > 0.1
 
-    output_image = np.where(condition[..., None], image_data, blurred_image)
+    output_image = np.where(foreground[..., None], image_data, blurred_image)
     cv2.imwrite(blur_output, output_image)
     print(f'Wrote {blur_output}')
 
@@ -151,6 +182,16 @@ def main(argv: Optional[Sequence[str]] = None
       choices=sorted(DELEGATES),
       default='cpu')
   parser.add_argument(
+      '--confidence_category',
+      help='Category name whose confidence mask to write instead of the '
+      'category mask.',
+      default=None)
+  parser.add_argument(
+      '--running_mode',
+      help='Task running mode.',
+      choices=sorted(RUNNING_MODES),
+      default='image')
+  parser.add_argument(
       '--output',
       help='Where to write the segmentation mask.',
       default='image_segmentation_mask.png')
@@ -167,7 +208,8 @@ def main(argv: Optional[Sequence[str]] = None
     download(IMAGE_URL, image_file)
 
   return run(args.model, image_file, DELEGATES[args.delegate], args.output,
-             args.blur_output)
+             args.blur_output, args.confidence_category,
+             RUNNING_MODES[args.running_mode])
 
 
 if __name__ == '__main__':

@@ -59,10 +59,25 @@ def _landmarks(count, points):
   return landmarks
 
 
+def _annotated_file(width=640, height=480):
+  return {'exists': True, 'width': width, 'height': height, 'channels': 3,
+          'expectedWidth': width, 'expectedHeight': height, 'changedFraction': 0.03}
+
+
+def _figure_file():
+  return {'exists': True, 'width': 1200, 'height': 900, 'channels': 4, 'inkFraction': 0.25}
+
+
+def _grayscale_mask_file(width=640, height=480):
+  return {'exists': True, 'width': width, 'height': height, 'channels': 3, 'grayscale': True, 'maxDiff': 0.0}
+
+
 def _mask(expected, **extra):
   mask = {'width': 640, 'height': 480, 'imageWidth': 640, 'imageHeight': 480, 'channels': 1, 'dtype': 'float32',
-          'min': 0.0, 'max': 1.0, 'fraction': _middle(*expected['fraction']),
+          'min': 0.0, 'max': 1.0, 'mean': 0.2, 'nonFinite': 0, 'fraction': _middle(*expected['fraction']),
           'centroid': _centre(expected['centroidWithin']) if 'centroidWithin' in expected else {'x': 0.5, 'y': 0.5}}
+  if expected.get('fileName'):
+    mask['file'] = _grayscale_mask_file(640, 480)
   mask.update(extra)
   return mask
 
@@ -72,10 +87,13 @@ def correct_runs(expectation):
   kind = expectation['type']
   if kind == 'detections':
     width, height = 640, 416
-    return [{'key': 'image', 'data': {'imageWidth': width, 'imageHeight': height, 'detections': [
-        {'label': o['label'], 'score': 0.9,
-         'box': {'x': o['box']['x'] * width, 'y': o['box']['y'] * height, 'width': o['box']['width'] * width,
-                 'height': o['box']['height'] * height}} for o in expectation['objects']]}}]
+    return [{'key': 'image', 'data': {
+        'imageWidth': width, 'imageHeight': height,
+        'detections': [{'label': o['label'], 'score': 0.9,
+                        'box': {'x': o['box']['x'] * width, 'y': o['box']['y'] * height,
+                                'width': o['box']['width'] * width, 'height': o['box']['height'] * height}}
+                       for o in expectation['objects']],
+        'annotatedFile': _annotated_file(width, height)}}]
   if kind == 'faces':
     width, height = 820, 1024
     keypoints = [[0.5, 0.5] for _ in range(6)]
@@ -85,8 +103,10 @@ def correct_runs(expectation):
     nose = expectation['boxContains']
     box = {'x': (nose['x'] - share / 2) * width, 'y': nose['y'] * height - share * width / 2,
            'width': share * width, 'height': share * width}
-    return [{'key': 'image', 'data': {'imageWidth': width, 'imageHeight': height,
-                                      'detections': [{'score': 0.9, 'box': box, 'keypoints': keypoints}]}}]
+    return [{'key': 'image', 'data': {
+        'imageWidth': width, 'imageHeight': height,
+        'detections': [{'score': 0.9, 'box': box, 'keypoints': keypoints}],
+        'annotatedFile': _annotated_file(width, height)}}]
   if kind == 'landmarks':
     runs = []
     for run in expectation['runs']:
@@ -102,12 +122,21 @@ def correct_runs(expectation):
       data['values'] = {item['key']: _middle(*item['range']) for item in run.get('ranges', [])}
       if 'mask' in run:
         data['mask'] = _mask(run['mask'])
+      if run.get('annotatedFile'):
+        data['annotatedFile'] = _annotated_file()
+      if run.get('figureFile'):
+        data['figureFile'] = _figure_file()
       runs.append({'key': run['key'], 'data': data})
+    if expectation.get('figureFile') and runs:
+      runs[0]['data']['figureFile'] = _figure_file()
     return runs
   if kind == 'classification':
-    return [{'key': run['key'], 'data': {'categories': [
+    runs = [{'key': run['key'], 'data': {'categories': [
         {'label': run['labels'][0], 'score': 0.9}, {'label': 'something else', 'score': 0.05}]}}
             for run in expectation['runs']]
+    if runs:
+      runs[0]['data']['figureFile'] = _figure_file()
+    return runs
   if kind == 'similarity':
     values = {run['key']: run['baseline']['value'] if 'baseline' in run else min(max(_middle(*run['range']), -1), 1)
               for run in expectation['runs']}
@@ -156,15 +185,39 @@ def correct_runs(expectation):
               for i, word in enumerate(expectation['text'].split())]
     return [{'key': 'speech', 'data': {
         'pieces': pieces, 'sampleRateHz': 24000, 'durationSec': 4.0, 'rms': 0.08, 'peak': 0.6, 'nonFinite': 0,
-        'wordTimestamps': stamps, 'heard': expectation['text'], 'heardError': None}}]
+        'wordTimestamps': stamps,
+        'wavFile': {'exists': True, 'channels': 1, 'sampleWidth': 2, 'sampleRateHz': 24000, 'samples': 96000,
+                    'maxDiff': 0.00003},
+        'heard': expectation['text'], 'heardError': None}}]
   if kind == 'segmentation':
+    width, height = 257, 257
     classes = [{'index': i, 'label': c['label'], 'fraction': _middle(*c['fraction']),
                 'centroid': _centre(c['centroidWithin']) if 'centroidWithin' in c else {'x': 0.5, 'y': 0.5}}
                for i, c in enumerate(expectation['classes'])]
-    labels = [c['label'] for c in expectation['classes']]
-    labels += [f'category {i}' for i in range(len(labels), expectation['labelCount'])]
-    return [{'key': 'image', 'data': {'imageWidth': 257, 'imageHeight': 257, 'maskWidth': 257, 'maskHeight': 257,
-                                      'dtype': 'uint8', 'labels': labels, 'classes': classes}}]
+    # Single-class selfie models have 1 model label ('selfie') and background at 255.
+    model_labels = [c['label'] for c in expectation['classes']
+                    if expectation['labelCount'] > 1 or c['label'] != 'background']
+    model_labels += [f'category {i}' for i in range(len(model_labels), expectation['labelCount'])]
+    data = {
+        'imageWidth': width, 'imageHeight': height, 'maskWidth': width, 'maskHeight': height,
+        'dtype': 'uint8', 'labels': model_labels, 'classes': classes,
+        'blurFile': {'exists': True, 'width': width, 'height': height, 'channels': 3,
+                     'fgMeanDiff': 0.0, 'bgMeanDiff': 8.0},
+    }
+    conf = expectation.get('confidence')
+    if conf:
+      data['confidence'] = {
+          'category': conf['label'], 'index': 0, 'count': expectation['labelCount'],
+          'width': width, 'height': height, 'channels': 1, 'dtype': 'float32',
+          'min': 0.0, 'max': 0.98, 'mean': _middle(*conf['fraction']), 'nonFinite': 0,
+          'fraction': _middle(*conf['fraction']), 'centroid': _centre(conf['centroidWithin']),
+      }
+      data['maskFile'] = _grayscale_mask_file(width, height)
+    else:
+      data['confidence'] = None
+      data['maskFile'] = {'exists': True, 'width': width, 'height': height, 'channels': 3,
+                          'grayscale': True, 'fgDiff': 0.0}
+    return [{'key': 'image', 'data': data}]
   if kind == 'selection':
     runs = []
     for run in expectation['runs']:
@@ -173,10 +226,14 @@ def correct_runs(expectation):
       probes.update({name: False for name in run['notSelected']})
       runs.append({'key': run['key'], 'data': {
           'imageWidth': 1200, 'imageHeight': 600,
-          'mask': {'width': 1200, 'height': 600, 'channels': 1, 'dtype': 'float32', 'min': 0.0, 'max': 1.0},
+          'mask': {'width': 1200, 'height': 600, 'channels': 1, 'dtype': 'float32', 'min': 0.0, 'max': 1.0,
+                   'nonFinite': 0},
           'fraction': _middle(*run['fraction']), 'centroid': _centre(run['centroidWithin']),
           'bounds': {'minX': limit['minX'] + 0.01, 'maxX': limit['maxX'] - 0.01, 'minY': limit['minY'] + 0.01,
-                     'maxY': limit['maxY'] - 0.01}, 'probes': probes}})
+                     'maxY': limit['maxY'] - 0.01},
+          'probes': probes,
+          'overlayFile': {'exists': True, 'width': 1200, 'height': 600, 'channels': 3,
+                          'selectedGreenGain': 76.5, 'outsideUnchangedFraction': 0.995}}})
     return runs
   if kind == 'proofreading':
     runs = []
@@ -215,6 +272,8 @@ def damaged_runs(expectation):
     yield damage('a score is not a number', lambda r: _first(r)['detections'][0].update(score=NAN))
     yield damage('something that is not there is detected', lambda r: _first(r)['detections'].append(
         {'label': 'person', 'score': 0.8, 'box': {'x': 10, 'y': 10, 'width': 50, 'height': 50}}))
+    yield damage('annotated.png is missing', lambda r: _first(r).update(annotatedFile={'exists': False}))
+    yield damage('annotated.png has no annotations', lambda r: _first(r)['annotatedFile'].update(changedFraction=0.0))
   elif kind == 'faces':
     yield damage('no face is found', lambda r: _first(r)['detections'].clear())
     yield damage('a second face is found', lambda r: _first(r)['detections'].append(
@@ -225,8 +284,11 @@ def damaged_runs(expectation):
     yield damage('the box is elsewhere', lambda r: _first(r)['detections'][0]['box'].update(x=0, y=900))
     yield damage('the box spans the image', lambda r: _first(r)['detections'][0]['box'].update(x=0, width=820))
     yield damage('the score is low', lambda r: _first(r)['detections'][0].update(score=0.1))
+    yield damage('annotated.png is missing', lambda r: _first(r).update(annotatedFile={'exists': False}))
+    yield damage('annotated.png is blanked', lambda r: _first(r)['annotatedFile'].update(changedFraction=0.99))
   elif kind == 'landmarks':
-    group = expectation['runs'][0]['groups'][0]
+    run_exp = expectation['runs'][0]
+    group = run_exp['groups'][0]
     key = group['key']
     yield damage('nothing is found', lambda r: _first(r)[key].clear())
     yield damage('one instance too many', lambda r: _first(r)[key].append(copy.deepcopy(_first(r)[key][0])))
@@ -239,7 +301,6 @@ def damaged_runs(expectation):
       index = next(iter(points.values()))['index']
       yield damage('a landmark is in the wrong place', lambda r: _first(r)[key][0]['landmarks'].__setitem__(
           index, [0.02, 0.98]))
-      # Mirrored output: every x coordinate flipped.
       yield damage('the result is mirrored', lambda r: _first(r)[key][0].update(
           landmarks=[[1 - x, y] for x, y in _first(r)[key][0]['landmarks']]))
     if len(group['instances']) > 1:
@@ -248,20 +309,30 @@ def damaged_runs(expectation):
       yield damage(f'{field} is wrong', lambda r, field=field: _first(r)[key][0].update({field: 'None'}))
     if 'minScore' in group['instances'][0]:
       yield damage('the score is low', lambda r: _first(r)[key][0].update(score=0.1))
-    for item in expectation['runs'][0].get('equals', []):
+    for item in run_exp.get('equals', []):
       yield damage(f"{item['key']} is wrong", lambda r, item=item: _first(r).update({item['key']: 0}))
-    for item in expectation['runs'][0].get('ranges', []):
+    for item in run_exp.get('ranges', []):
       yield damage(f"{item['key']} is out of range", lambda r, item=item: _first(r)['values'].update(
           {item['key']: item['range'][1] + 0.3}))
       yield damage(f"{item['key']} is missing", lambda r, item=item: _first(r)['values'].pop(item['key']))
-    if 'mask' in expectation['runs'][0]:
+    if 'mask' in run_exp:
       yield damage('the mask is missing', lambda r: _first(r).update(mask=None))
       yield damage('the mask covers everything', lambda r: _first(r)['mask'].update(fraction=1.0))
       yield damage('the mask is empty', lambda r: _first(r)['mask'].update(fraction=0.0, centroid=None))
       yield damage('the mask is elsewhere', lambda r: _first(r)['mask'].update(centroid={'x': 0.02, 'y': 0.02}))
       yield damage('the mask has another size', lambda r: _first(r)['mask'].update(width=64, height=640))
       yield damage('the mask has four channels', lambda r: _first(r)['mask'].update(channels=4))
+      yield damage('the mask has NaN values', lambda r: _first(r)['mask'].update(nonFinite=5))
       yield damage('the mask holds bytes, not confidences', lambda r: _first(r)['mask'].update(max=255.0))
+      if run_exp['mask'].get('fileName'):
+        yield damage('mask.png is missing', lambda r: _first(r)['mask'].update(file={'exists': False}))
+        yield damage('mask.png differs from the returned mask', lambda r: _first(r)['mask']['file'].update(maxDiff=0.2))
+    if run_exp.get('annotatedFile'):
+      yield damage('annotated.png is missing', lambda r: _first(r).update(annotatedFile={'exists': False}))
+      yield damage('annotated.png was not modified', lambda r: _first(r)['annotatedFile'].update(changedFraction=0.0))
+    if run_exp.get('figureFile') or expectation.get('figureFile'):
+      yield damage('figure PNG is missing', lambda r: _first(r).update(figureFile={'exists': False}))
+      yield damage('figure PNG is blank', lambda r: _first(r)['figureFile'].update(inkFraction=0.0))
     if len(expectation['runs']) > 1:
       yield damage('the result of one input is missing', lambda r: r.pop())
   elif kind == 'classification':
@@ -272,6 +343,8 @@ def damaged_runs(expectation):
         [{'label': f'c{i}', 'score': 0.001} for i in range(5)]))
     yield damage('a score is not a probability', lambda r: _first(r)['categories'][0].update(score=7.5))
     yield damage('the result of one photo is missing', lambda r: r.pop())
+    yield damage('annotated.png is missing', lambda r: _first(r).update(figureFile={'exists': False}))
+    yield damage('annotated.png is blank', lambda r: _first(r)['figureFile'].update(inkFraction=0.0))
   elif kind == 'similarity':
     low, high = expectation['runs'][0]['range']
     yield damage('a similarity is too high', lambda r: _first(r).update(similarity=high + 0.05))
@@ -356,6 +429,12 @@ def damaged_runs(expectation):
     yield damage('a sample rate of zero', lambda r: [p.update(sampleRateHz=0) for p in _first(r)['pieces']])
     yield damage('pieces are numbered wrongly', lambda r: _first(r)['pieces'][0].update(chunkIndex=5))
     yield damage('the last piece is not marked final', lambda r: _first(r)['pieces'][-1].update(isFinal=False))
+    yield damage('speech.wav is missing', lambda r: _first(r).update(wavFile={'exists': False}))
+    yield damage('speech.wav is stereo', lambda r: _first(r)['wavFile'].update(channels=2))
+    yield damage('speech.wav is 8-bit PCM', lambda r: _first(r)['wavFile'].update(sampleWidth=1))
+    yield damage('speech.wav has another sample rate', lambda r: _first(r)['wavFile'].update(sampleRateHz=16000))
+    yield damage('speech.wav is truncated', lambda r: _first(r)['wavFile'].update(samples=48000))
+    yield damage('speech.wav differs from the returned samples', lambda r: _first(r)['wavFile'].update(maxDiff=0.05))
     yield damage('noise instead of speech', lambda r: _first(r).update(heard='Ye'))
     yield damage('other words are spoken', lambda r: _first(r).update(heard='Play some music in the kitchen please'))
     yield damage('only half of the text is spoken', lambda r: _first(r).update(heard='The quick brown fox jumps'))
@@ -372,27 +451,49 @@ def damaged_runs(expectation):
       yield damage('word timestamps beyond the clip', lambda r: stamps(r)[-1].update(endSec=99.0))
   elif kind == 'segmentation':
     yield damage('a category is missing', lambda r: _first(r)['classes'].pop(0))
-    yield damage('a category covers too much', lambda r: _first(r)['classes'][0].update(fraction=0.95))
-    yield damage('a category is in the wrong place', lambda r: _first(r)['classes'][0].update(
-        centroid={'x': 0.97, 'y': 0.03}))
+    yield damage('a category covers too much', lambda r: _first(r)['classes'][0].update(fraction=0.999))
+    if any('centroidWithin' in c for c in expectation['classes']):
+      idx = next(i for i, c in enumerate(expectation['classes']) if 'centroidWithin' in c)
+      yield damage('a category is in the wrong place', lambda r, idx=idx: _first(r)['classes'][idx].update(
+          centroid={'x': 0.99, 'y': 0.99}))
     yield damage('another category appears', lambda r: _first(r)['classes'].append(
         {'index': 9, 'label': 'chair', 'fraction': 0.2, 'centroid': {'x': 0.5, 'y': 0.5}}))
     yield damage('the mask has another size', lambda r: _first(r).update(maskWidth=128))
     yield damage('the category names are missing', lambda r: _first(r).update(labels=[]))
+    yield damage('mask.png is missing', lambda r: _first(r).update(maskFile={'exists': False}))
+    yield damage('blurred_background.png is missing', lambda r: _first(r).update(blurFile={'exists': False}))
+    yield damage('blurred_background.png blurs the foreground', lambda r: _first(r)['blurFile'].update(fgMeanDiff=9.0))
+    yield damage('blurred_background.png does not blur the background', lambda r: _first(r)['blurFile'].update(
+        bgMeanDiff=0.0))
+    if expectation.get('confidence'):
+      yield damage('confidence masks are missing', lambda r: _first(r).update(confidence=None))
+      yield damage('confidence mask has low peak', lambda r: _first(r)['confidence'].update(max=0.2))
+      yield damage('confidence mask has NaNs', lambda r: _first(r)['confidence'].update(nonFinite=3))
+      yield damage('mask.png differs from the confidence mask', lambda r: _first(r)['maskFile'].update(maxDiff=0.2))
+    else:
+      yield damage('mask.png foreground disagrees with category mask', lambda r: _first(r)['maskFile'].update(
+          fgDiff=0.2))
   elif kind == 'selection':
     selected = expectation['runs'][0]['selected'][-1]
     other = expectation['runs'][0]['notSelected'][0]
     yield damage('part of the object is not selected', lambda r: _first(r)['probes'].update({selected: False}))
-    yield damage('another object is selected too', lambda r: _first(r)['probes'].update({other: True}))
+    yield damage('an excluded point is selected', lambda r: _first(r)['probes'].update({other: True}))
     yield damage('nothing is selected', lambda r: _first(r).update(fraction=0.0, centroid=None, bounds=None))
     yield damage('everything is selected', lambda r: _first(r).update(
         fraction=1.0, bounds={'minX': 0, 'maxX': 1, 'minY': 0, 'maxY': 1}))
     yield damage('the selection is elsewhere', lambda r: _first(r).update(centroid={'x': 0.05, 'y': 0.05}))
     yield damage('the mask has four channels of bytes', lambda r: _first(r)['mask'].update(
         channels=4, dtype='uint8', max=255.0))
+    yield damage('the mask has NaN values', lambda r: _first(r)['mask'].update(nonFinite=2))
     yield damage('the mask has another size', lambda r: _first(r)['mask'].update(width=256, height=256))
-    yield damage('both clicks select the same object', lambda r: r[1].update(data=copy.deepcopy(r[0]['data'])))
-    yield damage('the result of one click is missing', lambda r: r.pop())
+    yield damage('the overlay PNG is missing', lambda r: _first(r).update(overlayFile={'exists': False}))
+    yield damage('the overlay PNG was not tinted green', lambda r: _first(r)['overlayFile'].update(
+        selectedGreenGain=0.0))
+    yield damage('the overlay PNG tinted unselected pixels', lambda r: _first(r)['overlayFile'].update(
+        outsideUnchangedFraction=0.2))
+    if len(expectation['runs']) > 1:
+      yield damage('both selections select the same object', lambda r: r[1].update(data=copy.deepcopy(r[0]['data'])))
+      yield damage('the result of one selection is missing', lambda r: r.pop())
   elif kind == 'proofreading':
     yield damage('the text is not corrected', lambda r: _first(r).update(
         proofreadText=expectation['runs'][0]['text'],
@@ -458,7 +559,6 @@ class VerifierTest(unittest.TestCase):
     self.assertEqual(verify.verify_case(expectation, runs)['status'], verify.VERIFIED)
 
   def test_only_what_the_photo_shows_must_lie_in_the_frame(self):
-    # The holistic photo ends at the hips: the legs belong below the bottom edge.
     expectation = expectations.get_expectation({'task': 'holistic_landmarker'})
     runs = correct_runs(expectation)
     pose = runs[0]['data']['pose'][0]['landmarks']
@@ -467,7 +567,6 @@ class VerifierTest(unittest.TestCase):
     self.assertEqual(verify.verify_case(expectation, runs)['status'], verify.VERIFIED)
     pose[13] = [0.5, 1.8]  # An elbow is in the photo.
     self.assertEqual(verify.verify_case(expectation, runs)['status'], verify.FAILED)
-    # A photo of the whole body gets no such allowance (30 is a heel).
     expectation = expectations.get_expectation({'task': 'pose_landmarker'})
     runs = correct_runs(expectation)
     runs[0]['data']['poses'][0]['landmarks'][30] = [0.5, 1.8]
@@ -482,7 +581,6 @@ class VerifierTest(unittest.TestCase):
     self.assertEqual(verify.verify_case(expectation, runs)['status'], verify.VERIFIED)
     runs[0]['data']['categories'] = [{'label': 'ja', 'score': 0.9}, {'label': 'zh', 'score': 0.1}]
     self.assertEqual(verify.verify_case(expectation, runs)['status'], verify.FAILED)
-    # The unambiguous sentences get no such allowance.
     runs = correct_runs(expectation)
     runs[1]['data']['categories'] = [{'label': 'de', 'score': 0.52}, {'label': 'en', 'score': 0.46}]
     self.assertEqual(verify.verify_case(expectation, runs)['status'], verify.FAILED)
@@ -508,10 +606,8 @@ class VerifierTest(unittest.TestCase):
     self.assertEqual(verify.word_error_rate("Send a text to Mike, I'll be home.", "send a text to mike i'll be home"), 0)
     self.assertAlmostEqual(verify.word_error_rate('a b c d', 'a x c'), 0.5)
     self.assertEqual(verify.word_error_rate('a b', ''), 1.0)
-    # Spaces do not count: speech recognition writes "riverbank" for "river bank".
     self.assertEqual(verify.char_error_rate('the quiet river bank.', 'The quiet riverbank'), 0)
     sentence = expectations.TTS_SENTENCE
-    # What the Audio Transcriber of release 1.2.3 heard in the speech of the four models, and in noise.
     for heard in ('The quick brown fox jumps over the lazy dog, near the quiet riverbank.',
                   'The quick brown fox jumps over the lazy dog near the quiet riverbank, and',
                   'The quick brown fox jumps over the lazy dog near the quiet riverbank. The'):
@@ -542,30 +638,24 @@ class PolicyTest(unittest.TestCase):
 
   def test_gpu_request_needs_evidence_of_the_gpu(self):
     self.assertEqual(self._status('GPU', {}, self.VERIFIED, []), 'GPU_UNCONFIRMED')
-    # A wrong output is a failure whether or not the GPU ran.
     self.assertEqual(self._status('GPU', {}, self.FAILED, []), 'FAIL')
-    # The CPU delegate must not create a GPU delegate.
     self.assertEqual(self._status('CPU', {}, self.VERIFIED, self.METAL), 'FAIL')
 
   def test_known_unsupported(self):
     rejected = {'error': 'ValueError: Only CPU delegate is supported.'}
     self.assertEqual(self._status('GPU', rejected, self.VERIFIED, [], self.UNSUPPORTED), 'UNSUPPORTED')
-    # Any other failure of an unsupported combination is a failure.
     crashed = {'error': 'the sample process crashed (signal 11); see the native log'}
     self.assertEqual(self._status('GPU', crashed, self.VERIFIED, [], self.UNSUPPORTED), 'FAIL')
-    # It ran after all: judged like any other case, with a note to update the list.
     status, _, note = policy.decide({'delegate': 'GPU'}, {}, self.VERIFIED, self.METAL, self.UNSUPPORTED)
     self.assertEqual(status, 'PASS')
     self.assertIn('KNOWN_UNSUPPORTED', note)
     self.assertEqual(self._status('GPU', {}, self.FAILED, self.METAL, self.UNSUPPORTED), 'FAIL')
-    # The same error without an entry in the list is a failure.
     self.assertEqual(self._status('GPU', rejected, self.VERIFIED, []), 'FAIL')
 
   def test_only_pass_and_unsupported_are_accepted(self):
     self.assertEqual(set(policy.ACCEPTED), {'PASS', 'UNSUPPORTED'})
 
   def test_gpu_evidence(self):
-    # Lines of real native logs of release 1.2.3 on macOS.
     gpu_log = '\n'.join([
         'I0000 00:00:1795104000.123456  259 gl_context.cc:408] GL version: 2.1 (2.1 Metal - 91.7), renderer: Apple M4 Pro',
         'INFO: Created TensorFlow Lite delegate for Metal.',
@@ -578,7 +668,6 @@ class PolicyTest(unittest.TestCase):
         'I0000 00:00:1795104000.323456  259 delegate_kernel.cc:1022] Initializing Metal-based API from graph.',
     ])
     self.assertEqual(len(policy.find_gpu_evidence(litert_log)), 2)
-    # A GL context, a failed OpenCL context and the CPU delegate are not evidence.
     cpu_log = '\n'.join([
         'I0000 00:00:1795104000.123456  259 gl_context.cc:408] GL version: 2.1 (2.1 Metal - 91.7), renderer: Apple M4 Pro',
         'INFO: [gpu_environment.cc:516] Failed to create OpenCL context.',
@@ -604,22 +693,20 @@ class MatrixTest(unittest.TestCase):
     matrix = cases.build_validation_matrix()
     ids = [case['id'] for case in matrix]
     self.assertEqual(len(ids), len(set(ids)))
-    # Small models: 17 tasks; object detection has two models, summarization two modes; two delegates each.
     small = cases.build_validation_matrix(include_large_models=False)
-    self.assertEqual(len(small), 38)
+    self.assertEqual(len(small), 128)
     self.assertFalse(any(case['largeModel'] for case in small))
-    # Large models: speech recognition (1 model), speech synthesis (4 models, 2 modes), the universal embedder
-    # (3 modes), the semantic retriever and the decision maker.
     self.assertEqual(len(cases.TASK_DEFINITIONS), 22)
-    self.assertEqual(len(matrix), 38 + 2 + 16 + 6 + 2 + 2)
-    self.assertEqual(len(cases.build_validation_matrix(delegates=['CPU'])), 33)
+    # Large models: speech recognition (2 modes), speech synthesis (4 models, 2 modes), embedding_gemma,
+    # universal embedder (3 modes), semantic retriever and decision maker (2 modes); 2 delegates each = 34.
+    self.assertEqual(len(matrix), 128 + 34)
+    self.assertEqual(len(cases.build_validation_matrix(delegates=['CPU'])), 81)
     self.assertEqual({case['domain'] for case in matrix}, {'vision', 'audio', 'text', 'retrieval', 'decision'})
 
   def test_filters(self):
     tasks = lambda f: {case['task'] for case in cases.build_validation_matrix(f)}
     self.assertEqual(tasks('audio'), {'audio_classifier', 'audio_transcriber', 'text_to_speech'})
     self.assertEqual(tasks('text/text_embedder, face_detector'), {'text_embedder', 'face_detector'})
-    # "text" is the text domain: it does not also select other tasks with "text" in their name.
     self.assertEqual(tasks('text'), {'text_classifier', 'language_detector', 'text_embedder', 'text_proofreader',
                                      'text_summarizer'})
     self.assertEqual(cases.unknown_task_filters('vision, face_detectr,audio/nope'), ['face_detectr', 'audio/nope'])
@@ -656,7 +743,6 @@ class MatrixTest(unittest.TestCase):
     for name, spec in assets.ASSETS.items():
       with self.subTest(asset=name):
         self.assertRegex(spec['sha256'], r'^[0-9a-f]{64}$')
-        # Google Cloud Storage, or a Hugging Face repository at a named commit.
         self.assertRegex(spec['url'], r'^https://(storage\.googleapis\.com/mediapipe-|'
                                       r'huggingface\.co/litert-community/[\w.-]+/resolve/[0-9a-f]{40}/)')
         self.assertGreater(spec['bytes'], 0)
@@ -683,7 +769,10 @@ class MatrixTest(unittest.TestCase):
     self.assertIsNotNone(cases.known_unsupported(case('text_summarizer', 'gemma_200m', 'GPU')))
     self.assertIsNone(cases.known_unsupported(case('text_summarizer', 'gemma_200m', 'CPU')))
     self.assertIsNone(cases.known_unsupported(case('face_detector', 'blaze_face_short_range', 'GPU')))
-    # The quantized detector is unsupported on the macOS GPU only; the float model is supported.
+    self.assertIsNotNone(cases.known_unsupported(case('text_to_speech', 'pocket_tts_en', 'GPU')))
+    self.assertIsNone(cases.known_unsupported(case('text_to_speech', 'kokoro_82m_gpu', 'GPU')))
+    self.assertIsNotNone(cases.known_unsupported(case('text_classifier', 'bert_classifier', 'GPU'), system='Darwin'))
+    self.assertIsNone(cases.known_unsupported(case('text_classifier', 'bert_classifier', 'GPU'), system='Linux'))
     int8 = case('object_detector', 'efficientdet_lite0_int8', 'GPU')
     self.assertIsNotNone(cases.known_unsupported(int8, system='Darwin'))
     self.assertIsNone(cases.known_unsupported(int8, system='Linux'))

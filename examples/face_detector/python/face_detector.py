@@ -43,6 +43,10 @@ DELEGATES = {
     'cpu': python.BaseOptions.Delegate.CPU,
     'gpu': python.BaseOptions.Delegate.GPU,
 }
+RUNNING_MODES = {
+    'image': vision.RunningMode.IMAGE,
+    'video': vision.RunningMode.VIDEO,
+}
 
 MARGIN = 10  # pixels
 ROW_SIZE = 10  # pixels
@@ -125,7 +129,9 @@ def visualize(image, detection_result) -> np.ndarray:
 def run(model: str,
         image_file: str,
         delegate: python.BaseOptions.Delegate = python.BaseOptions.Delegate.CPU,
-        output: Optional[str] = None) -> vision.FaceDetectorResult:
+        output: Optional[str] = None,
+        running_mode: vision.RunningMode = vision.RunningMode.IMAGE
+        ) -> vision.FaceDetectorResult:
   """Detects the faces in an image.
 
   Args:
@@ -133,20 +139,26 @@ def run(model: str,
     image_file: Path of the image to run face detection on.
     delegate: The hardware to run the model on.
     output: Where to write the image with the detections drawn on it.
+    running_mode: IMAGE for a single image, or VIDEO to feed video frames.
 
   Returns:
     The detection result.
   """
   # STEP 2: Create an FaceDetector object.
   base_options = python.BaseOptions(model_asset_path=model, delegate=delegate)
-  options = vision.FaceDetectorOptions(base_options=base_options)
+  options = vision.FaceDetectorOptions(base_options=base_options,
+                                       running_mode=running_mode)
   detector = vision.FaceDetector.create_from_options(options)
 
   # STEP 3: Load the input image.
   image = mp.Image.create_from_file(image_file)
 
   # STEP 4: Detect faces in the input image.
-  detection_result = detector.detect(image)
+  if running_mode == vision.RunningMode.VIDEO:
+    for timestamp_ms in (0, 33, 66):
+      detection_result = detector.detect_for_video(image, timestamp_ms)
+  else:
+    detection_result = detector.detect(image)
   detector.close()
 
   # STEP 5: Process the detection result. In this case, visualize it.
@@ -184,6 +196,11 @@ def main(argv: Optional[Sequence[str]] = None) -> vision.FaceDetectorResult:
       choices=sorted(DELEGATES),
       default='cpu')
   parser.add_argument(
+      '--running_mode',
+      help='Task running mode.',
+      choices=sorted(RUNNING_MODES),
+      default='image')
+  parser.add_argument(
       '--output',
       help='Where to write the annotated image.',
       default='face_detector_result.png')
@@ -195,7 +212,8 @@ def main(argv: Optional[Sequence[str]] = None) -> vision.FaceDetectorResult:
     image_file = 'image.jpg'
     download(IMAGE_URL, image_file)
 
-  return run(args.model, image_file, DELEGATES[args.delegate], args.output)
+  return run(args.model, image_file, DELEGATES[args.delegate], args.output,
+             RUNNING_MODES[args.running_mode])
 
 
 if __name__ == '__main__':

@@ -49,6 +49,10 @@ DELEGATES = {
     'cpu': python.BaseOptions.Delegate.CPU,
     'gpu': python.BaseOptions.Delegate.GPU,
 }
+RUNNING_MODES = {
+    'image': vision.RunningMode.IMAGE,
+    'video': vision.RunningMode.VIDEO,
+}
 
 plt.rcParams.update({
     'axes.spines.top': False,
@@ -144,7 +148,9 @@ def display_batch_of_images_with_gestures_and_hand_landmarks(
 def run(model: str,
         image_files: Sequence[str],
         delegate: python.BaseOptions.Delegate = python.BaseOptions.Delegate.CPU,
-        output: Optional[str] = None) -> List[vision.GestureRecognizerResult]:
+        output: Optional[str] = None,
+        running_mode: vision.RunningMode = vision.RunningMode.IMAGE
+        ) -> List[vision.GestureRecognizerResult]:
   """Recognizes the hand gesture in each image.
 
   Args:
@@ -152,24 +158,32 @@ def run(model: str,
     image_files: Paths of the images to recognize gestures in.
     delegate: The hardware to run the model on.
     output: Where to write the figure with the gestures and hand landmarks.
+    running_mode: IMAGE for single images, or VIDEO to feed video frames.
 
   Returns:
     The recognition result of each image, in the order of `image_files`.
   """
   # STEP 2: Create an GestureRecognizer object.
   base_options = python.BaseOptions(model_asset_path=model, delegate=delegate)
-  options = vision.GestureRecognizerOptions(base_options=base_options)
+  options = vision.GestureRecognizerOptions(base_options=base_options,
+                                            running_mode=running_mode)
   recognizer = vision.GestureRecognizer.create_from_options(options)
 
   recognition_results = []
   images = []
   results = []
+  timestamp_ms = 0
   for image_file_name in image_files:
     # STEP 3: Load the input image.
     image = mp.Image.create_from_file(image_file_name)
 
     # STEP 4: Recognize gestures in the input image.
-    recognition_result = recognizer.recognize(image)
+    if running_mode == vision.RunningMode.VIDEO:
+      for _ in range(3):
+        recognition_result = recognizer.recognize_for_video(image, timestamp_ms)
+        timestamp_ms += 33
+    else:
+      recognition_result = recognizer.recognize(image)
     recognition_results.append(recognition_result)
 
     # STEP 5: Process the result. In this case, visualize it.
@@ -214,6 +228,11 @@ def main(argv: Optional[Sequence[str]] = None
       choices=sorted(DELEGATES),
       default='cpu')
   parser.add_argument(
+      '--running_mode',
+      help='Task running mode.',
+      choices=sorted(RUNNING_MODES),
+      default='image')
+  parser.add_argument(
       '--output',
       help='Where to write the figure with the results.',
       default='gesture_recognizer_result.png')
@@ -226,7 +245,8 @@ def main(argv: Optional[Sequence[str]] = None
     for name in image_files:
       download(IMAGE_URL + name, name)
 
-  return run(args.model, image_files, DELEGATES[args.delegate], args.output)
+  return run(args.model, image_files, DELEGATES[args.delegate], args.output,
+             RUNNING_MODES[args.running_mode])
 
 
 if __name__ == '__main__':

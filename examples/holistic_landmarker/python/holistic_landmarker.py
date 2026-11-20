@@ -50,6 +50,10 @@ DELEGATES = {
     'cpu': python.BaseOptions.Delegate.CPU,
     'gpu': python.BaseOptions.Delegate.GPU,
 }
+RUNNING_MODES = {
+    'image': vision.RunningMode.IMAGE,
+    'video': vision.RunningMode.VIDEO,
+}
 
 # The notebook scales the image to this height before it runs the task.
 DESIRED_HEIGHT = 480
@@ -188,7 +192,9 @@ def run(model: str,
         delegate: python.BaseOptions.Delegate = python.BaseOptions.Delegate.CPU,
         output: Optional[str] = None,
         blendshapes_output: Optional[str] = None,
-        mask_output: Optional[str] = None) -> vision.HolisticLandmarkerResult:
+        mask_output: Optional[str] = None,
+        running_mode: vision.RunningMode = vision.RunningMode.IMAGE
+        ) -> vision.HolisticLandmarkerResult:
   """Detects the pose, face and hand landmarks of the person in an image.
 
   Args:
@@ -198,6 +204,7 @@ def run(model: str,
     output: Where to write the image with the landmarks drawn on it.
     blendshapes_output: Where to write the bar graph of the face blendshapes.
     mask_output: Where to write the segmentation mask of the person.
+    running_mode: IMAGE for a single image, or VIDEO to feed video frames.
 
   Returns:
     The detection result.
@@ -206,6 +213,7 @@ def run(model: str,
   base_options = python.BaseOptions(model_asset_path=model, delegate=delegate)
   options = vision.HolisticLandmarkerOptions(
       base_options=base_options,
+      running_mode=running_mode,
       output_face_blendshapes=True,
       output_segmentation_mask=True)
   detector = vision.HolisticLandmarker.create_from_options(options)
@@ -214,7 +222,11 @@ def run(model: str,
   image = load_resized_image(image_file)
 
   # STEP 4: Detect holistic landmarks from the input image.
-  detection_result = detector.detect(image)
+  if running_mode == vision.RunningMode.VIDEO:
+    for timestamp_ms in (0, 33, 66):
+      detection_result = detector.detect_for_video(image, timestamp_ms)
+  else:
+    detection_result = detector.detect(image)
   detector.close()
 
   # STEP 5: Process the detection result. In this case, visualize it.
@@ -270,6 +282,11 @@ def main(argv: Optional[Sequence[str]] = None
       choices=sorted(DELEGATES),
       default='cpu')
   parser.add_argument(
+      '--running_mode',
+      help='Task running mode.',
+      choices=sorted(RUNNING_MODES),
+      default='image')
+  parser.add_argument(
       '--output',
       help='Where to write the annotated image.',
       default='holistic_landmarker_result.png')
@@ -290,7 +307,8 @@ def main(argv: Optional[Sequence[str]] = None
     download(IMAGE_URL, image_file)
 
   return run(args.model, image_file, DELEGATES[args.delegate], args.output,
-             args.blendshapes_output, args.mask_output)
+             args.blendshapes_output, args.mask_output,
+             RUNNING_MODES[args.running_mode])
 
 
 if __name__ == '__main__':

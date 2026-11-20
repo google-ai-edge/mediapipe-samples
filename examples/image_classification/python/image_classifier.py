@@ -45,6 +45,10 @@ DELEGATES = {
     'cpu': python.BaseOptions.Delegate.CPU,
     'gpu': python.BaseOptions.Delegate.GPU,
 }
+RUNNING_MODES = {
+    'image': vision.RunningMode.IMAGE,
+    'video': vision.RunningMode.VIDEO,
+}
 
 plt.rcParams.update({
     'axes.spines.top': False,
@@ -119,7 +123,9 @@ def run(model: str,
         image_files: Sequence[str],
         max_results: int = 4,
         delegate: python.BaseOptions.Delegate = python.BaseOptions.Delegate.CPU,
-        output: Optional[str] = None) -> List[vision.ImageClassifierResult]:
+        output: Optional[str] = None,
+        running_mode: vision.RunningMode = vision.RunningMode.IMAGE
+        ) -> List[vision.ImageClassifierResult]:
   """Classifies each image.
 
   Args:
@@ -128,6 +134,7 @@ def run(model: str,
     max_results: The maximum number of categories to return per image.
     delegate: The hardware to run the model on.
     output: Where to write the figure with the top category of every image.
+    running_mode: IMAGE for single images, or VIDEO to feed video frames.
 
   Returns:
     The classification result of each image, in the order of `image_files`.
@@ -135,18 +142,27 @@ def run(model: str,
   # STEP 2: Create an ImageClassifier object.
   base_options = python.BaseOptions(model_asset_path=model, delegate=delegate)
   options = vision.ImageClassifierOptions(
-      base_options=base_options, max_results=max_results)
+      base_options=base_options,
+      running_mode=running_mode,
+      max_results=max_results)
   classifier = vision.ImageClassifier.create_from_options(options)
 
   classification_results = []
   images = []
   predictions = []
+  timestamp_ms = 0
   for image_name in image_files:
     # STEP 3: Load the input image.
     image = mp.Image.create_from_file(image_name)
 
     # STEP 4: Classify the input image.
-    classification_result = classifier.classify(image)
+    if running_mode == vision.RunningMode.VIDEO:
+      for _ in range(3):
+        classification_result = classifier.classify_for_video(
+            image, timestamp_ms)
+        timestamp_ms += 33
+    else:
+      classification_result = classifier.classify(image)
     classification_results.append(classification_result)
 
     # STEP 5: Process the classification result. In this case, visualize it.
@@ -192,6 +208,11 @@ def main(argv: Optional[Sequence[str]] = None
       choices=sorted(DELEGATES),
       default='cpu')
   parser.add_argument(
+      '--running_mode',
+      help='Task running mode.',
+      choices=sorted(RUNNING_MODES),
+      default='image')
+  parser.add_argument(
       '--output',
       help='Where to write the figure with the results.',
       default='image_classifier_result.png')
@@ -205,7 +226,8 @@ def main(argv: Optional[Sequence[str]] = None
       download(IMAGE_URL + name, name)
 
   return run(args.model, image_files, args.max_results,
-             DELEGATES[args.delegate], args.output)
+             DELEGATES[args.delegate], args.output,
+             RUNNING_MODES[args.running_mode])
 
 
 if __name__ == '__main__':

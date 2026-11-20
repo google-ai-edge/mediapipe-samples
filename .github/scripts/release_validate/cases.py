@@ -34,13 +34,15 @@ TASK_DEFINITIONS = [
         'task': 'object_detector',
         'heading': 'Object Detection',
         'sample': 'examples/object_detection/python/object_detector.py',
-        'modes': ['image'],
+        'modes': ['image', 'video'],
         'models': [
             {'id': 'efficientdet_lite0_int8', 'asset': 'efficientdet_lite0_int8.tflite'},
-            # Not in the notebook. The int8 model cannot run on the macOS GPU
-            # delegate (see KNOWN_UNSUPPORTED), so without a float model the
-            # task would not be validated on the GPU at all.
+            # The int8 model cannot run on the macOS GPU delegate (see
+            # KNOWN_UNSUPPORTED); the float models validate GPU execution too.
             {'id': 'efficientdet_lite0_float32', 'asset': 'efficientdet_lite0_float32.tflite'},
+            {'id': 'efficientdet_lite2_float32', 'asset': 'efficientdet_lite2_float32.tflite'},
+            {'id': 'ssd_mobilenet_v2_float32', 'asset': 'ssd_mobilenet_v2_float32.tflite'},
+            {'id': 'ssd_mobilenet_v2_float16', 'asset': 'ssd_mobilenet_v2_float16.tflite'},
         ],
     },
     {
@@ -48,15 +50,18 @@ TASK_DEFINITIONS = [
         'task': 'face_detector',
         'heading': 'Face Detection',
         'sample': 'examples/face_detector/python/face_detector.py',
-        'modes': ['image'],
-        'models': [{'id': 'blaze_face_short_range', 'asset': 'blaze_face_short_range.tflite'}],
+        'modes': ['image', 'video'],
+        'models': [
+            {'id': 'blaze_face_short_range', 'asset': 'blaze_face_short_range.tflite'},
+            {'id': 'blaze_face_full_range', 'asset': 'blaze_face_full_range.tflite'},
+        ],
     },
     {
         'domain': 'vision',
         'task': 'face_landmarker',
         'heading': 'Face Landmarker',
         'sample': 'examples/face_landmarker/python/face_landmarker.py',
-        'modes': ['image'],
+        'modes': ['image', 'video'],
         'models': [{'id': 'face_landmarker', 'asset': 'face_landmarker.task'}],
     },
     {
@@ -64,7 +69,7 @@ TASK_DEFINITIONS = [
         'task': 'hand_landmarker',
         'heading': 'Hand Landmarker',
         'sample': 'examples/hand_landmarker/python/hand_landmarker.py',
-        'modes': ['image'],
+        'modes': ['image', 'video'],
         'models': [{'id': 'hand_landmarker', 'asset': 'hand_landmarker.task'}],
     },
     {
@@ -72,15 +77,19 @@ TASK_DEFINITIONS = [
         'task': 'pose_landmarker',
         'heading': 'Pose Landmarker',
         'sample': 'examples/pose_landmarker/python/pose_landmarker.py',
-        'modes': ['image'],
-        'models': [{'id': 'pose_landmarker_heavy', 'asset': 'pose_landmarker_heavy.task'}],
+        'modes': ['image', 'video'],
+        'models': [
+            {'id': 'pose_landmarker_heavy', 'asset': 'pose_landmarker_heavy.task'},
+            {'id': 'pose_landmarker_full', 'asset': 'pose_landmarker_full.task'},
+            {'id': 'pose_landmarker_lite', 'asset': 'pose_landmarker_lite.task'},
+        ],
     },
     {
         'domain': 'vision',
         'task': 'holistic_landmarker',
         'heading': 'Holistic Landmarker',
         'sample': 'examples/holistic_landmarker/python/holistic_landmarker.py',
-        'modes': ['image'],
+        'modes': ['image', 'video'],
         'models': [{'id': 'holistic_landmarker', 'asset': 'holistic_landmarker.task'}],
     },
     {
@@ -88,15 +97,18 @@ TASK_DEFINITIONS = [
         'task': 'image_classifier',
         'heading': 'Image Classifier',
         'sample': 'examples/image_classification/python/image_classifier.py',
-        'modes': ['image'],
-        'models': [{'id': 'efficientnet_lite0', 'asset': 'efficientnet_lite0.tflite'}],
+        'modes': ['image', 'video'],
+        'models': [
+            {'id': 'efficientnet_lite0', 'asset': 'efficientnet_lite0.tflite'},
+            {'id': 'efficientnet_lite2', 'asset': 'efficientnet_lite2.tflite'},
+        ],
     },
     {
         'domain': 'vision',
         'task': 'gesture_recognizer',
         'heading': 'Gesture Recognizer',
         'sample': 'examples/gesture_recognizer/python/gesture_recognizer.py',
-        'modes': ['image'],
+        'modes': ['image', 'video'],
         'models': [{'id': 'gesture_recognizer', 'asset': 'gesture_recognizer.task'}],
     },
     {
@@ -104,7 +116,7 @@ TASK_DEFINITIONS = [
         'task': 'interactive_segmenter',
         'heading': 'Interactive Segmenter',
         'sample': 'examples/interactive_segmentation/python/interactive_segmenter.py',
-        'modes': ['point'],
+        'modes': ['point', 'negative', 'lasso'],
         'models': [{'id': 'magic_touch', 'asset': 'interactive_segmentation.task'}],
     },
     {
@@ -112,16 +124,25 @@ TASK_DEFINITIONS = [
         'task': 'image_segmenter',
         'heading': 'Image Segmentation',
         'sample': 'examples/image_segmentation/python/image_segmentation.py',
-        'modes': ['image-category'],
-        'models': [{'id': 'deeplab_v3', 'asset': 'deeplab_v3.tflite'}],
+        'modes': ['image-category', 'image-confidence', 'video'],
+        'models': [
+            {'id': 'deeplab_v3', 'asset': 'deeplab_v3.tflite'},
+            {'id': 'hair_segmenter', 'asset': 'hair_segmenter.tflite'},
+            {'id': 'selfie_segmenter', 'asset': 'selfie_segmenter.tflite'},
+            {'id': 'selfie_segmenter_landscape', 'asset': 'selfie_segmenter_landscape.tflite'},
+            {'id': 'selfie_multiclass', 'asset': 'selfie_multiclass_256x256.tflite'},
+        ],
     },
     {
         'domain': 'vision',
         'task': 'image_embedder',
         'heading': 'Image Embedding',
         'sample': 'examples/image_embedder/python/image_embedder.py',
-        'modes': ['image-pair'],
-        'models': [{'id': 'mobilenet_v3_small', 'asset': 'mobilenet_v3_small.tflite'}],
+        'modes': ['image-pair', 'video-pair'],
+        'models': [
+            {'id': 'mobilenet_v3_small', 'asset': 'mobilenet_v3_small.tflite'},
+            {'id': 'mobilenet_v3_large', 'asset': 'mobilenet_v3_large.tflite'},
+        ],
     },
 
     # --- Audio (3 tasks) ---
@@ -130,7 +151,7 @@ TASK_DEFINITIONS = [
         'task': 'audio_classifier',
         'heading': 'Audio Classifier',
         'sample': 'examples/audio_classifier/python/audio_classification.py',
-        'modes': ['file'],
+        'modes': ['file', 'stream'],
         'models': [{'id': 'yamnet', 'asset': 'yamnet.tflite'}],
     },
     {
@@ -138,7 +159,7 @@ TASK_DEFINITIONS = [
         'task': 'audio_transcriber',
         'heading': 'Audio Transcriber',
         'sample': 'examples/audio_transcriber/python/audio_transcriber.py',
-        'modes': ['file'],
+        'modes': ['file', 'stream'],
         'models': [
             {'id': 'parakeet_tdt_v3', 'asset': 'parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm', 'large': True},
         ],
@@ -167,7 +188,10 @@ TASK_DEFINITIONS = [
         'heading': 'Text Classification',
         'sample': 'examples/text_classification/python/text_classifier.py',
         'modes': ['classify'],
-        'models': [{'id': 'bert_classifier', 'asset': 'bert_classifier.tflite'}],
+        'models': [
+            {'id': 'bert_classifier', 'asset': 'bert_classifier.tflite'},
+            {'id': 'average_word_classifier', 'asset': 'average_word_classifier.tflite'},
+        ],
     },
     {
         'domain': 'text',
@@ -183,7 +207,11 @@ TASK_DEFINITIONS = [
         'heading': 'Text Embedding',
         'sample': 'examples/text_embedder/python/text_embedder.py',
         'modes': ['embed'],
-        'models': [{'id': 'bert_embedder', 'asset': 'bert_embedder.tflite'}],
+        'models': [
+            {'id': 'bert_embedder', 'asset': 'bert_embedder.tflite'},
+            {'id': 'universal_sentence_encoder', 'asset': 'universal_sentence_encoder.tflite'},
+            {'id': 'embedding_gemma', 'asset': 'embedding_gemma.task', 'large': True},
+        ],
     },
     {
         'domain': 'text',
@@ -232,7 +260,7 @@ TASK_DEFINITIONS = [
         'task': 'decision_maker',
         'heading': 'Decision Maker',
         'sample': 'examples/decision_maker/python/decision_maker.py',
-        'modes': ['triage'],
+        'modes': ['triage', 'individual'],
         'models': [
             {'id': 'embeddinggemma2_text_270m', 'asset': 'embeddinggemma-2-text-270m.litertlm', 'large': True},
         ],
@@ -258,13 +286,48 @@ KNOWN_UNSUPPORTED = [
         'reason': 'The Text Summarizer rejects the GPU delegate.',
     },
     {
+        'task': 'text_to_speech',
+        'model': 'pocket_tts_en',
+        'delegate': 'GPU',
+        'error': 'Only CPU delegate is supported.',
+        'reason': 'PocketTTS rejects the GPU delegate.',
+    },
+    {
+        'task': 'text_to_speech',
+        'model': 'phonon_31m_en',
+        'delegate': 'GPU',
+        'error': 'Only CPU delegate is supported.',
+        'reason': 'Phonon rejects the GPU delegate.',
+    },
+    {
         'task': 'object_detector',
         'model': 'efficientdet_lite0_int8',
         'delegate': 'GPU',
         'system': 'Darwin',
         'error': 'Quantized tensors are not supported by the macOS/iOS GPU delegate.',
         'reason': 'The macOS GPU delegate rejects quantized (int8) models. Object '
-                  'detection on the GPU is validated with the float32 model.',
+                  'detection on the GPU is validated with the float models.',
+    },
+    {
+        'task': 'text_classifier',
+        'delegate': 'GPU',
+        'system': 'Darwin',
+        'error': 'not supported by the macOS/iOS GPU delegate (only float32 input/output tensors are supported).',
+        'reason': 'The macOS GPU delegate rejects integer token input tensors.',
+    },
+    {
+        'task': 'language_detector',
+        'delegate': 'GPU',
+        'system': 'Darwin',
+        'error': 'not supported by the macOS/iOS GPU delegate (only float32 input/output tensors are supported).',
+        'reason': 'The macOS GPU delegate rejects string input tensors.',
+    },
+    {
+        'task': 'text_embedder',
+        'delegate': 'GPU',
+        'system': 'Darwin',
+        'error': 'not supported by the macOS/iOS GPU delegate (only float32 input/output tensors are supported).',
+        'reason': 'The macOS GPU delegate rejects string and integer token input tensors.',
     },
 ]
 

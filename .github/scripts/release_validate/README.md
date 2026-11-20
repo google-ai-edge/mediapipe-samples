@@ -7,11 +7,14 @@ work with a given MediaPipe release, on the CPU and on the GPU of this Mac?
 python3 .github/scripts/release_validate/run_local.py --mediapipe mediapipe==1.2.3
 ```
 
-It runs every sample in `examples/*/python/*.py` once per delegate and checks
-what the sample **returned** against a ground truth: the dog is found where the
-dog is, the sentence is negative, the clip is speech. A sample that runs without
-an error but returns a wrong result fails. The exit code is 0 only if every case
-passed.
+It runs every sample in `examples/*/python/*.py` across its supported models and
+modes on both delegates, and checks both what the sample **returned** and every
+output file (`.png` masks/annotations/figures and `.wav` audio) it **wrote to
+disk** against a ground truth: the dog is found where the dog is, the sentence
+is negative, the clip is speech, and `speech.wav` decodes cleanly and is heard
+as the input sentence by speech recognition. A sample that runs without an error
+but returns or writes a wrong result fails. The exit code is 0 only if every
+case passed.
 
 This is the Python counterpart of
 [`release_validate` in mediapipe-samples-web](https://github.com/google-ai-edge/mediapipe-samples-web/tree/main/.github/scripts/release_validate),
@@ -66,21 +69,21 @@ python3 .github/scripts/release_validate/run_local.py --list
 ## What runs
 
 A case is one task, model, mode and delegate, for example
-`vision__face_detector__blaze_face_short_range__image__GPU`. The matrix has 66
+`vision__face_detector__blaze_face_short_range__image__GPU`. The matrix has 162
 cases for the 22 samples, each on both delegates. `cases.py` lists them, and so
 does `--list`.
 
 | Domain | Tasks | Cases |
 |---|---|---|
-| vision | object detector (2 models), face detector, face / hand / pose / holistic landmarker, image classifier, gesture recognizer, interactive segmenter, image segmenter, image embedder | 24 |
-| audio | audio classifier, audio transcriber, text to speech (4 models, in one piece and as a stream) | 20 |
-| text | text classifier, language detector, text embedder, text proofreader, text summarizer (2 modes) | 12 |
+| vision | object detector (5 models, image + video), face detector (2 models, image + video), face / hand / holistic landmarker (image + video), pose landmarker (3 models, image + video), image classifier (2 models, image + video), gesture recognizer (image + video), interactive segmenter (point, negative, lasso), image segmenter (5 models: category, confidence, video), image embedder (2 models, image + video) | 108 |
+| audio | audio classifier (file + stream), audio transcriber (file + stream), text to speech (4 models, speak + stream) | 24 |
+| text | text classifier (2 models), language detector, text embedder (3 models), text proofreader, text summarizer (2 modes) | 18 |
 | retrieval | universal embedder (text-text, text-image, image-image), semantic retriever | 8 |
-| decision | decision maker | 2 |
+| decision | decision maker (schema + individual) | 4 |
 
-38 of the cases use small models. The other 28 (audio transcriber, text to
-speech, retrieval, decision) use models of 90 to 615 MB and are left out with
-`--small-models-only`.
+128 of the cases use small models. The other 34 (audio transcriber, text to
+speech, EmbeddingGemma text embedder, retrieval, decision) use models of 90 to
+615 MB and are left out with `--small-models-only`.
 
 For every case, `run_local.py` starts a new Python process (`worker.py`) that
 

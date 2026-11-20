@@ -39,6 +39,10 @@ DELEGATES = {
     'cpu': python.BaseOptions.Delegate.CPU,
     'gpu': python.BaseOptions.Delegate.GPU,
 }
+RUNNING_MODES = {
+    'image': vision.RunningMode.IMAGE,
+    'video': vision.RunningMode.VIDEO,
+}
 
 
 def download(url: str, path: str) -> None:
@@ -55,7 +59,8 @@ def run(model: str,
         second_image_file: str,
         l2_normalize: bool = True,
         quantize: bool = True,
-        delegate: python.BaseOptions.Delegate = python.BaseOptions.Delegate.CPU
+        delegate: python.BaseOptions.Delegate = python.BaseOptions.Delegate.CPU,
+        running_mode: vision.RunningMode = vision.RunningMode.IMAGE
         ) -> float:
   """Computes how similar two images are.
 
@@ -66,6 +71,7 @@ def run(model: str,
     l2_normalize: Whether to normalize the embeddings to length 1.
     quantize: Whether to quantize the embeddings to bytes.
     delegate: The hardware to run the model on.
+    running_mode: IMAGE for single images, or VIDEO to feed video frames.
 
   Returns:
     The cosine similarity of the embeddings of the two images.
@@ -73,7 +79,10 @@ def run(model: str,
   # Create options for Image Embedder
   base_options = python.BaseOptions(model_asset_path=model, delegate=delegate)
   options = vision.ImageEmbedderOptions(
-      base_options=base_options, l2_normalize=l2_normalize, quantize=quantize)
+      base_options=base_options,
+      running_mode=running_mode,
+      l2_normalize=l2_normalize,
+      quantize=quantize)
 
   # Create Image Embedder
   with vision.ImageEmbedder.create_from_options(options) as embedder:
@@ -81,8 +90,12 @@ def run(model: str,
     # Format images for MediaPipe
     first_image = mp.Image.create_from_file(first_image_file)
     second_image = mp.Image.create_from_file(second_image_file)
-    first_embedding_result = embedder.embed(first_image)
-    second_embedding_result = embedder.embed(second_image)
+    if running_mode == vision.RunningMode.VIDEO:
+      first_embedding_result = embedder.embed_for_video(first_image, 0)
+      second_embedding_result = embedder.embed_for_video(second_image, 33)
+    else:
+      first_embedding_result = embedder.embed(first_image)
+      second_embedding_result = embedder.embed(second_image)
 
     # Calculate and print similarity
     similarity = vision.ImageEmbedder.cosine_similarity(
@@ -123,6 +136,11 @@ def main(argv: Optional[Sequence[str]] = None) -> float:
       help='Hardware to run the model on.',
       choices=sorted(DELEGATES),
       default='cpu')
+  parser.add_argument(
+      '--running_mode',
+      help='Task running mode.',
+      choices=sorted(RUNNING_MODES),
+      default='image')
   args = parser.parse_args(argv)
 
   download(MODEL_URL, args.model)
@@ -133,7 +151,8 @@ def main(argv: Optional[Sequence[str]] = None) -> float:
       download(IMAGE_URL + name, name)
 
   return run(args.model, image_files[0], image_files[1], args.l2_normalize,
-             args.quantize, DELEGATES[args.delegate])
+             args.quantize, DELEGATES[args.delegate],
+             RUNNING_MODES[args.running_mode])
 
 
 if __name__ == '__main__':

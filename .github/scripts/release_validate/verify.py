@@ -13,10 +13,10 @@
 # limitations under the License.
 """Output verification.
 
-Pure functions that compare what a sample returned (as observed by worker.py)
-with an expectation from expectations.py. Nothing here imports MediaPipe, so
-every verifier is unit-tested by self_test.py with both a correct and an
-incorrect output.
+Pure functions that compare what a sample returned and wrote to disk (as
+observed by worker.py) with an expectation from expectations.py. Nothing here
+imports MediaPipe, so every verifier is unit-tested by self_test.py with both a
+correct and an incorrect output.
 """
 
 import itertools
@@ -126,8 +126,56 @@ def char_error_rate(reference, hypothesis):
   return _edit_distance(ref, hyp) / len(ref)
 
 
+def _verify_annotated_file(info, name='annotated.png'):
+  """Checks an image file on which boxes or landmarks were drawn."""
+  info = info or {}
+  size_ok = (info.get('exists') is True and info.get('channels') == 3
+             and bool(info.get('expectedWidth'))
+             and info.get('width') == info.get('expectedWidth')
+             and info.get('height') == info.get('expectedHeight'))
+  actual_size = (f"{info.get('width')}x{info.get('height')}x{info.get('channels')}"
+                 if info.get('exists') else 'missing')
+  expected_size = f"{info.get('expectedWidth')}x{info.get('expectedHeight')}x3"
+  changed = info.get('changedFraction')
+  return [
+      _check(f'{name} was written with the size of the image', size_ok, expected_size, actual_size),
+      _check(f'{name} has annotations drawn on the image', _in_range(changed, 0.0005, 0.5),
+             '0.0005 to 0.5 of pixels changed', 'none' if changed is None else changed),
+  ]
+
+
+def _verify_figure_file(info, name):
+  """Checks a rendered figure (bar chart or grid of images) written to disk."""
+  info = info or {}
+  ok = (info.get('exists') is True and (info.get('width') or 0) >= 400
+        and (info.get('height') or 0) >= 400 and info.get('channels') in (3, 4))
+  actual = f"{info.get('width')}x{info.get('height')}x{info.get('channels')}" if info.get('exists') else 'missing'
+  ink = info.get('inkFraction')
+  return [
+      _check(f'{name} was written as an image', ok, '>= 400x400, 3 or 4 channels', actual),
+      _check(f'{name} is not blank', _in_range(ink, 0.02, 0.95), '0.02 to 0.95 non-white pixels',
+             'none' if ink is None else ink),
+  ]
+
+
+def _verify_grayscale_mask_file(info, width, height, name='mask.png'):
+  """Checks a 3-channel grayscale PNG written from a [0, 1] confidence mask."""
+  info = info or {}
+  ok = (info.get('exists') is True and width > 0 and info.get('width') == width and info.get('height') == height
+        and info.get('channels') == 3 and info.get('grayscale') is True)
+  actual = (f"{info.get('width')}x{info.get('height')}x{info.get('channels')}, grayscale={info.get('grayscale')}"
+            if info.get('exists') else 'missing')
+  diff = info.get('maxDiff')
+  return [
+      _check(f'{name} was written as a grayscale mask of {width}x{height}', ok, f'{width}x{height}x3, grayscale=True',
+             actual),
+      _check(f'{name} matches the returned mask', _in_range(diff, 0, 0.005), '<= 0.005 max diff',
+             'none' if diff is None else diff),
+  ]
+
+
 def _verify_mask(mask, expected):
-  """A confidence mask: valid values, and the share and place of what it covers."""
+  """A confidence mask: valid values, the share and place of what it covers, and its PNG file."""
   name = expected.get('name', 'mask')
   if not mask:
     return [_check(f'{name} is returned', False, 'a mask', 'none')]
@@ -144,6 +192,7 @@ def _verify_mask(mask, expected):
   checks = [
       size_check,
       _check(f'{name} has one channel', mask.get('channels') == 1, 1, mask.get('channels', 'none')),
+      _check(f'{name} values are finite', mask.get('nonFinite', 0) == 0, 0, mask.get('nonFinite', 'none')),
       _check(f'{name} holds confidences from 0 to 1',
              _in_range(mask.get('min'), 0, 1) and _in_range(mask.get('max'), 0, 1), '0 to 1',
              f"{_fmt(mask.get('min'))} to {_fmt(mask.get('max'))}"),
@@ -153,6 +202,8 @@ def _verify_mask(mask, expected):
                        f'{low} to {high}', mask.get('fraction')))
   if 'centroidWithin' in expected:
     checks.append(_check_within(f'{name}: centre', mask.get('centroid'), expected['centroidWithin']))
+  if expected.get('fileName'):
+    checks += _verify_grayscale_mask_file(mask.get('file'), width, height, expected['fileName'])
   return checks
 
 
@@ -233,6 +284,10 @@ def _verify_landmark_run(data, expected):
                          'none' if value is None else value))
   if 'mask' in expected:
     checks += _verify_mask(data.get('mask'), expected['mask'])
+  if expected.get('annotatedFile'):
+    checks += _verify_annotated_file(data.get('annotatedFile'), expected['annotatedFile'])
+  if expected.get('figureFile'):
+    checks += _verify_figure_file(data.get('figureFile'), expected['figureFile'])
   return checks
 
 
@@ -265,6 +320,7 @@ def _verify_detections(runs, expectation):
     others = sorted({str(d.get('label')) for d in detections if d.get('label') not in expectation['onlyLabels']})
     checks.append(_check('nothing else is detected', not others, 'only ' + ', '.join(expectation['onlyLabels']),
                          ', '.join(others) or 'nothing else'))
+  checks += _verify_annotated_file(data.get('annotatedFile'))
   return checks
 
 
@@ -290,6 +346,7 @@ def _verify_faces(runs, expectation):
   px, py = expectation['boxContains']['x'] * width, expectation['boxContains']['y'] * height
   contains = bool(box) and box['x'] <= px <= box['x'] + box['width'] and box['y'] <= py <= box['y'] + box['height']
   checks.append(_check('face box contains the nose', contains, True, contains))
+  checks += _verify_annotated_file(data.get('annotatedFile'))
   return checks
 
 
@@ -299,18 +356,24 @@ def _verify_landmarks(runs, expectation):
   checks = []
   multiple = len(expectation['runs']) > 1
   for expected in expectation['runs']:
-    present = expected['key'] in by_key
-    if multiple or not present:
-      checks.append(_check(f"{expected['key']}: has a result", present, True, present))
+    tag = expected['key']
+    present = tag in by_key
+    if multiple:
+      checks.append(_check(f'{tag}: has a result', present, True, present))
     if not present:
+      if not multiple:
+        checks.append(_check('has a result', False, True, False))
       continue
-    run_checks = _verify_landmark_run(by_key[expected['key']], expected)
-    checks += _prefix(run_checks, expected['key']) if multiple else run_checks
+    run_checks = _verify_landmark_run(by_key[tag], expected)
+    checks += _prefix(run_checks, tag) if multiple else run_checks
+  if expectation.get('figureFile'):
+    first_data = (runs[0].get('data') or {}) if runs else {}
+    checks += _verify_figure_file(first_data.get('figureFile'), expectation['figureFile'])
   return checks
 
 
 def _verify_classification(runs, expectation):
-  """Image classification: the top label is what the photo shows."""
+  """Image classification: each photo gets one of the labels of what it shows."""
   by_key = _runs_by_key(runs)
   checks = []
   for expected in expectation['runs']:
@@ -320,32 +383,37 @@ def _verify_classification(runs, expectation):
     if not present:
       continue
     categories = by_key[tag].get('categories') or []
+    checks.append(_check(f'{tag}: category count', 1 <= len(categories) <= expectation['maxResults'],
+                         f"1 to {expectation['maxResults']}", len(categories)))
     top = _top(categories)
-    accepted = expected['labels']
-    checks.append(_check(f'{tag}: top label', bool(top) and top['label'] in accepted, ' or '.join(accepted),
+    wanted = expected['labels']
+    checks.append(_check(f'{tag}: top label', bool(top) and top['label'] in wanted, ' or '.join(wanted),
                          top['label'] if top else 'none'))
     checks.append(_check(f'{tag}: top score', bool(top) and _in_range(top['score'], expected['minScore'], 1),
                          f">= {expected['minScore']}", top['score'] if top else 'none'))
     if 'minGroupScore' in expected:
-      total = sum(c['score'] for c in categories if c['label'] in accepted)
-      checks.append(_check(f'{tag}: combined score of ' + ', '.join(accepted), total >= expected['minGroupScore'],
-                           f">= {expected['minGroupScore']}", total))
-    scores = [c['score'] for c in categories]
-    valid = all(_in_range(s, 0, 1) for s in scores) and scores == sorted(scores, reverse=True)
-    checks.append(_check(f'{tag}: scores are probabilities, highest first', valid, True, valid))
-    if 'maxResults' in expectation:
-      checks.append(_check(f'{tag}: number of categories', 1 <= len(categories) <= expectation['maxResults'],
-                           f"1 to {expectation['maxResults']}", len(categories)))
+      group_score = sum(c['score'] for c in categories if c['label'] in wanted and _is_number(c['score']))
+      checks.append(_check(f'{tag}: combined score of matching classes',
+                           _in_range(group_score, expected['minGroupScore'], 1.01),
+                           f">= {expected['minGroupScore']}", group_score))
+    valid = all(_in_range(c['score'], 0, 1) for c in categories)
+    checks.append(_check(f'{tag}: scores are probabilities', valid, True, valid))
+  first_data = (runs[0].get('data') or {}) if runs else {}
+  checks += _verify_figure_file(first_data.get('figureFile'), 'annotated.png')
   return checks
 
 
 def _verify_similarity(runs, expectation):
-  """Embedders: each pair scores in the range its content implies."""
+  """Embedding tasks: cosine similarities lie where they should, in order."""
   by_key = _runs_by_key(runs)
   checks, values = [], {}
   for expected in expectation['runs']:
     tag = expected['key']
-    value = by_key.get(tag, {}).get('similarity')
+    present = tag in by_key
+    checks.append(_check(f'{tag}: has a result', present, True, present))
+    if not present:
+      continue
+    value = by_key[tag].get('similarity')
     values[tag] = value
     low, high = expected['range']
     checks.append(_check(f'{tag}: cosine similarity', _in_range(value, low, high), f'{low} to {high}',
@@ -399,8 +467,10 @@ def _verify_audio_classification(runs, expectation):
   data = (runs[0].get('data') or {}) if runs else {}
   results = data.get('results') or []
   checks = [_check('number of results', len(results) == expectation['results'], expectation['results'], len(results))]
-  timestamps = [r.get('timestampMs') for r in results]
-  wanted = [i * expectation['windowMs'] for i in range(len(results))]
+  # In AUDIO_STREAM mode, close() flushes the partial trailing chunk at Timestamp::Max().
+  checked = expectation['fullWindows'] if expectation.get('stream') else len(results)
+  timestamps = [r.get('timestampMs') for r in results[:checked]]
+  wanted = [i * expectation['windowMs'] for i in range(checked)]
   checks.append(_check('timestamps of the windows', timestamps == wanted, wanted, timestamps))
   full = results[:expectation['fullWindows']]
   checks.append(_check('full windows classified', len(full) == expectation['fullWindows'],
@@ -443,7 +513,7 @@ def _verify_transcript(runs, expectation):
 
 
 def _verify_speech(runs, expectation):
-  """Speech synthesis: valid audio of a plausible length that says the text."""
+  """Speech synthesis: valid audio and speech.wav file that say the text."""
   data = (runs[0].get('data') or {}) if runs else {}
   pieces = data.get('pieces') or []
   if expectation['stream']:
@@ -471,6 +541,21 @@ def _verify_speech(runs, expectation):
                        f">= {expectation['minRms']}", data.get('rms', 'none')))
   checks.append(_check('within -1 to 1 (peak level)', _in_range(data.get('peak'), 0, expectation['maxPeak'] + 1e-6),
                        f"<= {expectation['maxPeak']}", data.get('peak', 'none')))
+
+  # On-disk WAV file verification.
+  wav = data.get('wavFile') or {}
+  total_samples = sum(p.get('samples', 0) for p in pieces)
+  pcm_ok = wav.get('exists') is True and wav.get('channels') == 1 and wav.get('sampleWidth') == 2
+  actual_pcm = (f"{wav.get('channels')} ch, {wav.get('sampleWidth')} B/sample" if wav.get('exists') else 'missing')
+  checks.append(_check('speech.wav is mono 16-bit PCM', pcm_ok, '1 ch, 2 B/sample', actual_pcm))
+  header_ok = (bool(pieces) and wav.get('exists') is True and wav.get('sampleRateHz') == data.get('sampleRateHz')
+               and wav.get('samples') == total_samples and total_samples > 0)
+  actual_header = (f"{wav.get('samples')} samples at {wav.get('sampleRateHz')} Hz" if wav.get('exists') else 'missing')
+  checks.append(_check('speech.wav has the sample rate and length of the audio', header_ok,
+                       f"{total_samples} samples at {data.get('sampleRateHz')} Hz", actual_header))
+  checks.append(_check('speech.wav matches the returned samples', _in_range(wav.get('maxDiff'), 0, 0.0002),
+                       '<= 0.0002 max diff', 'none' if wav.get('maxDiff') is None else wav.get('maxDiff')))
+
   if not expectation['stream']:
     # One timestamp per word of the text, in order, inside the clip.
     stamps = data.get('wordTimestamps') or []
@@ -484,14 +569,14 @@ def _verify_speech(runs, expectation):
     valid = valid and starts == sorted(starts)
     checks.append(_check('word timestamps are in order and inside the clip', valid, f'0 to {duration} s, ascending',
                          f'{times[0][0]} to {times[-1][1]} s' if times else 'none'))
-  # Round trip through the Audio Transcriber.
+  # Round trip of speech.wav through the Audio Transcriber.
   heard = data.get('heard')
   if data.get('heardError') or heard is None:
-    checks.append(_check('speech recognition of the audio ran', False, 'a transcript',
+    checks.append(_check('speech recognition of speech.wav ran', False, 'a transcript',
                          data.get('heardError') or 'none'))
   else:
     rate = char_error_rate(expectation['text'], heard)
-    checks.append(_check('speech recognition hears the text (letter error rate)',
+    checks.append(_check('speech recognition hears the text in speech.wav (letter error rate)',
                          bool(heard.strip()) and rate <= expectation['maxCharErrorRate'],
                          f"\"{expectation['text']}\" with a letter error rate <= {expectation['maxCharErrorRate']}",
                          f'"{heard}" (letter error rate {rate:.2f})'))
@@ -573,13 +658,13 @@ def _verify_decisions(runs, expectation):
 
 
 def _verify_segmentation(runs, expectation):
-  """Image segmentation: each category covers the share of the photo it occupies."""
+  """Image segmentation: category mask, optional confidence mask, and output PNGs."""
   data = (runs[0].get('data') or {}) if runs else {}
+  img_w, img_h = data.get('imageWidth') or 0, data.get('imageHeight') or 0
   checks = [
       _check('category mask has the size of the image',
-             bool(data.get('maskWidth')) and data.get('maskWidth') == data.get('imageWidth')
-             and data.get('maskHeight') == data.get('imageHeight'),
-             f"{data.get('imageWidth')}x{data.get('imageHeight')}", f"{data.get('maskWidth')}x{data.get('maskHeight')}"),
+             bool(data.get('maskWidth')) and data.get('maskWidth') == img_w and data.get('maskHeight') == img_h,
+             f'{img_w}x{img_h}', f"{data.get('maskWidth')}x{data.get('maskHeight')}"),
       _check('category names of the model', len(data.get('labels') or []) == expectation['labelCount'],
              expectation['labelCount'], len(data.get('labels') or [])),
   ]
@@ -598,28 +683,71 @@ def _verify_segmentation(runs, expectation):
   names = ', '.join(sorted(label for label in classes if label not in wanted)) or 'none'
   checks.append(_check('share of any other category', other <= expectation['maxOther'],
                        f"<= {expectation['maxOther']}", f'{other:.4f} ({names})'))
+
+  conf_exp = expectation.get('confidence')
+  if conf_exp:
+    conf = data.get('confidence') or {}
+    checks.append(_check('confidence masks returned for all categories',
+                         conf.get('count') == expectation['labelCount'] and conf.get('category') == conf_exp['label'],
+                         f"{expectation['labelCount']} masks ({conf_exp['label']})",
+                         f"{conf.get('count', 'none')} ({conf.get('category', 'none')})"))
+    conf_mask = dict(conf, imageWidth=img_w, imageHeight=img_h) if conf else None
+    checks += _verify_mask(conf_mask, {'name': f'confidence mask of "{conf_exp["label"]}"',
+                                       'fraction': conf_exp['fraction'],
+                                       'centroidWithin': conf_exp['centroidWithin']})
+    checks.append(_check(f'confidence mask of "{conf_exp["label"]}": peak confidence',
+                         _in_range(conf.get('max'), conf_exp['minPeak'], 1),
+                         f">= {conf_exp['minPeak']}", conf.get('max', 'none')))
+    checks += _verify_grayscale_mask_file(data.get('maskFile'), img_w, img_h, 'mask.png')
+  else:
+    mask_file = data.get('maskFile') or {}
+    mask_ok = (mask_file.get('exists') is True and img_w > 0 and mask_file.get('width') == img_w
+               and mask_file.get('height') == img_h and mask_file.get('channels') == 3
+               and mask_file.get('grayscale') is True)
+    actual_mask = (f"{mask_file.get('width')}x{mask_file.get('height')}x{mask_file.get('channels')}, "
+                   f"grayscale={mask_file.get('grayscale')}" if mask_file.get('exists') else 'missing')
+    checks.append(_check(f'mask.png was written as a grayscale mask of {img_w}x{img_h}', mask_ok,
+                         f'{img_w}x{img_h}x3, grayscale=True', actual_mask))
+    checks.append(_check('mask.png foreground matches the category mask',
+                         _in_range(mask_file.get('fgDiff'), 0, 0.005), '<= 0.005 foreground diff',
+                         'none' if mask_file.get('fgDiff') is None else mask_file.get('fgDiff')))
+
+  blur_file = data.get('blurFile') or {}
+  blur_ok = (blur_file.get('exists') is True and img_w > 0 and blur_file.get('width') == img_w
+             and blur_file.get('height') == img_h and blur_file.get('channels') == 3)
+  actual_blur = (f"{blur_file.get('width')}x{blur_file.get('height')}x{blur_file.get('channels')}"
+                 if blur_file.get('exists') else 'missing')
+  checks.append(_check(f'blurred_background.png was written with size {img_w}x{img_h}', blur_ok,
+                       f'{img_w}x{img_h}x3', actual_blur))
+  checks.append(_check('blurred_background.png keeps the foreground sharp',
+                       _in_range(blur_file.get('fgMeanDiff'), 0, 0.5), '<= 0.5 mean pixel diff',
+                       'none' if blur_file.get('fgMeanDiff') is None else blur_file.get('fgMeanDiff')))
+  checks.append(_check('blurred_background.png blurs the background',
+                       _in_range(blur_file.get('bgMeanDiff'), 1.5, 255), '>= 1.5 mean pixel diff',
+                       'none' if blur_file.get('bgMeanDiff') is None else blur_file.get('bgMeanDiff')))
   return checks
 
 
 def _verify_selection(runs, expectation):
-  """Interactive segmentation: the mask selects the object that was clicked."""
+  """Interactive segmentation: the mask and overlay PNG select the intended region."""
   by_key = _runs_by_key(runs)
   checks = []
   for expected in expectation['runs']:
-    tag = f"click on the {expected['key']}"
+    tag = f"selection of {expected['key']}"
     present = expected['key'] in by_key
     checks.append(_check(f'{tag}: has a result', present, True, present))
     if not present:
       continue
     data = by_key[expected['key']]
+    img_w, img_h = data.get('imageWidth') or 0, data.get('imageHeight') or 0
     mask = data.get('mask') or {}
     checks.append(_check(f'{tag}: mask has one channel of confidences', mask.get('channels') == 1, 1,
                          mask.get('channels', 'none')))
+    checks.append(_check(f'{tag}: mask values are finite', mask.get('nonFinite', 0) == 0, 0,
+                         mask.get('nonFinite', 'none')))
     checks.append(_check(f'{tag}: mask has the size of the image',
-                         bool(mask.get('width')) and mask.get('width') == data.get('imageWidth')
-                         and mask.get('height') == data.get('imageHeight'),
-                         f"{data.get('imageWidth')}x{data.get('imageHeight')}",
-                         f"{mask.get('width')}x{mask.get('height')}"))
+                         bool(mask.get('width')) and mask.get('width') == img_w and mask.get('height') == img_h,
+                         f'{img_w}x{img_h}', f"{mask.get('width')}x{mask.get('height')}"))
     checks.append(_check(f'{tag}: confidences are from 0 to 1',
                          _in_range(mask.get('min'), 0, 1) and _in_range(mask.get('max'), 0, 1), '0 to 1',
                          f"{_fmt(mask.get('min'))} to {_fmt(mask.get('max'))}"))
@@ -632,7 +760,7 @@ def _verify_selection(runs, expectation):
               and bounds['minY'] >= limit['minY'] and bounds['maxY'] <= limit['maxY'])
     actual = (f"x {bounds['minX']:.3f}-{bounds['maxX']:.3f}, y {bounds['minY']:.3f}-{bounds['maxY']:.3f}"
               if bounds else 'none')
-    checks.append(_check(f'{tag}: selection stays on the {expected["key"]}', inside,
+    checks.append(_check(f'{tag}: selection stays within bounds', inside,
                          f"x {limit['minX']}-{limit['maxX']}, y {limit['minY']}-{limit['maxY']}", actual))
     probes = data.get('probes') or {}
     for name in expected['selected']:
@@ -640,6 +768,21 @@ def _verify_selection(runs, expectation):
     for name in expected['notSelected']:
       checks.append(_check(f'{tag}: {name} is not selected', probes.get(name) is False, False,
                            probes.get(name, 'none')))
+
+    overlay = data.get('overlayFile') or {}
+    overlay_ok = (overlay.get('exists') is True and img_w > 0 and overlay.get('width') == img_w
+                  and overlay.get('height') == img_h and overlay.get('channels') == 3)
+    actual_overlay = (f"{overlay.get('width')}x{overlay.get('height')}x{overlay.get('channels')}"
+                      if overlay.get('exists') else 'missing')
+    checks.append(_check(f'{tag}: overlay PNG was written with size {img_w}x{img_h}', overlay_ok,
+                         f'{img_w}x{img_h}x3', actual_overlay))
+    checks.append(_check(f'{tag}: overlay PNG tints the selected pixels green',
+                         _in_range(overlay.get('selectedGreenGain'), 65, 88), '65 to 88 green gain',
+                         'none' if overlay.get('selectedGreenGain') is None else overlay.get('selectedGreenGain')))
+    checks.append(_check(f'{tag}: overlay PNG leaves unselected pixels unchanged',
+                         _in_range(overlay.get('outsideUnchangedFraction'), 0.95, 1.0), '>= 0.95 unchanged',
+                         'none' if overlay.get('outsideUnchangedFraction') is None
+                         else overlay.get('outsideUnchangedFraction')))
   return checks
 
 
