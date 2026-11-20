@@ -1,19 +1,30 @@
 # Pinned versions of everything the validation environment installs, except
 # MediaPipe itself, which is the package under test (see --mediapipe).
 #
-# Python 3.12, macOS arm64. Resolved on 2026-11-19 by installing mediapipe 1.2.3
-# and scipy into an empty environment, then running `pip freeze`.
+# Python 3.12, macOS arm64. Resolved on 2026-11-19 by installing mediapipe,
+# scipy and huggingface_hub into an empty environment, then running
+# `pip freeze`.
 #
 # To update: run the validation once with --no-constraints, review the
 # pip-freeze.txt it writes into the report, and copy it here without the
 # mediapipe line.
 absl-py==2.5.1
+anyio==4.16.0
 certifi==2026.10.23
 cffi==2.1.1
+click==8.5.1
 contourpy==1.4.0
 cycler==0.12.1
+filelock==4.2.10
 flatbuffers==25.12.19
 fonttools==4.67.0
+fsspec==2026.9.0
+h11==0.16.0
+hf-xet==1.8.0
+httpcore2==2.16.0
+httpx2==2.16.0
+huggingface_hub==2.4.0
+idna==3.20
 kiwisolver==1.5.1
 matplotlib==3.11.2
 numpy==2.5.4
@@ -23,6 +34,10 @@ pillow==13.0.0
 pycparser==3.12
 pyparsing==3.3.3
 python-dateutil==4.0.0
+PyYAML==6.0.3
 scipy==1.18.1
 sounddevice==0.5.6
+tqdm==4.70.1
+truststore==0.10.5
+typing_extensions==4.16.0
 tzdata==2026.6

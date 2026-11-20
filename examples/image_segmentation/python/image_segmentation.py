@@ -15,7 +15,7 @@
 
 This is the plain Python version of image_segmentation.ipynb.
 
-  pip install mediapipe
+  pip install mediapipe huggingface_hub
   python image_segmentation.py
 
 The model and the sample image are downloaded on first use. Two images are
@@ -29,13 +29,15 @@ import urllib.request
 from typing import List, Optional, Sequence, Tuple
 
 import cv2
+from huggingface_hub import hf_hub_download
 import mediapipe as mp
 import numpy as np
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from mediapipe.tasks.python.vision import image_segmenter
 
-MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-ImageSegmenter-DeepLab-V3/resolve/main/deeplab_v3.tflite'
+MODEL_REPO = 'litert-community/MediaPipe-ImageSegmenter-DeepLab-V3'
+MODEL_FILENAME = 'deeplab_v3.tflite'
 IMAGE_URL = 'https://storage.googleapis.com/mediapipe-assets/segmentation_input_rotation0.jpg'
 
 DELEGATES = {
@@ -170,8 +172,9 @@ def main(argv: Optional[Sequence[str]] = None
       formatter_class=argparse.RawDescriptionHelpFormatter)
   parser.add_argument(
       '--model',
-      help='Path of the image segmentation model. Downloaded if it is missing.',
-      default='deeplabv3.tflite')
+      help='Path of the image segmentation model. Downloaded from Hugging Face '
+      'if omitted.',
+      default=None)
   parser.add_argument(
       '--image',
       help='Path of the input image. Without it, a sample image is downloaded.',
@@ -201,13 +204,14 @@ def main(argv: Optional[Sequence[str]] = None
       default='image_segmentation_blurred_background.png')
   args = parser.parse_args(argv)
 
-  download(MODEL_URL, args.model)
+  model_path = args.model or hf_hub_download(
+      repo_id=MODEL_REPO, filename=MODEL_FILENAME)
   image_file = args.image
   if image_file is None:
     image_file = 'segmentation_input_rotation0.jpg'
     download(IMAGE_URL, image_file)
 
-  return run(args.model, image_file, DELEGATES[args.delegate], args.output,
+  return run(model_path, image_file, DELEGATES[args.delegate], args.output,
              args.blur_output, args.confidence_category,
              RUNNING_MODES[args.running_mode])
 

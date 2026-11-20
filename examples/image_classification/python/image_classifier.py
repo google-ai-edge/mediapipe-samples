@@ -15,7 +15,7 @@
 
 This is the plain Python version of image_classifier.ipynb.
 
-  pip install mediapipe
+  pip install mediapipe huggingface_hub
   python image_classifier.py
 
 The model and the sample images are downloaded on first use. A figure with the
@@ -32,11 +32,13 @@ import matplotlib
 
 matplotlib.use('Agg')  # Render to files; no display is needed.
 from matplotlib import pyplot as plt
+from huggingface_hub import hf_hub_download
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-ImageClassifier-EfficientNet-Lite0/resolve/main/efficientnet_lite0_float32.tflite'
+MODEL_REPO = 'litert-community/MediaPipe-ImageClassifier-EfficientNet-Lite0'
+MODEL_FILENAME = 'efficientnet_lite0_float32.tflite'
 # The images are from Pixabay.
 IMAGE_URL = 'https://storage.googleapis.com/mediapipe-tasks/image_classifier/'
 IMAGE_FILENAMES = ['burger.jpg', 'cat.jpg']
@@ -188,9 +190,9 @@ def main(argv: Optional[Sequence[str]] = None
       formatter_class=argparse.RawDescriptionHelpFormatter)
   parser.add_argument(
       '--model',
-      help='Path of the image classification model. Downloaded if it is '
-      'missing.',
-      default='classifier.tflite')
+      help='Path of the image classification model. Downloaded from Hugging '
+      'Face if omitted.',
+      default=None)
   parser.add_argument(
       '--images',
       help='Paths of the input images. Without it, sample images are '
@@ -218,14 +220,15 @@ def main(argv: Optional[Sequence[str]] = None
       default='image_classifier_result.png')
   args = parser.parse_args(argv)
 
-  download(MODEL_URL, args.model)
+  model_path = args.model or hf_hub_download(
+      repo_id=MODEL_REPO, filename=MODEL_FILENAME)
   image_files = args.images
   if image_files is None:
     image_files = IMAGE_FILENAMES
     for name in image_files:
       download(IMAGE_URL + name, name)
 
-  return run(args.model, image_files, args.max_results,
+  return run(model_path, image_files, args.max_results,
              DELEGATES[args.delegate], args.output,
              RUNNING_MODES[args.running_mode])
 

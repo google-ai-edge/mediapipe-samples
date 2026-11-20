@@ -15,7 +15,7 @@
 
 This is the plain Python version of interactive_segmenter.ipynb.
 
-  pip install mediapipe
+  pip install mediapipe huggingface_hub
   python interactive_segmenter.py --x 0.68 --y 0.68
 
 The model and the sample image are downloaded on first use. The object at the
@@ -30,13 +30,15 @@ import urllib.request
 from typing import Optional, Sequence
 
 import cv2
+from huggingface_hub import hf_hub_download
 import mediapipe as mp
 import numpy as np
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from mediapipe.tasks.python.vision import interactive_segmenter
 
-MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-InteractiveSegmenter-MagicTouch/resolve/main/interactive_segmentation.task'
+MODEL_REPO = 'litert-community/MediaPipe-InteractiveSegmenter-MagicTouch'
+MODEL_FILENAME = 'interactive_segmentation.task'
 IMAGE_URL = 'https://storage.googleapis.com/mediapipe-assets/cats_and_dogs.jpg'
 
 DELEGATES = {
@@ -224,9 +226,9 @@ def main(argv: Optional[Sequence[str]] = None) -> mp.Image:
       formatter_class=argparse.RawDescriptionHelpFormatter)
   parser.add_argument(
       '--model',
-      help='Path of the interactive segmentation model. Downloaded if it is '
-      'missing.',
-      default='model.tflite')
+      help='Path of the interactive segmentation model. Downloaded from '
+      'Hugging Face if omitted.',
+      default=None)
   parser.add_argument(
       '--image',
       help='Path of the input image. Without it, a sample image is downloaded.',
@@ -268,13 +270,14 @@ def main(argv: Optional[Sequence[str]] = None) -> mp.Image:
       default='interactive_segmenter_result.png')
   args = parser.parse_args(argv)
 
-  download(MODEL_URL, args.model)
+  model_path = args.model or hf_hub_download(
+      repo_id=MODEL_REPO, filename=MODEL_FILENAME)
   image_file = args.image
   if image_file is None:
     image_file = 'cats_and_dogs.jpg'
     download(IMAGE_URL, image_file)
 
-  return run(args.model, image_file, args.x, args.y, DELEGATES[args.delegate],
+  return run(model_path, image_file, args.x, args.y, DELEGATES[args.delegate],
              args.output, args.negative_stroke, args.lasso)
 
 

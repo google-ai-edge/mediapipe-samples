@@ -15,7 +15,7 @@
 
 This is the plain Python version of image_embedder.ipynb.
 
-  pip install mediapipe
+  pip install mediapipe huggingface_hub
   python image_embedder.py
 
 The model and the two sample images are downloaded on first use. The cosine
@@ -27,11 +27,13 @@ import os
 import urllib.request
 from typing import Optional, Sequence
 
+from huggingface_hub import hf_hub_download
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-ImageEmbedder-MobileNet-V3-Small/resolve/main/mobilenet_v3_small.tflite'
+MODEL_REPO = 'litert-community/MediaPipe-ImageEmbedder-MobileNet-V3-Small'
+MODEL_FILENAME = 'mobilenet_v3_small.tflite'
 IMAGE_URL = 'https://storage.googleapis.com/mediapipe-assets/'
 IMAGE_FILENAMES = ['burger.jpg', 'burger_crop.jpg']
 
@@ -112,8 +114,9 @@ def main(argv: Optional[Sequence[str]] = None) -> float:
       formatter_class=argparse.RawDescriptionHelpFormatter)
   parser.add_argument(
       '--model',
-      help='Path of the image embedding model. Downloaded if it is missing.',
-      default='embedder.tflite')
+      help='Path of the image embedding model. Downloaded from Hugging Face if '
+      'omitted.',
+      default=None)
   parser.add_argument(
       '--images',
       help='Paths of the two images to compare. Without it, two sample images '
@@ -143,14 +146,15 @@ def main(argv: Optional[Sequence[str]] = None) -> float:
       default='image')
   args = parser.parse_args(argv)
 
-  download(MODEL_URL, args.model)
+  model_path = args.model or hf_hub_download(
+      repo_id=MODEL_REPO, filename=MODEL_FILENAME)
   image_files = args.images
   if image_files is None:
     image_files = IMAGE_FILENAMES
     for name in image_files:
       download(IMAGE_URL + name, name)
 
-  return run(args.model, image_files[0], image_files[1], args.l2_normalize,
+  return run(model_path, image_files[0], image_files[1], args.l2_normalize,
              args.quantize, DELEGATES[args.delegate],
              RUNNING_MODES[args.running_mode])
 

@@ -13,7 +13,7 @@
 # limitations under the License.
 """Answers questions about a text with the MediaPipe Decision Maker task.
 
-  pip install mediapipe
+  pip install mediapipe huggingface_hub
   python decision_maker.py --text "We were charged twice on invoice #4821."
 
 The Decision Maker answers yes/no questions, multiple-choice questions and
@@ -23,14 +23,14 @@ and how severe is it? The model (about 165 MB) is downloaded on first use.
 """
 
 import argparse
-import os
-import urllib.request
 from typing import Any, Dict, Optional, Sequence
 
+from huggingface_hub import hf_hub_download
 from mediapipe.tasks import python
 from mediapipe.tasks.python import decision
 
-MODEL_URL = 'https://huggingface.co/litert-community/embeddinggemma-2-text-270m-litert-lm/resolve/main/embeddinggemma-2-text-270m.litertlm'
+MODEL_REPO = 'litert-community/embeddinggemma-2-text-270m-litert-lm'
+MODEL_FILENAME = 'embeddinggemma-2-text-270m.litertlm'
 
 # The support ticket that is triaged by default.
 INPUT_TEXT = ('Urgent: our production database pipeline crashes with a fatal '
@@ -63,15 +63,6 @@ DELEGATES = {
     'cpu': python.BaseOptions.Delegate.CPU,
     'gpu': python.BaseOptions.Delegate.GPU,
 }
-
-
-def download(url: str, path: str) -> None:
-  """Downloads `url` to `path` unless the file is already there."""
-  if os.path.exists(path):
-    return
-  print(f'Downloading {url}')
-  urllib.request.urlretrieve(url, path + '.download')
-  os.replace(path + '.download', path)
 
 
 def run(model: str,
@@ -134,8 +125,8 @@ def main(argv: Optional[Sequence[str]] = None) -> Dict[str, Any]:
       formatter_class=argparse.RawDescriptionHelpFormatter)
   parser.add_argument(
       '--model',
-      help='Path of the model. Downloaded if it is missing.',
-      default='embeddinggemma-2-text-270m.litertlm')
+      help='Path of the model. Downloaded from Hugging Face if omitted.',
+      default=None)
   parser.add_argument(
       '--text', help='The support ticket to triage.', default=INPUT_TEXT)
   parser.add_argument(
@@ -151,9 +142,10 @@ def main(argv: Optional[Sequence[str]] = None) -> Dict[str, Any]:
       default='cpu')
   args = parser.parse_args(argv)
 
-  download(MODEL_URL, args.model)
+  model_path = args.model or hf_hub_download(
+      repo_id=MODEL_REPO, filename=MODEL_FILENAME)
 
-  return run(args.model, args.text, DELEGATES[args.delegate], args.mode)
+  return run(model_path, args.text, DELEGATES[args.delegate], args.mode)
 
 
 if __name__ == '__main__':

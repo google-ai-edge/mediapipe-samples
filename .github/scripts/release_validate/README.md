@@ -200,8 +200,9 @@ Two runs of the same release validate the same thing:
   run that is explicitly not reproducible.
 - **Models and inputs.** `assets.py` pins every file by SHA-256 and byte size.
   A file whose content changed upstream fails the cases that use it instead of
-  being validated silently. Every Hugging Face URL in `assets.py` also names an
-  immutable commit SHA.
+  being validated silently. Every Hugging Face model in `assets.py` is
+  downloaded via `huggingface_hub.hf_hub_download` at an immutable commit
+  `revision`.
 - **Processes.** Each case runs in a fresh process with the same arguments.
   Files that a task writes next to its model (compiled caches) are deleted
   before every case, so no case depends on what ran before it, or on a run with

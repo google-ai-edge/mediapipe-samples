@@ -15,7 +15,7 @@
 
 This is the plain Python version of hand_landmarker.ipynb.
 
-  pip install mediapipe
+  pip install mediapipe huggingface_hub
   python hand_landmarker.py
 
 The model and the sample image are downloaded on first use. The image with the
@@ -28,12 +28,14 @@ import urllib.request
 from typing import Optional, Sequence
 
 import cv2
+from huggingface_hub import hf_hub_download
 import mediapipe as mp
 import numpy as np
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-HandLandmarker-Full/resolve/main/hand_landmarker.task'
+MODEL_REPO = 'litert-community/MediaPipe-HandLandmarker-Full'
+MODEL_FILENAME = 'hand_landmarker.task'
 IMAGE_URL = 'https://storage.googleapis.com/mediapipe-tasks/hand_landmarker/woman_hands.jpg'
 
 DELEGATES = {
@@ -159,8 +161,9 @@ def main(argv: Optional[Sequence[str]] = None) -> vision.HandLandmarkerResult:
       formatter_class=argparse.RawDescriptionHelpFormatter)
   parser.add_argument(
       '--model',
-      help='Path of the hand landmarker model. Downloaded if it is missing.',
-      default='hand_landmarker.task')
+      help='Path of the hand landmarker model. Downloaded from Hugging Face if '
+      'omitted.',
+      default=None)
   parser.add_argument(
       '--image',
       help='Path of the input image. Without it, a sample image is downloaded.',
@@ -186,13 +189,14 @@ def main(argv: Optional[Sequence[str]] = None) -> vision.HandLandmarkerResult:
       default='hand_landmarker_result.png')
   args = parser.parse_args(argv)
 
-  download(MODEL_URL, args.model)
+  model_path = args.model or hf_hub_download(
+      repo_id=MODEL_REPO, filename=MODEL_FILENAME)
   image_file = args.image
   if image_file is None:
     image_file = 'image.jpg'
     download(IMAGE_URL, image_file)
 
-  return run(args.model, image_file, args.num_hands, DELEGATES[args.delegate],
+  return run(model_path, image_file, args.num_hands, DELEGATES[args.delegate],
              args.output, RUNNING_MODES[args.running_mode])
 
 

@@ -16,7 +16,7 @@
 This is the plain Python version of
 [MediaPipe_Python_Tasks]_Pose_Landmarker.ipynb.
 
-  pip install mediapipe
+  pip install mediapipe huggingface_hub
   python pose_landmarker.py
 
 The model and the sample image are downloaded on first use. The image with the
@@ -30,6 +30,7 @@ import urllib.request
 from typing import Optional, Sequence
 
 import cv2
+from huggingface_hub import hf_hub_download
 import mediapipe as mp
 import numpy as np
 from mediapipe.tasks import python
@@ -37,7 +38,8 @@ from mediapipe.tasks.python import vision
 from mediapipe.tasks.python.vision import drawing_styles
 from mediapipe.tasks.python.vision import drawing_utils
 
-MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-PoseLandmarker-Heavy/resolve/main/pose_landmarker_heavy.task'
+MODEL_REPO = 'litert-community/MediaPipe-PoseLandmarker-Heavy'
+MODEL_FILENAME = 'pose_landmarker_heavy.task'
 # The notebook uses
 # https://cdn.pixabay.com/photo/2019/03/12/20/39/girl-4051811_960_720.jpg, which
 # that host does not serve to scripts. This is one of MediaPipe's own test
@@ -153,8 +155,9 @@ def main(argv: Optional[Sequence[str]] = None) -> vision.PoseLandmarkerResult:
       formatter_class=argparse.RawDescriptionHelpFormatter)
   parser.add_argument(
       '--model',
-      help='Path of the pose landmarker model. Downloaded if it is missing.',
-      default='pose_landmarker.task')
+      help='Path of the pose landmarker model. Downloaded from Hugging Face if '
+      'omitted.',
+      default=None)
   parser.add_argument(
       '--image',
       help='Path of the input image. Without it, a sample image is downloaded.',
@@ -179,13 +182,14 @@ def main(argv: Optional[Sequence[str]] = None) -> vision.PoseLandmarkerResult:
       default='pose_segmentation_mask.png')
   args = parser.parse_args(argv)
 
-  download(MODEL_URL, args.model)
+  model_path = args.model or hf_hub_download(
+      repo_id=MODEL_REPO, filename=MODEL_FILENAME)
   image_file = args.image
   if image_file is None:
     image_file = 'image.jpg'
     download(IMAGE_URL, image_file)
 
-  return run(args.model, image_file, DELEGATES[args.delegate], args.output,
+  return run(model_path, image_file, DELEGATES[args.delegate], args.output,
              args.mask_output, RUNNING_MODES[args.running_mode])
 
 

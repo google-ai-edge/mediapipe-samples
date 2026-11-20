@@ -743,14 +743,58 @@ class MatrixTest(unittest.TestCase):
     for name, spec in assets.ASSETS.items():
       with self.subTest(asset=name):
         self.assertRegex(spec['sha256'], r'^[0-9a-f]{64}$')
-        self.assertRegex(spec['url'], r'^https://(storage\.googleapis\.com/mediapipe-|'
-                                      r'huggingface\.co/litert-community/[\w.-]+/resolve/[0-9a-f]{40}/)')
+        if 'repo_id' in spec:
+          self.assertNotIn('url', spec)
+          self.assertRegex(spec['repo_id'], r'^litert-community/[\w.-]+$')
+          self.assertRegex(spec['filename'], r'^[\w.-]+$')
+          self.assertRegex(spec['revision'], r'^[0-9a-f]{40}$')
+        else:
+          self.assertRegex(spec['url'], r'^https://storage\.googleapis\.com/mediapipe-')
         self.assertGreater(spec['bytes'], 0)
     used = {case['modelAsset'] for case in cases.build_validation_matrix()}
     for case in cases.build_validation_matrix():
       for invocation in expectations.get_plan(case)['invocations']:
         used.update(v[len('@asset:'):] for v in invocation['args'] if v.startswith('@asset:'))
     self.assertEqual(used, set(assets.ASSETS), 'an asset is pinned but not used, or the reverse')
+
+  def test_hf_asset_download_and_checksum_check(self):
+    from unittest import mock  # pylint: disable=g-import-not-at-top
+    import hashlib  # pylint: disable=g-import-not-at-top
+    payload = b'pinned-hf-model-bytes'
+    good_sha = hashlib.sha256(payload).hexdigest()
+    spec = {
+        'repo_id': 'litert-community/Test-Model',
+        'filename': 'remote.tflite',
+        'revision': 'a' * 40,
+        'sha256': good_sha,
+        'bytes': len(payload),
+    }
+    with tempfile.TemporaryDirectory() as work_dir:
+      asset_dir = os.path.join(work_dir, 'assets')
+      cache_dir = os.path.join(work_dir, 'hf_cache')
+
+      def fake_run(cmd, **_kwargs):
+        dest = cmd[-1]
+        with open(dest, 'wb') as f:
+          f.write(payload)
+        return mock.Mock(returncode=0, stdout='', stderr='')
+
+      with mock.patch.dict(assets.ASSETS, {'local.tflite': spec}), mock.patch.object(
+          assets.subprocess, 'run', side_effect=fake_run) as mocked:
+        path = assets.ensure_asset('local.tflite', asset_dir, python_exe='venv-python', hf_cache_dir=cache_dir)
+        self.assertEqual(path, os.path.join(asset_dir, 'local.tflite'))
+        self.assertEqual(assets.sha256_of(path), good_sha)
+        args = mocked.call_args[0][0]
+        self.assertEqual(args[:6], ['venv-python', '-c', assets._HF_DOWNLOAD_SNIPPET,  # pylint: disable=protected-access
+                                    spec['repo_id'], spec['filename'], spec['revision']])
+
+      bad_spec = dict(spec, sha256='0' * 64)
+      os.remove(path)
+      with mock.patch.dict(assets.ASSETS, {'local.tflite': bad_spec}), mock.patch.object(
+          assets.subprocess, 'run', side_effect=fake_run):
+        with self.assertRaises(assets.AssetError):
+          assets.ensure_asset('local.tflite', asset_dir, python_exe='venv-python', hf_cache_dir=cache_dir)
+        self.assertTrue(os.path.exists(path + '.unexpected'))
 
   def test_derived_files_are_removed(self):
     with tempfile.TemporaryDirectory() as directory:
@@ -798,6 +842,33 @@ class MatrixTest(unittest.TestCase):
         run_local.parse_options(['--cpu-only', '--delegates', 'cpu,gpu'])
     with mock.patch.object(run_local.os, 'name', 'nt'):
       self.assertTrue(run_local.venv_python('C:\\work').endswith(os.path.join('venv', 'Scripts', 'python.exe')))
+
+  def test_samples_use_hf_hub_download(self):
+    for definition in cases.TASK_DEFINITIONS:
+      sample_path = os.path.join(REPO_DIR, definition['sample'])
+      first_asset = definition['models'][0]['asset']
+      spec = assets.ASSETS[first_asset]
+      with self.subTest(sample=definition['sample']):
+        with open(sample_path, encoding='utf-8') as f:
+          source = f.read()
+        self.assertNotIn('https://huggingface.co/', source)
+        tree = ast.parse(source, filename=sample_path)
+        imports_hf = any(
+            isinstance(node, ast.ImportFrom) and node.module == 'huggingface_hub'
+            and any(alias.name == 'hf_hub_download' for alias in node.names)
+            for node in tree.body
+        )
+        self.assertTrue(imports_hf, f"{definition['sample']} must import hf_hub_download from huggingface_hub")
+        constants = {
+            node.targets[0].id: node.value.value
+            for node in tree.body
+            if isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name)
+            and isinstance(node.value, ast.Constant) and isinstance(node.value.value, str)
+        }
+        repo = constants.get('MODEL_REPO') or constants.get('_MODEL_REPO')
+        filename = constants.get('MODEL_FILENAME') or constants.get('_MODEL_FILENAME')
+        self.assertEqual(repo, spec['repo_id'])
+        self.assertEqual(filename, spec['filename'])
 
 
 def run(verbosity=0):

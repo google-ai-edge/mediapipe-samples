@@ -15,7 +15,7 @@
 
 This is the plain Python version of audio_classification.ipynb.
 
-  pip install mediapipe scipy
+  pip install mediapipe huggingface_hub scipy
   python audio_classification.py
 
 The model and the sample audio clip are downloaded on first use. The clip is
@@ -30,12 +30,14 @@ import urllib.request
 from typing import List, Optional, Sequence
 
 import numpy as np
+from huggingface_hub import hf_hub_download
 from mediapipe.tasks import python
 from mediapipe.tasks.python import audio
 from mediapipe.tasks.python.components import containers
 from scipy.io import wavfile
 
-MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-AudioClassifier-YAMNet/resolve/main/yamnet.tflite'
+MODEL_REPO = 'litert-community/MediaPipe-AudioClassifier-YAMNet'
+MODEL_FILENAME = 'yamnet.tflite'
 AUDIO_URL = 'https://storage.googleapis.com/mediapipe-assets/speech_16000_hz_mono.wav'
 
 DELEGATES = {
@@ -119,9 +121,9 @@ def main(argv: Optional[Sequence[str]] = None
       formatter_class=argparse.RawDescriptionHelpFormatter)
   parser.add_argument(
       '--model',
-      help='Path of the audio classification model. Downloaded if it is '
-      'missing.',
-      default='classifier.tflite')
+      help='Path of the audio classification model. Downloaded from Hugging '
+      'Face if omitted.',
+      default=None)
   parser.add_argument(
       '--audio',
       help='Path of the WAV file to classify. Without it, a sample clip is '
@@ -143,13 +145,14 @@ def main(argv: Optional[Sequence[str]] = None
       default='cpu')
   args = parser.parse_args(argv)
 
-  download(MODEL_URL, args.model)
+  model_path = args.model or hf_hub_download(
+      repo_id=MODEL_REPO, filename=MODEL_FILENAME)
   audio_file = args.audio
   if audio_file is None:
     audio_file = 'speech_16000_hz_mono.wav'
     download(AUDIO_URL, audio_file)
 
-  return run(args.model, audio_file, args.max_results,
+  return run(model_path, audio_file, args.max_results,
              DELEGATES[args.delegate], args.stream)
 
 

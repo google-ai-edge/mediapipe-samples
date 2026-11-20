@@ -15,21 +15,21 @@
 
 This is the plain Python version of text_classifier.ipynb.
 
-  pip install mediapipe
+  pip install mediapipe huggingface_hub
   python text_classifier.py --text "I'm looking forward to what will come next."
 
 The model is downloaded on first use. The most likely category is printed.
 """
 
 import argparse
-import os
-import urllib.request
 from typing import Optional, Sequence
 
+from huggingface_hub import hf_hub_download
 from mediapipe.tasks import python
 from mediapipe.tasks.python import text
 
-MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-TextClassifier-MobileBERT/resolve/main/bert_classifier.tflite'
+MODEL_REPO = 'litert-community/MediaPipe-TextClassifier-MobileBERT'
+MODEL_FILENAME = 'bert_classifier.tflite'
 
 # The input text that the model classifies by default.
 INPUT_TEXT = "I'm looking forward to what will come next."
@@ -38,15 +38,6 @@ DELEGATES = {
     'cpu': python.BaseOptions.Delegate.CPU,
     'gpu': python.BaseOptions.Delegate.GPU,
 }
-
-
-def download(url: str, path: str) -> None:
-  """Downloads `url` to `path` unless the file is already there."""
-  if os.path.exists(path):
-    return
-  print(f'Downloading {url}')
-  urllib.request.urlretrieve(url, path + '.download')
-  os.replace(path + '.download', path)
 
 
 def run(model: str,
@@ -86,9 +77,9 @@ def main(argv: Optional[Sequence[str]] = None) -> text.TextClassifierResult:
       formatter_class=argparse.RawDescriptionHelpFormatter)
   parser.add_argument(
       '--model',
-      help='Path of the text classification model. Downloaded if it is '
-      'missing.',
-      default='classifier.tflite')
+      help='Path of the text classification model. Downloaded from Hugging '
+      'Face if omitted.',
+      default=None)
   parser.add_argument(
       '--text', help='The text to classify.', default=INPUT_TEXT)
   parser.add_argument(
@@ -98,9 +89,10 @@ def main(argv: Optional[Sequence[str]] = None) -> text.TextClassifierResult:
       default='cpu')
   args = parser.parse_args(argv)
 
-  download(MODEL_URL, args.model)
+  model_path = args.model or hf_hub_download(
+      repo_id=MODEL_REPO, filename=MODEL_FILENAME)
 
-  return run(args.model, args.text, DELEGATES[args.delegate])
+  return run(model_path, args.text, DELEGATES[args.delegate])
 
 
 if __name__ == '__main__':

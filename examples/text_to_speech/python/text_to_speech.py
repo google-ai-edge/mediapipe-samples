@@ -18,9 +18,9 @@ from collections.abc import Sequence
 import os
 import tempfile
 import time
-import urllib.request
 import wave
 
+from huggingface_hub import hf_hub_download
 import numpy as np
 
 from mediapipe.tasks.python.audio import text_to_speech
@@ -29,19 +29,9 @@ from mediapipe.tasks.python.core import base_options
 BaseOptions = base_options.BaseOptions
 Delegate = BaseOptions.Delegate
 
-_MODEL_URL = (
-    'https://huggingface.co/litert-community/Kokoro-82M/resolve/main/'
-    'kokoro_int8_gpu_fp16.litertlm'
-)
+_MODEL_REPO = 'litert-community/Kokoro-82M'
+_MODEL_FILENAME = 'kokoro_int8_gpu_fp16.litertlm'
 _DEFAULT_TEXT = 'Hello from MediaPipe Text to Speech, running entirely on device!'
-
-
-def download_if_missing(url: str, path: str) -> str:
-  """Downloads `url` to `path` unless the file already exists."""
-  if not os.path.exists(path):
-    print(f'Downloading {url}...')
-    urllib.request.urlretrieve(url, path)
-  return path
 
 
 def save_wav(path: str, samples: np.ndarray, sample_rate: int) -> None:
@@ -92,8 +82,9 @@ def main(
   parser.add_argument('text', nargs='?', default=_DEFAULT_TEXT)
   parser.add_argument(
       '--model',
-      default=os.path.basename(_MODEL_URL),
-      help='Path to the .litertlm model. Downloaded if missing.',
+      default=None,
+      help='Path to the .litertlm model. Downloaded from Hugging Face if '
+      'omitted.',
   )
   parser.add_argument(
       '--voice', default=None, help='Voice ID, see --list_voices.'
@@ -115,11 +106,12 @@ def main(
   )
   args = parser.parse_args(argv)
 
-  if args.model == os.path.basename(_MODEL_URL):
-    download_if_missing(_MODEL_URL, args.model)
+  model_path = args.model or hf_hub_download(
+      repo_id=_MODEL_REPO, filename=_MODEL_FILENAME
+  )
 
   tts, delegate = create_tts(
-      args.model,
+      model_path,
       args.delegate or 'GPU',
       args.speaking_rate,
       allow_cpu_fallback=args.delegate is None,

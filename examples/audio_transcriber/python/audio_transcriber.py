@@ -20,6 +20,7 @@ import time
 import urllib.request
 import wave
 
+from huggingface_hub import hf_hub_download
 import numpy as np
 
 from mediapipe.tasks.python.audio import audio_transcriber
@@ -28,10 +29,8 @@ from mediapipe.tasks.python.core import base_options
 BaseOptions = base_options.BaseOptions
 Delegate = BaseOptions.Delegate
 
-_MODEL_URL = (
-    'https://huggingface.co/litert-community/parakeet-tdt-0.6b-v3/resolve/'
-    'main/parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm'
-)
+_MODEL_REPO = 'litert-community/parakeet-tdt-0.6b-v3'
+_MODEL_FILENAME = 'parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm'
 _AUDIO_URL = (
     'https://storage.googleapis.com/mediapipe-assets/speech_16000_hz_mono.wav'
 )
@@ -100,8 +99,9 @@ def main(
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument(
       '--model',
-      default=os.path.basename(_MODEL_URL),
-      help='Path to the .litertlm model. Downloaded if missing.',
+      default=None,
+      help='Path to the .litertlm model. Downloaded from Hugging Face if '
+      'omitted.',
   )
   parser.add_argument(
       '--audio',
@@ -123,8 +123,9 @@ def main(
   )
   args = parser.parse_args(argv)
 
-  if args.model == os.path.basename(_MODEL_URL):
-    download_if_missing(_MODEL_URL, args.model)
+  model_path = args.model or hf_hub_download(
+      repo_id=_MODEL_REPO, filename=_MODEL_FILENAME
+  )
   audio_path = args.audio or download_if_missing(
       _AUDIO_URL, os.path.basename(_AUDIO_URL)
   )
@@ -134,7 +135,7 @@ def main(
   print(f'Audio: {audio_path} ({duration:.2f} s at {sample_rate} Hz)')
 
   transcriber, delegate = create_transcriber(
-      args.model,
+      model_path,
       args.delegate or 'GPU',
       sample_rate,
       allow_cpu_fallback=args.delegate is None,

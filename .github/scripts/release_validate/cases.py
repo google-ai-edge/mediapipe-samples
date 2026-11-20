@@ -208,9 +208,9 @@ TASK_DEFINITIONS = [
         'sample': 'examples/text_embedder/python/text_embedder.py',
         'modes': ['embed'],
         'models': [
-            {'id': 'bert_embedder', 'asset': 'bert_embedder.tflite'},
             {'id': 'universal_sentence_encoder', 'asset': 'universal_sentence_encoder.tflite'},
             {'id': 'embedding_gemma', 'asset': 'embedding_gemma.task', 'large': True},
+            {'id': 'bert_embedder', 'asset': 'bert_embedder.tflite'},
         ],
     },
     {

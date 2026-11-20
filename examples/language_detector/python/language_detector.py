@@ -16,7 +16,7 @@
 This is the plain Python version of
 [MediaPipe_Python_Tasks]_Language_Detector.ipynb.
 
-  pip install mediapipe
+  pip install mediapipe huggingface_hub
   python language_detector.py --text "To be, or not to be, that is the question"
 
 The model is downloaded on first use. The detected languages and their
@@ -24,14 +24,14 @@ probabilities are printed.
 """
 
 import argparse
-import os
-import urllib.request
 from typing import Optional, Sequence
 
+from huggingface_hub import hf_hub_download
 from mediapipe.tasks import python
 from mediapipe.tasks.python import text
 
-MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-LanguageDetector/resolve/main/language_detector.tflite'
+MODEL_REPO = 'litert-community/MediaPipe-LanguageDetector'
+MODEL_FILENAME = 'language_detector.tflite'
 
 # The input text that the model classifies by default: a Chinese proverb.
 INPUT_TEXT = '\u5206\u4E45\u5FC5\u5408\u5408\u4E45\u5FC5\u5206'
@@ -40,15 +40,6 @@ DELEGATES = {
     'cpu': python.BaseOptions.Delegate.CPU,
     'gpu': python.BaseOptions.Delegate.GPU,
 }
-
-
-def download(url: str, path: str) -> None:
-  """Downloads `url` to `path` unless the file is already there."""
-  if os.path.exists(path):
-    return
-  print(f'Downloading {url}')
-  urllib.request.urlretrieve(url, path + '.download')
-  os.replace(path + '.download', path)
 
 
 def run(model: str,
@@ -88,8 +79,9 @@ def main(argv: Optional[Sequence[str]] = None) -> text.LanguageDetectorResult:
       formatter_class=argparse.RawDescriptionHelpFormatter)
   parser.add_argument(
       '--model',
-      help='Path of the language detection model. Downloaded if it is missing.',
-      default='detector.tflite')
+      help='Path of the language detection model. Downloaded from Hugging Face '
+      'if omitted.',
+      default=None)
   parser.add_argument(
       '--text', help='The text to detect the language of.', default=INPUT_TEXT)
   parser.add_argument(
@@ -99,9 +91,10 @@ def main(argv: Optional[Sequence[str]] = None) -> text.LanguageDetectorResult:
       default='cpu')
   args = parser.parse_args(argv)
 
-  download(MODEL_URL, args.model)
+  model_path = args.model or hf_hub_download(
+      repo_id=MODEL_REPO, filename=MODEL_FILENAME)
 
-  return run(args.model, args.text, DELEGATES[args.delegate])
+  return run(model_path, args.text, DELEGATES[args.delegate])
 
 
 if __name__ == '__main__':

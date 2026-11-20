@@ -1,2 +1,3 @@
+huggingface_hub
 mediapipe>=1.2.0
 numpy

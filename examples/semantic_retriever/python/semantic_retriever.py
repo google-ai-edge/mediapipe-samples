@@ -13,7 +13,7 @@
 # limitations under the License.
 """Searches images and texts with the MediaPipe Semantic Retriever task.
 
-  pip install mediapipe
+  pip install mediapipe huggingface_hub
   python semantic_retriever.py --query "a man doing yoga on the beach"
 
 The Semantic Retriever keeps an index of images and texts and finds the ones
@@ -27,10 +27,12 @@ import os
 import urllib.request
 from typing import List, Optional, Sequence
 
+from huggingface_hub import hf_hub_download
 from mediapipe.tasks import python
 from mediapipe.tasks.python import retrieval
 
-MODEL_URL = 'https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm/resolve/main/embeddinggemma-2-text-vision-440m.litertlm'
+MODEL_REPO = 'litert-community/embeddinggemma-2-text-vision-440m-litert-lm'
+MODEL_FILENAME = 'embeddinggemma-2-text-vision-440m.litertlm'
 
 # The photos that are indexed by default, and where they come from.
 IMAGE_URLS = {
@@ -131,8 +133,9 @@ def main(argv: Optional[Sequence[str]] = None
       formatter_class=argparse.RawDescriptionHelpFormatter)
   parser.add_argument(
       '--model',
-      help='Path of the embedding model. Downloaded if it is missing.',
-      default='embeddinggemma-2-text-vision-440m.litertlm')
+      help='Path of the embedding model. Downloaded from Hugging Face if '
+      'omitted.',
+      default=None)
   parser.add_argument(
       '--images',
       help='Paths of the images to index. Without it, sample photos are '
@@ -157,14 +160,15 @@ def main(argv: Optional[Sequence[str]] = None
       default='cpu')
   args = parser.parse_args(argv)
 
-  download(MODEL_URL, args.model)
+  model_path = args.model or hf_hub_download(
+      repo_id=MODEL_REPO, filename=MODEL_FILENAME)
   image_files = args.images
   if image_files is None:
     image_files = list(IMAGE_URLS)
     for name, url in IMAGE_URLS.items():
       download(url, name)
 
-  return run(args.model, image_files, args.documents, args.query, args.limit,
+  return run(model_path, image_files, args.documents, args.query, args.limit,
              DELEGATES[args.delegate])
 
 

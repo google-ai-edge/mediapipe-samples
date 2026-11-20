@@ -41,7 +41,7 @@ python audio_transcriber.py --audio my_recording.wav --delegate cpu --stream --c
 Options:
 
 - `--model PATH`: path to a `.litertlm` model. By default, the Parakeet model
-  is downloaded into the current directory if it isn't there yet.
+  is downloaded from Hugging Face.
 - `--audio PATH`: PCM `.wav` file to transcribe (any sample rate, mono or
   stereo). By default, a sample clip is downloaded.
 - `--delegate {gpu,cpu}`: hardware to run on (default: `gpu`, which falls back

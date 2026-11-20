@@ -180,8 +180,10 @@ def prepare_environment(options):
         '--no-constraints for a run that is not reproducible.')
     return None
   # The package under test, plus what the samples import beyond it (scipy reads
-  # the WAV file of the audio sample). Everything except MediaPipe is pinned.
-  command = [python, '-m', 'pip', 'install', '--disable-pip-version-check', '--quiet', options.mediapipe, 'scipy']
+  # the WAV file of the audio sample; huggingface_hub downloads the models).
+  # Everything except MediaPipe is pinned.
+  command = [python, '-m', 'pip', 'install', '--disable-pip-version-check', '--quiet',
+             options.mediapipe, 'scipy', 'huggingface_hub']
   if not options.no_constraints:
     command += ['--constraint', CONSTRAINTS]
   command += options.pip_arg
@@ -319,6 +321,7 @@ def run_case(case, options, python, asset_dir, asset_errors):
   env = {k: v for k, v in os.environ.items() if k not in LOG_SILENCERS}
   env.update({'PYTHONDONTWRITEBYTECODE': '1', 'PYTHONHASHSEED': '0', 'PYTHONUNBUFFERED': '1',
               'PYTHONUTF8': '1', 'PYTHONIOENCODING': 'utf-8',
+              'HF_HOME': os.path.join(options.work_dir, 'hf_cache'),
               'TMPDIR': case_tmp, 'TEMP': case_tmp, 'TMP': case_tmp})
   stdout_path, native_path = os.path.join(case_dir, 'stdout.txt'), os.path.join(case_dir, 'native.log')
   started = time.perf_counter()
@@ -443,12 +446,13 @@ def main(argv=None):
 
   # Download and check every file the selected cases need.
   asset_dir = os.path.join(options.work_dir, 'assets')
+  hf_cache_dir = os.path.join(options.work_dir, 'hf_cache')
   needed = sorted({name for case in matrix for name in assets_of(case, expectations.get_plan(case))})
   asset_errors, asset_record = {}, {}
   log(f'Checking {len(needed)} models and inputs in {asset_dir}')
   for name in needed:
     try:
-      path = assets.ensure_asset(name, asset_dir, log)
+      path = assets.ensure_asset(name, asset_dir, log, python_exe=python, hf_cache_dir=hf_cache_dir)
       asset_record[name] = assets.ASSETS[name]['sha256']
       if not name.endswith(('.tflite', '.task', '.litertlm')):
         shutil.copyfile(path, os.path.join(options.report_dir, 'inputs', name))

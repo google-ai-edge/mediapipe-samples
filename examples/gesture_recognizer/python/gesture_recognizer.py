@@ -15,7 +15,7 @@
 
 This is the plain Python version of gesture_recognizer.ipynb.
 
-  pip install mediapipe
+  pip install mediapipe huggingface_hub
   python gesture_recognizer.py
 
 The model and the sample images are downloaded on first use. A figure with the
@@ -33,12 +33,14 @@ import matplotlib
 
 matplotlib.use('Agg')  # Render to files; no display is needed.
 from matplotlib import pyplot as plt
+from huggingface_hub import hf_hub_download
 import mediapipe as mp
 import numpy as np
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-GestureRecognizer/resolve/main/gesture_recognizer.task'
+MODEL_REPO = 'litert-community/MediaPipe-GestureRecognizer'
+MODEL_FILENAME = 'gesture_recognizer.task'
 # The images are from Pixabay.
 IMAGE_URL = 'https://storage.googleapis.com/mediapipe-tasks/gesture_recognizer/'
 IMAGE_FILENAMES = [
@@ -214,8 +216,9 @@ def main(argv: Optional[Sequence[str]] = None
       formatter_class=argparse.RawDescriptionHelpFormatter)
   parser.add_argument(
       '--model',
-      help='Path of the gesture recognizer model. Downloaded if it is missing.',
-      default='gesture_recognizer.task')
+      help='Path of the gesture recognizer model. Downloaded from Hugging Face '
+      'if omitted.',
+      default=None)
   parser.add_argument(
       '--images',
       help='Paths of the input images. Without it, sample images are '
@@ -238,14 +241,15 @@ def main(argv: Optional[Sequence[str]] = None
       default='gesture_recognizer_result.png')
   args = parser.parse_args(argv)
 
-  download(MODEL_URL, args.model)
+  model_path = args.model or hf_hub_download(
+      repo_id=MODEL_REPO, filename=MODEL_FILENAME)
   image_files = args.images
   if image_files is None:
     image_files = IMAGE_FILENAMES
     for name in image_files:
       download(IMAGE_URL + name, name)
 
-  return run(args.model, image_files, DELEGATES[args.delegate], args.output,
+  return run(model_path, image_files, DELEGATES[args.delegate], args.output,
              RUNNING_MODES[args.running_mode])
 
 

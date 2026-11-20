@@ -16,7 +16,7 @@
 This is the plain Python version of
 [MediaPipe_Python_Tasks]_Holistic_Landmarker.ipynb.
 
-  pip install mediapipe
+  pip install mediapipe huggingface_hub
   python holistic_landmarker.py
 
 The model and the sample image are downloaded on first use. The image with the
@@ -35,6 +35,7 @@ import matplotlib
 
 matplotlib.use('Agg')  # Render to files; no display is needed.
 import matplotlib.pyplot as plt
+from huggingface_hub import hf_hub_download
 import mediapipe as mp
 import numpy as np
 from mediapipe.tasks import python
@@ -42,7 +43,8 @@ from mediapipe.tasks.python import vision
 from mediapipe.tasks.python.vision import drawing_styles
 from mediapipe.tasks.python.vision import drawing_utils
 
-MODEL_URL = 'https://huggingface.co/litert-community/MediaPipe-HolisticLandmarker/resolve/main/holistic_landmarker.task'
+MODEL_REPO = 'litert-community/MediaPipe-HolisticLandmarker'
+MODEL_FILENAME = 'holistic_landmarker.task'
 # The image is from Unsplash: https://unsplash.com/photos/mt2fyrdXxzk
 IMAGE_URL = 'https://storage.googleapis.com/mediapipe-assets/business-person.png'
 
@@ -269,9 +271,9 @@ def main(argv: Optional[Sequence[str]] = None
       formatter_class=argparse.RawDescriptionHelpFormatter)
   parser.add_argument(
       '--model',
-      help='Path of the holistic landmarker model. Downloaded if it is '
-      'missing.',
-      default='holistic_landmarker.task')
+      help='Path of the holistic landmarker model. Downloaded from Hugging '
+      'Face if omitted.',
+      default=None)
   parser.add_argument(
       '--image',
       help='Path of the input image. Without it, a sample image is downloaded.',
@@ -300,13 +302,14 @@ def main(argv: Optional[Sequence[str]] = None
       default='holistic_segmentation_mask.png')
   args = parser.parse_args(argv)
 
-  download(MODEL_URL, args.model)
+  model_path = args.model or hf_hub_download(
+      repo_id=MODEL_REPO, filename=MODEL_FILENAME)
   image_file = args.image
   if image_file is None:
     image_file = 'image.png'
     download(IMAGE_URL, image_file)
 
-  return run(args.model, image_file, DELEGATES[args.delegate], args.output,
+  return run(model_path, image_file, DELEGATES[args.delegate], args.output,
              args.blendshapes_output, args.mask_output,
              RUNNING_MODES[args.running_mode])
 

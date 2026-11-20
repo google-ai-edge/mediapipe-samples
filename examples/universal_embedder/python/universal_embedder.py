@@ -13,7 +13,7 @@
 # limitations under the License.
 """Compares texts and images with the MediaPipe Universal Embedder task.
 
-  pip install mediapipe
+  pip install mediapipe huggingface_hub
   python universal_embedder.py --inputs "a photo of a cat" cat.jpg
 
 The Universal Embedder maps texts and images into one embedding space, so a
@@ -27,11 +27,13 @@ import os
 import urllib.request
 from typing import Optional, Sequence
 
+from huggingface_hub import hf_hub_download
 from mediapipe.tasks import python
 from mediapipe.tasks.python import retrieval
 from mediapipe.tasks.python.components.containers import embedding_result
 
-MODEL_URL = 'https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm/resolve/main/embeddinggemma-2-text-vision-440m.litertlm'
+MODEL_REPO = 'litert-community/embeddinggemma-2-text-vision-440m-litert-lm'
+MODEL_FILENAME = 'embeddinggemma-2-text-vision-440m.litertlm'
 IMAGE_URL = 'https://storage.googleapis.com/mediapipe-tasks/image_classifier/cat.jpg'
 
 # The text that is compared with the sample image by default.
@@ -103,8 +105,9 @@ def main(argv: Optional[Sequence[str]] = None) -> float:
       formatter_class=argparse.RawDescriptionHelpFormatter)
   parser.add_argument(
       '--model',
-      help='Path of the embedding model. Downloaded if it is missing.',
-      default='embeddinggemma-2-text-vision-440m.litertlm')
+      help='Path of the embedding model. Downloaded from Hugging Face if '
+      'omitted.',
+      default=None)
   parser.add_argument(
       '--inputs',
       help='The two inputs to compare. Each is a text, or the path of an '
@@ -124,13 +127,14 @@ def main(argv: Optional[Sequence[str]] = None) -> float:
       default='cpu')
   args = parser.parse_args(argv)
 
-  download(MODEL_URL, args.model)
+  model_path = args.model or hf_hub_download(
+      repo_id=MODEL_REPO, filename=MODEL_FILENAME)
   inputs = args.inputs
   if inputs is None:
     download(IMAGE_URL, 'cat.jpg')
     inputs = [INPUT_TEXT, 'cat.jpg']
 
-  return run(args.model, inputs[0], inputs[1], args.l2_normalize,
+  return run(model_path, inputs[0], inputs[1], args.l2_normalize,
              DELEGATES[args.delegate])
 
 
