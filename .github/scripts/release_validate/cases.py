@@ -309,6 +309,14 @@ KNOWN_UNSUPPORTED = [
                   'detection on the GPU is validated with the float models.',
     },
     {
+        'task': 'audio_classifier',
+        'model': 'yamnet',
+        'delegate': 'GPU',
+        'system': 'Darwin',
+        'error': 'Model contains operations or configurations not supported by the GPU delegate:',
+        'reason': 'YAMNet contains STFT/FFT operations (RFFT2D, COMPLEX64) that the macOS GPU delegate rejects.',
+    },
+    {
         'task': 'text_classifier',
         'delegate': 'GPU',
         'system': 'Darwin',

@@ -128,10 +128,15 @@ as a pass; it is listed separately in the summary.
 `cases.KNOWN_UNSUPPORTED` lists the combinations that MediaPipe itself declares
 unsupported, with the text of the error it raises:
 
-- Text Proofreader and Text Summarizer on the GPU: `Only CPU delegate is supported.`
+- Text Proofreader, Text Summarizer, PocketTTS and Phonon on the GPU:
+  `Only CPU delegate is supported.`
 - The int8 object detection model on the macOS GPU:
   `Quantized tensors are not supported by the macOS/iOS GPU delegate.` Object
-  detection on the GPU is validated with the float32 model instead.
+  detection on the GPU is validated with the float models instead.
+- Text Classifier, Language Detector and Text Embedder on the macOS GPU:
+  `not supported by the macOS/iOS GPU delegate (only float32 input/output tensors are supported).`
+- Audio Classifier (YAMNet) on the macOS GPU:
+  `Model contains operations or configurations not supported by the GPU delegate:`
 
 Such a case is `UNSUPPORTED` only while it fails with exactly that error. If it
 fails in any other way it is a `FAIL`. If it starts to work, it is checked like
