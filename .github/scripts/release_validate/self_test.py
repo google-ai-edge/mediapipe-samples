@@ -870,6 +870,95 @@ class MatrixTest(unittest.TestCase):
         self.assertEqual(repo, spec['repo_id'])
         self.assertEqual(filename, spec['filename'])
 
+  def test_report_writes_table_and_review_views(self):
+    import json  # pylint: disable=g-import-not-at-top
+    import re  # pylint: disable=g-import-not-at-top
+    import report  # pylint: disable=g-import-not-at-top
+    state = {
+        'startedAt': '2026-11-19T21:00:00-07:00',
+        'finishedAt': '2026-11-19T21:02:00-07:00',
+        'passed': True,
+        'verdict': 'PASSED: 1 of 2 cases passed, 1 unsupported by design',
+        'environment': {
+            'mediapipeVersion': '1.3.0',
+            'mediapipeSpec': 'mediapipe==1.3.0',
+            'pythonVersion': '3.12.11',
+            'system': 'macOS 27.2 (arm64)',
+            'processor': 'Apple M4 Pro',
+            'gpu': 'Apple M4 Pro (Metal 4)',
+            'gitCommit': '0f07f60',
+            'gitDirty': False,
+            'constraints': True,
+        },
+        'results': [
+            {
+                'id': 'vision__pose_landmarker__pose_landmarker_heavy__image__GPU',
+                'domain': 'vision',
+                'task': 'pose_landmarker',
+                'modelId': 'pose_landmarker_heavy',
+                'mode': 'image',
+                'delegate': 'GPU',
+                'status': 'PASS',
+                'durationSec': 0.8,
+                'description': 'Detects pose landmarks and person mask.',
+                'details': '21/21 checks',
+                'note': None,
+                'error': None,
+                'traceback': None,
+                'baseline': None,
+                'inputs': [{'kind': 'image', 'file': 'inputs/pose.jpg', 'label': 'pose.jpg'}],
+                'outputs': [
+                    'cases/vision__pose_landmarker__pose_landmarker_heavy__image__GPU/annotated.png',
+                    'cases/vision__pose_landmarker__pose_landmarker_heavy__image__GPU/mask.png',
+                ],
+                'verification': {
+                    'status': verify.VERIFIED,
+                    'summary': '21/21 checks',
+                    'checks': [{'name': 'poses', 'expected': '1', 'actual': '1', 'pass': True}],
+                },
+                'gpuEvidence': ['INFO: Created TensorFlow Lite delegate for Metal.'],
+                'logs': {'sample output': 'cases/x/stdout.txt', 'native log': 'cases/x/native.log'},
+                'command': 'python examples/pose_landmarker/python/pose_landmarker.py',
+                'stdout': 'Detected 1 pose(s) in </script> test\n',
+                'runs': [{'key': 'image', 'data': {'poses': 1}}],
+            },
+            {
+                'id': 'text__text_summarizer__gemma_200m__keypoints__GPU',
+                'domain': 'text',
+                'task': 'text_summarizer',
+                'modelId': 'gemma_200m',
+                'mode': 'keypoints',
+                'delegate': 'GPU',
+                'status': 'UNSUPPORTED',
+                'durationSec': 0.5,
+                'description': 'Summarizes text.',
+                'details': 'The Text Summarizer rejects the GPU delegate.',
+                'inputs': [{'kind': 'text', 'value': 'Station text', 'label': 'Text'}],
+                'outputs': [],
+                'verification': {'status': verify.UNVERIFIED, 'summary': '-', 'checks': []},
+                'gpuEvidence': [],
+                'logs': {},
+                'command': 'python examples/text_summarizer/python/text_summarizer.py',
+                'stdout': '',
+                'runs': [],
+            },
+        ],
+    }
+    with tempfile.TemporaryDirectory() as report_dir:
+      report.write_report_files(report_dir, state)
+      with open(os.path.join(report_dir, 'index.html'), encoding='utf-8') as f:
+        html_doc = f.read()
+      self.assertIn('Review cases one by one', html_doc)
+      self.assertIn('id="review-view"', html_doc)
+      self.assertIn('id="table-view"', html_doc)
+      self.assertEqual(html_doc.count('</script>'), 2)
+      match = re.search(r'<script type="application/json" id="cases-data">(.*?)</script>', html_doc, re.DOTALL)
+      self.assertIsNotNone(match)
+      parsed = json.loads(match.group(1))
+      self.assertEqual(len(parsed), 2)
+      self.assertIn('</script>', parsed[0]['stdout'])
+      self.assertEqual(len(parsed[0]['outputs']), 2)
+
 
 def run(verbosity=0):
   """Runs the self-test. Returns whether it passed."""

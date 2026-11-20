@@ -225,13 +225,24 @@ comparison is information; it does not change the status of a case.
 
 ## The report
 
-`release-validation-report/index.html` shows, for every case, what was run, the
-inputs, the images the sample wrote, every check with its expected and actual
-value, the error if there was one, and the log lines that show the GPU delegate.
-Cases that need attention come first. `report.md` is the same table as text and
-`status.json` has everything, including the complete observed output of every
-case. `cases/<id>/` holds the sample's printed output, the native log and the
-exact arguments.
+`release-validation-report/index.html` has two views (matching
+`mediapipe-samples-web`):
+
+- **Table**: summary cards, status/domain/delegate filters, output check
+  details, inline output image thumbnails and audio players, and a `Review →`
+  button on every row.
+- **Review cases one by one** (`#review`): a two-column view showing the case
+  description, inputs, output checks, GPU delegate log evidence and raw JSON on
+  the left, and the sample's full-size output images (with `1`–`9` image tabs
+  when a sample writes both an annotated image and a mask/chart), synthesized
+  `.wav` audio player + ASR transcript, and console output on the right. Step
+  through cases with `Next` / `Previous`, `←` / `→` arrow keys, or `Space`
+  (`Esc` returns to the table).
+
+Cases that need attention come first whenever any case failed. `report.md` is
+the summary table as Markdown and `status.json` has everything, including the
+complete observed output of every case. `cases/<id>/` holds the sample's printed
+output, the native log and the exact arguments.
 
 ## Files
 

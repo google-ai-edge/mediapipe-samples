@@ -355,8 +355,11 @@ def run_case(case, options, python, asset_dir, asset_errors):
     worker['error'] = f'the sample process crashed ({how}); see the native log'
   with open(native_path, encoding='utf-8', errors='replace') as f:
     native_log = f.read()
+  with open(stdout_path, encoding='utf-8', errors='replace') as f:
+    stdout_text = f.read()
 
   result['runs'] = worker.get('runs', [])
+  result['stdout'] = stdout_text[:8000]
   result['error'] = worker.get('error')
   result['traceback'] = worker.get('traceback')
   result['gpuEvidence'] = policy.find_gpu_evidence(native_log)
