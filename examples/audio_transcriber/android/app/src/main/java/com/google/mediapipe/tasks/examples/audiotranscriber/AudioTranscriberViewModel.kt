@@ -22,16 +22,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.google.mediapipe.tasks.audio.audiotranscriber.AudioTranscriber
-import com.google.mediapipe.tasks.audio.audiotranscriber.AudioTranscriber.AudioTranscriberOptions
 import com.google.mediapipe.tasks.audio.audiotranscriber.AudioTranscriberResult
-import com.google.mediapipe.tasks.core.BaseOptions
-import com.google.mediapipe.tasks.core.Delegate
 import java.io.File
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.InputStream
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -56,113 +48,15 @@ data class AudioTranscriberUiState(
   val isRecording: Boolean = false,
   val isTranscribingSample: Boolean = false,
   val isModelReady: Boolean = false,
-  val currentDelegate: Int = AudioTranscriberViewModel.DELEGATE_CPU,
+  val currentDelegate: Int = AudioTranscriberHelper.DELEGATE_CPU,
   val interimTranscript: String = "",
   val finalizedSegments: List<AudioTranscriberResult.Segment> = emptyList(),
   val audioLevel: Float = 0.0f,
   val lastLatencyMs: Long? = null,
   val statusMessage: String = AudioTranscriberViewModel.STATUS_LOADING,
   val errorMessage: String? = null,
-  val activeModelName: String = AudioTranscriberViewModel.DEFAULT_MODEL_FILE_NAME,
+  val activeModelName: String = AudioTranscriberHelper.DEFAULT_MODEL_FILE_NAME,
 )
-
-/** Thin seam around MediaPipe's [AudioTranscriber] task API. */
-interface AudioTranscribing : AutoCloseable {
-  fun prewarm()
-
-  @Suppress("KotlinArray") // AudioTranscriber.transcribe() takes PCM samples as a FloatArray.
-  fun transcribe(samples: FloatArray, endOfStream: Boolean = false): AudioTranscriberResult
-
-  fun finishStream(): AudioTranscriberResult
-
-  override fun close()
-
-  companion object {
-    /** Creates an [AudioTranscribing] instance backed by MediaPipe's [AudioTranscriber]. */
-    fun create(
-      context: Context,
-      modelFile: File,
-      delegateIndex: Int = AudioTranscriberViewModel.DELEGATE_CPU,
-    ): AudioTranscribing {
-      val delegate =
-        if (delegateIndex == AudioTranscriberViewModel.DELEGATE_GPU) Delegate.GPU else Delegate.CPU
-      val baseOptions =
-        BaseOptions.builder()
-          .setModelAssetPath(modelFile.absolutePath)
-          .setDelegate(delegate)
-          .build()
-      val options =
-        AudioTranscriberOptions.builder()
-          .setBaseOptions(baseOptions)
-          .setSampleRateHz(AudioTranscriberViewModel.SAMPLE_RATE_HZ)
-          .setEnableInterimResults(true)
-          .setModelArchitecture(AudioTranscriber.ModelArchitecture.AUTO)
-          .setCacheDir(context.cacheDir.absolutePath)
-          .build()
-      val transcriber = AudioTranscriber.createFromOptions(context, options)
-      return object : AudioTranscribing {
-        override fun prewarm() = transcriber.prewarm()
-
-        override fun transcribe(samples: FloatArray, endOfStream: Boolean) =
-          transcriber.transcribe(samples, endOfStream)
-
-        override fun finishStream() = transcriber.finishStream()
-
-        override fun close() = transcriber.close()
-      }
-    }
-  }
-}
-
-/**
- * Resolves the default `.litertlm` model file, preferring any sideloaded `.litertlm` file in
- * [sideloadDirectories] before staging the bundled asset [fileName] into [cacheDir].
- */
-internal fun resolveDefaultModelFile(
-  sideloadDirectories: List<File>,
-  cacheDir: File,
-  assetOpener: (String) -> InputStream,
-  fileName: String = AudioTranscriberViewModel.DEFAULT_MODEL_FILE_NAME,
-): File {
-  val sideloaded =
-    sideloadDirectories
-      .asSequence()
-      .filter { it.isDirectory }
-      .mapNotNull { dir ->
-        dir
-          .listFiles()
-          ?.filter {
-            it.isFile &&
-              !it.isHidden &&
-              it.extension.equals(AudioTranscriberViewModel.MODEL_EXTENSION, ignoreCase = true)
-          }
-          ?.minByOrNull { it.name }
-      }
-      .firstOrNull()
-  if (sideloaded != null) return sideloaded
-
-  cacheDir.mkdirs()
-  val stagedFile = File(cacheDir, fileName)
-  if (stagedFile.exists() && stagedFile.length() > 0L) return stagedFile
-
-  val candidatePaths =
-    listOf(
-      fileName,
-      "models/$fileName",
-      "third_party/odml/audio/transcription/data/models/$fileName",
-    )
-  for (path in candidatePaths) {
-    try {
-      assetOpener(path).use { input ->
-        FileOutputStream(stagedFile).use { output -> input.copyTo(output) }
-      }
-      return stagedFile
-    } catch (_: IOException) {
-      // Try next candidate path.
-    }
-  }
-  throw FileNotFoundException("Model not found in bundle: $fileName")
-}
 
 /**
  * ViewModel coordinating live microphone capture, sample clip playback/decoding, and MediaPipe
@@ -172,7 +66,7 @@ class AudioTranscriberViewModel(
   private val captureEngine: AudioCapturing = AudioCaptureEngine(),
   private val initialModelResolver: suspend () -> File,
   private val sampleAudioProvider: (suspend () -> DecodedWavAudio)? = null,
-  private val transcriberLoader: suspend (File, Int) -> AudioTranscribing,
+  private val transcriberLoader: suspend (File, Int) -> AudioTranscriberHelper,
   private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
 
@@ -180,7 +74,7 @@ class AudioTranscriberViewModel(
   val uiState: StateFlow<AudioTranscriberUiState> = _uiState.asStateFlow()
 
   private val transcriberMutex = Mutex()
-  @Volatile private var transcriber: AudioTranscribing? = null
+  @Volatile private var transcriber: AudioTranscriberHelper? = null
   @Volatile private var activeModelFile: File? = null
   @Volatile private var audioChunkChannel: Channel<FloatArray>? = null
   private var isCleared = false
@@ -221,7 +115,7 @@ class AudioTranscriberViewModel(
   }
 
   fun fallbackToCpu() {
-    setDelegate(DELEGATE_CPU)
+    setDelegate(AudioTranscriberHelper.DELEGATE_CPU)
   }
 
   fun transcribeSampleClip() {
@@ -252,7 +146,7 @@ class AudioTranscriberViewModel(
         }
 
         val audio = withContext(ioDispatcher) { provider() }
-        val chunkSize = SAMPLE_RATE_HZ / 2 // 500 ms chunks at 16 kHz
+        val chunkSize = AudioTranscriberHelper.SAMPLE_RATE_HZ / 2 // 500 ms chunks at 16 kHz
         val startMs = SystemClock.uptimeMillis()
 
         val resultSegments =
@@ -541,12 +435,7 @@ class AudioTranscriberViewModel(
     private const val TAG = "AudioTranscriberVM"
     private const val SIDELOAD_TMP_DIR_PATH = "/data/local/tmp/audiotranscriber"
     private const val AUDIO_CHANNEL_CAPACITY = 64
-    const val DELEGATE_CPU = 0
-    const val DELEGATE_GPU = 1
-    const val MODEL_EXTENSION = "litertlm"
-    const val DEFAULT_MODEL_FILE_NAME = "parakeet_tdt_0.6b_v3_5s_i8_stateful.$MODEL_EXTENSION"
     const val SAMPLE_AUDIO_ASSET = "speech_16000_hz_mono.wav"
-    const val SAMPLE_RATE_HZ = 16_000
     const val STATUS_LOADING = "Loading..."
     const val STATUS_READY = "Ready"
     const val STATUS_LISTENING = "Listening..."
@@ -572,7 +461,7 @@ class AudioTranscriberViewModel(
               appContext.assets.open(SAMPLE_AUDIO_ASSET).use { WavAudioLoader.decode(it) }
             },
             transcriberLoader = { file, delegate ->
-              AudioTranscribing.create(appContext, file, delegate)
+              AudioTranscriberHelper.create(appContext, file, delegate)
             },
           )
             as T

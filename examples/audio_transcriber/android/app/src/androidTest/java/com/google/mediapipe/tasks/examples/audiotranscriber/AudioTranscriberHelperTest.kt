@@ -37,15 +37,15 @@ class AudioTranscriberHelperTest {
   fun parakeetCpu_transcribesSampleSpeechWavAndRecordsLatency() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val recorder = LatencyRecorder("audio_transcriber")
-    recorder.putMetadata("model", AudioTranscriberViewModel.DEFAULT_MODEL_FILE_NAME)
+    recorder.putMetadata("model", AudioTranscriberHelper.DEFAULT_MODEL_FILE_NAME)
     recorder.putMetadata("delegate", "CPU")
 
     val audio =
       context.assets.open(AudioTranscriberViewModel.SAMPLE_AUDIO_ASSET).use {
         WavAudioLoader.decode(it)
       }
-    assertEquals(AudioTranscriberViewModel.SAMPLE_RATE_HZ, audio.sampleRateHz)
-    assertTrue("Expected non-empty audio samples", audio.samples.size > AudioTranscriberViewModel.SAMPLE_RATE_HZ)
+    assertEquals(AudioTranscriberHelper.SAMPLE_RATE_HZ, audio.sampleRateHz)
+    assertTrue("Expected non-empty audio samples", audio.samples.size > AudioTranscriberHelper.SAMPLE_RATE_HZ)
 
     val modelFile =
       resolveDefaultModelFile(
@@ -56,16 +56,16 @@ class AudioTranscriberHelperTest {
 
     val transcriber =
       recorder.measure("model_load_ms") {
-        AudioTranscribing.create(
+        AudioTranscriberHelper.create(
           context = context,
           modelFile = modelFile,
-          delegateIndex = AudioTranscriberViewModel.DELEGATE_CPU,
+          delegateIndex = AudioTranscriberHelper.DELEGATE_CPU,
         ).also { it.prewarm() }
       }
 
     try {
       val collectedSegments = mutableListOf<String>()
-      val chunkSize = AudioTranscriberViewModel.SAMPLE_RATE_HZ / 2
+      val chunkSize = AudioTranscriberHelper.SAMPLE_RATE_HZ / 2
 
       recorder.measure("transcribe_sample_wav_ms") {
         var offset = 0
