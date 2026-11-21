@@ -186,6 +186,39 @@ final class TextEmbedderTests: XCTestCase {
   }
 
   @MainActor
+  func testEveryUserSelectableOptionCombinationSucceedsWithoutError() async throws {
+    let viewModel = TextEmbedderViewModel(autoLoad: false)
+    for model in TextEmbedderModelOption.allCases {
+      for l2Normalize in [false, true] {
+        for quantize in [false, true] {
+          let loaded = await viewModel.configure(
+            model: model,
+            delegate: .cpu,
+            l2Normalize: l2Normalize,
+            quantize: quantize,
+            contextMode: model.supportsFormatContext ? .similarity : .none
+          )
+          XCTAssertTrue(
+            loaded,
+            "Failed to load \(model.rawValue) l2=\(l2Normalize) quant=\(quantize): \(viewModel.errorMessage ?? "")"
+          )
+          let result = await viewModel.compare()
+          let unwrapped = try XCTUnwrap(
+            result,
+            "Compare failed for \(model.rawValue) l2=\(l2Normalize) quant=\(quantize): \(viewModel.errorMessage ?? "")"
+          )
+          XCTAssertEqual(unwrapped.dimensions, model.dimensions)
+          XCTAssertEqual(unwrapped.isQuantized, quantize)
+          XCTAssertTrue(unwrapped.similarity.isFinite)
+          XCTAssertGreaterThanOrEqual(unwrapped.similarity, -1.0001)
+          XCTAssertLessThanOrEqual(unwrapped.similarity, 1.0001)
+          XCTAssertNil(viewModel.errorMessage)
+        }
+      }
+    }
+  }
+
+  @MainActor
   func testGpuDelegateDoesNotSilentlyFallBackOnUnsupportedTextModel() async {
     let viewModel = TextEmbedderViewModel(
       model: .universalSentenceEncoder,

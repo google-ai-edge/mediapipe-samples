@@ -362,27 +362,6 @@ private struct TextEmbedderSettingsSheet: View {
         Text(viewModel.selectedModel.summary)
       }
 
-      Section {
-        Picker(
-          "Hardware Delegate",
-          selection: Binding(
-            get: { viewModel.selectedDelegate },
-            set: { viewModel.selectDelegate($0) }
-          )
-        ) {
-          ForEach(TextEmbedderDelegateOption.allCases) { delegate in
-            Text(delegate.displayName).tag(delegate)
-          }
-        }
-        .pickerStyle(.segmented)
-        .disabled(viewModel.isBusy)
-        .accessibilityIdentifier("picker_delegate")
-      } header: {
-        Text("Accelerator")
-      } footer: {
-        Text("Text embedders run natively on CPU. Selecting GPU tests the Metal delegate without silent fallback.")
-      }
-
       Section("Post-Processing") {
         Toggle(
           isOn: Binding(
@@ -418,6 +397,7 @@ private struct TextEmbedderSettingsSheet: View {
       }
 
       Section("Diagnostics") {
+        LabeledContent("Accelerator", value: viewModel.selectedDelegate.displayName)
         LabeledContent("Asset", value: viewModel.selectedModel.assetFilename)
         LabeledContent("Dimensions", value: "\(viewModel.selectedModel.dimensions)d")
         if let loadMs = viewModel.modelLoadTimeMs {
