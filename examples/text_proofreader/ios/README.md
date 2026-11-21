@@ -1,41 +1,83 @@
-# MediaPipe Text Proofreader iOS Demo
+# MediaPipe Tasks Text Proofreader iOS Demo
 
-This sample app demonstrates how to use the MediaPipe Text Proofreader Task on iOS. It proofreads input text, correcting grammatical and spelling errors.
+### Overview
 
-## Prerequisites
+This iOS app performs on-device grammar, spelling, and punctuation correction
+using the MediaPipe `TextProofreader` task with the quantized
+[Gemma 200M LiteRT-LM model](https://huggingface.co/litert-community/MediaPipe-TextProofreader-200M/resolve/main/proofread_quant_200m.litertlm),
+supporting both live streaming and unary proofreading with color-coded inline
+diff highlighting.
 
--   A physical iOS device (iPhone or iPad) with iOS 15.0 or later.
--   Xcode 14.1 or later.
+![Text Proofreader iOS Demo](textproofreader.png?raw=true "Text Proofreader iOS Demo")
 
-## Setup
+The model asset (`proofread_quant_200m.litertlm`) is downloaded automatically
+during the Xcode build via `RunScripts/download_models.sh` with SHA-256
+verification. Shared SwiftUI components and test helpers live in
+[`ios-common/`](../../../ios-common).
 
-1.  **Download the model:**
-    Run the following script to download the text proofreader model.
-    ```bash
-    sh RunScripts/download_models.sh
-    ```
+## Features
 
-2.  **Open the project:**
-    Open `TextProofreader.xcodeproj` in Xcode. Xcode will automatically resolve
-    and download the Swift Package dependencies from
-    `https://github.com/google-ai-edge/mediapipe`.
+- **Curated presets** covering grammar, spelling & tense, meeting notes, and
+  already-clean text.
+- **Color-coded inline diff & clean view** toggling seamlessly between
+  highlighted deletions/insertions built from `Correction` segments and the
+  final proofread text.
+- **Live streaming & unary inference** with one-tap copy-to-clipboard and
+  **Apply Fix** actions.
+- **Configurable token budget** (`256`, `512`, `1024` max tokens via
+  `TextProofreaderOptions.maxNumTokens`) and streaming toggle in Settings, with
+  CPU execution diagnostics.
 
-3.  **Run the app:**
-    Select your physical iOS device as the target and run the app.
+## Architecture
 
-## How it works
+The sample follows a uniform 4-file SwiftUI + Swift 6 architecture designed for
+both standalone execution and shared validation harnesses:
 
-The app uses the `MediaPipeTasksText` library to perform text proofreading.
+- `TextProofreader/TextProofreaderApp.swift` — minimal `@main` SwiftUI entry
+  point
+- `TextProofreader/TextProofreaderView.swift` — SwiftUI interface, inline diff
+  renderer, and Settings sheet accepting an injectable
+  `TextProofreaderViewModel`
+- `TextProofreader/TextProofreaderViewModel.swift` — `@Observable @MainActor`
+  state container exposing awaitable operations (`loadProofreader()`,
+  `configure(...)`, `proofread(streaming:)`)
+- `TextProofreader/TextProofreaderHelper.swift` — Swift `actor` wrapping
+  `MediaPipeTasksText.TextProofreader` off the main thread
 
-### TextProofreader Options
+## Build and run
 
-The `TextProofreaderOptions` allows you to configure:
--   `modelAssetPath`: Path to the LiteRT-LM model.
--   `maxTokens`: Maximum number of tokens for the task.
+### Prerequisites
 
-### Inference
+- **Xcode 16 or newer** (iOS 18.0+ deployment target).
+- An iPhone/iPad running iOS 18.0+ or an iOS 18+ Simulator.
 
-The app demonstrates both synchronous and streaming proofreading:
+### Building from Xcode
 
--   **Synchronous:** `proofread(_:)` returns the complete proofread text and a list of corrections.
--   **Streaming:** `proofreadStreaming(_:completion:)` returns the proofread text incrementally as it's being generated.
+1. Open `examples/text_proofreader/ios/TextProofreader.xcodeproj` in Xcode.
+2. Wait for Swift Package Manager to resolve `MediaPipeTasksText` and the local
+   `ios-common` package.
+3. Press **Run** (`⌘R`). The **Download Models** build phase fetches and
+   verifies `proofread_quant_200m.litertlm` on the first build.
+
+### Building and testing from the command line
+
+```bash
+cd examples/text_proofreader/ios
+
+# Download and verify model SHA-256 checksum
+./RunScripts/download_models.sh --verify
+
+# Run real-model XCTests on an iOS Simulator
+xcodebuild test \
+  -project TextProofreader.xcodeproj \
+  -scheme TextProofreader \
+  -destination "platform=iOS Simulator,name=iPhone 17" \
+  CODE_SIGNING_ALLOWED=NO
+
+# Build for generic iOS device (CI check)
+xcodebuild build \
+  -project TextProofreader.xcodeproj \
+  -scheme TextProofreader \
+  -destination "generic/platform=iOS" \
+  CODE_SIGNING_ALLOWED=NO
+```
