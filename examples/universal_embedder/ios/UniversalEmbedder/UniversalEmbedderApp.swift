@@ -12,25 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import UIKit
+import MediaPipeSampleUI
+import SwiftUI
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate {
-
-  func application(
-    _ application: UIApplication,
-    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
-  ) -> Bool {
-    return true
-  }
-
-  // MARK: UISceneSession Lifecycle
-
-  func application(
-    _ application: UIApplication,
-    configurationForConnecting connectingSceneSession: UISceneSession,
-    options: UIScene.ConnectionOptions
-  ) -> UISceneConfiguration {
-    return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
+struct UniversalEmbedderApp: App {
+  var body: some Scene {
+    WindowGroup {
+      UniversalEmbedderView(
+        viewModel: UniversalEmbedderViewModel(autoCompareOnInitialLoad: true)
+      )
+      .tint(MediaPipePalette.tealPrimary)
+    }
   }
 }

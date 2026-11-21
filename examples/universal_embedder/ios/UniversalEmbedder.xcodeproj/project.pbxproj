@@ -3,33 +3,46 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B0000001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001 /* AppDelegate.swift */; };
-		B0000002 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002 /* SceneDelegate.swift */; };
-		B0000003 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000003 /* ViewController.swift */; };
+		B0000001 /* UniversalEmbedderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001 /* UniversalEmbedderApp.swift */; };
+		B0000002 /* UniversalEmbedderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002 /* UniversalEmbedderView.swift */; };
+		B0000003 /* UniversalEmbedderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000003 /* UniversalEmbedderViewModel.swift */; };
 		B0000004 /* UniversalEmbedderHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000004 /* UniversalEmbedderHelper.swift */; };
 		B0000008 /* embeddinggemma-2-text-vision-440m.litertlm in Resources */ = {isa = PBXBuildFile; fileRef = B1000008 /* embeddinggemma-2-text-vision-440m.litertlm */; };
 		B0000009 /* images in Resources */ = {isa = PBXBuildFile; fileRef = B1000009 /* images */; };
 		B000000A /* MediaPipeTasksRetrieval in Frameworks */ = {isa = PBXBuildFile; productRef = B900000A /* MediaPipeTasksRetrieval */; };
-		B000000B /* InputSlotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100000B /* InputSlotView.swift */; };
+		B000000B /* MediaPipeSampleUI in Frameworks */ = {isa = PBXBuildFile; productRef = B900000B /* MediaPipeSampleUI */; };
 		B000000C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B100000C /* Assets.xcassets */; };
+		B000000D /* MediaPipeSampleTesting in Frameworks */ = {isa = PBXBuildFile; productRef = B900000C /* MediaPipeSampleTesting */; };
+		B000000E /* UniversalEmbedderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100000E /* UniversalEmbedderTests.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		B4100001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B7000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B4000001;
+			remoteInfo = UniversalEmbedder;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
-		B1000001 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		B1000002 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		B1000003 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		B1000001 /* UniversalEmbedderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UniversalEmbedderApp.swift; sourceTree = "<group>"; };
+		B1000002 /* UniversalEmbedderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UniversalEmbedderView.swift; sourceTree = "<group>"; };
+		B1000003 /* UniversalEmbedderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UniversalEmbedderViewModel.swift; sourceTree = "<group>"; };
 		B1000004 /* UniversalEmbedderHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UniversalEmbedderHelper.swift; sourceTree = "<group>"; };
 		B1000005 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B1000006 /* download_models.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = download_models.sh; path = RunScripts/download_models.sh; sourceTree = "<group>"; };
 		B1000007 /* UniversalEmbedder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UniversalEmbedder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1000008 /* embeddinggemma-2-text-vision-440m.litertlm */ = {isa = PBXFileReference; lastKnownFileType = file; path = embeddinggemma-2-text-vision-440m.litertlm; sourceTree = "<group>"; };
 		B1000009 /* images */ = {isa = PBXFileReference; lastKnownFileType = folder; path = images; sourceTree = "<group>"; };
-		B100000B /* InputSlotView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputSlotView.swift; sourceTree = "<group>"; };
 		B100000C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B100000D /* UniversalEmbedderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = UniversalEmbedderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B100000E /* UniversalEmbedderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UniversalEmbedderTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -38,6 +51,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				B000000A /* MediaPipeTasksRetrieval in Frameworks */,
+				B000000B /* MediaPipeSampleUI in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B2000002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B000000D /* MediaPipeSampleTesting in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -48,6 +70,7 @@
 			isa = PBXGroup;
 			children = (
 				B3000002 /* UniversalEmbedder */,
+				B3000005 /* UniversalEmbedderTests */,
 				B3000003 /* RunScripts */,
 				B3000004 /* Products */,
 			);
@@ -56,13 +79,12 @@
 		B3000002 /* UniversalEmbedder */ = {
 			isa = PBXGroup;
 			children = (
-				B1000001 /* AppDelegate.swift */,
-				B1000002 /* SceneDelegate.swift */,
-				B1000003 /* ViewController.swift */,
-				B100000B /* InputSlotView.swift */,
+				B1000001 /* UniversalEmbedderApp.swift */,
+				B1000002 /* UniversalEmbedderView.swift */,
+				B1000003 /* UniversalEmbedderViewModel.swift */,
 				B1000004 /* UniversalEmbedderHelper.swift */,
-				B1000005 /* Info.plist */,
 				B100000C /* Assets.xcassets */,
+				B1000005 /* Info.plist */,
 				B1000009 /* images */,
 				B1000008 /* embeddinggemma-2-text-vision-440m.litertlm */,
 			);
@@ -81,8 +103,17 @@
 			isa = PBXGroup;
 			children = (
 				B1000007 /* UniversalEmbedder.app */,
+				B100000D /* UniversalEmbedderTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		B3000005 /* UniversalEmbedderTests */ = {
+			isa = PBXGroup;
+			children = (
+				B100000E /* UniversalEmbedderTests.swift */,
+			);
+			path = UniversalEmbedderTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -92,7 +123,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B5000001 /* Build configuration list for PBXNativeTarget "UniversalEmbedder" */;
 			buildPhases = (
-				B6000001 /* Download models */,
+				B6000001 /* Download Models */,
 				B6000002 /* Sources */,
 				B2000001 /* Frameworks */,
 				B6000003 /* Resources */,
@@ -104,10 +135,32 @@
 			name = UniversalEmbedder;
 			packageProductDependencies = (
 				B900000A /* MediaPipeTasksRetrieval */,
+				B900000B /* MediaPipeSampleUI */,
 			);
 			productName = UniversalEmbedder;
 			productReference = B1000007 /* UniversalEmbedder.app */;
 			productType = "com.apple.product-type.application";
+		};
+		B4000002 /* UniversalEmbedderTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B5000003 /* Build configuration list for PBXNativeTarget "UniversalEmbedderTests" */;
+			buildPhases = (
+				B6000004 /* Sources */,
+				B2000002 /* Frameworks */,
+				B6000005 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B4200001 /* PBXTargetDependency */,
+			);
+			name = UniversalEmbedderTests;
+			packageProductDependencies = (
+				B900000C /* MediaPipeSampleTesting */,
+			);
+			productName = UniversalEmbedderTests;
+			productReference = B100000D /* UniversalEmbedderTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -115,16 +168,21 @@
 		B7000001 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1430;
-				LastUpgradeCheck = 1430;
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					B4000001 = {
-						CreatedOnToolsVersion = 14.3;
+						CreatedOnToolsVersion = 16.0;
+					};
+					B4000002 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = B4000001;
 					};
 				};
 			};
 			buildConfigurationList = B5000002 /* Build configuration list for PBXProject "UniversalEmbedder" */;
-			compatibilityVersion = "Xcode 14.0";
+			compatibilityVersion = "Xcode 15.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -134,12 +192,14 @@
 			mainGroup = B3000001;
 			packageReferences = (
 				B8000001 /* XCRemoteSwiftPackageReference "mediapipe" */,
+				B8000002 /* XCLocalSwiftPackageReference "../../../ios-common" */,
 			);
 			productRefGroup = B3000004 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				B4000001 /* UniversalEmbedder */,
+				B4000002 /* UniversalEmbedderTests */,
 			);
 		};
 /* End PBXProject section */
@@ -155,11 +215,19 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B6000005 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		B6000001 /* Download models */ = {
+		B6000001 /* Download Models */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -167,11 +235,10 @@
 			);
 			inputPaths = (
 			);
-			name = "Download models";
+			name = "Download Models";
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(SRCROOT)/UniversalEmbedder/embeddinggemma-2-text-vision-440m.litertlm",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -184,34 +251,68 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B0000001 /* AppDelegate.swift in Sources */,
-				B0000002 /* SceneDelegate.swift in Sources */,
-				B0000003 /* ViewController.swift in Sources */,
-				B000000B /* InputSlotView.swift in Sources */,
+				B0000001 /* UniversalEmbedderApp.swift in Sources */,
+				B0000002 /* UniversalEmbedderView.swift in Sources */,
+				B0000003 /* UniversalEmbedderViewModel.swift in Sources */,
 				B0000004 /* UniversalEmbedderHelper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B6000004 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B000000E /* UniversalEmbedderTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B4200001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B4000001 /* UniversalEmbedder */;
+			targetProxy = B4100001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		B8000101 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -227,8 +328,9 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
-				MTL_ENABLE_DEBUG_INFO = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
@@ -240,18 +342,36 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -263,8 +383,9 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -276,16 +397,27 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = UniversalEmbedder/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.universalembedder;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -294,17 +426,68 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = UniversalEmbedder/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.universalembedder;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		B8000105 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.universalembedderTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/UniversalEmbedder.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/UniversalEmbedder";
+			};
+			name = Debug;
+		};
+		B8000106 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.universalembedderTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/UniversalEmbedder.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/UniversalEmbedder";
 			};
 			name = Release;
 		};
@@ -329,7 +512,23 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		B5000003 /* Build configuration list for PBXNativeTarget "UniversalEmbedderTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B8000105 /* Debug */,
+				B8000106 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		B8000002 /* XCLocalSwiftPackageReference "../../../ios-common" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../../ios-common";
+		};
+/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
 		B8000001 /* XCRemoteSwiftPackageReference "mediapipe" */ = {
@@ -347,6 +546,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B8000001 /* XCRemoteSwiftPackageReference "mediapipe" */;
 			productName = MediaPipeTasksRetrieval;
+		};
+		B900000B /* MediaPipeSampleUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B8000002 /* XCLocalSwiftPackageReference "../../../ios-common" */;
+			productName = MediaPipeSampleUI;
+		};
+		B900000C /* MediaPipeSampleTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B8000002 /* XCLocalSwiftPackageReference "../../../ios-common" */;
+			productName = MediaPipeSampleTesting;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

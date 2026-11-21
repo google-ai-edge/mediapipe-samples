@@ -2,85 +2,79 @@
 
 ### Overview
 
-This app demonstrates the `UniversalEmbedder` from the MediaPipe `MediaPipeTasksRetrieval`
-framework, running [EmbeddingGemma V2](https://ai.google.dev/gemma) fully on-device.
+This iOS app demonstrates on-device multimodal embedding extraction and cross-modal
+similarity comparison using the MediaPipe `UniversalEmbedder` task
+(`MediaPipeTasksRetrieval`) powered by
+[EmbeddingGemma 2 (Text + Vision 440M)](https://huggingface.co/litert-community/embeddinggemma-2-text-vision-440m-litert-lm/resolve/main/embeddinggemma-2-text-vision-440m.litertlm)
+running locally via LiteRT-LM.
 
-The embedder projects **text, images and audio into a single shared vector space**. That is what
-makes cross-modal comparison possible: the sentence *"a yellow piece of fruit"* and a photo of a
-banana end up close together, even though one is words and the other is pixels.
+Because `UniversalEmbedder` projects both text and images into a single shared 768d
+vector space, you can compare **Text ↔ Image**, **Text ↔ Text**, and **Image ↔ Image**
+inputs directly on-device — choosing from 10 bundled sample photos, picking images from
+your Photos library via `PhotosPicker`, or typing custom captions.
 
-The demo gives you two inputs, each of which can be either text or one of ten bundled images, and
-reports the cosine similarity between their embeddings along with the vector size and how long
-each embedding took.
+![Universal Embedder iOS Demo](universalembedder.png?raw=true "Universal Embedder iOS Demo")
 
-| Input A | Input B | Cosine similarity |
-| --- | --- | --- |
-| "a yellow piece of fruit" | banana photo | ≈ 0.69 |
-| "a yellow piece of fruit" | kitten photo | ≈ 0.51 |
+The model (~370 MB) is downloaded automatically during the Xcode build via
+`RunScripts/download_models.sh` with SHA-256 verification. Shared SwiftUI components
+and test helpers live in [`ios-common/`](../../../ios-common).
 
-### API in a nutshell
+## Architecture
 
-```swift
-let options = UniversalEmbedderOptions()
-options.baseOptions.modelAssetPath = modelPath
-options.textDelegate = .GPU    // per-modality accelerators
-options.visionDelegate = .GPU
-options.l2Normalize = true
+The sample follows a uniform 4-file SwiftUI + Swift 6 architecture designed for
+both standalone execution and shared validation harnesses:
 
-let embedder = try UniversalEmbedder(options: options)
+- `UniversalEmbedder/UniversalEmbedderApp.swift` — minimal `@main` SwiftUI entry point
+- `UniversalEmbedder/UniversalEmbedderView.swift` — SwiftUI interface with dual
+  multimodal input cards (`Text` / `Image` + bundled sample strip + `PhotosPicker`),
+  cosine similarity gauge, telemetry tiles, and Settings sheet (CPU / GPU Metal and
+  L2 normalization)
+- `UniversalEmbedder/UniversalEmbedderViewModel.swift` — `@Observable @MainActor`
+  state container exposing awaitable operations (`loadEmbedder()`, `configure(...)`,
+  `compare()`, `swapInputs()`, `applyPreset(...)`)
+- `UniversalEmbedder/UniversalEmbedderHelper.swift` — Swift `actor` wrapping
+  `MediaPipeTasksRetrieval.UniversalEmbedder` off the main thread, storing LiteRT-LM
+  compiled caches in `Caches/MediaPipeUniversalEmbedderCache`
 
-let text = try embedder.embed(text: "a yellow piece of fruit").embeddings[0]
-let image = try embedder.embed(image: MPImage(uiImage: photo)).embeddings[0]
-
-let score = try UniversalEmbedder.cosineSimilarity(embedding1: text, embedding2: image)
-```
-
-`embed(audio:)` and `embed(content:)` round out the API for audio and mixed multimodal input.
-
-### CPU vs GPU
-
-The card at the top has a GPU switch. The accelerator is baked into the engine, so flipping it
-rebuilds the embedder. Use a physical device to see the GPU path: the simulator has no Metal
-accelerator for LiteRT and silently falls back to XNNPack on the CPU.
-
-## Build the demo using Xcode
+## Build and run
 
 ### Prerequisites
 
-*   Xcode 14.1 or later.
+- **Xcode 16 or newer** (iOS 18.0+ deployment target).
+- An iPhone/iPad running iOS 18.0+ or an iOS 18+ Simulator.
 
-*   A physical iOS device running iOS 15.0 or later (recommended), or the iOS simulator.
+### Building from Xcode
 
-The MediaPipe dependency is resolved with Swift Package Manager from
-`https://github.com/google-ai-edge/mediapipe`.
-`MediaPipeTasksRetrieval` requires MediaPipe 1.1.0 or newer.
+1. Open `examples/universal_embedder/ios/UniversalEmbedder.xcodeproj` in Xcode.
+2. Wait for Swift Package Manager to resolve `MediaPipeTasksRetrieval` and the local
+   `ios-common` package.
+3. Press **Run** (`⌘R`). The **Download Models** build phase fetches and verifies
+   `embeddinggemma-2-text-vision-440m.litertlm` on the first build.
 
-### Model
+### Building and testing from the command line
 
-The app uses the EmbeddingGemma V2 LiteRT-LM model at:
+```bash
+cd examples/universal_embedder/ios
 
+# Download and verify model SHA-256 checksum
+./RunScripts/download_models.sh --verify
+
+# Run real-model XCTests on an iOS Simulator
+xcodebuild test \
+  -project UniversalEmbedder.xcodeproj \
+  -scheme UniversalEmbedder \
+  -destination "platform=iOS Simulator,name=iPhone Air" \
+  CODE_SIGNING_ALLOWED=NO
+
+# Build for generic iOS device (CI check)
+xcodebuild build \
+  -project UniversalEmbedder.xcodeproj \
+  -scheme UniversalEmbedder \
+  -destination "generic/platform=iOS" \
+  CODE_SIGNING_ALLOWED=NO
 ```
-UniversalEmbedder/embeddinggemma-2-text-vision-440m.litertlm
-```
-
-The model (~370 MB) is downloaded automatically by `RunScripts/download_models.sh` when you build
-the app in Xcode. The first build and launch take a while.
-
-### Building
-
-*   Open `UniversalEmbedder.xcodeproj` in Xcode and let it resolve the Swift package.
-
-*   Select your device or a simulator and press Run.
-
-### Using the app
-
-1.  Wait for the status line to read *Ready · running on CPU*.
-2.  Leave Input A as the preset sentence and Input B as the banana photo, or pick your own
-    combination of text and images.
-3.  Tap **Compare embeddings** to see the cosine similarity, the first dimensions of both
-    vectors, and the per-input embedding latency.
 
 ### Related samples
 
-*   `examples/semantic_retriever` builds on the same embedder, adding a vector store and
-    retrieval on top of it for semantic image search.
+- [`examples/semantic_retriever`](../../semantic_retriever) builds on
+  `UniversalEmbedder`, adding an on-device vector store for semantic image search.
