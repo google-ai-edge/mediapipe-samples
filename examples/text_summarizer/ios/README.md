@@ -1,42 +1,74 @@
-# MediaPipe Text Summarizer iOS Demo
+# MediaPipe Tasks Text Summarizer iOS Demo
 
-This sample app demonstrates how to use the MediaPipe Text Summarizer Task on iOS. It summarizes input text into a concise format, supporting different summarization modes like TL;DR and Keypoints.
+### Overview
 
-## Prerequisites
+This iOS app summarizes articles, meeting notes, and passages completely
+on-device using the MediaPipe `TextSummarizer` task with the quantized
+[Gemma 200M (2-Mode)](https://huggingface.co/litert-community/MediaPipe-TextSummarizer-200M/resolve/main/summarization_quant_200m_2modes.litertlm)
+LiteRT-LM model:
 
--   A physical iOS device (iPhone or iPad) with iOS 15.0 or later.
--   Xcode 14.1 or later.
+- **Key Points** mode — extracts concise bulleted takeaways from the source passage
+- **TL;DR** mode — distills the source passage into a brief, readable paragraph
+- **Unary & Streaming** generation — supports both complete responses and
+  incremental token streaming
+- **Configurable token budget** — switch between `512`, `1024`, and `2048` max
+  tokens in Settings
 
-## Setup
+![Text Summarizer iOS Demo](textsummarizer.png?raw=true "Text Summarizer iOS Demo")
 
-1.  **Download the model:**
-    Run the following script to download the text summarization model.
-    ```bash
-    sh RunScripts/download_models.sh
-    ```
+The model asset (`summarization_quant_200m_2modes.litertlm`) is downloaded
+automatically during the Xcode build via `RunScripts/download_models.sh` with
+pinned SHA-256 verification. Shared SwiftUI components and test helpers live in
+[`ios-common/`](../../../ios-common).
 
-2.  **Open the project:**
-    Open `TextSummarizer.xcodeproj` in Xcode. Xcode will automatically resolve
-    and download the Swift Package dependencies from
-    `https://github.com/google-ai-edge/mediapipe`.
+## Architecture
 
-3.  **Run the app:**
-    Select your physical iOS device as the target and run the app.
+The sample follows a uniform 4-file SwiftUI + Swift 6 architecture designed for
+both standalone execution and shared validation harnesses:
 
-## How it works
+- `TextSummarizer/TextSummarizerApp.swift` — minimal `@main` SwiftUI entry point
+- `TextSummarizer/TextSummarizerView.swift` — SwiftUI interface and Settings
+  sheet accepting an injectable `TextSummarizerViewModel`
+- `TextSummarizer/TextSummarizerViewModel.swift` — `@Observable @MainActor`
+  state container exposing awaitable operations (`loadSummarizer()`,
+  `configure(...)`, `summarize(streaming:)`)
+- `TextSummarizer/TextSummarizerHelper.swift` — Swift `actor` wrapping
+  `MediaPipeTasksText.TextSummarizer` off the main thread
 
-The app uses the `MediaPipeTasksText` library to perform text summarization. 
+## Build and run
 
-### TextSummarizer Options
+### Prerequisites
 
-The `TextSummarizerOptions` allows you to configure:
--   `modelAssetPath`: Path to the LiteRT-LM model.
--   `mode`: Summarization mode (`.tldr` or `.keyPoints`).
--   `maxTokens`: Maximum number of tokens for the task.
+- **Xcode 16 or newer** (iOS 18.0+ deployment target).
+- An iPhone/iPad running iOS 18.0+ or an iOS 18+ Simulator.
 
-### Inference
+### Building from Xcode
 
-The app demonstrates both synchronous and streaming summarization:
+1. Open `examples/text_summarizer/ios/TextSummarizer.xcodeproj` in Xcode.
+2. Wait for Swift Package Manager to resolve `MediaPipeTasksText` and the local
+   `ios-common` package.
+3. Press **Run** (`⌘R`). The **Download Models** build phase fetches and
+   verifies `summarization_quant_200m_2modes.litertlm` on the first build.
 
--   **Synchronous:** `summarize(text:)` returns the complete summary.
--   **Streaming:** `summarizeStreaming(text:completion:)` returns the summary incrementally as it's being generated.
+### Building and testing from the command line
+
+```bash
+cd examples/text_summarizer/ios
+
+# Download and verify model SHA-256 checksum
+./RunScripts/download_models.sh --verify
+
+# Run real-model XCTests on an iOS Simulator
+xcodebuild test \
+  -project TextSummarizer.xcodeproj \
+  -scheme TextSummarizer \
+  -destination "platform=iOS Simulator,name=iPhone 17" \
+  CODE_SIGNING_ALLOWED=NO
+
+# Build for generic iOS device (CI check)
+xcodebuild build \
+  -project TextSummarizer.xcodeproj \
+  -scheme TextSummarizer \
+  -destination "generic/platform=iOS" \
+  CODE_SIGNING_ALLOWED=NO
+```
