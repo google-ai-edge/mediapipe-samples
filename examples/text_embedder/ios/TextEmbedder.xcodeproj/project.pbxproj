@@ -8,14 +8,16 @@
 
 /* Begin PBXBuildFile section */
 		22362ECF776FA9DA38574EBC /* MediaPipeTasksText in Frameworks */ = {isa = PBXBuildFile; productRef = 746BAC19A6F02C1542432642 /* MediaPipeTasksText */; };
-		BF5EECD02ABC2F9300189276 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5EECCF2ABC2F9300189276 /* AppDelegate.swift */; };
-		BF5EECD22ABC2F9300189276 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5EECD12ABC2F9300189276 /* SceneDelegate.swift */; };
-		BF5EECD42ABC2F9300189276 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5EECD32ABC2F9300189276 /* ViewController.swift */; };
-		BF5EECD72ABC2F9300189276 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BF5EECD52ABC2F9300189276 /* Main.storyboard */; };
+		3A0000010000000000000001 /* MediaPipeSampleUI in Frameworks */ = {isa = PBXBuildFile; productRef = 3A0000020000000000000001 /* MediaPipeSampleUI */; };
+		3A0000010000000000000002 /* MediaPipeSampleTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 3A0000020000000000000002 /* MediaPipeSampleTesting */; };
+		3A0000030000000000000001 /* TextEmbedderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0000040000000000000001 /* TextEmbedderApp.swift */; };
+		3A0000030000000000000002 /* TextEmbedderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0000040000000000000002 /* TextEmbedderView.swift */; };
+		3A0000030000000000000003 /* TextEmbedderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0000040000000000000003 /* TextEmbedderViewModel.swift */; };
+		3A0000030000000000000004 /* TextEmbedderHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0000040000000000000004 /* TextEmbedderHelper.swift */; };
+		3A0000030000000000000005 /* bert_embedder.tflite in Resources */ = {isa = PBXBuildFile; fileRef = 3A0000040000000000000005 /* bert_embedder.tflite */; };
+		3A0000030000000000000006 /* embedding_gemma.task in Resources */ = {isa = PBXBuildFile; fileRef = 3A0000040000000000000006 /* embedding_gemma.task */; };
 		BF5EECD92ABC2F9400189276 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF5EECD82ABC2F9400189276 /* Assets.xcassets */; };
-		BF5EECDC2ABC2F9400189276 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BF5EECDA2ABC2F9400189276 /* LaunchScreen.storyboard */; };
 		BF5EECE72ABC2F9400189276 /* TextEmbedderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5EECE62ABC2F9400189276 /* TextEmbedderTests.swift */; };
-		BF5EED012ABC32AE00189276 /* TextEmbedderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5EED002ABC32AE00189276 /* TextEmbedderService.swift */; };
 		BF5EED032AC2BBC800189276 /* universal_sentence_encoder.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF5EED022AC2BBC800189276 /* universal_sentence_encoder.tflite */; };
 /* End PBXBuildFile section */
 
@@ -30,17 +32,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3A0000040000000000000001 /* TextEmbedderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextEmbedderApp.swift; sourceTree = "<group>"; };
+		3A0000040000000000000002 /* TextEmbedderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextEmbedderView.swift; sourceTree = "<group>"; };
+		3A0000040000000000000003 /* TextEmbedderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextEmbedderViewModel.swift; sourceTree = "<group>"; };
+		3A0000040000000000000004 /* TextEmbedderHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextEmbedderHelper.swift; sourceTree = "<group>"; };
+		3A0000040000000000000005 /* bert_embedder.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = bert_embedder.tflite; sourceTree = "<group>"; };
+		3A0000040000000000000006 /* embedding_gemma.task */ = {isa = PBXFileReference; lastKnownFileType = file; path = embedding_gemma.task; sourceTree = "<group>"; };
 		BF5EECCC2ABC2F9300189276 /* TextEmbedder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TextEmbedder.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		BF5EECCF2ABC2F9300189276 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		BF5EECD12ABC2F9300189276 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		BF5EECD32ABC2F9300189276 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		BF5EECD62ABC2F9300189276 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		BF5EECD82ABC2F9400189276 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		BF5EECDB2ABC2F9400189276 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		BF5EECDD2ABC2F9400189276 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BF5EECE22ABC2F9400189276 /* TextEmbedderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TextEmbedderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF5EECE62ABC2F9400189276 /* TextEmbedderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextEmbedderTests.swift; sourceTree = "<group>"; };
-		BF5EED002ABC32AE00189276 /* TextEmbedderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextEmbedderService.swift; sourceTree = "<group>"; };
 		BF5EED022AC2BBC800189276 /* universal_sentence_encoder.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = universal_sentence_encoder.tflite; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -50,6 +52,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				22362ECF776FA9DA38574EBC /* MediaPipeTasksText in Frameworks */,
+				3A0000010000000000000001 /* MediaPipeSampleUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -57,6 +60,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3A0000010000000000000002 /* MediaPipeSampleTesting in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,15 +88,15 @@
 		BF5EECCE2ABC2F9300189276 /* TextEmbedder */ = {
 			isa = PBXGroup;
 			children = (
-				BF5EECFF2ABC326C00189276 /* Services */,
-				BF5EECCF2ABC2F9300189276 /* AppDelegate.swift */,
-				BF5EECD12ABC2F9300189276 /* SceneDelegate.swift */,
-				BF5EECD32ABC2F9300189276 /* ViewController.swift */,
-				BF5EECD52ABC2F9300189276 /* Main.storyboard */,
+				3A0000040000000000000001 /* TextEmbedderApp.swift */,
+				3A0000040000000000000002 /* TextEmbedderView.swift */,
+				3A0000040000000000000003 /* TextEmbedderViewModel.swift */,
+				3A0000040000000000000004 /* TextEmbedderHelper.swift */,
 				BF5EECD82ABC2F9400189276 /* Assets.xcassets */,
-				BF5EECDA2ABC2F9400189276 /* LaunchScreen.storyboard */,
 				BF5EECDD2ABC2F9400189276 /* Info.plist */,
 				BF5EED022AC2BBC800189276 /* universal_sentence_encoder.tflite */,
+				3A0000040000000000000005 /* bert_embedder.tflite */,
+				3A0000040000000000000006 /* embedding_gemma.task */,
 			);
 			path = TextEmbedder;
 			sourceTree = "<group>";
@@ -105,14 +109,6 @@
 			path = TextEmbedderTests;
 			sourceTree = "<group>";
 		};
-		BF5EECFF2ABC326C00189276 /* Services */ = {
-			isa = PBXGroup;
-			children = (
-				BF5EED002ABC32AE00189276 /* TextEmbedderService.swift */,
-			);
-			path = Services;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -120,7 +116,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BF5EECF62ABC2F9400189276 /* Build configuration list for PBXNativeTarget "TextEmbedder" */;
 			buildPhases = (
-				BF5EED042AC40EB100189276 /* Download mode */,
+				BF5EED042AC40EB100189276 /* Download Models */,
 				BF5EECC82ABC2F9300189276 /* Sources */,
 				BF5EECC92ABC2F9300189276 /* Frameworks */,
 				BF5EECCA2ABC2F9300189276 /* Resources */,
@@ -130,10 +126,11 @@
 			dependencies = (
 			);
 			name = TextEmbedder;
-			productName = TextEmbedder;
 			packageProductDependencies = (
 				746BAC19A6F02C1542432642 /* MediaPipeTasksText */,
+				3A0000020000000000000001 /* MediaPipeSampleUI */,
 			);
+			productName = TextEmbedder;
 			productReference = BF5EECCC2ABC2F9300189276 /* TextEmbedder.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -151,6 +148,9 @@
 				BF5EECE42ABC2F9400189276 /* PBXTargetDependency */,
 			);
 			name = TextEmbedderTests;
+			packageProductDependencies = (
+				3A0000020000000000000002 /* MediaPipeSampleTesting */,
+			);
 			productName = TextEmbedderTests;
 			productReference = BF5EECE22ABC2F9400189276 /* TextEmbedderTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -162,20 +162,20 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1430;
-				LastUpgradeCheck = 1430;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					BF5EECCB2ABC2F9300189276 = {
-						CreatedOnToolsVersion = 14.3.1;
+						CreatedOnToolsVersion = 16.0;
 					};
 					BF5EECE12ABC2F9400189276 = {
-						CreatedOnToolsVersion = 14.3.1;
+						CreatedOnToolsVersion = 16.0;
 						TestTargetID = BF5EECCB2ABC2F9300189276;
 					};
 				};
 			};
 			buildConfigurationList = BF5EECC72ABC2F9300189276 /* Build configuration list for PBXProject "TextEmbedder" */;
-			compatibilityVersion = "Xcode 14.0";
+			compatibilityVersion = "Xcode 15.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -185,6 +185,7 @@
 			mainGroup = BF5EECC32ABC2F9300189276;
 			packageReferences = (
 				04E5518C8AB441091188FD7F /* XCRemoteSwiftPackageReference "mediapipe" */,
+				3A0000050000000000000001 /* XCLocalSwiftPackageReference "../../../ios-common" */,
 			);
 			productRefGroup = BF5EECCD2ABC2F9300189276 /* Products */;
 			projectDirPath = "";
@@ -201,10 +202,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BF5EECDC2ABC2F9400189276 /* LaunchScreen.storyboard in Resources */,
 				BF5EED032AC2BBC800189276 /* universal_sentence_encoder.tflite in Resources */,
+				3A0000030000000000000005 /* bert_embedder.tflite in Resources */,
+				3A0000030000000000000006 /* embedding_gemma.task in Resources */,
 				BF5EECD92ABC2F9400189276 /* Assets.xcassets in Resources */,
-				BF5EECD72ABC2F9300189276 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -218,8 +219,9 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		BF5EED042AC40EB100189276 /* Download mode */ = {
+		BF5EED042AC40EB100189276 /* Download Models */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -227,7 +229,7 @@
 			);
 			inputPaths = (
 			);
-			name = "Download mode";
+			name = "Download Models";
 			outputFileListPaths = (
 			);
 			outputPaths = (
@@ -243,10 +245,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BF5EECD42ABC2F9300189276 /* ViewController.swift in Sources */,
-				BF5EECD02ABC2F9300189276 /* AppDelegate.swift in Sources */,
-				BF5EED012ABC32AE00189276 /* TextEmbedderService.swift in Sources */,
-				BF5EECD22ABC2F9300189276 /* SceneDelegate.swift in Sources */,
+				3A0000030000000000000001 /* TextEmbedderApp.swift in Sources */,
+				3A0000030000000000000002 /* TextEmbedderView.swift in Sources */,
+				3A0000030000000000000003 /* TextEmbedderViewModel.swift in Sources */,
+				3A0000030000000000000004 /* TextEmbedderHelper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -267,25 +269,6 @@
 			targetProxy = BF5EECE32ABC2F9400189276 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
-
-/* Begin PBXVariantGroup section */
-		BF5EECD52ABC2F9300189276 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				BF5EECD62ABC2F9300189276 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		BF5EECDA2ABC2F9400189276 /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				BF5EECDB2ABC2F9400189276 /* Base */,
-			);
-			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		BF5EECF42ABC2F9400189276 /* Debug */ = {
@@ -324,6 +307,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -338,7 +322,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -384,6 +368,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -392,7 +377,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -412,11 +397,12 @@
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TextEmbedder/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -425,7 +411,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.TextEmbedder;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -440,11 +426,12 @@
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TextEmbedder/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -453,7 +440,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.TextEmbedder;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -467,12 +454,12 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.TextEmbedderTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TextEmbedder.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TextEmbedder";
 			};
@@ -487,12 +474,12 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.TextEmbedderTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TextEmbedder.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TextEmbedder";
 			};
@@ -530,6 +517,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		3A0000050000000000000001 /* XCLocalSwiftPackageReference "../../../ios-common" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../../ios-common";
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		04E5518C8AB441091188FD7F /* XCRemoteSwiftPackageReference "mediapipe" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -542,6 +536,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		3A0000020000000000000001 /* MediaPipeSampleUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3A0000050000000000000001 /* XCLocalSwiftPackageReference "../../../ios-common" */;
+			productName = MediaPipeSampleUI;
+		};
+		3A0000020000000000000002 /* MediaPipeSampleTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3A0000050000000000000001 /* XCLocalSwiftPackageReference "../../../ios-common" */;
+			productName = MediaPipeSampleTesting;
+		};
 		746BAC19A6F02C1542432642 /* MediaPipeTasksText */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 04E5518C8AB441091188FD7F /* XCRemoteSwiftPackageReference "mediapipe" */;
