@@ -7,17 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3B0000010000000000000001 /* MediaPipeSampleUI in Frameworks */ = {isa = PBXBuildFile; productRef = 3B0000020000000000000001 /* MediaPipeSampleUI */; };
+		3B0000010000000000000002 /* MediaPipeSampleTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 3B0000020000000000000002 /* MediaPipeSampleTesting */; };
+		3B0000030000000000000001 /* TextClassifierApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B0000040000000000000001 /* TextClassifierApp.swift */; };
+		3B0000030000000000000002 /* TextClassifierView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B0000040000000000000002 /* TextClassifierView.swift */; };
+		3B0000030000000000000003 /* TextClassifierViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B0000040000000000000003 /* TextClassifierViewModel.swift */; };
+		3B0000030000000000000004 /* TextClassifierHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B0000040000000000000004 /* TextClassifierHelper.swift */; };
 		5EB8FE791AD12BF6233C3D00 /* MediaPipeTasksText in Frameworks */ = {isa = PBXBuildFile; productRef = 6C0DA659622262DED90D6FF9 /* MediaPipeTasksText */; };
-		BF2B2C012A302CDB00589A11 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2C002A302CDB00589A11 /* AppDelegate.swift */; };
-		BF2B2C032A302CDB00589A11 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2C022A302CDB00589A11 /* SceneDelegate.swift */; };
-		BF2B2C052A302CDB00589A11 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2C042A302CDB00589A11 /* ViewController.swift */; };
 		BF2B2C0A2A302CDC00589A11 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2C092A302CDC00589A11 /* Assets.xcassets */; };
-		BF2B2C0D2A302CDC00589A11 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2C0B2A302CDC00589A11 /* LaunchScreen.storyboard */; };
 		BF2B2C182A302CDD00589A11 /* TextClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2C172A302CDD00589A11 /* TextClassifierTests.swift */; };
 		BF2B2C352A303ABF00589A11 /* bert_classifier.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2C302A303ABF00589A11 /* bert_classifier.tflite */; };
-		BF2B2C362A303ABF00589A11 /* TextClassifierHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2B2C322A303ABF00589A11 /* TextClassifierHelper.swift */; };
 		BF2B2C382A303ABF00589A11 /* average_word_classifier.tflite in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2C342A303ABF00589A11 /* average_word_classifier.tflite */; };
-		BF2B2C3C2A303B6800589A11 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BF2B2C3B2A303B6800589A11 /* Main.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -26,25 +26,23 @@
 			containerPortal = BF2B2BF52A302CDB00589A11 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = BF2B2BFC2A302CDB00589A11;
-			remoteInfo = TextClassificater;
+			remoteInfo = TextClassifier;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3B0000040000000000000001 /* TextClassifierApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextClassifierApp.swift; sourceTree = "<group>"; };
+		3B0000040000000000000002 /* TextClassifierView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextClassifierView.swift; sourceTree = "<group>"; };
+		3B0000040000000000000003 /* TextClassifierViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextClassifierViewModel.swift; sourceTree = "<group>"; };
+		3B0000040000000000000004 /* TextClassifierHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextClassifierHelper.swift; sourceTree = "<group>"; };
 		7FC03EE32A57581C00867DCE /* download_models.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = download_models.sh; sourceTree = "<group>"; };
 		BF2B2BFD2A302CDB00589A11 /* TextClassifier.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TextClassifier.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		BF2B2C002A302CDB00589A11 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		BF2B2C022A302CDB00589A11 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		BF2B2C042A302CDB00589A11 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		BF2B2C092A302CDC00589A11 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		BF2B2C0C2A302CDC00589A11 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		BF2B2C0E2A302CDC00589A11 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BF2B2C132A302CDD00589A11 /* TextClassifierTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TextClassifierTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF2B2C172A302CDD00589A11 /* TextClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextClassifierTests.swift; sourceTree = "<group>"; };
 		BF2B2C302A303ABF00589A11 /* bert_classifier.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = bert_classifier.tflite; sourceTree = "<group>"; };
-		BF2B2C322A303ABF00589A11 /* TextClassifierHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextClassifierHelper.swift; sourceTree = "<group>"; };
 		BF2B2C342A303ABF00589A11 /* average_word_classifier.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = average_word_classifier.tflite; sourceTree = "<group>"; };
-		BF2B2C3B2A303B6800589A11 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +51,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5EB8FE791AD12BF6233C3D00 /* MediaPipeTasksText in Frameworks */,
+				3B0000010000000000000001 /* MediaPipeSampleUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -60,6 +59,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3B0000010000000000000002 /* MediaPipeSampleTesting in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -96,16 +96,14 @@
 		BF2B2BFF2A302CDB00589A11 /* TextClassifier */ = {
 			isa = PBXGroup;
 			children = (
-				BF2B2C312A303ABF00589A11 /* Helper */,
-				BF2B2C002A302CDB00589A11 /* AppDelegate.swift */,
-				BF2B2C022A302CDB00589A11 /* SceneDelegate.swift */,
-				BF2B2C042A302CDB00589A11 /* ViewController.swift */,
+				3B0000040000000000000001 /* TextClassifierApp.swift */,
+				3B0000040000000000000002 /* TextClassifierView.swift */,
+				3B0000040000000000000003 /* TextClassifierViewModel.swift */,
+				3B0000040000000000000004 /* TextClassifierHelper.swift */,
 				BF2B2C092A302CDC00589A11 /* Assets.xcassets */,
-				BF2B2C0B2A302CDC00589A11 /* LaunchScreen.storyboard */,
-				BF2B2C3B2A303B6800589A11 /* Main.storyboard */,
 				BF2B2C0E2A302CDC00589A11 /* Info.plist */,
-				BF2B2C342A303ABF00589A11 /* average_word_classifier.tflite */,
 				BF2B2C302A303ABF00589A11 /* bert_classifier.tflite */,
+				BF2B2C342A303ABF00589A11 /* average_word_classifier.tflite */,
 			);
 			path = TextClassifier;
 			sourceTree = "<group>";
@@ -118,14 +116,6 @@
 			path = TextClassifierTests;
 			sourceTree = "<group>";
 		};
-		BF2B2C312A303ABF00589A11 /* Helper */ = {
-			isa = PBXGroup;
-			children = (
-				BF2B2C322A303ABF00589A11 /* TextClassifierHelper.swift */,
-			);
-			path = Helper;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -133,7 +123,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BF2B2C272A302CDD00589A11 /* Build configuration list for PBXNativeTarget "TextClassifier" */;
 			buildPhases = (
-				BF2B2C3A2A303AFD00589A11 /* Download ML models */,
+				BF2B2C3A2A303AFD00589A11 /* Download Models */,
 				BF2B2BF92A302CDB00589A11 /* Sources */,
 				BF2B2BFA2A302CDB00589A11 /* Frameworks */,
 				BF2B2BFB2A302CDB00589A11 /* Resources */,
@@ -143,10 +133,11 @@
 			dependencies = (
 			);
 			name = TextClassifier;
-			productName = TextClassificater;
 			packageProductDependencies = (
 				6C0DA659622262DED90D6FF9 /* MediaPipeTasksText */,
+				3B0000020000000000000001 /* MediaPipeSampleUI */,
 			);
+			productName = TextClassifier;
 			productReference = BF2B2BFD2A302CDB00589A11 /* TextClassifier.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -164,7 +155,10 @@
 				BF2B2C3E2A303CF500589A11 /* PBXTargetDependency */,
 			);
 			name = TextClassifierTests;
-			productName = TextClassificaterTests;
+			packageProductDependencies = (
+				3B0000020000000000000002 /* MediaPipeSampleTesting */,
+			);
+			productName = TextClassifierTests;
 			productReference = BF2B2C132A302CDD00589A11 /* TextClassifierTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
@@ -175,20 +169,20 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1430;
-				LastUpgradeCheck = 1430;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					BF2B2BFC2A302CDB00589A11 = {
-						CreatedOnToolsVersion = 14.3;
+						CreatedOnToolsVersion = 16.0;
 					};
 					BF2B2C122A302CDD00589A11 = {
-						CreatedOnToolsVersion = 14.3;
+						CreatedOnToolsVersion = 16.0;
 						TestTargetID = BF2B2BFC2A302CDB00589A11;
 					};
 				};
 			};
 			buildConfigurationList = BF2B2BF82A302CDB00589A11 /* Build configuration list for PBXProject "TextClassifier" */;
-			compatibilityVersion = "Xcode 14.0";
+			compatibilityVersion = "Xcode 15.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -198,6 +192,7 @@
 			mainGroup = BF2B2BF42A302CDB00589A11;
 			packageReferences = (
 				AF3AA1B267C6657E5E9697DB /* XCRemoteSwiftPackageReference "mediapipe" */,
+				3B0000050000000000000001 /* XCLocalSwiftPackageReference "../../../ios-common" */,
 			);
 			productRefGroup = BF2B2BFE2A302CDB00589A11 /* Products */;
 			projectDirPath = "";
@@ -214,11 +209,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BF2B2C0D2A302CDC00589A11 /* LaunchScreen.storyboard in Resources */,
-				BF2B2C3C2A303B6800589A11 /* Main.storyboard in Resources */,
 				BF2B2C352A303ABF00589A11 /* bert_classifier.tflite in Resources */,
-				BF2B2C0A2A302CDC00589A11 /* Assets.xcassets in Resources */,
 				BF2B2C382A303ABF00589A11 /* average_word_classifier.tflite in Resources */,
+				BF2B2C0A2A302CDC00589A11 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -232,7 +225,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		BF2B2C3A2A303AFD00589A11 /* Download ML models */ = {
+		BF2B2C3A2A303AFD00589A11 /* Download Models */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -242,7 +235,7 @@
 			);
 			inputPaths = (
 			);
-			name = "Download ML models";
+			name = "Download Models";
 			outputFileListPaths = (
 			);
 			outputPaths = (
@@ -258,10 +251,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BF2B2C052A302CDB00589A11 /* ViewController.swift in Sources */,
-				BF2B2C012A302CDB00589A11 /* AppDelegate.swift in Sources */,
-				BF2B2C032A302CDB00589A11 /* SceneDelegate.swift in Sources */,
-				BF2B2C362A303ABF00589A11 /* TextClassifierHelper.swift in Sources */,
+				3B0000030000000000000001 /* TextClassifierApp.swift in Sources */,
+				3B0000030000000000000002 /* TextClassifierView.swift in Sources */,
+				3B0000030000000000000003 /* TextClassifierViewModel.swift in Sources */,
+				3B0000030000000000000004 /* TextClassifierHelper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -282,17 +275,6 @@
 			targetProxy = BF2B2C3D2A303CF500589A11 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
-
-/* Begin PBXVariantGroup section */
-		BF2B2C0B2A302CDC00589A11 /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				BF2B2C0C2A302CDC00589A11 /* Base */,
-			);
-			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		BF2B2C252A302CDD00589A11 /* Debug */ = {
@@ -331,6 +313,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -345,7 +328,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -391,6 +374,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -399,7 +383,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -414,19 +398,17 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TextClassifier/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -434,9 +416,8 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.textclassification;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -446,19 +427,17 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TextClassifier/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -466,9 +445,8 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.textclassification;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -482,12 +460,12 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = tuan.mai.TextClassificaterTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.textclassificationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TextClassifier.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TextClassifier";
 			};
@@ -502,12 +480,12 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = tuan.mai.TextClassificaterTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.mediapipe.examples.textclassificationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TextClassifier.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TextClassifier";
 			};
@@ -545,6 +523,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		3B0000050000000000000001 /* XCLocalSwiftPackageReference "../../../ios-common" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../../ios-common";
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		AF3AA1B267C6657E5E9697DB /* XCRemoteSwiftPackageReference "mediapipe" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -557,6 +542,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		3B0000020000000000000001 /* MediaPipeSampleUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3B0000050000000000000001 /* XCLocalSwiftPackageReference "../../../ios-common" */;
+			productName = MediaPipeSampleUI;
+		};
+		3B0000020000000000000002 /* MediaPipeSampleTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3B0000050000000000000001 /* XCLocalSwiftPackageReference "../../../ios-common" */;
+			productName = MediaPipeSampleTesting;
+		};
 		6C0DA659622262DED90D6FF9 /* MediaPipeTasksText */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = AF3AA1B267C6657E5E9697DB /* XCRemoteSwiftPackageReference "mediapipe" */;

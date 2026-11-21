@@ -1,4 +1,4 @@
-// Copyright 2023 The MediaPipe Authors.
+// Copyright 2026 The MediaPipe Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,119 +12,209 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import MediaPipeSampleTesting
+import MediaPipeSampleUI
 import XCTest
 @testable import TextClassifier
-import MediaPipeTasksText
 
 final class TextClassifierTests: XCTestCase {
-  
-  static let bertModel = Model.mobileBert
-  
-  static let negativeText = "unflinchingly bleak and desperate"
-  
-  static let bertNegativeTextResults = [
-    ResultCategory(
-      index: 0,
-      score: 0.956187,
-      categoryName: "negative",
-      displayName: nil),
-    ResultCategory(
-      index: 1,
-      score: 0.043812,
-      categoryName: "positive",
-      displayName: nil),
-  ]
-  
-  func assertCategoriesAreEqual(
-    category: ResultCategory,
-    expectedCategory: ResultCategory,
-    indexInCategoryList: Int
-  ) {
-    XCTAssertEqual(
-      category.index,
-      expectedCategory.index,
-      String(
-        format: """
-              category[%d].index and expectedCategory[%d].index are not equal.
-              """, indexInCategoryList))
-    XCTAssertEqual(
-      category.score,
-      expectedCategory.score,
-      accuracy: 1e-3,
-      String(
-        format: """
-              category[%d].score and expectedCategory[%d].score are not equal.
-              """, indexInCategoryList))
-    XCTAssertEqual(
-      category.categoryName,
-      expectedCategory.categoryName,
-      String(
-        format: """
-              category[%d].categoryName and expectedCategory[%d].categoryName are \
-              not equal.
-              """, indexInCategoryList))
-    XCTAssertEqual(
-      category.displayName,
-      expectedCategory.displayName,
-      String(
-        format: """
-              category[%d].displayName and expectedCategory[%d].displayName are \
-              not equal.
-              """, indexInCategoryList))
+  func testMobileBertSpecSentencesAndGoldenBaseline() async throws {
+    let helper = TextClassifierHelper()
+    let loadMs = try await helper.load(model: .mobileBert, delegate: .cpu)
+    XCTAssertGreaterThanOrEqual(loadMs, 0)
+
+    let specCases: [(text: String, expectedRaw: String, expectedDisplay: String, minScore: Float)] =
+      [
+        ("I'm looking forward to what will come next.", "positive", "Positive", 0.7),
+        (
+          "This MediaPipe release validation test is working wonderfully!",
+          "positive",
+          "Positive",
+          0.7
+        ),
+        (
+          "This is a terrible, broken and disappointing release. I hate it.",
+          "negative",
+          "Negative",
+          0.7
+        ),
+      ]
+
+    for specCase in specCases {
+      let output = try await helper.classify(text: specCase.text)
+      XCTAssertEqual(output.categories.count, 2)
+      let top = try XCTUnwrap(output.topCategory)
+      XCTAssertEqual(top.rawLabel, specCase.expectedRaw)
+      XCTAssertEqual(top.displayLabel, specCase.expectedDisplay)
+      XCTAssertGreaterThanOrEqual(
+        top.score,
+        specCase.minScore,
+        "Expected score >= \(specCase.minScore) for '\(specCase.text)', got \(top.score)"
+      )
+
+      let sum = output.categories.reduce(0.0) { $0 + Double($1.score) }
+      XCTAssertEqual(sum, 1.0, accuracy: 1e-3)
+    }
+
+    // Golden regression check from original MediaPipe sample test.
+    let bleak = try await helper.classify(text: "unflinchingly bleak and desperate")
+    XCTAssertEqual(bleak.categories.count, 2)
+    let bleakTop = try XCTUnwrap(bleak.topCategory)
+    XCTAssertEqual(bleakTop.rawLabel, "negative")
+    XCTAssertEqual(bleakTop.displayLabel, "Negative")
+    XCTAssertEqual(bleakTop.score, 0.956, accuracy: 0.02)
   }
-  
-  func assertEqualCategoryArrays(
-    categoryArray: [ResultCategory],
-    expectedCategoryArray: [ResultCategory]
-  ) {
-    XCTAssertEqual(
-      categoryArray.count,
-      expectedCategoryArray.count)
-    
-    for (index, (category, expectedCategory)) in zip(categoryArray, expectedCategoryArray)
-      .enumerated()
-    {
-      assertCategoriesAreEqual(
-        category: category,
-        expectedCategory: expectedCategory,
-        indexInCategoryList: index)
+
+  func testAverageWordSpecSentencesAndLabelNormalization() async throws {
+    let helper = TextClassifierHelper()
+    let loadMs = try await helper.load(model: .wordVec, delegate: .cpu)
+    XCTAssertGreaterThanOrEqual(loadMs, 0)
+
+    let specCases: [(text: String, expectedRaw: String, expectedDisplay: String, minScore: Float)] =
+      [
+        (
+          "This film is a wonderful, uplifting masterpiece with great acting!",
+          "1",
+          "Positive",
+          0.6
+        ),
+        (
+          "This MediaPipe release validation test is working wonderfully!",
+          "1",
+          "Positive",
+          0.6
+        ),
+        (
+          "This is a terrible, broken and disappointing release. I hate it.",
+          "0",
+          "Negative",
+          0.6
+        ),
+      ]
+
+    for specCase in specCases {
+      let output = try await helper.classify(text: specCase.text)
+      XCTAssertEqual(output.categories.count, 2)
+      let top = try XCTUnwrap(output.topCategory)
+      XCTAssertEqual(top.rawLabel, specCase.expectedRaw)
+      XCTAssertEqual(top.displayLabel, specCase.expectedDisplay)
+      XCTAssertGreaterThanOrEqual(
+        top.score,
+        specCase.minScore,
+        "Expected WordVec score >= \(specCase.minScore) for '\(specCase.text)', got \(top.score)"
+      )
+
+      let sum = output.categories.reduce(0.0) { $0 + Double($1.score) }
+      XCTAssertEqual(sum, 1.0, accuracy: 1e-3)
     }
   }
-  
-  func assertTextClassifierResultHasOneHead(
-    _ textClassifierResult: TextClassifierResult
-  ) {
-    XCTAssertEqual(textClassifierResult.classificationResult.classifications.count, 1)
-    XCTAssertEqual(textClassifierResult.classificationResult.classifications[0].headIndex, 0)
+
+  @MainActor
+  func testEveryUserSelectableOptionCombinationSucceedsWithoutError() async throws {
+    let viewModel = TextClassifierViewModel(autoLoad: false)
+    for model in TextClassifierModelOption.allCases {
+      let loaded = await viewModel.configure(model: model, delegate: .cpu)
+      XCTAssertTrue(
+        loaded,
+        "Failed to load \(model.rawValue): \(viewModel.errorMessage ?? "")"
+      )
+      XCTAssertTrue(viewModel.isReady)
+      XCTAssertNil(viewModel.errorMessage)
+
+      for preset in TextClassificationPreset.defaults {
+        viewModel.applyPreset(preset)
+        let result = await viewModel.classify()
+        let unwrapped = try XCTUnwrap(
+          result,
+          "Classify failed for \(model.rawValue) preset=\(preset.id): \(viewModel.errorMessage ?? "")"
+        )
+        XCTAssertEqual(unwrapped.categories.count, 2)
+        XCTAssertNil(viewModel.errorMessage)
+        let top = try XCTUnwrap(unwrapped.topCategory)
+        XCTAssertTrue(["Positive", "Negative"].contains(top.displayLabel))
+        XCTAssertGreaterThanOrEqual(top.score, 0.5)
+        XCTAssertLessThanOrEqual(top.score, 1.0001)
+      }
+    }
   }
-  
-  func textClassifierWithModel(
-    _ model: Model
-  ) throws -> TextClassifierHelper {
-    let textClassifierHelper = TextClassifierHelper(model: model)
-    return textClassifierHelper
+
+  @MainActor
+  func testViewModelPresetsStateInvalidationAndValidation() async throws {
+    let viewModel = TextClassifierViewModel(
+      model: .mobileBert,
+      delegate: .cpu,
+      autoLoad: false
+    )
+
+    let loaded = await viewModel.loadClassifier()
+    XCTAssertTrue(loaded, "Expected MobileBERT to load: \(viewModel.errorMessage ?? "")")
+    XCTAssertTrue(viewModel.isReady)
+    XCTAssertEqual(viewModel.headerSubtitle, "MobileBERT · CPU")
+    XCTAssertEqual(viewModel.activePresetID, "mediapipe")
+
+    let positivePreset = try XCTUnwrap(
+      TextClassificationPreset.defaults.first { $0.id == "positive" }
+    )
+    viewModel.applyPreset(positivePreset)
+    XCTAssertEqual(viewModel.activePresetID, "positive")
+
+    let rawPosOutput = await viewModel.classify()
+    let posOutput = try XCTUnwrap(rawPosOutput)
+    XCTAssertEqual(posOutput.topCategory?.displayLabel, "Positive")
+    XCTAssertEqual(posOutput.topCategory?.polarity, .positive)
+    XCTAssertGreaterThan(posOutput.topCategory?.score ?? 0, 0.9)
+    XCTAssertEqual(viewModel.result, posOutput)
+
+    // Editing input invalidates stale classification result.
+    viewModel.inputText = "   "
+    XCTAssertNil(viewModel.result)
+    XCTAssertNil(viewModel.activePresetID)
+    XCTAssertFalse(viewModel.canClassify)
+
+    let negativePreset = try XCTUnwrap(
+      TextClassificationPreset.defaults.first { $0.id == "negative" }
+    )
+    viewModel.applyPreset(negativePreset)
+    XCTAssertTrue(viewModel.canClassify)
+    let rawNegOutput = await viewModel.classify()
+    let negOutput = try XCTUnwrap(rawNegOutput)
+    XCTAssertEqual(negOutput.topCategory?.displayLabel, "Negative")
+    XCTAssertEqual(negOutput.topCategory?.polarity, .negative)
+    XCTAssertGreaterThan(negOutput.topCategory?.score ?? 0, 0.9)
+
+    // Switching models updates subtitle and clears previous result.
+    let switched = await viewModel.configure(model: .wordVec, delegate: .cpu)
+    XCTAssertTrue(switched)
+    XCTAssertNil(viewModel.result)
+    XCTAssertEqual(viewModel.headerSubtitle, "WordVec · CPU")
   }
-  
-  func assertResultsForClassify(
-    text: String,
-    using textClassifier: TextClassifierHelper,
-    equals expectedCategories: [ResultCategory]
-  ) throws {
-    let textClassifierResult =
-    try XCTUnwrap(
-      textClassifier.classify(text: text))
-    assertTextClassifierResultHasOneHead(textClassifierResult)
-    assertEqualCategoryArrays(
-      categoryArray:
-        textClassifierResult.classificationResult.classifications[0].categories,
-      expectedCategoryArray: expectedCategories)
-  }
-  func testClassifyWithBertSucceeds() throws {
-    
-    let textClassifier = try textClassifierWithModel(TextClassifierTests.bertModel)
-    try assertResultsForClassify(
-      text: TextClassifierTests.negativeText,
-      using: textClassifier,
-      equals: TextClassifierTests.bertNegativeTextResults)
+
+  @MainActor
+  func testGpuDelegateDoesNotSilentlyFallBackOnUnsupportedTextModels() async throws {
+    for model in TextClassifierModelOption.allCases {
+      let viewModel = TextClassifierViewModel(
+        model: model,
+        delegate: .gpu,
+        autoLoad: false
+      )
+      let loaded = await viewModel.loadClassifier()
+      XCTAssertFalse(
+        loaded,
+        "Expected \(model.rawValue) to reject Metal GPU delegate on iOS without silent CPU fallback"
+      )
+      XCTAssertTrue(viewModel.isGpuError, "Expected GPU error flag for \(model.rawValue)")
+      XCTAssertNotNil(viewModel.errorMessage)
+      XCTAssertFalse(viewModel.isReady)
+
+      // Explicitly switching back to CPU recovers cleanly.
+      let recovered = await viewModel.configure(model: model, delegate: .cpu)
+      XCTAssertTrue(recovered, "Expected CPU recovery to succeed for \(model.rawValue)")
+      XCTAssertTrue(viewModel.isReady)
+      XCTAssertFalse(viewModel.isGpuError)
+      XCTAssertNil(viewModel.errorMessage)
+      let rawOutput = await viewModel.classify()
+      let output = try XCTUnwrap(rawOutput)
+      XCTAssertEqual(output.categories.count, 2)
+    }
   }
 }
