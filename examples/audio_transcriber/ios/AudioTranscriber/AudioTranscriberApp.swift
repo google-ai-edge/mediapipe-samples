@@ -12,14 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import MediaPipeSampleUI
 import SwiftUI
 
-/// Application entry point for the MediaPipe AudioTranscriber sample app.
 @main
 struct AudioTranscriberApp: App {
   var body: some Scene {
     WindowGroup {
-      AudioTranscriberView()
+      AudioTranscriberView(
+        viewModel: AudioTranscriberViewModel(autoTranscribeSampleOnLaunch: true)
+      )
+      .tint(MediaPipePalette.tealPrimary)
     }
   }
 }

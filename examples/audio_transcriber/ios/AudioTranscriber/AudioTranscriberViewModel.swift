@@ -12,428 +12,803 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+@preconcurrency import AVFoundation
 import Foundation
-#if canImport(MediaPipeTasksAudio)
-import MediaPipeTasksAudio
-#elseif canImport(MPPAudioTranscriber)
-import MPPAudioTranscriber
-#endif
-import OSLog
+import MediaPipeSampleUI
 import Observation
 
-/// Configuration constants for the MediaPipe `AudioTranscriber` sample.
-package enum TranscriberConfiguration {
-  static let modelName = "parakeet_tdt_0.6b_v3_5s_i8_stateful"
-  /// File extension for LiteRT-LM transcription model bundles.
-  package static let modelExtension = "litertlm"
-  /// Default bundled model filename including extension.
-  package static let defaultModelFileName = "\(modelName).\(modelExtension)"
-  static let sampleRateHz: Double = 48_000.0
-  static let millisecondsPerSecond: Double = 1_000.0
-}
+/// Input source tab selectable in the main UI.
+public enum AudioInputSourceMode: String, CaseIterable, Identifiable, Sendable {
+  case clip = "clip"
+  case microphone = "microphone"
 
-/// User-facing status messages displayed by `AudioTranscriberViewModel`.
-package enum StatusMessage {
-  package static let ready = "Ready"
-  package static let listening = "Listening..."
-  package static let finalized = "Recording finalized"
-  package static let cleared = "Cleared"
+  public var id: String { rawValue }
 
-  /// Returns a status message indicating that the given model filename was loaded.
-  package static func loaded(_ modelName: String) -> String {
-    "Loaded \(modelName)"
+  public var label: String {
+    switch self {
+    case .clip: return "Audio Clip"
+    case .microphone: return "Microphone"
+    }
   }
-}
 
-extension AudioTranscriberSegment: @retroactive Identifiable {
-  /// Stable composite identifier combining the segment's timestamp range and transcript text.
-  public var id: String {
-    "\(fromTimestampInMilliseconds)_\(toTimestampInMilliseconds)_\(transcript)"
-  }
-}
-
-extension AudioTranscriberSegment {
-  /// Duration of the transcribed audio segment in seconds.
-  package var durationSeconds: Double {
-    Double(toTimestampInMilliseconds - fromTimestampInMilliseconds)
-      / TranscriberConfiguration.millisecondsPerSecond
-  }
-}
-
-/// Interface for streaming speech-to-text transcription and lifecycle management.
-package protocol AudioTranscribing {
-  /// Preloads the transcription model and initializes the processing pipeline.
-  func prewarm() throws
-
-  /// Streams a buffer of mono float32 PCM audio samples into the transcriber.
-  ///
-  /// - Parameters:
-  ///   - samples: Mono 48,000 Hz float32 PCM samples.
-  ///   - endOfStream: Whether this buffer marks the end of the audio stream.
-  /// - Returns: Partial or finalized transcription segments produced so far.
-  func transcribe(samples: [Float], endOfStream: Bool) throws -> AudioTranscriberResult
-
-  /// Signals the end of the audio stream and flushes any remaining transcription segments.
-  func finishStream() throws -> AudioTranscriberResult
-
-  /// Releases native resources held by the transcriber.
-  func close() throws
-}
-
-extension AudioTranscriber: AudioTranscribing {
-  package func transcribe(samples: [Float], endOfStream: Bool) throws -> AudioTranscriberResult {
-    try samples.withUnsafeBufferPointer { buffer in
-      try transcribe(
-        samples: buffer.baseAddress,
-        count: UInt(buffer.count),
-        endOfStream: endOfStream
-      )
+  public var systemImage: String {
+    switch self {
+    case .clip: return "waveform"
+    case .microphone: return "mic.fill"
     }
   }
 }
 
-/// Observable view model coordinating live microphone capture and MediaPipe `AudioTranscriber`
-/// streaming speech recognition.
-@Observable
-@MainActor
-package final class AudioTranscriberViewModel {
-  nonisolated private static let logger = Logger(
-    subsystem: "com.google.mediapipe.examples.audiotranscriber",
-    category: "AudioTranscriberViewModel"
-  )
+/// Chunk of captured 16 kHz mono PCM microphone audio with its normalized RMS level.
+public struct AudioCaptureChunk: Sendable, Equatable {
+  public let samples: [Float]
+  public let rmsLevel: Float
 
-  /// Errors that can occur when creating the default MediaPipe `AudioTranscriber`.
-  package enum TranscriberError: LocalizedError, Equatable {
-    /// The bundled LiteRT-LM model asset could not be located.
-    case modelNotFound(name: String, fileExtension: String)
+  public init(samples: [Float], rmsLevel: Float? = nil) {
+    self.samples = samples
+    self.rmsLevel = rmsLevel ?? AudioClipDecoder.normalizedRmsLevel(for: samples)
+  }
+}
 
-    package var errorDescription: String? {
-      switch self {
-      case .modelNotFound(let name, let fileExtension):
-        return "Model not found in bundle: \(name).\(fileExtension)"
-      }
+/// Errors emitted while configuring live microphone audio capture.
+public enum AudioCaptureError: LocalizedError, Equatable, Sendable {
+  case permissionDenied
+  case invalidInputFormat
+  case targetFormatCreationFailed
+  case converterCreationFailed
+
+  public var errorDescription: String? {
+    switch self {
+    case .permissionDenied:
+      return "Microphone permission is required for live recording. Enable it in Settings."
+    case .invalidInputFormat:
+      return "Hardware microphone reported an invalid sample rate or channel count."
+    case .targetFormatCreationFailed:
+      return "Failed to configure 16 kHz mono float32 audio capture format."
+    case .converterCreationFailed:
+      return "Failed to create resampler for microphone input."
+    }
+  }
+}
+
+/// Captures microphone audio via `AVAudioEngine` and resamples to 16 kHz mono float32 PCM.
+private final class LiveAudioCaptureEngine {
+  private static let targetSampleRateHz: Double = AudioTranscriberHelper.targetSampleRateHz
+  private static let tapBufferFrames: AVAudioFrameCount = 4_096
+  private static let converterHeadroomFrames: Double = 512.0
+
+  private final class TapContext: @unchecked Sendable {
+    let inputFormat: AVAudioFormat
+    let targetFormat: AVAudioFormat
+    let converter: AVAudioConverter?
+    let continuation: AsyncStream<AudioCaptureChunk>.Continuation
+
+    init(
+      inputFormat: AVAudioFormat,
+      targetFormat: AVAudioFormat,
+      converter: AVAudioConverter?,
+      continuation: AsyncStream<AudioCaptureChunk>.Continuation
+    ) {
+      self.inputFormat = inputFormat
+      self.targetFormat = targetFormat
+      self.converter = converter
+      self.continuation = continuation
     }
   }
 
-  /// Whether microphone audio capture and streaming transcription are currently active.
-  package private(set) var isRecording = false
+  private let audioEngine = AVAudioEngine()
+  private var continuation: AsyncStream<AudioCaptureChunk>.Continuation?
+  private var isCapturing = false
 
-  /// Most recent non-finalized partial transcript for the active utterance.
-  package private(set) var interimTranscript = ""
-
-  /// Completed transcription segments accumulated across the current session.
-  package private(set) var finalizedResults: [AudioTranscriberSegment] = []
-
-  /// Normalized root-mean-square (RMS) microphone input level in `[0.0, 1.0]`.
-  package private(set) var audioLevel: Float = 0.0
-
-  /// Filename of the currently active transcription model displayed in the UI.
-  package private(set) var activeModelName = TranscriberConfiguration.defaultModelFileName
-
-  /// Human-readable status string describing the current transcriber state.
-  package private(set) var statusMessage = StatusMessage.ready
-
-  @ObservationIgnored private var transcriber: (any AudioTranscribing)?
-  @ObservationIgnored private let captureEngine: any AudioCapturing
-  @ObservationIgnored private let documentsDirectory: URL?
-  @ObservationIgnored private let transcriberFactory: () throws -> any AudioTranscribing
-  @ObservationIgnored private let transcriberLoader: (String) throws -> any AudioTranscribing
-
-  /// Creates a view model with the given audio capture engine and transcriber factories.
-  ///
-  /// - Parameters:
-  ///   - captureEngine: Engine used to capture resampled microphone audio chunks.
-  ///   - documentsDirectory: Directory searched first for a sideloaded model.
-  ///   - transcriberFactory: Creates the initial `AudioTranscribing` instance during setup.
-  ///   - transcriberLoader: Creates an `AudioTranscribing` instance for a model at a given path.
-  package init(
-    captureEngine: any AudioCapturing = AudioCaptureEngine(),
-    documentsDirectory: URL? = FileManager.default.urls(
-      for: .documentDirectory,
-      in: .userDomainMask
-    ).first,
-    transcriberFactory: (() throws -> any AudioTranscribing)? = nil,
-    transcriberLoader: @escaping (String) throws -> any AudioTranscribing =
-      AudioTranscriberViewModel.makeTranscriber(modelPath:)
-  ) {
-    self.captureEngine = captureEngine
-    self.documentsDirectory = documentsDirectory
-    self.transcriberFactory =
-      transcriberFactory ?? {
-        try transcriberLoader(Self.resolveDefaultModelPath(in: documentsDirectory))
-      }
-    self.transcriberLoader = transcriberLoader
-    setUpTranscriber()
-  }
-
-  deinit {
-    guard let transcriber else { return }
-    do {
-      try transcriber.close()
-    } catch {
-      Self.logger.error(
-        """
-        Failed to close AudioTranscriber during deinitialization: \
-        \(error.localizedDescription, privacy: .public)
-        """
-      )
-    }
-  }
-
-  /// Initializes and prewarms the `AudioTranscribing` instance.
-  package func setUpTranscriber() {
-    do {
-      let newTranscriber = try transcriberFactory()
-      try newTranscriber.prewarm()
-      transcriber = newTranscriber
-      if let sideloadedPath = Self.resolveSideloadedModelPath(in: documentsDirectory) {
-        activeModelName = URL(fileURLWithPath: sideloadedPath).lastPathComponent
-      } else {
-        activeModelName = TranscriberConfiguration.defaultModelFileName
-      }
-      statusMessage = StatusMessage.ready
-    } catch let error as TranscriberError {
-      Self.logger.error(
-        "Transcriber model missing: \(error.localizedDescription, privacy: .public)"
-      )
-      statusMessage = error.localizedDescription
-    } catch {
-      Self.logger.error(
-        "Failed to initialize AudioTranscriber: \(error.localizedDescription, privacy: .public)"
-      )
-      statusMessage = "Initialization error: \(error.localizedDescription)"
-    }
-  }
-
-  /// Loads and prewarms a model from the specified file URL, replacing the current transcriber.
-  ///
-  /// - Parameter url: Local file URL of the `.litertlm` model to load.
-  package func loadModel(at url: URL) {
-    if isRecording {
-      stopRecording()
+  func startCapture() throws -> AsyncStream<AudioCaptureChunk> {
+    if isCapturing {
+      stopCapture()
     }
 
-    do {
-      try transcriber?.close()
-    } catch {
-      Self.logger.error(
-        """
-        Failed to close previous AudioTranscriber: \
-        \(error.localizedDescription, privacy: .public)
-        """
-      )
-    }
-    transcriber = nil
-
-    do {
-      let newTranscriber = try transcriberLoader(url.path)
-      try newTranscriber.prewarm()
-      interimTranscript = ""
-      finalizedResults.removeAll()
-      transcriber = newTranscriber
-      activeModelName = url.lastPathComponent
-      statusMessage = StatusMessage.loaded(url.lastPathComponent)
-    } catch {
-      Self.logger.error(
-        """
-        Failed to load AudioTranscriber model at \(url.path, privacy: .public): \
-        \(error.localizedDescription, privacy: .public)
-        """
-      )
-      statusMessage = "Initialization error: \(error.localizedDescription)"
-    }
-  }
-
-  /// Toggles active microphone recording state.
-  package func toggleRecording() {
-    if isRecording {
-      stopRecording()
-    } else {
-      startRecording()
-    }
-  }
-
-  /// Starts capturing microphone audio and streaming samples to the transcriber.
-  package func startRecording() {
-    guard !isRecording else { return }
-    do {
-      if transcriber == nil {
-        setUpTranscriber()
-      }
-      guard transcriber != nil else { return }
-
-      try captureEngine.startCapture { [weak self] chunk in
-        Task { @MainActor [weak self] in
-          guard let self, isRecording, let transcriber else { return }
-          audioLevel = chunk.rmsLevel
-          do {
-            let result = try transcriber.transcribe(
-              samples: chunk.samples,
-              endOfStream: false
-            )
-            for segment in result.segments {
-              if segment.isFinal {
-                finalizedResults.append(segment)
-                interimTranscript = ""
-              } else {
-                interimTranscript = segment.transcript
-              }
-            }
-          } catch {
-            Self.logger.error(
-              "Transcription failed: \(error.localizedDescription, privacy: .public)"
-            )
-            statusMessage = "Transcription error: \(error.localizedDescription)"
-          }
-        }
-      }
-
-      isRecording = true
-      statusMessage = StatusMessage.listening
-    } catch {
-      Self.logger.error(
-        "Failed to start microphone capture: \(error.localizedDescription, privacy: .public)"
-      )
-      statusMessage = "Microphone error: \(error.localizedDescription)"
-    }
-  }
-
-  /// Stops microphone capture and flushes remaining audio in the stream.
-  package func stopRecording() {
-    guard isRecording else { return }
-    captureEngine.stopCapture()
-    isRecording = false
-    audioLevel = 0.0
-
-    guard let transcriber else { return }
-    do {
-      // Signal that the stream has finished. This processes any remaining audio and returns final
-      // segments.
-      let finalResult = try transcriber.finishStream()
-      finalizedResults.append(contentsOf: finalResult.segments)
-      interimTranscript = ""
-
-      // Prewarm again to prepare the transcriber for the next recording session.
-      try transcriber.prewarm()
-      statusMessage = StatusMessage.finalized
-    } catch {
-      Self.logger.error(
-        "Failed to finalize transcription stream: \(error.localizedDescription, privacy: .public)"
-      )
-      statusMessage = "Finalization error: \(error.localizedDescription)"
-    }
-  }
-
-  /// Clears all interim and finalized transcripts and resets the transcription stream.
-  package func clearTranscripts() {
-    interimTranscript = ""
-    finalizedResults.removeAll()
-
-    guard let transcriber else {
-      statusMessage = StatusMessage.cleared
-      return
-    }
-
-    do {
-      _ = try transcriber.finishStream()
-      try transcriber.prewarm()
-      statusMessage = StatusMessage.cleared
-    } catch {
-      Self.logger.error(
-        """
-        Failed to reset stream while clearing transcripts: \
-        \(error.localizedDescription, privacy: .public)
-        """
-      )
-      statusMessage = "Reset error: \(error.localizedDescription)"
-    }
-  }
-
-  /// Resolves the default `.litertlm` model path, preferring any sideloaded model in the
-  /// application's `Documents` directory before falling back to the bundled model resource.
-  ///
-  /// - Parameters:
-  ///   - documentsDirectory: Optional `Documents` directory URL to search first.
-  ///   - bundles: Candidate bundles searched when no sideloaded model is present.
-  /// - Returns: File system path to the resolved `.litertlm` model file.
-  /// - Throws: `TranscriberError.modelNotFound` if no `.litertlm` model is found in the
-  ///   `Documents` directory or candidate bundles.
-  nonisolated package static func resolveDefaultModelPath(
-    in documentsDirectory: URL? = FileManager.default.urls(
-      for: .documentDirectory,
-      in: .userDomainMask
-    ).first,
-    bundles: [Bundle] = [Bundle.main, Bundle(for: AudioTranscriberViewModel.self)]
-  ) throws -> String {
-    if let sideloadedPath = resolveSideloadedModelPath(in: documentsDirectory) {
-      return sideloadedPath
-    }
-
-    if let modelPath = bundles.lazy.compactMap({
-        $0.path(
-          forResource: TranscriberConfiguration.modelName,
-          ofType: TranscriberConfiguration.modelExtension
-        )
-      }).first {
-      return modelPath
-    }
-
-    #if os(macOS)
-    let homeModel = FileManager.default.homeDirectoryForCurrentUser
-      .appendingPathComponent("models")
-      .appendingPathComponent(TranscriberConfiguration.defaultModelFileName).path
-    if FileManager.default.fileExists(atPath: homeModel) {
-      return homeModel
-    }
-    #else
-    let homeModel = (NSHomeDirectory() as NSString).appendingPathComponent("models/\(TranscriberConfiguration.defaultModelFileName)")
-    if FileManager.default.fileExists(atPath: homeModel) {
-      return homeModel
-    }
+    #if os(iOS)
+    let session = AVAudioSession.sharedInstance()
+    try session.setCategory(
+      .playAndRecord,
+      mode: .measurement,
+      options: [.duckOthers, .defaultToSpeaker]
+    )
+    try session.setActive(true, options: .notifyOthersOnDeactivation)
     #endif
 
-    throw TranscriberError.modelNotFound(
-      name: TranscriberConfiguration.modelName,
-      fileExtension: TranscriberConfiguration.modelExtension
+    let inputNode = audioEngine.inputNode
+    let inputFormat = inputNode.outputFormat(forBus: 0)
+    guard inputFormat.sampleRate > 0, inputFormat.channelCount > 0 else {
+      throw AudioCaptureError.invalidInputFormat
+    }
+
+    guard
+      let targetFormat = AVAudioFormat(
+        commonFormat: .pcmFormatFloat32,
+        sampleRate: Self.targetSampleRateHz,
+        channels: 1,
+        interleaved: false
+      )
+    else {
+      throw AudioCaptureError.targetFormatCreationFailed
+    }
+
+    let needsConversion =
+      abs(inputFormat.sampleRate - Self.targetSampleRateHz) >= 0.5
+      || inputFormat.channelCount != 1
+    let converter: AVAudioConverter?
+    if needsConversion {
+      guard let created = AVAudioConverter(from: inputFormat, to: targetFormat) else {
+        throw AudioCaptureError.converterCreationFailed
+      }
+      converter = created
+    } else {
+      converter = nil
+    }
+
+    let (stream, streamContinuation) = AsyncStream<AudioCaptureChunk>.makeStream(
+      bufferingPolicy: .bufferingNewest(64)
     )
+    continuation = streamContinuation
+
+    let context = TapContext(
+      inputFormat: inputFormat,
+      targetFormat: targetFormat,
+      converter: converter,
+      continuation: streamContinuation
+    )
+
+    inputNode.removeTap(onBus: 0)
+    inputNode.installTap(
+      onBus: 0,
+      bufferSize: Self.tapBufferFrames,
+      format: inputFormat
+    ) { buffer, _ in
+      Self.handleBuffer(buffer, context: context)
+    }
+
+    audioEngine.prepare()
+    do {
+      try audioEngine.start()
+    } catch {
+      inputNode.removeTap(onBus: 0)
+      streamContinuation.finish()
+      continuation = nil
+      throw error
+    }
+
+    isCapturing = true
+    return stream
   }
 
-  nonisolated private static func resolveSideloadedModelPath(
-    in documentsDirectory: URL?
-  ) -> String? {
-    guard let documentsDirectory else { return nil }
+  func stopCapture() {
+    guard isCapturing else { return }
+    audioEngine.inputNode.removeTap(onBus: 0)
+    audioEngine.stop()
+    continuation?.finish()
+    continuation = nil
+    isCapturing = false
+
+    #if os(iOS)
+    try? AVAudioSession.sharedInstance().setActive(
+      false,
+      options: .notifyOthersOnDeactivation
+    )
+    #endif
+  }
+
+  private static func handleBuffer(_ buffer: AVAudioPCMBuffer, context: TapContext) {
+    let sourceBuffer: AVAudioPCMBuffer
+    if let converter = context.converter {
+      let ratio = Self.targetSampleRateHz / context.inputFormat.sampleRate
+      let capacity = AVAudioFrameCount(
+        Double(buffer.frameLength) * ratio + Self.converterHeadroomFrames
+      )
+      guard
+        let converted = AVAudioPCMBuffer(
+          pcmFormat: context.targetFormat,
+          frameCapacity: max(1, capacity)
+        )
+      else {
+        return
+      }
+
+      final class BufferBox: @unchecked Sendable {
+        let buffer: AVAudioPCMBuffer
+        var consumed = false
+        init(_ buffer: AVAudioPCMBuffer) { self.buffer = buffer }
+      }
+      let box = BufferBox(buffer)
+      var conversionError: NSError?
+      let status = converter.convert(to: converted, error: &conversionError) { _, outStatus in
+        if box.consumed {
+          outStatus.pointee = .noDataNow
+          return nil
+        }
+        box.consumed = true
+        outStatus.pointee = .haveData
+        return box.buffer
+      }
+      guard status != .error, conversionError == nil else { return }
+      sourceBuffer = converted
+    } else {
+      sourceBuffer = buffer
+    }
+
+    let frameCount = Int(sourceBuffer.frameLength)
+    guard frameCount > 0, let channelData = sourceBuffer.floatChannelData?[0] else { return }
+    let samples = Array(UnsafeBufferPointer(start: channelData, count: frameCount))
+    context.continuation.yield(AudioCaptureChunk(samples: samples))
+  }
+}
+
+/// Observable MainActor ViewModel driving the MediaPipe Audio Transcriber sample.
+@Observable
+@MainActor
+public final class AudioTranscriberViewModel {
+  /// Whether Settings exposes a GPU delegate picker in the user-facing UI.
+  ///
+  /// Verified on iOS: Parakeet TDT 0.6B v3 loads and transcribes cleanly on both CPU and GPU (Metal).
+  public static let supportsGpuDelegateInUI = true
+
+  private static let levelBarCount = 24
+
+  public private(set) var selectedModel: AudioTranscriberModelOption
+  public private(set) var selectedDelegate: AudioTranscriberDelegateOption
+  public private(set) var clipMode: AudioClipTranscriptionMode
+  public var inputMode: AudioInputSourceMode = .clip
+
+  public private(set) var activeModelName: String
+  public private(set) var activeClipLabel: String =
+    "\(AudioTranscriberHelper.sampleClipResourceName).\(AudioTranscriberHelper.sampleClipFileExtension)"
+  public private(set) var activeClipURL: URL?
+  public private(set) var isUsingCustomClip: Bool = false
+
+  public private(set) var isModelLoading: Bool = false
+  public private(set) var isTranscribing: Bool = false
+  public private(set) var isRecording: Bool = false
+  public private(set) var isReady: Bool = false
+  public private(set) var modelLoadTimeMs: Double?
+  public private(set) var audioLevel: Float = 0.0
+  public private(set) var levelHistory: [Float] = Array(repeating: 0.0, count: levelBarCount)
+  public private(set) var streamProgress: Double = 0.0
+  public private(set) var recordingDurationSeconds: Double = 0.0
+
+  public private(set) var finalizedSegments: [TranscribedSegment] = []
+  public private(set) var interimTranscript: String = ""
+  public private(set) var lastResult: AudioTranscriptionResult?
+  public private(set) var errorMessage: String?
+  public private(set) var isGpuError: Bool = false
+
+  @ObservationIgnored private let helper: AudioTranscriberHelper
+  @ObservationIgnored private let captureEngine = LiveAudioCaptureEngine()
+  @ObservationIgnored private let autoTranscribeSampleOnLaunch: Bool
+  @ObservationIgnored private var hasCompletedInitialSample: Bool = false
+  @ObservationIgnored private var activeTask: Task<Void, Never>?
+  @ObservationIgnored private var liveStreamTask: Task<Void, Never>?
+  @ObservationIgnored private var recordingTimerTask: Task<Void, Never>?
+  @ObservationIgnored private var generation: UInt64 = 0
+
+  public var isBusy: Bool {
+    isModelLoading || isTranscribing
+  }
+
+  public var canTranscribeClip: Bool {
+    isReady && !isBusy && !isRecording
+  }
+
+  public var canToggleRecording: Bool {
+    isReady && !isModelLoading && !isTranscribing
+  }
+
+  public var fullTranscript: String {
+    finalizedSegments
+      .map { $0.transcript.trimmingCharacters(in: .whitespacesAndNewlines) }
+      .filter { !$0.isEmpty }
+      .joined(separator: " ")
+  }
+
+  public var hasTranscript: Bool {
+    !fullTranscript.isEmpty || !interimTranscript.isEmpty
+  }
+
+  public var headerSubtitle: String {
+    "\(selectedModel.displayName) · 16 kHz · \(selectedDelegate.shortName)"
+  }
+
+  public var statusBadge: MediaPipeStatusStrip.Status {
+    if isModelLoading {
+      return .loading("Loading \(selectedModel.displayName)…")
+    }
+    if isRecording {
+      return .ready("Listening · Live Mic")
+    }
+    if isTranscribing {
+      return .loading(
+        clipMode == .streaming ? "Streaming audio…" : "Transcribing clip…"
+      )
+    }
+    if errorMessage != nil && !isReady {
+      return .failed("Model unavailable")
+    }
+    if isReady {
+      return .ready("Ready · On-Device")
+    }
+    return .loading("Initializing…")
+  }
+
+  public init(
+    model: AudioTranscriberModelOption = .parakeetTdtV3,
+    delegate: AudioTranscriberDelegateOption = .cpu,
+    clipMode: AudioClipTranscriptionMode = .fullClip,
+    locator: SampleModelLocator = SampleModelLocator(),
+    autoLoad: Bool = true,
+    autoTranscribeSampleOnLaunch: Bool = false
+  ) {
+    self.selectedModel = model
+    self.selectedDelegate = delegate
+    self.clipMode = clipMode
+    self.activeModelName = model.assetFilename
+    self.helper = AudioTranscriberHelper(locator: locator)
+    self.autoTranscribeSampleOnLaunch = autoTranscribeSampleOnLaunch
+
+    if autoLoad {
+      scheduleReload()
+    }
+  }
+
+  // MARK: - Synchronous UI Actions
+
+  public func selectInputMode(_ mode: AudioInputSourceMode) {
+    guard inputMode != mode else { return }
+    if isRecording {
+      activeTask?.cancel()
+      activeTask = Task { [weak self] in
+        await self?.stopRecording()
+      }
+    }
+    inputMode = mode
+    errorMessage = nil
+  }
+
+  public func selectClipMode(_ mode: AudioClipTranscriptionMode) {
+    guard clipMode != mode else { return }
+    clipMode = mode
+  }
+
+  public func selectDelegate(_ delegate: AudioTranscriberDelegateOption) {
+    guard selectedDelegate != delegate else { return }
+    selectedDelegate = delegate
+    scheduleReload()
+  }
+
+  public func switchToCpuDelegate() {
+    if selectedDelegate == .cpu {
+      scheduleReload()
+    } else {
+      selectDelegate(.cpu)
+    }
+  }
+
+  public func retryInitialization() {
+    scheduleReload()
+  }
+
+  public func resetToBundledSample() {
+    activeClipURL = nil
+    isUsingCustomClip = false
+    activeClipLabel =
+      "\(AudioTranscriberHelper.sampleClipResourceName).\(AudioTranscriberHelper.sampleClipFileExtension)"
+    errorMessage = nil
+  }
+
+  public func triggerTranscribeActiveClip() {
+    guard canTranscribeClip else { return }
+    let targetURL = activeClipURL
+    let shouldStream = clipMode.isStreaming
+    activeTask?.cancel()
+    activeTask = Task { [weak self] in
+      guard let self else { return }
+      if let targetURL {
+        _ = await self.transcribeFile(url: targetURL, stream: shouldStream)
+      } else {
+        _ = await self.transcribeBundledSample(stream: shouldStream)
+      }
+    }
+  }
+
+  public func triggerTranscribeBundledSample() {
+    guard canTranscribeClip else { return }
+    resetToBundledSample()
+    let shouldStream = clipMode.isStreaming
+    activeTask?.cancel()
+    activeTask = Task { [weak self] in
+      _ = await self?.transcribeBundledSample(stream: shouldStream)
+    }
+  }
+
+  public func triggerImportAndTranscribeFile(url: URL) {
+    guard !isRecording && !isModelLoading else { return }
+    activeTask?.cancel()
+    activeTask = Task { [weak self] in
+      guard let self else { return }
+      let accessed = url.startAccessingSecurityScopedResource()
+      defer {
+        if accessed {
+          url.stopAccessingSecurityScopedResource()
+        }
+      }
+      do {
+        let localCopy = try Self.stageImportedAudioFile(from: url)
+        self.activeClipURL = localCopy
+        self.activeClipLabel = url.lastPathComponent
+        self.isUsingCustomClip = true
+        _ = await self.transcribeFile(url: localCopy, stream: self.clipMode.isStreaming)
+      } catch {
+        self.errorMessage = "Could not import audio file: \(error.localizedDescription)"
+      }
+    }
+  }
+
+  public func triggerToggleRecording() {
+    guard canToggleRecording else { return }
+    activeTask?.cancel()
+    activeTask = Task { [weak self] in
+      guard let self else { return }
+      if self.isRecording {
+        await self.stopRecording()
+      } else {
+        await self.startRecording()
+      }
+    }
+  }
+
+  public func triggerClearTranscript() {
+    guard !isRecording && !isTranscribing else { return }
+    activeTask?.cancel()
+    activeTask = Task { [weak self] in
+      await self?.clearTranscript()
+    }
+  }
+
+  // MARK: - Awaitable Operations (for Tests & Validation Hosts)
+
+  /// Loads and prewarms the transcriber with the current configuration.
+  @discardableResult
+  public func loadTranscriber(customModelURL: URL? = nil) async -> Bool {
+    if isRecording {
+      await stopRecording()
+    }
+    generation &+= 1
+    let currentGen = generation
+    let model = selectedModel
+    let delegate = selectedDelegate
+
+    isModelLoading = true
+    isTranscribing = false
+    isReady = false
+    errorMessage = nil
+    isGpuError = false
+
     do {
-      let fileURLs = try FileManager.default.contentsOfDirectory(
-        at: documentsDirectory,
-        includingPropertiesForKeys: nil,
-        options: [.skipsHiddenFiles]
+      let loadMs = try await helper.load(
+        model: model,
+        delegate: delegate,
+        enableInterimResults: true,
+        customModelURL: customModelURL
       )
-      return
-        fileURLs
-        .filter { $0.pathExtension == TranscriberConfiguration.modelExtension }
-        .min { $0.lastPathComponent < $1.lastPathComponent }?
-        .path
+      guard generation == currentGen else { return false }
+      modelLoadTimeMs = loadMs
+      activeModelName = customModelURL?.lastPathComponent ?? model.assetFilename
+      isModelLoading = false
+      isReady = true
+      return true
+    } catch let error as AudioTranscriberError {
+      guard generation == currentGen else { return false }
+      isModelLoading = false
+      isReady = false
+      errorMessage = error.localizedDescription
+      isGpuError = error.isGpuError
+      return false
     } catch {
-      Self.logger.debug(
-        """
-        Could not inspect Documents directory for sideloaded models: \
-        \(error.localizedDescription, privacy: .public)
-        """
-      )
+      guard generation == currentGen else { return false }
+      isModelLoading = false
+      isReady = false
+      errorMessage = error.localizedDescription
+      isGpuError = delegate == .gpu
+      return false
+    }
+  }
+
+  /// Updates configuration fields in one batch and reloads if the delegate changed or not ready.
+  @discardableResult
+  public func configure(
+    delegate: AudioTranscriberDelegateOption? = nil,
+    clipMode: AudioClipTranscriptionMode? = nil
+  ) async -> Bool {
+    activeTask?.cancel()
+    let delegateChanged = delegate != nil && delegate != selectedDelegate
+    if let delegate { selectedDelegate = delegate }
+    if let clipMode { self.clipMode = clipMode }
+    if delegateChanged || !isReady {
+      return await loadTranscriber()
+    }
+    return true
+  }
+
+  /// Transcribes the bundled `speech_16000_hz_mono.wav` sample clip and awaits the result.
+  @discardableResult
+  public func transcribeBundledSample(
+    stream: Bool? = nil
+  ) async -> AudioTranscriptionResult? {
+    do {
+      let url = try await helper.locateBundledSampleURL()
+      activeClipLabel = url.lastPathComponent
+      isUsingCustomClip = false
+      activeClipURL = nil
+      return await transcribeFile(url: url, stream: stream ?? clipMode.isStreaming)
+    } catch {
+      errorMessage = error.localizedDescription
       return nil
     }
   }
 
-  nonisolated private static func makeTranscriber(
-    modelPath: String
-  ) throws -> any AudioTranscribing {
-    let options = AudioTranscriberOptions()
-    options.baseOptions.modelAssetPath = modelPath
-    options.baseOptions.delegate = .CPU
-    options.sampleRateHz = TranscriberConfiguration.sampleRateHz
-    options.enableInterimResults = true
-    options.modelArchitecture = .auto
+  /// Transcribes an audio file at `url` in either single-call (`stream == false`) or chunked
+  /// streaming (`stream == true`) mode and awaits the result.
+  @discardableResult
+  public func transcribeFile(
+    url: URL,
+    stream: Bool
+  ) async -> AudioTranscriptionResult? {
+    if !isReady {
+      let loaded = await loadTranscriber()
+      guard loaded else { return nil }
+    }
+    if isRecording {
+      await stopRecording()
+    }
 
-    return try AudioTranscriber(options: options)
+    generation &+= 1
+    let currentGen = generation
+
+    isTranscribing = true
+    errorMessage = nil
+    isGpuError = false
+    finalizedSegments = []
+    interimTranscript = ""
+    streamProgress = 0.0
+    resetLevelHistory()
+
+    do {
+      let result = try await helper.transcribe(
+        url: url,
+        stream: stream
+      ) { [weak self] update in
+        await MainActor.run { [weak self] in
+          guard let self, self.generation == currentGen else { return }
+          self.finalizedSegments = update.finalizedSegments
+          self.interimTranscript = update.interimTranscript
+          self.pushAudioLevel(update.chunkRmsLevel)
+          if update.totalSeconds > 0 {
+            self.streamProgress = min(1.0, max(0.0, update.processedSeconds / update.totalSeconds))
+          }
+        }
+      }
+
+      guard generation == currentGen else { return nil }
+      isTranscribing = false
+      finalizedSegments = result.segments
+      interimTranscript = ""
+      streamProgress = 1.0
+      audioLevel = 0.0
+      lastResult = result
+      return result
+    } catch is CancellationError {
+      guard generation == currentGen else { return nil }
+      isTranscribing = false
+      audioLevel = 0.0
+      return nil
+    } catch let error as AudioTranscriberError {
+      guard generation == currentGen else { return nil }
+      isTranscribing = false
+      audioLevel = 0.0
+      errorMessage = error.localizedDescription
+      isGpuError = error.isGpuError
+      return nil
+    } catch {
+      guard generation == currentGen else { return nil }
+      isTranscribing = false
+      audioLevel = 0.0
+      errorMessage = error.localizedDescription
+      return nil
+    }
+  }
+
+  /// Requests microphone permission (on iOS) and begins live streaming transcription.
+  public func startRecording() async {
+    guard !isRecording, !isTranscribing else { return }
+    if !isReady {
+      let loaded = await loadTranscriber()
+      guard loaded else { return }
+    }
+
+    errorMessage = nil
+    isGpuError = false
+
+    #if os(iOS)
+    let granted = await requestMicrophonePermission()
+    guard granted else {
+      errorMessage = AudioCaptureError.permissionDenied.localizedDescription
+      return
+    }
+    #endif
+
+    finalizedSegments = []
+    interimTranscript = ""
+    lastResult = nil
+    recordingDurationSeconds = 0.0
+    resetLevelHistory()
+
+    let stream: AsyncStream<AudioCaptureChunk>
+    do {
+      stream = try captureEngine.startCapture()
+    } catch {
+      errorMessage = "Microphone error: \(error.localizedDescription)"
+      return
+    }
+
+    generation &+= 1
+    let currentGen = generation
+    isRecording = true
+
+    let sessionStart = ContinuousClock.now
+    recordingTimerTask?.cancel()
+    recordingTimerTask = Task { [weak self] in
+      while !Task.isCancelled {
+        try? await Task.sleep(for: .milliseconds(200))
+        guard let self, self.isRecording, self.generation == currentGen else { break }
+        let elapsed = sessionStart.duration(to: .now)
+        self.recordingDurationSeconds =
+          Double(elapsed.components.seconds) + Double(elapsed.components.attoseconds) / 1e18
+      }
+    }
+
+    liveStreamTask?.cancel()
+    liveStreamTask = Task { [weak self] in
+      guard let self else { return }
+      for await chunk in stream {
+        guard !Task.isCancelled, self.isRecording, self.generation == currentGen else { break }
+        self.pushAudioLevel(chunk.rmsLevel)
+        do {
+          let step = try await self.helper.processLiveChunk(chunk.samples)
+          guard self.isRecording, self.generation == currentGen else { break }
+          if !step.finalized.isEmpty {
+            self.finalizedSegments.append(contentsOf: step.finalized)
+            self.interimTranscript = ""
+          }
+          if let interim = step.interim {
+            self.interimTranscript = interim
+          }
+        } catch {
+          guard self.generation == currentGen else { break }
+          self.errorMessage = "Transcription error: \(error.localizedDescription)"
+          break
+        }
+      }
+    }
+  }
+
+  /// Stops microphone capture and flushes remaining audio into finalized segments.
+  public func stopRecording() async {
+    guard isRecording else { return }
+    isRecording = false
+    captureEngine.stopCapture()
+    recordingTimerTask?.cancel()
+    recordingTimerTask = nil
+    liveStreamTask?.cancel()
+    await liveStreamTask?.value
+    liveStreamTask = nil
+    audioLevel = 0.0
+
+    let start = ContinuousClock.now
+    do {
+      let flushed = try await helper.finishLiveStream()
+      finalizedSegments.append(contentsOf: flushed)
+      interimTranscript = ""
+
+      let finalizeMs =
+        Double(start.duration(to: .now).components.seconds) * 1_000.0
+        + Double(start.duration(to: .now).components.attoseconds) / 1e15
+      let duration = max(recordingDurationSeconds, 0.1)
+      let transcript = fullTranscript
+      if !transcript.isEmpty {
+        lastResult = AudioTranscriptionResult(
+          transcript: transcript,
+          segments: finalizedSegments,
+          audioDurationSeconds: duration,
+          inferenceTimeMs: finalizeMs,
+          realTimeFactor: (finalizeMs / 1_000.0) / duration,
+          mode: .streaming,
+          chunkCount: max(1, finalizedSegments.count)
+        )
+      }
+    } catch {
+      errorMessage = "Finalization error: \(error.localizedDescription)"
+    }
+  }
+
+  /// Clears all interim and finalized transcripts and resets the underlying transcriber stream.
+  public func clearTranscript() async {
+    finalizedSegments = []
+    interimTranscript = ""
+    lastResult = nil
+    errorMessage = nil
+    streamProgress = 0.0
+    recordingDurationSeconds = 0.0
+    resetLevelHistory()
+    do {
+      try await helper.resetStream()
+    } catch {
+      errorMessage = "Reset error: \(error.localizedDescription)"
+    }
+  }
+
+  // MARK: - Private Helpers
+
+  private func scheduleReload() {
+    activeTask?.cancel()
+    activeTask = Task { [weak self] in
+      guard let self else { return }
+      let loaded = await self.loadTranscriber()
+      if loaded && self.autoTranscribeSampleOnLaunch && !self.hasCompletedInitialSample {
+        self.hasCompletedInitialSample = true
+        _ = await self.transcribeBundledSample(stream: self.clipMode.isStreaming)
+      }
+    }
+  }
+
+  private func pushAudioLevel(_ level: Float) {
+    let clamped = min(max(level, 0.0), 1.0)
+    audioLevel = clamped
+    var updated = levelHistory
+    if updated.count >= Self.levelBarCount {
+      updated.removeFirst()
+    }
+    updated.append(clamped)
+    levelHistory = updated
+  }
+
+  private func resetLevelHistory() {
+    audioLevel = 0.0
+    levelHistory = Array(repeating: 0.0, count: Self.levelBarCount)
+  }
+
+  #if os(iOS)
+  private func requestMicrophonePermission() async -> Bool {
+    switch AVAudioApplication.shared.recordPermission {
+    case .granted:
+      return true
+    case .denied:
+      return false
+    case .undetermined:
+      return await AVAudioApplication.requestRecordPermission()
+    @unknown default:
+      return false
+    }
+  }
+  #endif
+
+  private static func stageImportedAudioFile(from sourceURL: URL) throws -> URL {
+    let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(
+      "AudioTranscriberImports",
+      isDirectory: true
+    )
+    try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+    let safeName = sourceURL.lastPathComponent.isEmpty ? "imported_audio.wav" : sourceURL.lastPathComponent
+    let destURL = tempDir.appendingPathComponent(safeName)
+    if FileManager.default.fileExists(atPath: destURL.path) {
+      try FileManager.default.removeItem(at: destURL)
+    }
+    try FileManager.default.copyItem(at: sourceURL, to: destURL)
+    return destURL
   }
 }

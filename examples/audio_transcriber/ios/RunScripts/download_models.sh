@@ -13,21 +13,68 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Check for Gemma Audio LiteRT-LM model bundle:
-# The model can be placed at ./AudioTranscriber/parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm or ~/models/
-MODEL_FILE=./AudioTranscriber/parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm
-LOCAL_MODEL="${HOME}/models/parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm"
+set -euo pipefail
 
-if [ -f "$MODEL_FILE" ]; then
-    echo "INFO: Audio transcriber model exists at $MODEL_FILE. Skipping."
-elif [ -f "$LOCAL_MODEL" ]; then
-    echo "INFO: Copying model from $LOCAL_MODEL to $MODEL_FILE"
-    cp "$LOCAL_MODEL" "$MODEL_FILE"
-elif [ -n "${AUDIO_TRANSCRIBER_MODEL_URL:-https://huggingface.co/litert-community/parakeet-tdt-0.6b-v3/resolve/main/parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm}" ]; then
-    echo "INFO: Downloading model from $AUDIO_TRANSCRIBER_MODEL_URL"
-    curl --fail -L -o "$MODEL_FILE" "$AUDIO_TRANSCRIBER_MODEL_URL"
-else
-    echo "INFO: No audio transcriber model file found at $MODEL_FILE or $LOCAL_MODEL."
-    echo "INFO: To bundle the model, copy parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm to $MODEL_FILE"
-    echo "INFO: Or place it in the app's Documents folder or ~/models/."
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="${SRCROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+DEST_DIR="$PROJECT_DIR/AudioTranscriber"
+VERIFY_EXISTING=0
+
+if [ "${1:-}" = "--verify" ]; then
+  VERIFY_EXISTING=1
 fi
+
+sha256_file() {
+  shasum -a 256 "$1" | awk '{print $1}'
+}
+
+download_verified_asset() {
+  local filename="$1"
+  local url="$2"
+  local expected_sha="$3"
+  local dest="$DEST_DIR/$filename"
+
+  if [ -f "$dest" ]; then
+    if [ "$VERIFY_EXISTING" -eq 0 ]; then
+      echo "INFO: $filename existed. Skip downloading and use the local asset."
+      return 0
+    fi
+    if [ ! -s "$dest" ]; then
+      echo "ERROR: $filename is empty (stubbed?). Re-downloading." >&2
+      rm -f "$dest"
+    else
+      local existing_sha
+      existing_sha="$(sha256_file "$dest")"
+      if [ "$existing_sha" = "$expected_sha" ]; then
+        echo "INFO: $filename verified ($existing_sha)."
+        return 0
+      fi
+      echo "WARN: $filename checksum mismatch (got $existing_sha, expected $expected_sha). Re-downloading." >&2
+      rm -f "$dest"
+    fi
+  fi
+
+  local tmp="${dest}.tmp"
+  rm -f "$tmp"
+  echo "INFO: Downloading $filename..."
+  curl --fail -L --retry 3 -o "$tmp" "$url"
+  local actual_sha
+  actual_sha="$(sha256_file "$tmp")"
+  if [ "$actual_sha" != "$expected_sha" ]; then
+    rm -f "$tmp"
+    echo "ERROR: Checksum mismatch for $filename: expected $expected_sha, got $actual_sha" >&2
+    exit 1
+  fi
+  mv "$tmp" "$dest"
+  echo "INFO: Downloaded and verified $filename ($actual_sha)."
+}
+
+download_verified_asset \
+  "parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm" \
+  "https://huggingface.co/litert-community/parakeet-tdt-0.6b-v3/resolve/cd95f7bb97fd0757ab1bd6d5eff513cfcd7a2a10/parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm" \
+  "66c5a74cf6c2c1d2b990901f6cece5bb53e3214dbceafa0989900a6f0eeb3504"
+
+download_verified_asset \
+  "speech_16000_hz_mono.wav" \
+  "https://storage.googleapis.com/mediapipe-assets/speech_16000_hz_mono.wav" \
+  "71caf50b8757d6ab9cad5eae4d36669d3c20c225a51660afd7fe0dc44cdb74f6"
