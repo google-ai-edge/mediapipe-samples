@@ -63,6 +63,8 @@ data class FaceMeshOverlay(
 data class FaceLandmarkerFrame(
     val faces: List<FaceMeshOverlay>,
     val topBlendshapes: List<BlendshapeScore>,
+    val blendshapesByFace: List<Map<String, Float>> = emptyList(),
+    val matrixShapes: List<Pair<Int, Int>> = emptyList(),
     val inferenceTimeMs: Long,
     val imageWidth: Int,
     val imageHeight: Int,
@@ -109,7 +111,6 @@ class FaceLandmarkerViewModel(appContext: Context) : ViewModel() {
             override fun onError(error: String, errorCode: Int) {
                 _uiState.update {
                     it.copy(
-                        isDetectingGallery = false,
                         errorMessage = error,
                         errorCode = errorCode,
                     )
@@ -297,7 +298,7 @@ class FaceLandmarkerViewModel(appContext: Context) : ViewModel() {
                             helper.clearFaceLandmarker()
                         }
                     }
-                if (output != null) {
+                if (output != null && output.second != null) {
                     _uiState.update { state ->
                         state.copy(
                             isDetectingGallery = false,
@@ -309,6 +310,7 @@ class FaceLandmarkerViewModel(appContext: Context) : ViewModel() {
                     _uiState.update { state ->
                         state.copy(
                             isDetectingGallery = false,
+                            galleryBitmap = output?.first ?: state.galleryBitmap,
                             errorMessage = state.errorMessage ?: "Failed to load sample image.",
                         )
                     }
@@ -354,7 +356,7 @@ class FaceLandmarkerViewModel(appContext: Context) : ViewModel() {
                                 helper.clearFaceLandmarker()
                             }
                         }
-                    if (output != null) {
+                    if (output != null && output.second != null) {
                         _uiState.update {
                             it.copy(
                                 isDetectingGallery = false,
@@ -366,6 +368,7 @@ class FaceLandmarkerViewModel(appContext: Context) : ViewModel() {
                         _uiState.update {
                             it.copy(
                                 isDetectingGallery = false,
+                                galleryBitmap = output?.first ?: it.galleryBitmap,
                                 errorMessage =
                                     it.errorMessage ?: "Failed to detect face landmarks in image.",
                             )
@@ -490,22 +493,38 @@ class FaceLandmarkerViewModel(appContext: Context) : ViewModel() {
                         landmarks = landmarks.map { lm -> (lm.x() * safeW) to (lm.y() * safeH) }
                     )
                 }
-            val firstBlendshapes =
+            val rawBlendshapes =
                 if (result.faceBlendshapes().isPresent) {
-                    result.faceBlendshapes().get().firstOrNull().orEmpty()
+                    result.faceBlendshapes().get()
                 } else {
                     emptyList()
                 }
+            val blendshapesByFace =
+                rawBlendshapes.map { categories ->
+                    categories.associate { category -> category.categoryName() to category.score() }
+                }
+            val firstBlendshapes = rawBlendshapes.firstOrNull().orEmpty()
             val topBlendshapes =
                 firstBlendshapes
                     .filter { it.categoryName() != "_neutral" }
                     .sortedByDescending { it.score() }
                     .take(3)
                     .map { BlendshapeScore(name = it.categoryName(), score = it.score()) }
+            val matrixShapes =
+                if (result.facialTransformationMatrixes().isPresent) {
+                    result.facialTransformationMatrixes().get().map { matrix ->
+                        val side = kotlin.math.sqrt(matrix.size.toDouble()).toInt()
+                        if (side > 0 && side * side == matrix.size) side to side else 1 to matrix.size
+                    }
+                } else {
+                    emptyList()
+                }
 
             return FaceLandmarkerFrame(
                 faces = faces,
                 topBlendshapes = topBlendshapes,
+                blendshapesByFace = blendshapesByFace,
+                matrixShapes = matrixShapes,
                 inferenceTimeMs = inferenceTimeMs,
                 imageWidth = safeW,
                 imageHeight = safeH,

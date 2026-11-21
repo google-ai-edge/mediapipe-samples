@@ -82,6 +82,7 @@ class MainActivity : ComponentActivity() {
                     uiState = uiState,
                     onSelectInputMode = viewModel::selectInputMode,
                     onSelectClipSource = viewModel::selectClipSource,
+                    onSelectClipRunningMode = viewModel::selectClipRunningMode,
                     onPickCustomAudio = { audioPickerLauncher.launch("audio/*") },
                     onClassifyClip = { viewModel.classifySelectedClip(playAudio = true) },
                     onStopPlayback = viewModel::stopPlaybackOnly,

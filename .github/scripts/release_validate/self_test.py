@@ -37,7 +37,8 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..', '..'))
 sys.path.insert(0, SCRIPT_DIR)
 
-import assets  # pylint: disable=g-import-not-at-top,wrong-import-position
+import android_adapter  # pylint: disable=g-import-not-at-top,wrong-import-position
+import assets  # pylint: disable=wrong-import-position
 import policy  # pylint: disable=wrong-import-position
 import python_adapter  # pylint: disable=wrong-import-position
 import spec  # pylint: disable=wrong-import-position
@@ -658,6 +659,12 @@ class SpecTest(unittest.TestCase):
     self.assertEqual(set(spec.RUN_TYPES + spec.SINGLE_TYPES), set(verify.VERIFIERS))
     self.assertNotIn('note', set(keys_of(spec.tasks())) | set(keys_of(spec.assets())))
 
+  def test_android_samples_can_be_driven_through_their_cases(self):
+    self.assertEqual(android_adapter.problems(), [])
+    with mock.patch.object(android_adapter, 'ADAPTERS_DIR', os.path.join(REPO_DIR, 'no-such-directory')):
+      found = android_adapter.problems()
+    self.assertTrue(any('object_detector' in line and 'no adapter' in line for line in found), found)
+
   def test_python_samples_can_do_what_the_spec_asks(self):
     self.assertEqual(python_adapter.problems(), [])
     # A sample that cannot honour an option is reported, not run with another value.
@@ -775,9 +782,12 @@ class ObservationsTest(unittest.TestCase):
     judged = self._statuses(self._document())
     self.assertEqual(len(judged), 12)
     self.assertEqual({result['status'] for result in judged.values()}, {'PASS'})
-    # The "unsupported" entries of the Python API do not excuse an app.
+    # The "unsupported" entries of Python and Android do not excuse an iOS app.
+    ios_judged = self._statuses(self._document('ios'))
+    self.assertIsNone(ios_judged['text__text_summarizer__gemma_200m__tldr__GPU']['knownUnsupported'])
     gpu = judged['text__text_summarizer__gemma_200m__tldr__GPU']
-    self.assertIsNone(gpu['knownUnsupported'])
+    self.assertIsNotNone(gpu['knownUnsupported'])
+    self.assertIn('listed as "unsupported"', gpu['note'])
     self.assertEqual(gpu['sample'], 'examples/text_summarizer/android')
 
   def test_what_is_wrong_or_missing_fails(self):
@@ -896,6 +906,36 @@ class PolicyTest(unittest.TestCase):
     ])
     self.assertEqual(policy.find_gpu_evidence(cpu_log), [])
     self.assertEqual(policy.find_gpu_evidence(''), [])
+    android_gpu = '\n'.join([
+        '11-20 12:40:05.516 24242 24266 I native  : I0000 00:00:1795203605.516072   24266 gl_context.cc:408] GL '
+        'version: 3.2 (OpenGL ES 3.2 V@0762.48.1), renderer: Adreno (TM) 750',
+        '11-20 12:40:05.530 24242 24263 I tflite  : Initialized TensorFlow Lite runtime.',
+        '11-20 12:40:05.541 24242 24263 I tflite  : Replacing 263 out of 263 node(s) with delegate (unknown) node, '
+        'yielding 1 partitions for subgraph 0 (main).',
+    ])
+    self.assertEqual(policy.find_gpu_evidence(android_gpu, 'android'),
+                     ['tflite  : Replacing 263 out of 263 node(s) with delegate (unknown) node, yielding 1 partitions '
+                      'for subgraph 0 (main).'])
+    litert_gl = (
+        '11-20 13:20:00.000 100 101 I tflite  : Replacing 164 out of 164 node(s) with delegate '
+        '(LITERT_OPENGL) node, yielding 1 partitions for subgraph 0 (main).'
+    )
+    self.assertEqual(len(policy.find_gpu_evidence(litert_gl, 'android')), 1)
+    litert_cl = (
+        '11-20 13:20:00.000 100 101 I tflite  : Replacing 1477 out of 1477 node(s) with delegate '
+        '(LITERT_CL) node, yielding 1 partitions for subgraph 0 (vision_140).'
+    )
+    self.assertEqual(len(policy.find_gpu_evidence(litert_cl, 'android')), 1)
+    android_cpu = '\n'.join([
+        '11-20 12:39:37.774 23900 23997 I native  : I0000 00:00:1795203577.774486   23997 gl_context.cc:408] GL '
+        'version: 3.2 (OpenGL ES 3.2 V@0762.48.1), renderer: Adreno (TM) 750',
+        '11-20 12:39:37.779 23900 23992 I litert  : [gpu_registry.cc:121] Statically linked GPU accelerator registered.',
+        '11-20 12:39:37.779 23900 23992 I tflite  : Created TensorFlow Lite XNNPACK delegate for CPU.',
+        '11-20 12:39:37.779 23900 23992 I tflite  : Replacing 251 out of 263 node(s) with delegate '
+        '(TfLiteXNNPackDelegate) node, yielding 25 partitions for subgraph 0 (main).',
+    ])
+    self.assertEqual(policy.find_gpu_evidence(android_cpu, 'android'), [])
+    self.assertEqual(policy.find_gpu_evidence(gpu_log, 'android'), [])
 
   def test_digest_ignores_timing_and_rounding_noise(self):
     runs = [{'key': 'a', 'seconds': 1.5, 'data': {'similarity': 0.91912345, 'labels': ['x', 'y']}}]
@@ -1047,12 +1087,13 @@ class MatrixTest(unittest.TestCase):
     self.assertIsNotNone(spec.known_unsupported(int8, system='Darwin'))
     self.assertIsNone(spec.known_unsupported(int8, system='Linux'))
     self.assertIsNone(spec.known_unsupported(case('object_detector', 'efficientdet_lite0_float32', 'GPU'), 'Darwin'))
-    # The entries were seen with the Python API; they say nothing about the apps.
+    # Entries are scoped per platform: iOS has none until observed on iOS.
     summarizer = case('text_summarizer', 'gemma_200m', 'GPU')
     self.assertEqual(spec.known_unsupported(summarizer)['task'], 'text_summarizer')
-    self.assertIsNone(spec.known_unsupported(summarizer, platform='android'))
+    self.assertEqual(spec.known_unsupported(summarizer, platform='android')['task'], 'text_summarizer')
+    self.assertIsNone(spec.known_unsupported(summarizer, platform='ios'))
     entries = [entry for task in spec.tasks() for entry in task.get('unsupported', [])]
-    self.assertEqual(len(entries), 8)
+    self.assertEqual(len(entries), 17)
     for entry in entries:
       self.assertTrue(entry['error'] and entry['reason'])
 

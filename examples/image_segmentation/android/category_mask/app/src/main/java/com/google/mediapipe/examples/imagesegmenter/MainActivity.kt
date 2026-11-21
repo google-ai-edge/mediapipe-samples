@@ -87,6 +87,7 @@ class MainActivity : ComponentActivity() {
                     onTrySample = segmenterViewModel::segmentSampleImage,
                     onSelectModel = segmenterViewModel::selectModel,
                     onSelectDelegate = segmenterViewModel::selectDelegate,
+                    onSelectConfidenceCategory = segmenterViewModel::selectConfidenceCategory,
                     onUseCpuDelegate = segmenterViewModel::switchToCpuDelegate,
                     onRetryInitialization = segmenterViewModel::retryInitialization,
                 )

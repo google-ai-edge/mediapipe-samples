@@ -38,6 +38,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -53,6 +55,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -650,6 +653,7 @@ private fun ObjectOverlayCanvas(frame: DetectionFrame, modifier: Modifier = Modi
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SettingsSheetContent(
     selectedModel: ObjectModel,
@@ -665,6 +669,7 @@ private fun SettingsSheetContent(
     val models = ObjectModel.entries
     val delegates = DetectorDelegate.entries
     val maxResultOptions = listOf(1, 3, 5)
+    val modelLabel = stringResource(R.string.label_model)
 
     Column(
         modifier =
@@ -679,19 +684,41 @@ private fun SettingsSheetContent(
             fontWeight = FontWeight.SemiBold,
         )
 
-        SegmentedOptionRow(
-            label = stringResource(R.string.label_model),
-            options = models.map { it.shortLabel },
-            selectedIndex = models.indexOf(selectedModel),
-            onSelect = { index -> onSelectModel(models[index]) },
-        )
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = modelLabel,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                models.forEach { model ->
+                    FilterChip(
+                        selected = model == selectedModel,
+                        onClick = {
+                            if (!model.supportsGpu && selectedDelegate == DetectorDelegate.GPU) {
+                                onSelectDelegate(DetectorDelegate.CPU)
+                            }
+                            onSelectModel(model)
+                        },
+                        label = { Text(model.shortLabel) },
+                        modifier = Modifier.testTag("option_${modelLabel}_${model.shortLabel}"),
+                    )
+                }
+            }
+        }
 
-        SegmentedOptionRow(
-            label = stringResource(R.string.label_delegate),
-            options = delegates.map { it.displayName },
-            selectedIndex = delegates.indexOf(selectedDelegate),
-            onSelect = { index -> onSelectDelegate(delegates[index]) },
-        )
+        if (selectedModel.supportsGpu) {
+            SegmentedOptionRow(
+                label = stringResource(R.string.label_delegate),
+                options = delegates.map { it.displayName },
+                selectedIndex = delegates.indexOf(selectedDelegate),
+                onSelect = { index -> onSelectDelegate(delegates[index]) },
+            )
+        }
 
         SegmentedOptionRow(
             label = stringResource(R.string.label_max_results),

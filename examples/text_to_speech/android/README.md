@@ -13,11 +13,14 @@ This sample app demonstrates on-device neural speech synthesis using the MediaPi
 
 ![Text to Speech Demo](texttospeech.png?raw=true "Text to Speech Demo")
 
-## Model
+## Models
 
-The default `kokoro_int8_fp16.litertlm` model is downloaded automatically during Gradle build and verified via SHA-256 in `app/download_models.gradle.kts` (supports custom URLs via `KOKORO_MODEL_URL`):
+All four neural TTS models are downloaded automatically during Gradle build and verified via SHA-256 in `app/download_models.gradle.kts` (supports custom URLs for the default Kokoro model via `KOKORO_MODEL_URL`):
 
-* **Kokoro-82M** (`kokoro_int8_fp16.litertlm`): https://huggingface.co/litert-community/Kokoro-82M
+* **Kokoro-82M (CPU)** (`kokoro_int8_fp16.litertlm`): https://huggingface.co/litert-community/Kokoro-82M
+* **Kokoro-82M (GPU)** (`kokoro_int8_gpu_fp16.litertlm`): https://huggingface.co/litert-community/Kokoro-82M
+* **PocketTTS (EN)** (`pocket_tts_en_int8.litertlm`): https://huggingface.co/litert-community/pocket-tts
+* **Phonon 31M (EN)** (`phonon_int8.litertlm`): https://huggingface.co/litert-community/phonon-31m-en
 
 For sideloading a custom model variant (such as `kokoro_int8_gpu_fp16.litertlm` renamed to `kokoro.litertlm`), `TextToSpeechHelper` checks external files, `/data/local/tmp`, and internal storage before falling back to bundled assets.
 

@@ -37,11 +37,47 @@ import java.util.Locale
 import kotlin.math.max
 import kotlinx.coroutines.flow.Flow
 
-/** Delegate preference for Kokoro TTS initialization. */
+/** Delegate preference for TTS initialization. */
 enum class TtsDelegateMode(val label: String) {
   AUTO("Auto"),
   CPU("CPU"),
   GPU("GPU"),
+}
+
+/** Bundled neural TTS models supported by the sample. */
+enum class TtsModelOption(
+  val modelId: String,
+  val assetName: String,
+  val displayName: String,
+  val shortLabel: String,
+  val supportsGpu: Boolean = true,
+) {
+  KOKORO_CPU(
+    modelId = "kokoro_82m_cpu",
+    assetName = TextToSpeechHelper.MODEL_KOKORO_CPU,
+    displayName = "Kokoro 82M (CPU)",
+    shortLabel = "Kokoro CPU",
+  ),
+  KOKORO_GPU(
+    modelId = "kokoro_82m_gpu",
+    assetName = TextToSpeechHelper.MODEL_KOKORO_GPU,
+    displayName = "Kokoro 82M (GPU)",
+    shortLabel = "Kokoro GPU",
+  ),
+  POCKET_TTS(
+    modelId = "pocket_tts_en",
+    assetName = TextToSpeechHelper.MODEL_POCKET_TTS,
+    displayName = "PocketTTS (EN)",
+    shortLabel = "PocketTTS",
+    supportsGpu = false,
+  ),
+  PHONON(
+    modelId = "phonon_31m_en",
+    assetName = TextToSpeechHelper.MODEL_PHONON,
+    displayName = "Phonon 31M (EN)",
+    shortLabel = "Phonon",
+    supportsGpu = false,
+  ),
 }
 
 /** Sample utterance preset displayed as quick chips in the UI. */
@@ -65,7 +101,11 @@ object TextToSpeechHelper {
   private const val TAG = "TextToSpeechHelper"
 
   const val LEGACY_MODEL_FILE_NAME = "kokoro.litertlm"
-  const val BUNDLED_MODEL_FILE_NAME = "kokoro_int8_fp16.litertlm"
+  const val MODEL_KOKORO_CPU = "kokoro_int8_fp16.litertlm"
+  const val MODEL_KOKORO_GPU = "kokoro_int8_gpu_fp16.litertlm"
+  const val MODEL_POCKET_TTS = "pocket_tts_en_int8.litertlm"
+  const val MODEL_PHONON = "phonon_int8.litertlm"
+  const val BUNDLED_MODEL_FILE_NAME = MODEL_KOKORO_CPU
   const val OUTPUT_WAV_NAME = "kokoro_android_demo.wav"
   const val DEFAULT_VOICE = "af_heart"
   const val DEFAULT_TARGET_BUCKET = 64
@@ -151,9 +191,55 @@ object TextToSpeechHelper {
   }
 
   /**
-   * Initializes [TextToSpeech], validates available voices, and runs a quick warm-up pass.
+   * Stages the selected [model] from APK assets into app storage (reusing an existing staged copy
+   * when its byte size matches the uncompressed asset), falling back to sideloaded Kokoro paths for
+   * the default model.
+   */
+  fun resolveModelFile(context: Context, model: TtsModelOption): File? {
+    if (model == TtsModelOption.KOKORO_CPU) {
+      val sideloadDirs =
+        listOfNotNull(
+          context.getExternalFilesDir(null),
+          File("/data/local/tmp"),
+        )
+      for (dir in sideloadDirs) {
+        for (name in CANDIDATE_MODEL_NAMES) {
+          val candidate = File(dir, name)
+          if (candidate.isFile && candidate.length() > 0L) {
+            return candidate
+          }
+        }
+      }
+    }
+
+    val assetName = model.assetName
+    val stageDir = File(context.cacheDir, "tts_models").apply { mkdirs() }
+    val staged = File(stageDir, assetName)
+    val expectedSize =
+      runCatching { context.assets.openFd(assetName).use { it.length } }.getOrDefault(-1L)
+    if (staged.isFile && staged.length() > 0L && (expectedSize <= 0L || staged.length() == expectedSize)) {
+      return staged
+    }
+    val tmp = File(stageDir, "$assetName.tmp")
+    return try {
+      context.assets.open(assetName).use { input ->
+        tmp.outputStream().use { output -> input.copyTo(output) }
+      }
+      if (!tmp.renameTo(staged)) {
+        tmp.copyTo(staged, overwrite = true)
+        tmp.delete()
+      }
+      staged.takeIf { it.isFile && it.length() > 0L }
+    } catch (_: Exception) {
+      tmp.delete()
+      if (model == TtsModelOption.KOKORO_CPU) findModelFile(context) else null
+    }
+  }
+
+  /**
+   * Initializes [TextToSpeech], queries available voices, and runs a quick warm-up pass.
    * When [delegateMode] is [TtsDelegateMode.AUTO], attempts GPU first and falls back to CPU if
-   * unavailable.
+   * unavailable. Explicit [TtsDelegateMode.CPU] and [TtsDelegateMode.GPU] never fall back.
    */
   fun createAndWarmUp(
     context: Context,
@@ -161,7 +247,7 @@ object TextToSpeechHelper {
     delegateMode: TtsDelegateMode = TtsDelegateMode.AUTO,
     speakingRate: Float = 1.0f,
     targetBucket: Int = DEFAULT_TARGET_BUCKET,
-    defaultVoiceId: String = DEFAULT_VOICE,
+    defaultVoiceId: String? = null,
     runWarmup: Boolean = true,
   ): LoadedTtsEngine {
     val buildOptions: (Delegate) -> TextToSpeechOptions = { delegate ->
@@ -194,7 +280,6 @@ object TextToSpeechHelper {
     val loadMs = (SystemClock.elapsedRealtime() - loadStart).coerceAtLeast(1L)
 
     val voices = engine.listVoices()
-    check(voices.isNotEmpty()) { "Kokoro model reported no voices." }
 
     val warmupStart = SystemClock.elapsedRealtime()
     if (runWarmup) {
@@ -316,8 +401,8 @@ object TextToSpeechHelper {
 }
 
 /** Synthesize helper extensions on [TextToSpeech] preserving clean options defaults. */
-fun TextToSpeech.synthesizeText(text: String, voiceId: String): AudioResult =
+fun TextToSpeech.synthesizeText(text: String, voiceId: String? = null): AudioResult =
   synthesize(text, SynthesisOptions(voiceId = voiceId))
 
-fun TextToSpeech.streamText(text: String, voiceId: String): Flow<AudioChunk> =
+fun TextToSpeech.streamText(text: String, voiceId: String? = null): Flow<AudioChunk> =
   synthesizeStream(text, SynthesisOptions(voiceId = voiceId))

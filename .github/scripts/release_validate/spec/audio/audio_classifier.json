@@ -7,17 +7,49 @@
     "android": "examples/audio_classifier/android",
     "ios": "examples/audio_classifier/ios"
   },
-  "models": [{"id": "yamnet", "asset": "yamnet.tflite"}],
+  "models": [
+    {
+      "id": "yamnet",
+      "asset": "yamnet.tflite"
+    }
+  ],
   "modes": [
-    {"id": "file", "options": {"runningMode": "AUDIO_CLIPS"}},
-    {"id": "stream", "options": {"runningMode": "AUDIO_STREAM"}}
+    {
+      "id": "file",
+      "options": {
+        "runningMode": "AUDIO_CLIPS"
+      }
+    },
+    {
+      "id": "stream",
+      "options": {
+        "runningMode": "AUDIO_STREAM"
+      }
+    }
+  ],
+  "unsupported": [
+    {
+      "platform": "android",
+      "model": "yamnet",
+      "delegate": "GPU",
+      "error": "glMapBufferRange in third_party/tensorflow/lite/delegates/gpu/cl/gl_interop.cc",
+      "reason": "The Android TFLite GPU delegate rejects YAMNet's STFT/mel-spectrogram ops (COMPLEX_ABS, GATHER, PAD) and fails GL/CL interop across the split partitions."
+    }
   ],
   "tests": [
     {
       "about": "The 4.27 s speech clip is classified in one call. Each of its four full windows must be labelled Speech.",
       "note": "YAMNet classifies windows of 0.975 s. The clip of 4.27 s has four full windows and a shorter fifth one, which is not checked. In stream mode the task flushes that last window when it is closed, with the largest possible timestamp, so only the timestamps of the full windows are checked.",
-      "options": {"maxResults": 4},
-      "steps": [{"key": "speech_16000_hz_mono.wav", "audio": "speech_16000_hz_mono.wav", "caption": "Speech clip (4.27 s)"}],
+      "options": {
+        "maxResults": 4
+      },
+      "steps": [
+        {
+          "key": "speech_16000_hz_mono.wav",
+          "audio": "speech_16000_hz_mono.wav",
+          "caption": "Speech clip (4.27 s)"
+        }
+      ],
       "expect": {
         "type": "audioClassification",
         "label": "Speech",
@@ -31,7 +63,9 @@
       "inMode": {
         "stream": {
           "about": "The 4.27 s speech clip is classified asynchronously, as a stream. Each of its four full windows must be labelled Speech.",
-          "expect": {"stream": true}
+          "expect": {
+            "stream": true
+          }
         }
       }
     }

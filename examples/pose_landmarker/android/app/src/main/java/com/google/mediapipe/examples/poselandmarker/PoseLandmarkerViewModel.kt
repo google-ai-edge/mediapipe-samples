@@ -63,6 +63,7 @@ data class PoseOverlay(
 
 data class PoseLandmarkerFrame(
     val poses: List<PoseOverlay>,
+    val segmentationMask: PoseLandmarkerHelper.SegmentationMaskSummary? = null,
     val inferenceTimeMs: Long,
     val imageWidth: Int,
     val imageHeight: Int,
@@ -109,7 +110,6 @@ class PoseLandmarkerViewModel(appContext: Context) : ViewModel() {
             override fun onError(error: String, errorCode: Int) {
                 _uiState.update {
                     it.copy(
-                        isDetectingGallery = false,
                         errorMessage = error,
                         errorCode = errorCode,
                     )
@@ -282,7 +282,7 @@ class PoseLandmarkerViewModel(appContext: Context) : ViewModel() {
                             helper.clearPoseLandmarker()
                         }
                     }
-                if (output != null) {
+                if (output != null && output.second != null) {
                     _uiState.update { state ->
                         state.copy(
                             isDetectingGallery = false,
@@ -294,6 +294,7 @@ class PoseLandmarkerViewModel(appContext: Context) : ViewModel() {
                     _uiState.update { state ->
                         state.copy(
                             isDetectingGallery = false,
+                            galleryBitmap = output?.first ?: state.galleryBitmap,
                             errorMessage = state.errorMessage ?: "Failed to load sample image.",
                         )
                     }
@@ -331,7 +332,7 @@ class PoseLandmarkerViewModel(appContext: Context) : ViewModel() {
                                 helper.clearPoseLandmarker()
                             }
                         }
-                    if (output != null) {
+                    if (output != null && output.second != null) {
                         _uiState.update {
                             it.copy(
                                 isDetectingGallery = false,
@@ -343,6 +344,7 @@ class PoseLandmarkerViewModel(appContext: Context) : ViewModel() {
                         _uiState.update {
                             it.copy(
                                 isDetectingGallery = false,
+                                galleryBitmap = output?.first ?: it.galleryBitmap,
                                 errorMessage =
                                     it.errorMessage ?: "Failed to detect pose landmarks in image.",
                             )
@@ -458,6 +460,7 @@ class PoseLandmarkerViewModel(appContext: Context) : ViewModel() {
                 }
             return PoseLandmarkerFrame(
                 poses = poses,
+                segmentationMask = bundle.segmentationMasks.getOrNull(frameIndex),
                 inferenceTimeMs = bundle.inferenceTime,
                 imageWidth = width,
                 imageHeight = height,

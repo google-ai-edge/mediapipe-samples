@@ -26,6 +26,7 @@ import android.provider.MediaStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.google.mediapipe.tasks.vision.core.RunningMode
 import java.util.concurrent.Executors
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -69,8 +70,12 @@ data class ImageComparisonResult(
 data class ImageEmbedderUiState(
     val model: ImageEmbedderModel = ImageEmbedderModel.SMALL,
     val delegate: EmbedderDelegate = EmbedderDelegate.CPU,
+    val l2Normalize: Boolean = false,
+    val quantize: Boolean = false,
     val firstBitmap: Bitmap? = null,
     val secondBitmap: Bitmap? = null,
+    val firstVideoUri: Uri? = null,
+    val secondVideoUri: Uri? = null,
     val firstLabel: String = "American pizza",
     val secondLabel: String = "Italian pizza",
     val isModelReady: Boolean = false,
@@ -140,6 +145,8 @@ class ImageEmbedderViewModel(appContext: Context) : ViewModel() {
                 it.copy(
                     firstBitmap = pair.first,
                     secondBitmap = pair.second,
+                    firstVideoUri = null,
+                    secondVideoUri = null,
                     firstLabel = labels.first,
                     secondLabel = labels.second,
                     result = null,
@@ -150,16 +157,45 @@ class ImageEmbedderViewModel(appContext: Context) : ViewModel() {
     }
 
     fun setPickedImage(slot: Int, uri: Uri) {
+        val isVideo = context.contentResolver.getType(uri)?.startsWith("video") == true
         viewModelScope.launch {
-            val bitmap = withContext(engineDispatcher) { decodeUriBitmap(uri) }
+            val bitmap =
+                withContext(engineDispatcher) {
+                    if (isVideo) {
+                        ImageEmbedderHelper.extractVideoFrame(context, uri)
+                    } else {
+                        decodeUriBitmap(uri)
+                    }
+                }
             if (bitmap == null) {
-                _uiState.update { it.copy(errorMessage = "Failed to decode selected image.") }
+                _uiState.update {
+                    it.copy(
+                        errorMessage =
+                            if (isVideo) "Failed to decode selected video."
+                            else "Failed to decode selected image."
+                    )
+                }
                 return@launch
             }
+            val videoUri = uri.takeIf { isVideo }
             _uiState.update { state ->
                 when (slot) {
-                    1 -> state.copy(firstBitmap = bitmap, firstLabel = "Custom photo 1", result = null, errorMessage = null)
-                    else -> state.copy(secondBitmap = bitmap, secondLabel = "Custom photo 2", result = null, errorMessage = null)
+                    1 ->
+                        state.copy(
+                            firstBitmap = bitmap,
+                            firstVideoUri = videoUri,
+                            firstLabel = if (isVideo) "Custom video 1" else "Custom photo 1",
+                            result = null,
+                            errorMessage = null,
+                        )
+                    else ->
+                        state.copy(
+                            secondBitmap = bitmap,
+                            secondVideoUri = videoUri,
+                            secondLabel = if (isVideo) "Custom video 2" else "Custom photo 2",
+                            result = null,
+                            errorMessage = null,
+                        )
                 }
             }
         }
@@ -170,6 +206,8 @@ class ImageEmbedderViewModel(appContext: Context) : ViewModel() {
             it.copy(
                 firstBitmap = it.secondBitmap,
                 secondBitmap = it.firstBitmap,
+                firstVideoUri = it.secondVideoUri,
+                secondVideoUri = it.firstVideoUri,
                 firstLabel = it.secondLabel,
                 secondLabel = it.firstLabel,
                 result = null,
@@ -189,6 +227,18 @@ class ImageEmbedderViewModel(appContext: Context) : ViewModel() {
         initializeEmbedder()
     }
 
+    fun setL2Normalize(enabled: Boolean) {
+        if (_uiState.value.l2Normalize == enabled) return
+        _uiState.update { it.copy(l2Normalize = enabled, result = null, errorMessage = null) }
+        initializeEmbedder()
+    }
+
+    fun setQuantize(enabled: Boolean) {
+        if (_uiState.value.quantize == enabled) return
+        _uiState.update { it.copy(quantize = enabled, result = null, errorMessage = null) }
+        initializeEmbedder()
+    }
+
     fun switchToCpuDelegate() {
         selectDelegate(EmbedderDelegate.CPU)
     }
@@ -203,9 +253,27 @@ class ImageEmbedderViewModel(appContext: Context) : ViewModel() {
         val img2 = state.secondBitmap ?: return
         if (!state.isModelReady || state.isLoadingModel || state.isComparing) return
 
+        val useVideoMode = state.firstVideoUri != null || state.secondVideoUri != null
+        val targetMode = if (useVideoMode) RunningMode.VIDEO else RunningMode.IMAGE
+
         _uiState.update { it.copy(isComparing = true, errorMessage = null) }
         viewModelScope.launch {
-            val bundle = withContext(engineDispatcher) { helper?.embed(img1, img2) }
+            val bundle =
+                withContext(engineDispatcher) {
+                    val activeHelper = helper ?: return@withContext null
+                    if (activeHelper.runningMode != targetMode) {
+                        activeHelper.runningMode = targetMode
+                        if (!activeHelper.setupImageEmbedder()) {
+                            return@withContext null
+                        }
+                    }
+                    when {
+                        state.firstVideoUri != null && state.secondVideoUri != null ->
+                            activeHelper.embedVideo(state.firstVideoUri, state.secondVideoUri)
+                        useVideoMode -> activeHelper.embedVideoFrames(img1, img2)
+                        else -> activeHelper.embed(img1, img2)
+                    }
+                }
             _uiState.update { current ->
                 if (bundle != null) {
                     current.copy(
@@ -229,6 +297,12 @@ class ImageEmbedderViewModel(appContext: Context) : ViewModel() {
 
     private fun initializeEmbedder() {
         val snapshot = _uiState.value
+        val targetMode =
+            if (snapshot.firstVideoUri != null || snapshot.secondVideoUri != null) {
+                RunningMode.VIDEO
+            } else {
+                RunningMode.IMAGE
+            }
         _uiState.update { it.copy(isLoadingModel = true, isModelReady = false, errorMessage = null) }
         viewModelScope.launch {
             val ready =
@@ -240,6 +314,9 @@ class ImageEmbedderViewModel(appContext: Context) : ViewModel() {
                                 context = context,
                                 currentDelegate = snapshot.delegate.index,
                                 currentModel = snapshot.model.index,
+                                l2Normalize = snapshot.l2Normalize,
+                                quantize = snapshot.quantize,
+                                runningMode = targetMode,
                                 listener = listener,
                             )
                         helper = created
@@ -247,6 +324,9 @@ class ImageEmbedderViewModel(appContext: Context) : ViewModel() {
                     } else {
                         existing.currentDelegate = snapshot.delegate.index
                         existing.currentModel = snapshot.model.index
+                        existing.l2Normalize = snapshot.l2Normalize
+                        existing.quantize = snapshot.quantize
+                        existing.runningMode = targetMode
                         existing.setupImageEmbedder() && !existing.isClosed
                     }
                 }

@@ -48,6 +48,9 @@ class MainActivity : ComponentActivity() {
                     onApplyPreset = embedderViewModel::applyPreset,
                     onCompare = embedderViewModel::compare,
                     onSelectModel = embedderViewModel::selectModel,
+                    onL2NormalizeChange = embedderViewModel::setL2Normalize,
+                    onQuantizeChange = embedderViewModel::setQuantize,
+                    onUseCpuDelegate = embedderViewModel::switchToCpuDelegate,
                     onRetryInitialization = embedderViewModel::retryInitialization,
                 )
             }

@@ -25,12 +25,14 @@ import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.camera.core.ImageProxy
 import com.google.mediapipe.framework.image.BitmapImageBuilder
+import com.google.mediapipe.framework.image.ByteBufferExtractor
 import com.google.mediapipe.framework.image.MPImage
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.holisticlandmarker.HolisticLandmarker
 import com.google.mediapipe.tasks.vision.holisticlandmarker.HolisticLandmarkerResult
+import java.nio.ByteOrder
 
 /**
  * Helper that wraps [HolisticLandmarker] lifecycle, delegate/threshold options, and
@@ -42,6 +44,8 @@ class HolisticLandmarkerHelper(
     var minPoseDetectionConfidence: Float = DEFAULT_POSE_DETECTION_CONFIDENCE,
     var minPosePresenceConfidence: Float = DEFAULT_POSE_PRESENCE_CONFIDENCE,
     var minHandLandmarksConfidence: Float = DEFAULT_HAND_LANDMARKS_CONFIDENCE,
+    var outputFaceBlendshapes: Boolean = DEFAULT_OUTPUT_FACE_BLENDSHAPES,
+    var outputSegmentationMask: Boolean = DEFAULT_OUTPUT_SEGMENTATION_MASK,
     var currentDelegate: Int = DELEGATE_CPU,
     var runningMode: RunningMode = RunningMode.IMAGE,
     val context: Context,
@@ -101,8 +105,8 @@ class HolisticLandmarkerHelper(
                     .setMinPoseDetectionConfidence(minPoseDetectionConfidence)
                     .setMinPosePresenceConfidence(minPosePresenceConfidence)
                     .setMinHandLandmarksConfidence(minHandLandmarksConfidence)
-                    .setOutputFaceBlendshapes(false)
-                    .setOutputPoseSegmentationMasks(false)
+                    .setOutputFaceBlendshapes(outputFaceBlendshapes)
+                    .setOutputPoseSegmentationMasks(outputSegmentationMask)
                     .setRunningMode(runningMode)
 
             if (runningMode == RunningMode.LIVE_STREAM) {
@@ -195,6 +199,7 @@ class HolisticLandmarkerHelper(
         }
         require(inferenceIntervalMs > 0L) { "inferenceIntervalMs must be positive." }
 
+        val landmarker = holisticLandmarker ?: return null
         val startTime = SystemClock.uptimeMillis()
         var didErrorOccur = false
 
@@ -203,16 +208,19 @@ class HolisticLandmarkerHelper(
             retriever.setDataSource(context, videoUri)
             val videoLengthMs =
                 retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
-            val firstFrame = retriever.getFrameAtTime(0)
-            val width = firstFrame?.width
-            val height = firstFrame?.height
-            firstFrame?.recycle()
-
-            if (videoLengthMs == null || width == null || height == null) {
+            val firstFrame =
+                retriever.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST)
+                    ?: retriever.getFrameAtTime(0)
+            if (videoLengthMs == null || firstFrame == null) {
+                firstFrame?.recycle()
                 return null
             }
+            var width: Int = firstFrame.width
+            var height: Int = firstFrame.height
+            firstFrame.recycle()
 
             val resultList = mutableListOf<HolisticLandmarkerResult>()
+            val maskList = mutableListOf<SegmentationMaskSummary?>()
             val lastFrameIndex = videoLengthMs / inferenceIntervalMs
 
             for (i in 0..lastFrameIndex) {
@@ -233,16 +241,30 @@ class HolisticLandmarkerHelper(
                     if (frame.config == Bitmap.Config.ARGB_8888) frame
                     else frame.copy(Bitmap.Config.ARGB_8888, false)
                 try {
+                    width = argbFrame.width
+                    height = argbFrame.height
                     val mpImage = BitmapImageBuilder(argbFrame).build()
-                    val detectionResult = holisticLandmarker?.detectForVideo(mpImage, timestampMs)
+                    val detectionResult = landmarker.detectForVideo(mpImage, timestampMs)
                     if (detectionResult != null) {
                         resultList.add(detectionResult)
+                        maskList.add(
+                            detectionResult
+                                .segmentationMask()
+                                .orElse(null)
+                                ?.let(::summarizeSegmentationMask)
+                        )
                     } else {
                         didErrorOccur = true
                         holisticLandmarkerHelperListener?.onError(
                             "ResultBundle could not be returned in detectVideoFile"
                         )
                     }
+                } catch (e: RuntimeException) {
+                    didErrorOccur = true
+                    val detail = e.message ?: "RuntimeException"
+                    holisticLandmarkerHelperListener?.onError("Holistic Landmarker failed on video frame: $detail")
+                    Log.e(TAG, "Holistic Landmarker failed on video frame with error: $detail", e)
+                    break
                 } finally {
                     if (argbFrame !== frame) argbFrame.recycle()
                     frame.recycle()
@@ -255,7 +277,13 @@ class HolisticLandmarkerHelper(
             if (didErrorOccur) {
                 null
             } else {
-                ResultBundle(resultList, inferenceTimePerFrameMs, height, width)
+                ResultBundle(
+                    results = resultList,
+                    inferenceTime = inferenceTimePerFrameMs,
+                    inputImageHeight = height,
+                    inputImageWidth = width,
+                    segmentationMasks = maskList,
+                )
             }
         } finally {
             retriever.release()
@@ -269,25 +297,37 @@ class HolisticLandmarkerHelper(
                 "Attempting to call detectImage while not using RunningMode.IMAGE"
             )
         }
+        val landmarker = holisticLandmarker ?: return null
         val argbImage =
             if (image.config == Bitmap.Config.ARGB_8888) image
             else image.copy(Bitmap.Config.ARGB_8888, false)
         return try {
             val startTime = SystemClock.uptimeMillis()
             val mpImage = BitmapImageBuilder(argbImage).build()
-            val landmarkResult = holisticLandmarker?.detect(mpImage)
+            val landmarkResult = landmarker.detect(mpImage)
             if (landmarkResult != null) {
                 val inferenceTimeMs = SystemClock.uptimeMillis() - startTime
+                val maskSummary =
+                    landmarkResult
+                        .segmentationMask()
+                        .orElse(null)
+                        ?.let(::summarizeSegmentationMask)
                 ResultBundle(
                     results = listOf(landmarkResult),
                     inferenceTime = inferenceTimeMs,
                     inputImageHeight = argbImage.height,
                     inputImageWidth = argbImage.width,
+                    segmentationMasks = listOf(maskSummary),
                 )
             } else {
                 holisticLandmarkerHelperListener?.onError("Holistic Landmarker failed to detect.")
                 null
             }
+        } catch (e: RuntimeException) {
+            val detail = e.message ?: "RuntimeException"
+            holisticLandmarkerHelperListener?.onError("Holistic Landmarker failed to detect: $detail")
+            Log.e(TAG, "Holistic Landmarker failed to detect image with error: $detail", e)
+            null
         } finally {
             if (argbImage !== image) argbImage.recycle()
         }
@@ -296,12 +336,18 @@ class HolisticLandmarkerHelper(
     private fun returnLivestreamResult(result: HolisticLandmarkerResult, input: MPImage) {
         val finishTimeMs = SystemClock.uptimeMillis()
         val inferenceTime = finishTimeMs - result.timestampMs()
+        val maskSummary =
+            result
+                .segmentationMask()
+                .orElse(null)
+                ?.let(::summarizeSegmentationMask)
         holisticLandmarkerHelperListener?.onResults(
             ResultBundle(
                 results = listOf(result),
                 inferenceTime = inferenceTime,
                 inputImageHeight = input.height,
                 inputImageWidth = input.width,
+                segmentationMasks = listOf(maskSummary),
             )
         )
     }
@@ -324,15 +370,108 @@ class HolisticLandmarkerHelper(
         const val DEFAULT_POSE_DETECTION_CONFIDENCE = 0.5F
         const val DEFAULT_POSE_PRESENCE_CONFIDENCE = 0.5F
         const val DEFAULT_HAND_LANDMARKS_CONFIDENCE = 0.5F
+        const val DEFAULT_OUTPUT_FACE_BLENDSHAPES = true
+        const val DEFAULT_OUTPUT_SEGMENTATION_MASK = true
         const val OTHER_ERROR = 0
         const val GPU_ERROR = 1
+        private const val MASK_THRESHOLD = 0.5f
+
+        internal fun summarizeSegmentationMask(maskImage: MPImage): SegmentationMaskSummary {
+            val width = maskImage.width
+            val height = maskImage.height
+            val totalPixels = width * height
+            val floatBuffer =
+                ByteBufferExtractor.extract(maskImage).order(ByteOrder.nativeOrder()).asFloatBuffer()
+            val capacity = floatBuffer.capacity()
+            val channels = if (totalPixels > 0) (capacity / totalPixels).coerceAtLeast(1) else 1
+
+            if (totalPixels <= 0 || capacity < totalPixels) {
+                return SegmentationMaskSummary(
+                    width = width,
+                    height = height,
+                    channels = channels,
+                    min = 0.0,
+                    max = 0.0,
+                    nonFinite = 0,
+                    fraction = 0.0,
+                    centroidX = null,
+                    centroidY = null,
+                )
+            }
+
+            var minVal = Double.POSITIVE_INFINITY
+            var maxVal = Double.NEGATIVE_INFINITY
+            var nonFinite = 0
+            var selectedCount = 0L
+            var sumX = 0.0
+            var sumY = 0.0
+
+            for (y in 0 until height) {
+                val rowBase = y * width * channels
+                for (x in 0 until width) {
+                    val pixelBase = rowBase + x * channels
+                    for (c in 0 until channels) {
+                        val raw = floatBuffer.get(pixelBase + c)
+                        val clean =
+                            if (raw.isFinite()) {
+                                raw.toDouble()
+                            } else {
+                                nonFinite++
+                                0.0
+                            }
+                        if (clean < minVal) minVal = clean
+                        if (clean > maxVal) maxVal = clean
+                    }
+                    val raw0 = floatBuffer.get(pixelBase)
+                    val planeVal = if (raw0.isFinite()) raw0 else 0f
+                    if (planeVal > MASK_THRESHOLD) {
+                        selectedCount++
+                        sumX += x.toDouble()
+                        sumY += y.toDouble()
+                    }
+                }
+            }
+
+            val fraction = selectedCount.toDouble() / totalPixels.toDouble()
+            val centroidX =
+                if (selectedCount > 0L) ((sumX / selectedCount.toDouble()) + 0.5) / width.toDouble()
+                else null
+            val centroidY =
+                if (selectedCount > 0L) ((sumY / selectedCount.toDouble()) + 0.5) / height.toDouble()
+                else null
+
+            return SegmentationMaskSummary(
+                width = width,
+                height = height,
+                channels = channels,
+                min = if (minVal.isFinite()) minVal else 0.0,
+                max = if (maxVal.isFinite()) maxVal else 0.0,
+                nonFinite = nonFinite,
+                fraction = fraction,
+                centroidX = centroidX,
+                centroidY = centroidY,
+            )
+        }
     }
+
+    data class SegmentationMaskSummary(
+        val width: Int,
+        val height: Int,
+        val channels: Int,
+        val min: Double,
+        val max: Double,
+        val nonFinite: Int,
+        val fraction: Double,
+        val centroidX: Double?,
+        val centroidY: Double?,
+    )
 
     data class ResultBundle(
         val results: List<HolisticLandmarkerResult>,
         val inferenceTime: Long,
         val inputImageHeight: Int,
         val inputImageWidth: Int,
+        val segmentationMasks: List<SegmentationMaskSummary?> = emptyList(),
     )
 
     interface LandmarkerListener {

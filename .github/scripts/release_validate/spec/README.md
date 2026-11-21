@@ -21,13 +21,18 @@ python3 .github/scripts/release_validate/spec.py check
 
 - **Python samples** (`examples/*/python`): `run_local.py`. `python_adapter.py`
   turns the steps and options of a case into the command line of the sample.
-- **Android and iOS apps**: there is no runner for them yet. The spec lists
-  their sample directories, and this is the path a runner takes:
+- **Android apps** (`examples/*/android`): `run_android.py`, with the
+  validation app in `android-validation/`. One adapter per sample
+  (`adapters/<task>/<Task>Adapter.kt`) drives the ViewModel of the sample
+  through the steps and options of a case, and reads the result from its UI
+  state.
+- **iOS apps**: there is no runner for them yet. The spec lists their sample
+  directories, and this is the path a runner takes:
 
   ```sh
   # 1. The cases of the platform as one flat file: options, steps and
   #    expectation of every case resolved, and the pinned files it needs.
-  python3 .github/scripts/release_validate/spec.py export --platform android --out cases.json
+  python3 .github/scripts/release_validate/spec.py export --platform ios --out cases.json
 
   # 2. The runner drives the apps through these cases and writes what each
   #    returned (see "Observations") to observations.json.

@@ -55,6 +55,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -93,6 +94,9 @@ fun TextEmbedderScreen(
     onApplyPreset: (TextPairPreset) -> Unit,
     onCompare: () -> Unit,
     onSelectModel: (EmbedderModel) -> Unit,
+    onL2NormalizeChange: (Boolean) -> Unit,
+    onQuantizeChange: (Boolean) -> Unit,
+    onUseCpuDelegate: () -> Unit,
     onRetryInitialization: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -104,7 +108,8 @@ fun TextEmbedderScreen(
         topBar = {
             MediaPipeTopBar(
                 title = stringResource(R.string.app_name),
-                subtitle = "${uiState.model.displayName} · ${uiState.model.dimensions}d",
+                subtitle =
+                    "${uiState.model.displayName} · ${uiState.model.dimensions}d · ${uiState.delegate.displayName}",
                 onSettingsClick = { showSettings = true },
                 settingsContentDescription = stringResource(R.string.cd_open_settings),
             )
@@ -125,10 +130,14 @@ fun TextEmbedderScreen(
                 exit = fadeOut() + shrinkVertically(),
             ) {
                 uiState.errorMessage?.let { message ->
+                    val isGpuError = uiState.errorCode == TextEmbedderHelper.GPU_ERROR
                     StatusErrorBanner(
                         message = message,
-                        actionLabel = stringResource(R.string.action_retry),
-                        onAction = onRetryInitialization,
+                        actionLabel =
+                            stringResource(
+                                if (isGpuError) R.string.action_use_cpu else R.string.action_retry
+                            ),
+                        onAction = if (isGpuError) onUseCpuDelegate else onRetryInitialization,
                     )
                 }
             }
@@ -218,8 +227,12 @@ fun TextEmbedderScreen(
         ) {
             SettingsSheetContent(
                 selectedModel = uiState.model,
+                l2Normalize = uiState.l2Normalize,
+                quantize = uiState.quantize,
                 isBusy = uiState.isBusy,
                 onSelectModel = onSelectModel,
+                onL2NormalizeChange = onL2NormalizeChange,
+                onQuantizeChange = onQuantizeChange,
                 onDismiss = { showSettings = false },
             )
         }
@@ -558,14 +571,21 @@ private fun SimilarityResultCard(
 @Composable
 private fun SettingsSheetContent(
     selectedModel: EmbedderModel,
+    l2Normalize: Boolean,
+    quantize: Boolean,
     isBusy: Boolean,
     onSelectModel: (EmbedderModel) -> Unit,
+    onL2NormalizeChange: (Boolean) -> Unit,
+    onQuantizeChange: (Boolean) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val models = EmbedderModel.entries
 
     Column(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp),
+        modifier =
+            Modifier.fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         Text(
@@ -589,28 +609,25 @@ private fun SettingsSheetContent(
             )
         }
 
-        Surface(
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            shape = RoundedCornerShape(14.dp),
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.label_accelerator_cpu),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Text(
-                    text = stringResource(R.string.delegate_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
+        HorizontalDivider()
+
+        EmbedderOptionSwitchRow(
+            title = stringResource(R.string.label_l2_normalize),
+            description = stringResource(R.string.description_l2_normalize),
+            checked = l2Normalize,
+            enabled = !isBusy,
+            switchTag = "switch_l2_normalize",
+            onCheckedChange = onL2NormalizeChange,
+        )
+
+        EmbedderOptionSwitchRow(
+            title = stringResource(R.string.label_quantize),
+            description = stringResource(R.string.description_quantize),
+            checked = quantize,
+            enabled = !isBusy,
+            switchTag = "switch_quantize",
+            onCheckedChange = onQuantizeChange,
+        )
 
         FilledTonalButton(
             onClick = onDismiss,
@@ -621,5 +638,40 @@ private fun SettingsSheetContent(
         }
 
         Spacer(modifier = Modifier.height(12.dp))
+    }
+}
+
+@Composable
+private fun EmbedderOptionSwitchRow(
+    title: String,
+    description: String,
+    checked: Boolean,
+    enabled: Boolean,
+    switchTag: String,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Medium,
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            enabled = enabled,
+            modifier = Modifier.testTag(switchTag),
+        )
     }
 }

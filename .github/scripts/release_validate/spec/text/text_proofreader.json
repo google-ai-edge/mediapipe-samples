@@ -7,9 +7,17 @@
     "android": "examples/text_proofreader/android",
     "ios": "examples/text_proofreader/ios"
   },
-  "models": [{"id": "gemma_200m", "asset": "proofread_quant_200m.litertlm"}],
+  "models": [
+    {
+      "id": "gemma_200m",
+      "asset": "proofread_quant_200m.litertlm"
+    }
+  ],
   "modes": [
-    {"id": "proofread", "options": {}}
+    {
+      "id": "proofread",
+      "options": {}
+    }
   ],
   "unsupported": [
     {
@@ -17,6 +25,12 @@
       "delegate": "GPU",
       "error": "Only CPU delegate is supported.",
       "reason": "The Text Proofreader rejects the GPU delegate."
+    },
+    {
+      "platform": "android",
+      "delegate": "GPU",
+      "error": "Only CPU delegate is supported.",
+      "reason": "TextProofreaderOptions in the MediaPipe Android SDK exposes no GPU delegate option."
     }
   ],
   "tests": [
@@ -28,16 +42,26 @@
           "key": "text 1",
           "text": "I am a studnt.",
           "caption": "Expected: I am a student.",
-          "expect": {"exact": "I am a student."}
+          "expect": {
+            "exact": "I am a student."
+          }
         },
         {
           "key": "text 2",
           "text": "i hope you doing . theyre a great addition on any families.",
           "caption": "Several fixes are correct",
-          "expect": {"startsWith": "I hope you", "containsAny": ["They're", "They are"]}
+          "expect": {
+            "startsWith": "I hope you",
+            "containsAny": [
+              "They're",
+              "They are"
+            ]
+          }
         }
       ],
-      "expect": {"type": "proofreading"}
+      "expect": {
+        "type": "proofreading"
+      }
     }
   ]
 }

@@ -37,7 +37,7 @@ import java.io.File
  */
 class DecisionMakerHelper(
     private val context: Context,
-    var currentDelegate: Int = if (isAndroidEmulator()) DELEGATE_CPU else DELEGATE_GPU,
+    var currentDelegate: Int = DELEGATE_CPU,
     var currentModel: Int = MODEL_EMBEDDING_GEMMA,
 ) {
     private var decisionMaker: DecisionMaker? = null
@@ -87,6 +87,10 @@ class DecisionMakerHelper(
         instructions: String,
     ): ResultBundle<ScoreResult> = timed {
         it.evaluate(text, ScoreQuestion(rubric = rubric, instructions = instructions))
+    }
+
+    fun evaluateJson(requestJson: String): ResultBundle<String> = timed {
+        it.evaluateJson(requestJson)
     }
 
     private fun <T> timed(block: (DecisionMaker) -> T): ResultBundle<T> {

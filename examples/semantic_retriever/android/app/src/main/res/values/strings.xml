@@ -20,6 +20,12 @@
     <string name="hint_search_query">Search indexed photos by meaning…</string>
     <string name="btn_search">Search index</string>
     <string name="action_add_photo">Add Photo</string>
+    <string name="action_add_note">Add text note</string>
+    <string name="dialog_add_note_title">Add text note to index</string>
+    <string name="hint_note_id">Record ID (optional, e.g. document 1)</string>
+    <string name="hint_note_text">Note text to embed and index</string>
+    <string name="action_add">Add</string>
+    <string name="action_cancel">Cancel</string>
     <string name="action_reindex">Re-index samples</string>
     <string name="action_clear_index">Clear index</string>
     <string name="status_loading_model">Loading model…</string>
@@ -31,6 +37,8 @@
     <string name="label_indexed_items">Indexed</string>
     <string name="label_vector_store">Vector Store</string>
     <string name="label_delegate">Delegate</string>
+    <string name="label_top_k">Max results (limit)</string>
+    <string name="label_min_similarity">Min similarity</string>
     <string name="settings_title">Retriever Settings</string>
     <string name="settings_note">Indexes images locally using EmbeddingGemma 2 Multimodal (440M) into either AppSearch or SQLite vector storage. Defaults to GPU OpenCL with automatic CPU fallback.</string>
     <string name="action_done">Done</string>

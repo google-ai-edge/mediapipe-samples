@@ -7,7 +7,7 @@ This sample demonstrates the MediaPipe [Object Detector](https://ai.google.dev/e
 - **Camera:** Live front/back CameraX feed with real-time bounding boxes, category labels, and inference telemetry.
 - **Gallery:** Bundled dining sample (`Try sample`) as well as user-selected images and videos from the device gallery.
 
-In the **Settings** sheet, you can switch models (**EfficientDet Lite0** and **EfficientDet Lite2**), toggle hardware **Delegate** (`CPU` or `GPU`), change **Max results** (`1`, `3`, `5`), and tune the **Confidence threshold**.
+In the **Settings** sheet, you can switch models (**EfficientDet Lite0**, **EfficientDet Lite0 (int8)**, **EfficientDet Lite2**, **SSD MobileNetV2**, and **SSD MobileNetV2 (fp16)**), toggle hardware **Delegate** (`CPU` or `GPU`), change **Max results** (`1`, `3`, `5`), and tune the **Confidence threshold**.
 
 ![Object Detection Demo](objectdetection.png?raw=true "Object Detection Demo")
 
@@ -18,7 +18,7 @@ In the **Settings** sheet, you can switch models (**EfficientDet Lite0** and **E
 
 ## Build and Run
 
-The Gradle script [app/download_models.gradle.kts](app/download_models.gradle.kts) automatically downloads and SHA-256 verifies `efficientdet-lite0.tflite` and `efficientdet-lite2.tflite` into `app/src/main/assets/` before building:
+The Gradle script [app/download_models.gradle.kts](app/download_models.gradle.kts) automatically downloads and SHA-256 verifies `efficientdet-lite0.tflite`, `efficientdet_lite0_int8.tflite`, `efficientdet-lite2.tflite`, `ssd_mobilenet_v2_float32.tflite`, and `ssd_mobilenet_v2_float16.tflite` into `app/src/main/assets/` before building:
 
 ```bash
 ./gradlew :app:verifyModels :app:assembleDebug

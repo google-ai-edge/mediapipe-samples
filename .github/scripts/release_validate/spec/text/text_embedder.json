@@ -8,8 +8,15 @@
     "ios": "examples/text_embedder/ios"
   },
   "models": [
-    {"id": "universal_sentence_encoder", "asset": "universal_sentence_encoder.tflite"},
-    {"id": "embedding_gemma", "asset": "embedding_gemma.task", "large": true},
+    {
+      "id": "universal_sentence_encoder",
+      "asset": "universal_sentence_encoder.tflite"
+    },
+    {
+      "id": "embedding_gemma",
+      "asset": "embedding_gemma.task",
+      "large": true
+    },
     {
       "id": "bert_embedder",
       "asset": "bert_embedder.tflite",
@@ -17,7 +24,10 @@
     }
   ],
   "modes": [
-    {"id": "embed", "options": {}}
+    {
+      "id": "embed",
+      "options": {}
+    }
   ],
   "unsupported": [
     {
@@ -26,13 +36,40 @@
       "delegate": "GPU",
       "error": "not supported by the macOS/iOS GPU delegate (only float32 input/output tensors are supported).",
       "reason": "The macOS GPU delegate rejects string and integer token input tensors."
+    },
+    {
+      "platform": "android",
+      "model": "universal_sentence_encoder",
+      "delegate": "GPU",
+      "error": "Conversion from TfLite model failed.",
+      "reason": "The Android TFLite GPU delegate rejects Universal Sentence Encoder's dynamic string tensors."
+    },
+    {
+      "platform": "android",
+      "model": "embedding_gemma",
+      "delegate": "GPU",
+      "error": "glMapBufferRange in third_party/tensorflow/lite/delegates/gpu/cl/gl_interop.cc",
+      "reason": "The Android TFLite GPU delegate rejects EmbeddingGemma's broadcast ADD and boolean CAST ops and fails GL/CL interop."
+    },
+    {
+      "platform": "android",
+      "model": "bert_embedder",
+      "delegate": "GPU",
+      "error": "Conversion from TfLite model failed.",
+      "reason": "The Android TFLite GPU delegate rejects MobileBERT embedder's token graph."
     }
   ],
   "tests": [
     {
-      "models": ["universal_sentence_encoder", "embedding_gemma"],
+      "models": [
+        "universal_sentence_encoder",
+        "embedding_gemma"
+      ],
       "about": "Identical, related and unrelated sentence pairs are compared. Identical sentences must score about 1, and related sentences clearly higher than unrelated ones.",
-      "options": {"l2Normalize": true, "quantize": false},
+      "options": {
+        "l2Normalize": true,
+        "quantize": false
+      },
       "inputs": [
         {
           "kind": "text",
@@ -54,52 +91,132 @@
         {
           "key": "identical sentences",
           "pair": [
-            {"text": "I love watching sunny sunsets at the beach."},
-            {"text": "I love watching sunny sunsets at the beach."}
+            {
+              "text": "I love watching sunny sunsets at the beach."
+            },
+            {
+              "text": "I love watching sunny sunsets at the beach."
+            }
           ],
-          "expect": {"range": [0.99, 1.0001]}
+          "expect": {
+            "range": [
+              0.99,
+              1.0001
+            ]
+          }
         },
         {
           "key": "related sentences",
-          "pair": [{"text": "I love watching sunny sunsets at the beach."}, {"text": "Warm ocean evenings are wonderful."}],
-          "expect": {"range": [-1, 1]}
+          "pair": [
+            {
+              "text": "I love watching sunny sunsets at the beach."
+            },
+            {
+              "text": "Warm ocean evenings are wonderful."
+            }
+          ],
+          "expect": {
+            "range": [
+              -1,
+              1
+            ]
+          }
         },
         {
           "key": "unrelated sentences",
           "pair": [
-            {"text": "I love watching sunny sunsets at the beach."},
-            {"text": "The quarterly tax filing deadline is next Tuesday."}
+            {
+              "text": "I love watching sunny sunsets at the beach."
+            },
+            {
+              "text": "The quarterly tax filing deadline is next Tuesday."
+            }
           ],
-          "expect": {"range": [-1, 1]}
+          "expect": {
+            "range": [
+              -1,
+              1
+            ]
+          }
         }
       ],
       "expect": {
         "type": "similarity",
-        "ordered": [{"higher": "related sentences", "lower": "unrelated sentences", "by": 0.15}]
+        "ordered": [
+          {
+            "higher": "related sentences",
+            "lower": "unrelated sentences",
+            "by": 0.15
+          }
+        ]
       }
     },
     {
-      "models": ["bert_embedder"],
+      "models": [
+        "bert_embedder"
+      ],
       "about": "The two sentences of the notebook are compared, and one of them with itself. Identical sentences must score 1 and different ones less, within the baseline measured on release 1.2.3.",
       "note": "The two sentences of the notebook. This model does not order sentences by meaning: on release 1.2.3 an unrelated pair of sentences scored higher (0.99) than a related one (0.97). So no ordering by meaning is asserted, and the similarity is compared with a BASELINE measured on release 1.2.3 (CPU).",
-      "options": {"l2Normalize": true, "quantize": false},
+      "options": {
+        "l2Normalize": true,
+        "quantize": false
+      },
       "inputs": [
-        {"kind": "text", "label": "First sentence", "value": "I'm feeling so good"},
-        {"kind": "text", "label": "Second sentence", "value": "I'm okay I guess"}
+        {
+          "kind": "text",
+          "label": "First sentence",
+          "value": "I'm feeling so good"
+        },
+        {
+          "kind": "text",
+          "label": "Second sentence",
+          "value": "I'm okay I guess"
+        }
       ],
       "steps": [
         {
           "key": "the two sentences of the notebook",
-          "pair": [{"text": "I'm feeling so good"}, {"text": "I'm okay I guess"}],
-          "expect": {"range": [-1, 0.99], "baseline": {"value": 0.9191, "tolerance": 0.03, "release": "1.2.3"}}
+          "pair": [
+            {
+              "text": "I'm feeling so good"
+            },
+            {
+              "text": "I'm okay I guess"
+            }
+          ],
+          "expect": {
+            "range": [
+              -1,
+              0.99
+            ],
+            "baseline": {
+              "value": 0.9191,
+              "tolerance": 0.03,
+              "release": "1.2.3"
+            }
+          }
         },
         {
           "key": "the same sentence twice",
-          "pair": [{"text": "I'm feeling so good"}, {"text": "I'm feeling so good"}],
-          "expect": {"range": [0.99, 1.0001]}
+          "pair": [
+            {
+              "text": "I'm feeling so good"
+            },
+            {
+              "text": "I'm feeling so good"
+            }
+          ],
+          "expect": {
+            "range": [
+              0.99,
+              1.0001
+            ]
+          }
         }
       ],
-      "expect": {"type": "similarity"}
+      "expect": {
+        "type": "similarity"
+      }
     }
   ]
 }

@@ -34,6 +34,8 @@ class TextEmbedderHelper(
     private val context: Context,
     var currentDelegate: Int = DELEGATE_CPU,
     var currentModel: Int = MODEL_MOBILE_BERT,
+    var l2Normalize: Boolean = false,
+    var quantize: Boolean = false,
     var listener: EmbedderListener? = null,
 ) {
     private var textEmbedder: TextEmbedder? = null
@@ -76,27 +78,25 @@ class TextEmbedderHelper(
 
         return try {
             val baseOptions = baseOptionsBuilder.build()
-            val options = TextEmbedderOptions.builder().setBaseOptions(baseOptions).build()
+            val options =
+                TextEmbedderOptions.builder()
+                    .setBaseOptions(baseOptions)
+                    .setL2Normalize(l2Normalize)
+                    .setQuantize(quantize)
+                    .build()
             textEmbedder = TextEmbedder.createFromOptions(context, options)
             setupDurationMs = SystemClock.uptimeMillis() - startTime
             true
         } catch (e: IllegalStateException) {
             val detail = e.message ?: "IllegalStateException"
-            listener?.onError("Text embedder failed to initialize: $detail")
+            val errorCode = if (currentDelegate == DELEGATE_GPU) GPU_ERROR else OTHER_ERROR
+            listener?.onError("Text embedder failed to initialize: $detail", errorCode)
             Log.e(TAG, "Text embedder failed to load model with error: $detail", e)
             false
         } catch (e: RuntimeException) {
-            // Occurs if the selected model or device does not support the GPU delegate.
             val detail = e.message ?: "RuntimeException"
             val errorCode = if (currentDelegate == DELEGATE_GPU) GPU_ERROR else OTHER_ERROR
-            listener?.onError(
-                if (errorCode == GPU_ERROR) {
-                    "This model or device does not support GPU acceleration."
-                } else {
-                    "Text embedder failed to initialize: $detail"
-                },
-                errorCode,
-            )
+            listener?.onError("Text embedder failed to initialize: $detail", errorCode)
             Log.e(TAG, "Text embedder failed to load model with error: $detail", e)
             false
         }
@@ -129,22 +129,31 @@ class TextEmbedderHelper(
     ): ResultBundle? {
         val embedder = textEmbedder ?: return null
         val startTime = SystemClock.uptimeMillis()
-        val firstResult =
-            if (firstFormatContext != null) embedder.embed(firstText, firstFormatContext)
-            else embedder.embed(firstText)
-        val secondResult =
-            if (secondFormatContext != null) embedder.embed(secondText, secondFormatContext)
-            else embedder.embed(secondText)
-        val firstEmbed = firstResult.embeddingResult().embeddings().first()
-        val secondEmbed = secondResult.embeddingResult().embeddings().first()
-        val inferenceTimeMs = SystemClock.uptimeMillis() - startTime
-        val dims = firstEmbed.floatEmbedding().size
-        return ResultBundle(
-            similarity = TextEmbedder.cosineSimilarity(firstEmbed, secondEmbed),
-            inferenceTime = inferenceTimeMs,
-            dimensions = dims,
-            loadTimeMs = setupDurationMs,
-        )
+        return try {
+            val firstResult =
+                if (firstFormatContext != null) embedder.embed(firstText, firstFormatContext)
+                else embedder.embed(firstText)
+            val secondResult =
+                if (secondFormatContext != null) embedder.embed(secondText, secondFormatContext)
+                else embedder.embed(secondText)
+            val firstEmbed = firstResult.embeddingResult().embeddings().first()
+            val secondEmbed = secondResult.embeddingResult().embeddings().first()
+            val inferenceTimeMs = SystemClock.uptimeMillis() - startTime
+            val floatDims = firstEmbed.floatEmbedding().size
+            val dims = if (floatDims > 0) floatDims else firstEmbed.quantizedEmbedding().size
+            ResultBundle(
+                similarity = TextEmbedder.cosineSimilarity(firstEmbed, secondEmbed),
+                inferenceTime = inferenceTimeMs,
+                dimensions = dims,
+                loadTimeMs = setupDurationMs,
+            )
+        } catch (e: RuntimeException) {
+            val detail = e.message ?: "RuntimeException"
+            val errorCode = if (currentDelegate == DELEGATE_GPU) GPU_ERROR else OTHER_ERROR
+            listener?.onError("Text embedder failed: $detail", errorCode)
+            Log.e(TAG, "Text embedder comparison failed with error: $detail", e)
+            null
+        }
     }
 
     fun clearTextEmbedder() {

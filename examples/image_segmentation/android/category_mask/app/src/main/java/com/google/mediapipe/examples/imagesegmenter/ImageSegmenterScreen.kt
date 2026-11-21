@@ -57,6 +57,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -114,6 +115,7 @@ fun ImageSegmenterScreen(
     onTrySample: () -> Unit,
     onSelectModel: (SegmentationModel) -> Unit,
     onSelectDelegate: (SegmenterDelegate) -> Unit,
+    onSelectConfidenceCategory: (String?) -> Unit = {},
     onUseCpuDelegate: () -> Unit,
     onRetryInitialization: () -> Unit,
     modifier: Modifier = Modifier,
@@ -125,7 +127,12 @@ fun ImageSegmenterScreen(
         topBar = {
             MediaPipeTopBar(
                 title = stringResource(R.string.app_name),
-                subtitle = "${uiState.model.displayName} · ${uiState.delegate.displayName}",
+                subtitle =
+                    if (uiState.confidenceCategory != null) {
+                        "${uiState.model.displayName} · ${uiState.confidenceCategory} · ${uiState.delegate.displayName}"
+                    } else {
+                        "${uiState.model.displayName} · ${uiState.delegate.displayName}"
+                    },
                 onSettingsClick = { showSettings = true },
                 settingsContentDescription = stringResource(R.string.cd_open_settings),
             )
@@ -213,8 +220,11 @@ fun ImageSegmenterScreen(
             SettingsSheetContent(
                 selectedModel = uiState.model,
                 selectedDelegate = uiState.delegate,
+                availableLabels = uiState.availableLabels,
+                selectedConfidenceCategory = uiState.confidenceCategory,
                 onSelectModel = onSelectModel,
                 onSelectDelegate = onSelectDelegate,
+                onSelectConfidenceCategory = onSelectConfidenceCategory,
                 onDismiss = { showSettings = false },
             )
         }
@@ -652,12 +662,16 @@ private fun MaskOverlayCanvas(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SettingsSheetContent(
     selectedModel: SegmentationModel,
     selectedDelegate: SegmenterDelegate,
+    availableLabels: List<String>,
+    selectedConfidenceCategory: String?,
     onSelectModel: (SegmentationModel) -> Unit,
     onSelectDelegate: (SegmenterDelegate) -> Unit,
+    onSelectConfidenceCategory: (String?) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val models = SegmentationModel.entries
@@ -689,6 +703,39 @@ private fun SettingsSheetContent(
             selectedIndex = delegates.indexOf(selectedDelegate),
             onSelect = { idx -> onSelectDelegate(delegates[idx]) },
         )
+
+        if (availableLabels.isNotEmpty()) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.label_mask_output),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    FilterChip(
+                        selected = selectedConfidenceCategory == null,
+                        onClick = { onSelectConfidenceCategory(null) },
+                        label = { Text(stringResource(R.string.mask_all_categories)) },
+                        modifier = Modifier.testTag("mask_category_all"),
+                    )
+                    availableLabels.forEach { label ->
+                        FilterChip(
+                            selected = selectedConfidenceCategory == label,
+                            onClick = { onSelectConfidenceCategory(label) },
+                            label = { Text(label) },
+                            modifier = Modifier.testTag("mask_category_$label"),
+                        )
+                    }
+                }
+            }
+        }
 
         HorizontalDivider()
 

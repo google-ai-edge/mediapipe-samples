@@ -21,7 +21,8 @@ This is the Python counterpart of
 and follows its design.
 
 What is run and what is expected is not written in Python: it is defined once,
-in JSON, in [`spec/`](spec/README.md), for every platform. See
+in JSON, in [`spec/`](spec/README.md), for every platform. The Android samples
+are validated from the same spec, on a phone, with `run_android.py`. See
 [One spec for every platform](#one-spec-for-every-platform).
 
 ## Requirements
@@ -204,36 +205,46 @@ platform. A test there names a photo, the task options and what must be found
 in the photo; it does not name a command line or a Python class.
 
 ```
-spec/*.json  --+-- python_adapter.py -> examples/*/python -> worker.py --+
-  (one source  |                                                         +--> observations
-   of truth)   +-- spec.py export ----> a runner for the Android or -----+        |
-                                         iOS apps (not written yet)        verify.py, policy.py
-                                                                                  |
-                                                                               report
+spec/*.json  --+-- python_adapter.py -> examples/*/python -> worker.py ------------+
+  (one source  |                                                                   +--> observations
+   of truth)   +-- spec.py export ----> android-validation/ -> examples/*/android -+        |
+               |                         (adapters/*.kt)        on a phone            verify.py, policy.py
+               +-- spec.py export ----> a runner for the iOS apps (not written yet)        |
+                                                                                         report
 ```
 
 Each platform has two things of its own: how it drives its sample, and how it
-reads the result. For the Python samples these are `python_adapter.py` and the
-observers of `worker.py`. Everything else is shared: the spec, the verifiers
+reads the result. Everything else is shared: the spec, the verifiers
 (`verify.py`), the rules for a status (`policy.py`) and the report.
+
+| | Runner | Drives the sample and reads the result |
+|---|---|---|
+| Python samples | `run_local.py` | `python_adapter.py`, the observers of `worker.py` |
+| Android apps | `run_android.py` | [`android-validation/`](../../../android-validation/README.md): one app with every sample, and an adapter per sample that drives its ViewModel |
+| iOS apps | not written yet | |
 
 ```sh
 # Is the spec consistent?
 python3 .github/scripts/release_validate/spec.py check
 
-# The cases of a platform as one flat file, for its runner
-python3 .github/scripts/release_validate/spec.py export --platform android --out cases.json
+# The Android samples, on the phone that adb sees
+python3 .github/scripts/release_validate/run_android.py --build
 
-# Judge what that runner observed, and write the report
+# The cases of a platform as one flat file, for its runner
+python3 .github/scripts/release_validate/spec.py export --platform ios --out cases.json
+
+# Judge what a runner observed, and write the report
 python3 .github/scripts/release_validate/verify_observations.py observations.json
 ```
 
-There is no Android or iOS runner yet; `verify_observations.py` has so far only
-judged observations of the Python samples. What differs on those platforms is
-already in the spec: the files that the Python samples write to disk
-(`annotated.png`, `mask.png`, `speech.wav`) are checked for Python only, and
-the `unsupported` entries, which were observed with the Python API, do not
-excuse a failure of an app.
+What differs between the platforms is in the spec, not in the runners:
+
+- The files that the Python samples write to disk (`annotated.png`,
+  `mask.png`, `speech.wav`) are checked for Python only.
+- The `unsupported` entries name their platform: only combinations MediaPipe
+  itself rejects with the stated error are `UNSUPPORTED`.
+- The log lines that prove a GPU delegate differ (`GPU_EVIDENCE` in
+  `policy.py`).
 
 ## Reproducibility
 
@@ -297,6 +308,8 @@ output, the native log and the exact arguments.
 | `spec.py` | Reads the spec, checks it, builds the matrix, and exports the cases of a platform. |
 | `run_local.py` | Entry point for the Python samples: environment, downloads, one process per case, report. |
 | `python_adapter.py` | How a case of the spec becomes the command line of a Python sample. |
+| `run_android.py` | Entry point for the Android samples: installs the validation app, runs one case per process on the phone, report. |
+| `android_adapter.py` | Checks, without a phone, that every Android case of the spec has an adapter in `android-validation/`. |
 | `worker.py` | Runs one case inside the validation environment, and observes its result. |
 | `verify.py` | Pure functions that check an observation against an expectation. For every platform. |
 | `policy.py` | Turns the outcome of a case into its status; GPU evidence. |

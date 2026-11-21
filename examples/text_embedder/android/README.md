@@ -10,7 +10,7 @@ Query → Document retrieval, Q&A, and Clustering),
 [MobileBERT](https://storage.googleapis.com/mediapipe-models/text_embedder/bert_embedder/float32/1/bert_embedder.tflite)
 (512d), or
 [Universal Sentence Encoder](https://huggingface.co/litert-community/MediaPipe-TextEmbedder-Universal-Sentence-Encoder/resolve/main/universal_sentence_encoder.tflite)
-(100d) embedding models.
+(100d) embedding models, plus configurable CPU / GPU delegate, L2 normalization, and scalar quantization options in settings.
 
 ![Text Embedder Demo](textembedder.png?raw=true "Text Embedder Demo")
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This sample demonstrates the MediaPipe [Face Landmarker](https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker/android) task in a Jetpack Compose Material 3 app. It detects 478 3D face landmarks and 52 ARKit-compatible facial expression blendshape scores across:
+This sample demonstrates the MediaPipe [Face Landmarker](https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker/android) task in a Jetpack Compose Material 3 app. It detects 478 3D face landmarks, 52 ARKit-compatible facial expression blendshape scores, and 4x4 facial transformation matrices across:
 
 - **Camera:** Live front/back CameraX feed with real-time face mesh connector overlays and inference latency telemetry.
 - **Gallery:** Bundled portrait photo (`Try sample`) as well as user-selected images and videos from the device gallery, including top expression blendshape scores.

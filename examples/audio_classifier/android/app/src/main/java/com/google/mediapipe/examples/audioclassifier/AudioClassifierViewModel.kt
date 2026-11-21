@@ -27,6 +27,7 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.mediapipe.tasks.audio.core.RunningMode
+import com.google.mediapipe.tasks.components.containers.Category
 import java.util.concurrent.Executors
 import kotlin.math.min
 import kotlinx.coroutines.Job
@@ -81,11 +82,14 @@ data class AudioWindowUi(
     val windowIndex: Int,
     val startMs: Long,
     val categories: List<AudioCategoryUi>,
+    val timestampMs: Long = startMs,
 )
 
 data class AudioClassifierUiState(
     val inputMode: ClassifierInputMode = ClassifierInputMode.CLIP,
     val selectedSource: SampleClipSource = SampleClipSource.BundledSpeech,
+    val delegate: ClassifierDelegate = ClassifierDelegate.CPU,
+    val clipRunningMode: RunningMode = RunningMode.AUDIO_CLIPS,
     val maxResults: Int = AudioClassifierHelper.DEFAULT_NUM_OF_RESULTS,
     val threshold: Float = AudioClassifierHelper.DISPLAY_THRESHOLD,
     val overlapOption: OverlapOption = OverlapOption.FIFTY,
@@ -169,6 +173,50 @@ class AudioClassifierViewModel(application: Application) :
         _uiState.update { it.copy(hasMicPermission = granted) }
     }
 
+    fun selectDelegate(delegate: ClassifierDelegate) {
+        if (_uiState.value.delegate == delegate) return
+        val wasListening = _uiState.value.isListening
+        stopPlaybackAndMic()
+        _uiState.update {
+            it.copy(
+                delegate = delegate,
+                windows = emptyList(),
+                activeWindowIndex = 0,
+                hasClipResult = false,
+                liveCategories = emptyList(),
+                hasLiveResult = false,
+                inferenceTimeMs = null,
+                errorMessage = null,
+            )
+        }
+        if (wasListening && _uiState.value.inputMode == ClassifierInputMode.MICROPHONE) {
+            startMicrophone()
+        }
+    }
+
+    fun selectClipRunningMode(mode: RunningMode) {
+        require(mode == RunningMode.AUDIO_CLIPS || mode == RunningMode.AUDIO_STREAM) {
+            "Unsupported audio running mode: $mode"
+        }
+        if (_uiState.value.clipRunningMode == mode) return
+        stopPlaybackOnly()
+        _uiState.update {
+            it.copy(
+                clipRunningMode = mode,
+                windows = emptyList(),
+                activeWindowIndex = 0,
+                hasClipResult = false,
+                inferenceTimeMs = null,
+                errorMessage = null,
+            )
+        }
+    }
+
+    fun streamSelectedClip(playAudio: Boolean = false) {
+        selectClipRunningMode(RunningMode.AUDIO_STREAM)
+        classifySelectedClip(playAudio = playAudio)
+    }
+
     fun updateMaxResults(maxResults: Int) {
         val clamped = maxResults.coerceIn(1, 5)
         if (_uiState.value.maxResults == clamped) return
@@ -190,7 +238,7 @@ class AudioClassifierViewModel(application: Application) :
     }
 
     fun updateThreshold(threshold: Float) {
-        val clamped = threshold.coerceIn(0.1f, 0.8f)
+        val clamped = threshold.coerceIn(0.0f, 0.9f)
         if (_uiState.value.threshold == clamped) return
         val wasListening = _uiState.value.isListening
         stopPlaybackAndMic()
@@ -268,45 +316,90 @@ class AudioClassifierViewModel(application: Application) :
                                 classificationThreshold = snapshot.threshold,
                                 overlap = snapshot.overlapOption.index,
                                 numOfResults = snapshot.maxResults,
-                                runningMode = RunningMode.AUDIO_CLIPS,
+                                currentDelegate = snapshot.delegate,
+                                runningMode = snapshot.clipRunningMode,
                                 listener = this@AudioClassifierViewModel,
+                                initOnCreate = false,
                             )
                         helper = localHelper
-                        val bundle =
-                            localHelper.classifyAudio(decoded.toAudioData())
-                                ?: throw IllegalStateException("Audio classification failed.")
-                        localHelper.stopAudioClassification()
 
                         val windowStepMs =
                             (AudioClassifierHelper.EXPECTED_INPUT_LENGTH * 1000f).toLong()
-                        val windowResults =
-                            bundle.results
-                                .firstOrNull()
-                                ?.classificationResults()
-                                ?.mapIndexed { idx, cr ->
-                                    val categories =
-                                        cr.classifications()
-                                            .firstOrNull()
-                                            ?.categories()
-                                            .orEmpty()
-                                            .sortedByDescending { it.score() }
-                                            .take(snapshot.maxResults)
-                                            .map { cat ->
-                                                AudioCategoryUi(
-                                                    label =
-                                                        cat.displayName()
-                                                            ?.takeIf { it.isNotBlank() }
-                                                            ?: cat.categoryName().orEmpty(),
-                                                    score = cat.score(),
-                                                )
-                                            }
-                                    AudioWindowUi(
-                                        windowIndex = idx,
-                                        startMs = idx * windowStepMs,
-                                        categories = categories,
+                        val (bundle, windowResults) =
+                            if (snapshot.clipRunningMode == RunningMode.AUDIO_STREAM) {
+                                val streamBundle =
+                                    localHelper.classifyAudioStream(
+                                        decoded.samples,
+                                        decoded.sampleRateHz,
+                                    )
+                                        ?: throw IllegalStateException(
+                                            localHelper.lastError
+                                                ?: "Audio stream classification failed."
+                                        )
+                                val windows =
+                                    streamBundle.results.mapIndexed { idx, result ->
+                                        val rawTs = result.timestampMs()
+                                        val displayMs =
+                                            if (rawTs in 0L..MAX_DISPLAY_TIMESTAMP_MS) rawTs
+                                            else idx * windowStepMs
+                                        val categories =
+                                            mapCategories(
+                                                result.classificationResults()
+                                                    .firstOrNull()
+                                                    ?.classifications()
+                                                    ?.firstOrNull()
+                                                    ?.categories()
+                                                    .orEmpty(),
+                                                snapshot.maxResults,
+                                            )
+                                        AudioWindowUi(
+                                            windowIndex = idx,
+                                            startMs = displayMs,
+                                            categories = categories,
+                                            timestampMs = rawTs,
+                                        )
+                                    }
+                                streamBundle to windows
+                            } else {
+                                if (!localHelper.initClassifier(startMicrophone = false)) {
+                                    throw IllegalStateException(
+                                        localHelper.lastError
+                                            ?: "Audio Classifier failed to initialize."
                                     )
                                 }
-                                .orEmpty()
+                                val clipBundle =
+                                    localHelper.classifyAudio(decoded.toAudioData())
+                                        ?: throw IllegalStateException(
+                                            localHelper.lastError ?: "Audio classification failed."
+                                        )
+                                localHelper.stopAudioClassification()
+                                val windows =
+                                    clipBundle.results
+                                        .firstOrNull()
+                                        ?.classificationResults()
+                                        ?.mapIndexed { idx, cr ->
+                                            val rawTs = cr.timestampMs().orElse(idx * windowStepMs)
+                                            val displayMs =
+                                                if (rawTs in 0L..MAX_DISPLAY_TIMESTAMP_MS) rawTs
+                                                else idx * windowStepMs
+                                            val categories =
+                                                mapCategories(
+                                                    cr.classifications()
+                                                        .firstOrNull()
+                                                        ?.categories()
+                                                        .orEmpty(),
+                                                    snapshot.maxResults,
+                                                )
+                                            AudioWindowUi(
+                                                windowIndex = idx,
+                                                startMs = displayMs,
+                                                categories = categories,
+                                                timestampMs = rawTs,
+                                            )
+                                        }
+                                        .orEmpty()
+                                clipBundle to windows
+                            }
 
                         val bestWindowIdx =
                             windowResults
@@ -365,6 +458,7 @@ class AudioClassifierViewModel(application: Application) :
                             classificationThreshold = snapshot.threshold,
                             overlap = snapshot.overlapOption.index,
                             numOfResults = snapshot.maxResults,
+                            currentDelegate = snapshot.delegate,
                             runningMode = RunningMode.AUDIO_STREAM,
                             listener = this@AudioClassifierViewModel,
                             initOnCreate = false,
@@ -518,6 +612,22 @@ class AudioClassifierViewModel(application: Application) :
         classifierExecutor.shutdown()
     }
 
+    private fun mapCategories(
+        categories: List<Category>,
+        maxResults: Int,
+    ): List<AudioCategoryUi> =
+        categories
+            .sortedByDescending { it.score() }
+            .take(maxResults)
+            .map { cat ->
+                AudioCategoryUi(
+                    label =
+                        cat.displayName()?.takeIf { it.isNotBlank() }
+                            ?: cat.categoryName().orEmpty(),
+                    score = cat.score(),
+                )
+            }
+
     private data class ClipClassificationOutcome(
         val decoded: DecodedAudio,
         val windows: List<AudioWindowUi>,
@@ -527,5 +637,6 @@ class AudioClassifierViewModel(application: Application) :
 
     companion object {
         private const val TAG = "AudioClassifierVM"
+        private const val MAX_DISPLAY_TIMESTAMP_MS = 3_600_000_000L
     }
 }

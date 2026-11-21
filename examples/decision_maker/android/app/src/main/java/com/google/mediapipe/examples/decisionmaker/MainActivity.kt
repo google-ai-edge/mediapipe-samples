@@ -56,6 +56,7 @@ class MainActivity : ComponentActivity() {
                     onSelectDelegate = viewModel::selectDelegate,
                     onSelectModel = viewModel::selectModel,
                     onRetryInitialization = viewModel::retryInitialization,
+                    onLoadSupportTriagePreset = viewModel::loadSupportTriagePreset,
                 )
             }
         }

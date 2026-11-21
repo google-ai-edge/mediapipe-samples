@@ -23,28 +23,40 @@ import re
 
 import verify
 
-# Lines the native code writes to stderr when it creates a GPU delegate for a
-# model. MediaPipe has no API that tells which delegate ran, so this log is the
-# only evidence that a GPU request did not quietly run on the CPU. These are
-# the lines of the Metal delegate, seen on macOS with release 1.2.3. If a
-# release words them differently, GPU cases are reported as GPU_UNCONFIRMED
+# Lines the native code logs when it creates a GPU delegate for a model.
+# MediaPipe has no API that tells which delegate ran, so this log is the only
+# evidence that a GPU request did not quietly run on the CPU. If a release
+# words these lines differently, GPU cases are reported as GPU_UNCONFIRMED
 # (never as PASS) until this list is updated.
-GPU_EVIDENCE = [
-    r'Created TensorFlow Lite delegate for Metal',
-    r'Initializing Metal-based API from graph',
-    r'Created a Metal device',
-]
+GPU_EVIDENCE = {
+    # The Metal delegate, on stderr; seen on macOS with release 1.2.3.
+    'python': [
+        r'Created TensorFlow Lite delegate for Metal',
+        r'Initializing Metal-based API from graph',
+        r'Created a Metal device',
+    ],
+    # Logcat of the app; seen on a Galaxy S24+ (Adreno 750) with release 1.2.2.
+    # MediaPipe's own GPU inference hands the whole graph to a delegate without
+    # a name ("unknown"); on the CPU that line names TfLiteXNNPackDelegate.
+    'android': [
+        r'Replacing \d+ out of \d+ node\(s\) with delegate \((unknown|TfLiteGpuDelegate\w*|LITERT_(?:OPEN)?(?:CL|GL)\w*)\) node',
+        r'Created TensorFlow Lite delegate for GPU',
+        r'Initializ(?:ed|ing) (?:OpenCL|OpenGL)-based API',
+        r'Created LiteRT GpuEnvironment',
+    ],
+}
 
 # Statuses that do not fail the run.
 ACCEPTED = ('PASS', 'UNSUPPORTED')
 
 
-def find_gpu_evidence(native_log):
+def find_gpu_evidence(native_log, platform='python'):
   """The lines of the native log that show a GPU delegate was created."""
-  pattern = re.compile('|'.join(GPU_EVIDENCE))
-  # The log prefixes its lines with a time and a thread id; keep the message.
-  lines = {re.sub(r'^[A-Z]\d{4} \S+\s+\d+ ', '', line.strip()) for line in native_log.splitlines()
-           if pattern.search(line)}
+  pattern = re.compile('|'.join(GPU_EVIDENCE[platform]))
+  # The log prefixes its lines with a time and a thread id (logcat: and a
+  # process id and a level); keep the message.
+  prefix = re.compile(r'^[A-Z]\d{4} \S+\s+\d+ |^\d\d-\d\d \d\d:\d\d:\d\d\.\d+\s+\d+\s+\d+\s+[A-Z]\s+')
+  lines = {prefix.sub('', line.strip()) for line in native_log.splitlines() if pattern.search(line)}
   return sorted(lines)
 
 

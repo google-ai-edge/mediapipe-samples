@@ -2,8 +2,8 @@
 
 ### Overview
 
-This Jetpack Compose Android app detects holistic landmarks (pose, face mesh, and left/right hand
-skeletons) from live camera frames (`CameraX` + `RunningMode.LIVE_STREAM`), bundled sample media, or
+This Jetpack Compose Android app detects holistic landmarks (pose, face mesh, left/right hand
+skeletons, 52 face blendshapes, and person segmentation masks) from live camera frames (`CameraX` + `RunningMode.LIVE_STREAM`), bundled sample media, or
 device photos and videos (`RunningMode.IMAGE` / `RunningMode.VIDEO`).
 
 ![Holistic Landmarker Sample App](holistic_landmarker.png)

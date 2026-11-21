@@ -55,6 +55,7 @@ class MainActivity : ComponentActivity() {
           onStream = viewModel::speakStreaming,
           onReplay = viewModel::replayLastAudio,
           onStop = viewModel::stop,
+          onSelectModel = viewModel::selectModel,
           onSelectDelegateMode = viewModel::setDelegateMode,
           onSelectSpeakingRate = viewModel::setSpeakingRate,
           onFallbackToCpu = viewModel::fallbackToCpu,

@@ -80,6 +80,7 @@ fun TextToSpeechScreen(
   onStream: () -> Unit,
   onReplay: () -> Unit,
   onStop: () -> Unit,
+  onSelectModel: (TtsModelOption) -> Unit = {},
   onSelectDelegateMode: (TtsDelegateMode) -> Unit,
   onSelectSpeakingRate: (Float) -> Unit,
   onFallbackToCpu: () -> Unit,
@@ -94,7 +95,7 @@ fun TextToSpeechScreen(
     topBar = {
       MediaPipeTopBar(
         title = stringResource(R.string.app_name),
-        subtitle = "Kokoro 82M · ${state.activeDelegateLabel}",
+        subtitle = "${state.selectedModel.displayName} · ${state.activeDelegateLabel}",
         onSettingsClick = { showSettings = true },
       )
     },
@@ -267,12 +268,28 @@ fun TextToSpeechScreen(
         )
 
         SegmentedOptionRow(
-          label = "Delegate",
-          options = TtsDelegateMode.entries.map { it.label },
-          selectedIndex = TtsDelegateMode.entries.indexOf(state.delegateMode),
+          label = "Model",
+          options = TtsModelOption.entries.map { it.shortLabel },
+          selectedIndex = TtsModelOption.entries.indexOf(state.selectedModel).coerceAtLeast(0),
           enabled = !state.isBusy,
-          onSelect = { idx -> onSelectDelegateMode(TtsDelegateMode.entries[idx]) },
+          onSelect = { idx ->
+            val model = TtsModelOption.entries[idx]
+            if (!model.supportsGpu && state.delegateMode == TtsDelegateMode.GPU) {
+              onSelectDelegateMode(TtsDelegateMode.CPU)
+            }
+            onSelectModel(model)
+          },
         )
+
+        if (state.selectedModel.supportsGpu) {
+          SegmentedOptionRow(
+            label = "Delegate",
+            options = TtsDelegateMode.entries.map { it.label },
+            selectedIndex = TtsDelegateMode.entries.indexOf(state.delegateMode),
+            enabled = !state.isBusy,
+            onSelect = { idx -> onSelectDelegateMode(TtsDelegateMode.entries[idx]) },
+          )
+        }
 
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
           Row(

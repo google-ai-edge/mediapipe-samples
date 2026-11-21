@@ -72,20 +72,14 @@ class LanguageDetectorHelper(
             true
         } catch (e: IllegalStateException) {
             val detail = e.message ?: "IllegalStateException"
-            listener?.onError("Language detector failed to initialize: $detail")
+            val errorCode = if (currentDelegate == DELEGATE_GPU) GPU_ERROR else OTHER_ERROR
+            listener?.onError("Language detector failed to initialize: $detail", errorCode)
             Log.e(TAG, "Language detector failed to load the task with error: $detail", e)
             false
         } catch (e: RuntimeException) {
             val detail = e.message ?: "RuntimeException"
             val errorCode = if (currentDelegate == DELEGATE_GPU) GPU_ERROR else OTHER_ERROR
-            listener?.onError(
-                if (errorCode == GPU_ERROR) {
-                    "This model or device does not support GPU acceleration."
-                } else {
-                    "Language detector failed to initialize: $detail"
-                },
-                errorCode,
-            )
+            listener?.onError("Language detector failed to initialize: $detail", errorCode)
             Log.e(TAG, "Language detector failed to load the task with error: $detail", e)
             false
         }
@@ -95,7 +89,16 @@ class LanguageDetectorHelper(
     fun detect(text: String): ResultBundle? {
         val detector = languageDetector ?: return null
         val startTime = SystemClock.uptimeMillis()
-        val result = detector.detect(text)
+        val result =
+            try {
+                detector.detect(text)
+            } catch (e: RuntimeException) {
+                val detail = e.message ?: "RuntimeException"
+                val errorCode = if (currentDelegate == DELEGATE_GPU) GPU_ERROR else OTHER_ERROR
+                listener?.onError("Language detection failed: $detail", errorCode)
+                Log.e(TAG, "Language detection failed with error: $detail", e)
+                return null
+            }
         val inferenceTimeMs = SystemClock.uptimeMillis() - startTime
 
         val predictions =

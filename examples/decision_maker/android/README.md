@@ -8,7 +8,8 @@ This sample app uses the MediaPipe Tasks Decision library (`com.google.mediapipe
   * **Boolean:** Yes/No condition with an interactive decision threshold slider (`BooleanQuestion`).
   * **Choice:** Multi-option classification with optional per-option descriptions (`ChoiceQuestion.withDescriptions`).
   * **Score:** Ordered rubric evaluation computing expected score and level probabilities (`ScoreQuestion`).
-* **Preserved per-tab drafts:** Switching between Boolean, Choice, and Score preserves your edits.
+  * **Triage:** Evaluates all three active questions (`urgent` Boolean, `department` Choice, and `severity` Score) simultaneously in a single `DecisionMaker.evaluateJson` schema call.
+* **Preserved per-tab drafts:** Switching between Boolean, Choice, Score, and Triage preserves your edits.
 * **Settings sheet:** Switch between **CPU / GPU** (with automatic CPU fallback when GPU is unavailable) and **ML Model** (`EmbeddingGemma 270M`, `Laya S256`, or sideloaded `GLiNER S256`).
 
 ![Decision Maker Demo](decision_maker.png?raw=true "Decision Maker Demo")

@@ -47,6 +47,14 @@ enum class ClassifierModel(
     ),
 }
 
+enum class ClassifierDelegate(
+    val helperConstant: Int,
+    val displayName: String,
+) {
+    CPU(TextClassifierHelper.DELEGATE_CPU, "CPU"),
+    GPU(TextClassifierHelper.DELEGATE_GPU, "GPU"),
+}
+
 data class TextPreset(
     val id: String,
     val label: String,
@@ -56,11 +64,13 @@ data class TextPreset(
 data class TextClassifierUiState(
     val inputText: String = DefaultPresets.first().text,
     val model: ClassifierModel = ClassifierModel.MOBILEBERT,
+    val delegate: ClassifierDelegate = ClassifierDelegate.CPU,
     val isModelLoading: Boolean = true,
     val isClassifying: Boolean = false,
     val isReady: Boolean = false,
     val result: TextClassifierHelper.ResultBundle? = null,
     val errorMessage: String? = null,
+    val errorCode: Int = TextClassifierHelper.OTHER_ERROR,
 ) {
     val isBusy: Boolean
         get() = isModelLoading || isClassifying
@@ -122,6 +132,7 @@ class TextClassifierViewModel(appContext: Context) : ViewModel() {
                         isClassifying = false,
                         isReady = false,
                         errorMessage = error,
+                        errorCode = errorCode,
                     )
                 }
             }
@@ -147,6 +158,20 @@ class TextClassifierViewModel(appContext: Context) : ViewModel() {
         prepareClassifier()
     }
 
+    fun selectDelegate(delegate: ClassifierDelegate) {
+        if (_uiState.value.delegate == delegate) return
+        _uiState.update { it.copy(delegate = delegate, result = null) }
+        prepareClassifier()
+    }
+
+    fun switchToCpuDelegate() {
+        if (_uiState.value.delegate == ClassifierDelegate.CPU) {
+            prepareClassifier()
+        } else {
+            selectDelegate(ClassifierDelegate.CPU)
+        }
+    }
+
     fun retryInitialization() {
         prepareClassifier()
     }
@@ -156,7 +181,13 @@ class TextClassifierViewModel(appContext: Context) : ViewModel() {
         if (!snapshot.canClassify) return
 
         activeJob?.cancel()
-        _uiState.update { it.copy(isClassifying = true, errorMessage = null) }
+        _uiState.update {
+            it.copy(
+                isClassifying = true,
+                errorMessage = null,
+                errorCode = TextClassifierHelper.OTHER_ERROR,
+            )
+        }
         activeJob =
             viewModelScope.launch {
                 val bundle = withContext(engineDispatcher) { helper?.classify(snapshot.inputText) }
@@ -166,7 +197,7 @@ class TextClassifierViewModel(appContext: Context) : ViewModel() {
                     } else {
                         it.copy(
                             isClassifying = false,
-                            errorMessage = "Classifier is not initialized.",
+                            errorMessage = it.errorMessage ?: "Classifier is not initialized.",
                         )
                     }
                 }
@@ -174,13 +205,16 @@ class TextClassifierViewModel(appContext: Context) : ViewModel() {
     }
 
     private fun prepareClassifier() {
-        val targetModel = _uiState.value.model
+        val snapshot = _uiState.value
+        val targetModel = snapshot.model
+        val targetDelegate = snapshot.delegate
         activeJob?.cancel()
         _uiState.update {
             it.copy(
                 isModelLoading = true,
                 isReady = false,
                 errorMessage = null,
+                errorCode = TextClassifierHelper.OTHER_ERROR,
             )
         }
         activeJob =
@@ -193,14 +227,14 @@ class TextClassifierViewModel(appContext: Context) : ViewModel() {
                                 TextClassifierHelper(
                                     currentModel = targetModel.modelPath,
                                     context = context,
-                                    currentDelegate = TextClassifierHelper.DELEGATE_CPU,
+                                    currentDelegate = targetDelegate.helperConstant,
                                     listener = listener,
                                 )
                             helper = created
                             created.isReady
                         } else {
                             existing.currentModel = targetModel.modelPath
-                            existing.currentDelegate = TextClassifierHelper.DELEGATE_CPU
+                            existing.currentDelegate = targetDelegate.helperConstant
                             existing.initClassifier()
                         }
                     }

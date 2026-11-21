@@ -73,6 +73,11 @@ class HolisticLandmarkerHelperTest {
                 assertTrue("Pose x not finite: ${lm.x()}", lm.x().isFinite())
                 assertTrue("Pose y not finite: ${lm.y()}", lm.y().isFinite())
             }
+            assertTrue("Expected face blendshapes output", result.faceBlendshapes().isPresent)
+            assertEquals(52, result.faceBlendshapes().get().size)
+            val maskSummary = bundle.segmentationMasks.firstOrNull()
+            assertNotNull("Expected segmentation mask summary", maskSummary)
+            assertTrue("Expected positive mask fraction", maskSummary!!.fraction in 0.01..0.99)
 
             repeat(5) {
                 recorder.measure("detect_steady_ms") { helper.detectImage(bitmap) }

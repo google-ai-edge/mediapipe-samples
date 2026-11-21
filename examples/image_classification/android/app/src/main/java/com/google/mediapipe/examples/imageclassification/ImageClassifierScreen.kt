@@ -45,7 +45,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -652,10 +654,13 @@ private fun SettingsSheetContent(
 ) {
     val models = ClassifierModel.entries
     val delegates = ClassifierDelegate.entries
-    val maxResultOptions = listOf(1, 2, 3)
+    val maxResultOptions = listOf(1, 2, 3, 4, 5)
 
     Column(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp),
+        modifier =
+            Modifier.fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         Text(
@@ -711,10 +716,10 @@ private fun SettingsSheetContent(
                 value = threshold,
                 onValueChange = { raw ->
                     val stepped = (raw * 10f).roundToInt() / 10f
-                    onUpdateThreshold(stepped.coerceIn(0.1f, 0.9f))
+                    onUpdateThreshold(stepped.coerceIn(0.0f, 0.9f))
                 },
-                valueRange = 0.1f..0.9f,
-                steps = 7,
+                valueRange = 0.0f..0.9f,
+                steps = 8,
                 modifier = Modifier.testTag("threshold_slider"),
             )
         }

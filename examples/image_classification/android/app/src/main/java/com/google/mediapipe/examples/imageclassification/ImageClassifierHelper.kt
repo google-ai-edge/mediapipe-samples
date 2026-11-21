@@ -58,8 +58,13 @@ class ImageClassifierHelper(
     }
 
     fun clearImageClassifier() {
-        imageClassifier?.close()
-        imageClassifier = null
+        try {
+            imageClassifier?.close()
+        } catch (e: RuntimeException) {
+            Log.e(TAG, "Error closing image classifier: ${e.message}", e)
+        } finally {
+            imageClassifier = null
+        }
     }
 
     fun isClosed(): Boolean = imageClassifier == null
@@ -117,21 +122,21 @@ class ImageClassifierHelper(
             true
         } catch (e: IllegalStateException) {
             val detail = e.message ?: "IllegalStateException"
-            imageClassifierListener?.onError("Image classifier failed to initialize: $detail")
             Log.e(TAG, "Image classifier failed to load model with error: $detail", e)
+            imageClassifierListener?.onError("Image classifier failed to initialize: $detail")
             false
         } catch (e: RuntimeException) {
             val detail = e.message ?: "RuntimeException"
             val errorCode = if (currentDelegate == DELEGATE_GPU) GPU_ERROR else OTHER_ERROR
+            Log.e(TAG, "Image classifier failed to load model with error: $detail", e)
             imageClassifierListener?.onError(
                 if (errorCode == GPU_ERROR) {
-                    "This model or device does not support GPU acceleration."
+                    "This model or device does not support GPU acceleration: $detail"
                 } else {
                     "Image classifier failed to initialize: $detail"
                 },
                 errorCode,
             )
-            Log.e(TAG, "Image classifier failed to load model with error: $detail", e)
             false
         }
     }

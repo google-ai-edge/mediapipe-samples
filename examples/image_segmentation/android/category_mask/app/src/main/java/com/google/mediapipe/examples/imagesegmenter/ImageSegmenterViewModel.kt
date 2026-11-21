@@ -49,6 +49,7 @@ enum class SegmentationModel(val index: Int, val displayName: String, val shortL
     DEEPLABV3(ImageSegmenterHelper.MODEL_DEEPLABV3, "DeepLabV3", "DeepLab"),
     HAIR_SEGMENTER(ImageSegmenterHelper.MODEL_HAIR_SEGMENTER, "Hair Segmenter", "Hair"),
     SELFIE_SEGMENTER(ImageSegmenterHelper.MODEL_SELFIE_SEGMENTER, "Selfie Segmenter", "Selfie"),
+    SELFIE_LANDSCAPE(ImageSegmenterHelper.MODEL_SELFIE_LANDSCAPE, "Selfie Landscape", "Landscape"),
     SELFIE_MULTICLASS(ImageSegmenterHelper.MODEL_SELFIE_MULTICLASS, "Selfie Multiclass", "Multi"),
 }
 
@@ -61,6 +62,8 @@ data class ImageSegmenterUiState(
     val selectedTab: SegmenterTab = SegmenterTab.CAMERA,
     val model: SegmentationModel = SegmentationModel.DEEPLABV3,
     val delegate: SegmenterDelegate = SegmenterDelegate.CPU,
+    val confidenceCategory: String? = null,
+    val availableLabels: List<String> = emptyList(),
     val isFrontCamera: Boolean = false,
     val hasCameraPermission: Boolean = false,
     val isSegmentingGallery: Boolean = false,
@@ -107,6 +110,22 @@ class ImageSegmenterViewModel(appContext: Context) : ViewModel() {
             }
         }
 
+    init {
+        refreshLabelsForModel(SegmentationModel.DEEPLABV3)
+    }
+
+    private fun refreshLabelsForModel(model: SegmentationModel) {
+        viewModelScope.launch {
+            val labels =
+                withContext(engineDispatcher) {
+                    ImageSegmenterHelper.labelsForModel(context, model.index)
+                }
+            if (labels.isNotEmpty() && _uiState.value.model == model) {
+                _uiState.update { it.copy(availableLabels = labels) }
+            }
+        }
+    }
+
     fun selectTab(tab: SegmenterTab) {
         if (_uiState.value.selectedTab == tab) return
         videoOverlayJob?.cancel()
@@ -144,13 +163,34 @@ class ImageSegmenterViewModel(appContext: Context) : ViewModel() {
 
     fun selectModel(model: SegmentationModel) {
         if (_uiState.value.model == model) return
-        _uiState.update { it.copy(model = model, liveResult = null, errorMessage = null) }
+        _uiState.update {
+            it.copy(
+                model = model,
+                confidenceCategory = null,
+                availableLabels = emptyList(),
+                liveResult = null,
+                errorMessage = null,
+            )
+        }
+        refreshLabelsForModel(model)
         reapplySettings()
     }
 
     fun selectDelegate(delegate: SegmenterDelegate) {
         if (_uiState.value.delegate == delegate) return
         _uiState.update { it.copy(delegate = delegate, errorMessage = null) }
+        reapplySettings()
+    }
+
+    fun selectConfidenceCategory(category: String?) {
+        if (_uiState.value.confidenceCategory == category) return
+        _uiState.update {
+            it.copy(
+                confidenceCategory = category,
+                liveResult = null,
+                errorMessage = null,
+            )
+        }
         reapplySettings()
     }
 
@@ -178,16 +218,24 @@ class ImageSegmenterViewModel(appContext: Context) : ViewModel() {
     fun prepareLiveSegmenter() {
         val snapshot = _uiState.value
         viewModelScope.launch {
-            withContext(engineDispatcher) {
-                val existing = liveHelper
-                if (existing == null || existing.isClosed) {
-                    liveHelper = createHelper(snapshot, RunningMode.LIVE_STREAM, listener)
-                } else {
-                    existing.currentModel = snapshot.model.index
-                    existing.currentDelegate = snapshot.delegate.index
-                    existing.runningMode = RunningMode.LIVE_STREAM
-                    existing.setupImageSegmenter()
+            val labels =
+                withContext(engineDispatcher) {
+                    val existing = liveHelper
+                    if (existing == null || existing.isClosed) {
+                        val created = createHelper(snapshot, RunningMode.LIVE_STREAM, listener)
+                        liveHelper = created
+                        created.modelLabels
+                    } else {
+                        existing.currentModel = snapshot.model.index
+                        existing.currentDelegate = snapshot.delegate.index
+                        existing.confidenceCategory = snapshot.confidenceCategory
+                        existing.runningMode = RunningMode.LIVE_STREAM
+                        existing.setupImageSegmenter()
+                        existing.modelLabels
+                    }
                 }
+            if (labels.isNotEmpty() && _uiState.value.model == snapshot.model) {
+                _uiState.update { it.copy(availableLabels = labels) }
             }
         }
     }
@@ -223,6 +271,7 @@ class ImageSegmenterViewModel(appContext: Context) : ViewModel() {
             it.copy(
                 isSegmentingGallery = true,
                 galleryVideoUri = null,
+                galleryResult = null,
                 errorMessage = null,
             )
         }
@@ -246,17 +295,21 @@ class ImageSegmenterViewModel(appContext: Context) : ViewModel() {
                     return@launch
                 }
                 _uiState.update { it.copy(galleryBitmap = decoded, galleryResult = null) }
-                val bundle =
+                val (bundle, labels) =
                     withContext(engineDispatcher) {
                         val helper = createHelper(snapshot, RunningMode.IMAGE, listener)
                         try {
-                            helper.detectImage(decoded)
+                            helper.detectImage(decoded) to helper.modelLabels
                         } finally {
                             helper.clearImageSegmenter()
                         }
                     }
                 _uiState.update {
-                    it.copy(isSegmentingGallery = false, galleryResult = bundle)
+                    it.copy(
+                        isSegmentingGallery = false,
+                        galleryResult = bundle,
+                        availableLabels = if (labels.isNotEmpty()) labels else it.availableLabels,
+                    )
                 }
             }
     }
@@ -274,6 +327,7 @@ class ImageSegmenterViewModel(appContext: Context) : ViewModel() {
                 it.copy(
                     isSegmentingGallery = true,
                     galleryVideoUri = null,
+                    galleryResult = null,
                     errorMessage = null,
                 )
             }
@@ -290,17 +344,21 @@ class ImageSegmenterViewModel(appContext: Context) : ViewModel() {
                         return@launch
                     }
                     _uiState.update { it.copy(galleryBitmap = bitmap, galleryResult = null) }
-                    val bundle =
+                    val (bundle, labels) =
                         withContext(engineDispatcher) {
                             val helper = createHelper(snapshot, RunningMode.IMAGE, listener)
                             try {
-                                helper.detectImage(bitmap)
+                                helper.detectImage(bitmap) to helper.modelLabels
                             } finally {
                                 helper.clearImageSegmenter()
                             }
                         }
                     _uiState.update {
-                        it.copy(isSegmentingGallery = false, galleryResult = bundle)
+                        it.copy(
+                            isSegmentingGallery = false,
+                            galleryResult = bundle,
+                            availableLabels = if (labels.isNotEmpty()) labels else it.availableLabels,
+                        )
                     }
                 }
         } else if (mimeType.startsWith("video/")) {
@@ -315,17 +373,24 @@ class ImageSegmenterViewModel(appContext: Context) : ViewModel() {
             }
             galleryJob =
                 viewModelScope.launch {
-                    val videoBundle =
+                    val (videoBundle, labels) =
                         withContext(engineDispatcher) {
                             val helper = createHelper(snapshot, RunningMode.VIDEO, listener)
                             try {
-                                helper.detectVideoFile(uri, VIDEO_INTERVAL_MS)
+                                helper.detectVideoFile(uri, VIDEO_INTERVAL_MS) to helper.modelLabels
                             } finally {
                                 helper.clearImageSegmenter()
                             }
                         }
                     if (videoBundle != null && videoBundle.results.isNotEmpty()) {
-                        _uiState.update { it.copy(isSegmentingGallery = false) }
+                        _uiState.update {
+                            it.copy(
+                                isSegmentingGallery = false,
+                                galleryResult = videoBundle.results.first(),
+                                availableLabels =
+                                    if (labels.isNotEmpty()) labels else it.availableLabels,
+                            )
+                        }
                         startVideoOverlayPlayback(videoBundle)
                     } else {
                         _uiState.update {
@@ -353,6 +418,7 @@ class ImageSegmenterViewModel(appContext: Context) : ViewModel() {
             currentModel = snapshot.model.index,
             context = context,
             imageSegmenterListener = helperListener,
+            confidenceCategory = snapshot.confidenceCategory,
         )
 
     private fun startVideoOverlayPlayback(videoBundle: ImageSegmenterHelper.VideoResultBundle) {

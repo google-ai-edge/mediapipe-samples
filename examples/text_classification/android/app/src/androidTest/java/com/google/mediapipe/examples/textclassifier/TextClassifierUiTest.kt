@@ -120,7 +120,7 @@ class TextClassifierUiTest {
         composeRule.onNodeWithTag("option_Model_WordVec").performClick()
         composeRule.onNodeWithTag("settings_done_button").performClick()
 
-        composeRule.onNodeWithTag("top_bar_subtitle").assertTextContains("WordVec")
+        composeRule.onNodeWithTag("top_bar_subtitle").assertTextContains("WordVec", substring = true)
         waitForClassifyReady()
 
         composeRule.onNodeWithTag("preset_negative").performClick()

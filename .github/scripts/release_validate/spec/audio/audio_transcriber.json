@@ -7,31 +7,58 @@
     "android": "examples/audio_transcriber/android",
     "ios": "examples/audio_transcriber/ios"
   },
-  "models": [{"id": "parakeet_tdt_v3", "asset": "parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm", "large": true}],
+  "models": [
+    {
+      "id": "parakeet_tdt_v3",
+      "asset": "parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm",
+      "large": true
+    }
+  ],
   "modes": [
-    {"id": "file", "options": {"stream": false}},
-    {"id": "stream", "options": {"stream": true}}
+    {
+      "id": "file",
+      "options": {
+        "stream": false
+      }
+    },
+    {
+      "id": "stream",
+      "options": {
+        "stream": true
+      }
+    }
   ],
   "tests": [
     {
       "about": "The 4.27 s speech clip is transcribed in one call. The transcript must match what is said.",
       "note": "What is said in speech_16000_hz_mono.wav, a MediaPipe test clip of 4.27 s. There is no published transcript of it. \"reference\" is the one the release validation of mediapipe-samples-web uses; according to its fixtures/README.md it was taken from the Audio Transcriber of release 1.2.2 and then confirmed by a person listening to the clip. It was not confirmed again for this suite.",
       "inputs": [
-        {"asset": "speech_16000_hz_mono.wav", "kind": "audio", "label": "Speech clip (4.27 s)"},
+        {
+          "asset": "speech_16000_hz_mono.wav",
+          "kind": "audio",
+          "label": "Speech clip (4.27 s)"
+        },
         {
           "kind": "text",
           "label": "Reference transcript",
           "value": "Send a text to Mike, I'll be home late tomorrow."
         }
       ],
-      "steps": [{"key": "speech_16000_hz_mono.wav", "audio": "speech_16000_hz_mono.wav"}],
+      "steps": [
+        {
+          "key": "speech_16000_hz_mono.wav",
+          "audio": "speech_16000_hz_mono.wav"
+        }
+      ],
       "expect": {
         "type": "transcript",
         "reference": "Send a text to Mike, I'll be home late tomorrow.",
         "maxWordErrorRate": 0.2
       },
       "inMode": {
-        "stream": {"about": "The 4.27 s speech clip is transcribed chunk by chunk. The transcript must match what is said."}
+        "stream": {
+          "about": "The 4.27 s speech clip is transcribed chunk by chunk. The transcript must match what is said."
+        }
       }
     }
   ]

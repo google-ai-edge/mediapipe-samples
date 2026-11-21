@@ -32,11 +32,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
 
 enum class QuestionType(val label: String) {
     BOOLEAN("Boolean"),
     CHOICE("Choice"),
     SCORE("Score"),
+    TRIAGE("Triage"),
 }
 
 enum class DecisionDelegateOption(val id: Int, val label: String) {
@@ -70,19 +73,39 @@ data class DecisionBarUi(
     val highlighted: Boolean,
 )
 
+data class BooleanOutcomeData(
+    val value: Boolean,
+    val probabilityTrue: Double,
+)
+
+data class ChoiceOutcomeData(
+    val selected: String,
+    val probabilities: Map<String, Double>,
+)
+
+data class ScoreOutcomeData(
+    val expectedScore: Double,
+    val probabilities: List<Double>,
+)
+
+data class TriageOutcomeData(
+    val urgent: BooleanOutcomeData,
+    val department: ChoiceOutcomeData,
+    val severity: ScoreOutcomeData,
+)
+
 data class DecisionOutcomeUi(
     val headline: String,
     val subtitle: String?,
     val bars: List<DecisionBarUi>,
     val inferenceTimeMs: Long,
+    val booleanResult: BooleanOutcomeData? = null,
+    val choiceResult: ChoiceOutcomeData? = null,
+    val scoreResult: ScoreOutcomeData? = null,
+    val triageResult: TriageOutcomeData? = null,
 )
 
-private fun defaultDelegateOption(): DecisionDelegateOption =
-    if (DecisionMakerHelper.isAndroidEmulator()) {
-        DecisionDelegateOption.CPU
-    } else {
-        DecisionDelegateOption.GPU
-    }
+private fun defaultDelegateOption(): DecisionDelegateOption = DecisionDelegateOption.CPU
 
 data class DecisionMakerUiState(
     val questionType: QuestionType = QuestionType.BOOLEAN,
@@ -104,10 +127,24 @@ data class DecisionMakerUiState(
     val canEvaluate: Boolean
         get() {
             if (isBusy || activeDraft.inputText.isBlank()) return false
-            if (questionType != QuestionType.BOOLEAN) {
-                return activeDraft.items.count { it.label.isNotBlank() } >= 2
+            return when (questionType) {
+                QuestionType.BOOLEAN -> activeDraft.condition.isNotBlank()
+                QuestionType.CHOICE -> activeDraft.items.count { it.label.isNotBlank() } >= 2
+                QuestionType.SCORE ->
+                    activeDraft.items.count {
+                        it.label.isNotBlank() || it.description.isNotBlank()
+                    } >= 2
+                QuestionType.TRIAGE -> {
+                    val boolOk = drafts[QuestionType.BOOLEAN]?.condition?.isNotBlank() == true
+                    val choiceOk =
+                        (drafts[QuestionType.CHOICE]?.items?.count { it.label.isNotBlank() } ?: 0) >= 2
+                    val scoreOk =
+                        (drafts[QuestionType.SCORE]?.items?.count {
+                            it.label.isNotBlank() || it.description.isNotBlank()
+                        } ?: 0) >= 2
+                    boolOk && choiceOk && scoreOk
+                }
             }
-            return activeDraft.condition.isNotBlank()
         }
 }
 
@@ -150,6 +187,11 @@ fun defaultDrafts(): Map<QuestionType, QuestionDraftUi> =
                         item("Very satisfied", "excellent, fast, friendly support, delighted"),
                     ),
                 instructions = "Rate how satisfied the customer is with the support experience.",
+            ),
+        QuestionType.TRIAGE to
+            QuestionDraftUi(
+                inputText =
+                    "Urgent: our production database pipeline crashes with a fatal segfault and customers cannot sign in!",
             ),
     )
 
@@ -222,6 +264,111 @@ class DecisionMakerViewModel(application: Application) : AndroidViewModel(applic
         }
     }
 
+    fun configureBooleanDraft(
+        condition: String,
+        threshold: Float = 0.5f,
+        inputText: String? = null,
+    ) {
+        _uiState.update { state ->
+            val current = state.drafts.getValue(QuestionType.BOOLEAN)
+            val updated =
+                current.copy(
+                    inputText = inputText ?: current.inputText,
+                    condition = condition,
+                    threshold = threshold,
+                )
+            state.copy(
+                drafts = state.drafts + (QuestionType.BOOLEAN to updated),
+                outcome = null,
+                errorMessage = null,
+            )
+        }
+    }
+
+    fun configureChoiceDraft(
+        criteria: Map<String, String>,
+        instructions: String = "",
+        inputText: String? = null,
+    ) {
+        _uiState.update { state ->
+            val current = state.drafts.getValue(QuestionType.CHOICE)
+            val updated =
+                current.copy(
+                    inputText = inputText ?: current.inputText,
+                    items = criteria.map { (key, desc) -> item(key, desc) },
+                    instructions = instructions,
+                )
+            state.copy(
+                drafts = state.drafts + (QuestionType.CHOICE to updated),
+                outcome = null,
+                errorMessage = null,
+            )
+        }
+    }
+
+    fun configureScoreDraft(
+        rubric: List<String>,
+        instructions: String = "",
+        inputText: String? = null,
+    ) {
+        _uiState.update { state ->
+            val current = state.drafts.getValue(QuestionType.SCORE)
+            val updated =
+                current.copy(
+                    inputText = inputText ?: current.inputText,
+                    items = rubric.mapIndexed { idx, text -> item(idx.toString(), text) },
+                    instructions = instructions,
+                )
+            state.copy(
+                drafts = state.drafts + (QuestionType.SCORE to updated),
+                outcome = null,
+                errorMessage = null,
+            )
+        }
+    }
+
+    fun loadSupportTriagePreset() {
+        val defaultTicket =
+            "Urgent: our production database pipeline crashes with a fatal segfault and customers cannot sign in!"
+        configureBooleanDraft(
+            condition = "The ticket reports an outage that stops customers from using the product.",
+            threshold = 0.5f,
+            inputText = defaultTicket,
+        )
+        configureChoiceDraft(
+            criteria =
+                linkedMapOf(
+                    "bug" to "A software defect, crash or outage.",
+                    "billing" to "An invoice, charge, refund or payment.",
+                    "feature_request" to "A suggestion for a new feature or an improvement.",
+                ),
+            instructions = "",
+            inputText = defaultTicket,
+        )
+        configureScoreDraft(
+            rubric =
+                listOf(
+                    "No impact: a question or a suggestion.",
+                    "Minor inconvenience.",
+                    "A problem that has a workaround.",
+                    "A major problem for some customers.",
+                    "Critical: the product is down for customers.",
+                ),
+            instructions = "",
+            inputText = defaultTicket,
+        )
+        _uiState.update { state ->
+            val currentTriage = state.drafts.getValue(QuestionType.TRIAGE)
+            state.copy(
+                drafts =
+                    state.drafts +
+                        (QuestionType.TRIAGE to currentTriage.copy(inputText = defaultTicket)),
+                outcome = null,
+                errorMessage = null,
+            )
+        }
+    }
+
     fun selectDelegate(option: DecisionDelegateOption) {
         if (_uiState.value.delegateOption == option || _uiState.value.isBusy) return
         helper.currentDelegate = option.id
@@ -262,9 +409,10 @@ class DecisionMakerViewModel(application: Application) : AndroidViewModel(applic
         val state = _uiState.value
         if (!state.canEvaluate) return
         val type = state.questionType
-        val draft = state.drafts.getValue(type)
+        val drafts = state.drafts
+        val draft = drafts.getValue(type)
 
-        _uiState.update { it.copy(isEvaluating = true, errorMessage = null) }
+        _uiState.update { it.copy(isEvaluating = true, outcome = null, errorMessage = null) }
 
         viewModelScope.launch {
             try {
@@ -285,7 +433,8 @@ class DecisionMakerViewModel(application: Application) : AndroidViewModel(applic
                                     draft.items
                                         .map { it.label.trim() to it.description.trim() }
                                         .filter { it.first.isNotEmpty() }
-                                val options = named.associate { it.first to it.second }
+                                val options = linkedMapOf<String, String>()
+                                named.forEach { (k, v) -> options[k] = v }
                                 val res =
                                     helper.evaluateChoice(
                                         draft.inputText.trim(),
@@ -298,10 +447,14 @@ class DecisionMakerViewModel(application: Application) : AndroidViewModel(applic
                                 val named =
                                     draft.items
                                         .map { it.label.trim() to it.description.trim() }
-                                        .filter { it.first.isNotEmpty() }
+                                        .filter { it.first.isNotEmpty() || it.second.isNotEmpty() }
                                 val rubric =
                                     named.map { (name, desc) ->
-                                        if (desc.isEmpty()) name else "$name: $desc"
+                                        formatRubricEntry(name, desc)
+                                    }
+                                val labels =
+                                    named.mapIndexed { idx, (name, desc) ->
+                                        name.ifEmpty { desc.ifEmpty { "${idx + 1}" } }
                                     }
                                 val res =
                                     helper.evaluateScore(
@@ -311,9 +464,23 @@ class DecisionMakerViewModel(application: Application) : AndroidViewModel(applic
                                     )
                                 formatScore(
                                     res.result,
-                                    named.map { it.first },
+                                    labels,
                                     res.inferenceTime,
                                 )
+                            }
+                            QuestionType.TRIAGE -> {
+                                val boolDraft = drafts.getValue(QuestionType.BOOLEAN)
+                                val choiceDraft = drafts.getValue(QuestionType.CHOICE)
+                                val scoreDraft = drafts.getValue(QuestionType.SCORE)
+                                val requestJson =
+                                    buildTriageRequestJson(
+                                        text = draft.inputText.trim(),
+                                        boolDraft = boolDraft,
+                                        choiceDraft = choiceDraft,
+                                        scoreDraft = scoreDraft,
+                                    )
+                                val res = helper.evaluateJson(requestJson)
+                                parseTriageOutcome(res.result, res.inferenceTime)
                             }
                         }
                     }
@@ -359,17 +526,20 @@ class DecisionMakerViewModel(application: Application) : AndroidViewModel(applic
                 }
                 return@launch
             }
-            Log.w(TAG, "Failed to setup DecisionMaker on ${helper.currentDelegate}", error)
             if (
                 allowGpuFallback &&
                     helper.currentDelegate == DecisionMakerHelper.DELEGATE_GPU &&
                     error !is DecisionMakerHelper.ModelNotFoundException
             ) {
+                Log.w(TAG, "Failed to setup DecisionMaker on GPU; falling back to CPU", error)
                 helper.currentDelegate = DecisionMakerHelper.DELEGATE_CPU
                 val cpuError =
                     withContext(dispatcher) {
                         runCatching { helper.setupDecisionMaker() }.exceptionOrNull()
                     }
+                if (cpuError != null) {
+                    Log.e(TAG, "Failed to setup DecisionMaker on CPU fallback", cpuError)
+                }
                 _uiState.update {
                     it.copy(
                         delegateOption = DecisionDelegateOption.CPU,
@@ -380,6 +550,7 @@ class DecisionMakerViewModel(application: Application) : AndroidViewModel(applic
                     )
                 }
             } else {
+                Log.e(TAG, "Failed to setup DecisionMaker on delegate=${helper.currentDelegate}", error)
                 _uiState.update {
                     it.copy(
                         isModelLoading = false,
@@ -388,6 +559,160 @@ class DecisionMakerViewModel(application: Application) : AndroidViewModel(applic
                 }
             }
         }
+    }
+
+    private fun formatRubricEntry(name: String, desc: String): String =
+        when {
+            desc.isEmpty() -> name
+            name.isEmpty() || name.toIntOrNull() != null -> desc
+            else -> "$name: $desc"
+        }
+
+    private fun buildTriageRequestJson(
+        text: String,
+        boolDraft: QuestionDraftUi,
+        choiceDraft: QuestionDraftUi,
+        scoreDraft: QuestionDraftUi,
+    ): String {
+        val condition = boolDraft.condition.trim()
+        val urgentObj =
+            JSONObject().apply {
+                put("type", "boolean")
+                put("condition", condition)
+                put("prompt", condition)
+                put("threshold", boolDraft.threshold.toDouble())
+            }
+
+        val choicesArr = JSONArray()
+        choiceDraft.items
+            .map { it.label.trim() to it.description.trim() }
+            .filter { it.first.isNotEmpty() }
+            .forEach { (key, desc) ->
+                choicesArr.put(
+                    JSONObject().apply {
+                        put("key", key)
+                        put("description", desc)
+                    }
+                )
+            }
+        val departmentObj =
+            JSONObject().apply {
+                put("type", "choice")
+                val instructions = choiceDraft.instructions.trim()
+                if (instructions.isNotEmpty()) {
+                    put("prompt", instructions)
+                    put("instructions", instructions)
+                }
+                put("choices", choicesArr)
+            }
+
+        val rubricArr = JSONArray()
+        scoreDraft.items
+            .map { it.label.trim() to it.description.trim() }
+            .filter { it.first.isNotEmpty() || it.second.isNotEmpty() }
+            .forEachIndexed { idx, (name, desc) ->
+                rubricArr.put(
+                    JSONObject().apply {
+                        put("key", idx.toString())
+                        put("description", formatRubricEntry(name, desc))
+                    }
+                )
+            }
+        val severityObj =
+            JSONObject().apply {
+                put("type", "score")
+                val instructions = scoreDraft.instructions.trim()
+                if (instructions.isNotEmpty()) {
+                    put("prompt", instructions)
+                    put("instructions", instructions)
+                }
+                put("rubric", rubricArr)
+            }
+
+        val questionsObj =
+            JSONObject().apply {
+                put("urgent", urgentObj)
+                put("department", departmentObj)
+                put("severity", severityObj)
+            }
+
+        return JSONObject()
+            .apply {
+                put("text", text)
+                put("questions", questionsObj)
+            }
+            .toString()
+    }
+
+    private fun parseTriageOutcome(
+        rawJson: String,
+        inferenceTimeMs: Long,
+    ): DecisionOutcomeUi {
+        val root = JSONObject(rawJson)
+        val resultsObj = root.optJSONObject("results") ?: root
+
+        val urgentObj = resultsObj.getJSONObject("urgent")
+        val urgentValue = urgentObj.getBoolean("value")
+        val urgentProb =
+            if (urgentObj.has("probability_true")) {
+                urgentObj.getDouble("probability_true")
+            } else {
+                urgentObj.getDouble("probability")
+            }
+        val urgentData = BooleanOutcomeData(value = urgentValue, probabilityTrue = urgentProb)
+
+        val deptObj = resultsObj.getJSONObject("department")
+        val deptSelected = deptObj.getString("selected_key")
+        val deptProbsJson = deptObj.getJSONObject("probabilities")
+        val deptProbs = linkedMapOf<String, Double>()
+        val keysIter = deptProbsJson.keys()
+        while (keysIter.hasNext()) {
+            val k = keysIter.next()
+            deptProbs[k] = deptProbsJson.getDouble(k)
+        }
+        val deptData = ChoiceOutcomeData(selected = deptSelected, probabilities = deptProbs)
+
+        val sevObj = resultsObj.getJSONObject("severity")
+        val expectedScore = sevObj.getDouble("expected_score")
+        val sevProbsJson = sevObj.getJSONArray("probabilities")
+        val sevProbs = List(sevProbsJson.length()) { idx -> sevProbsJson.getDouble(idx) }
+        val sevData = ScoreOutcomeData(expectedScore = expectedScore, probabilities = sevProbs)
+
+        val triageData =
+            TriageOutcomeData(
+                urgent = urgentData,
+                department = deptData,
+                severity = sevData,
+            )
+
+        val maxLevel = (sevProbs.size - 1).coerceAtLeast(1)
+        val bars = buildList {
+            add(DecisionBarUi("Urgent (Yes)", urgentProb.toFloat(), urgentValue))
+            deptProbs.entries
+                .sortedByDescending { it.value }
+                .forEach { (k, p) ->
+                    add(DecisionBarUi("Dept · $k", p.toFloat(), k == deptSelected))
+                }
+            val topSevIdx = sevProbs.indices.maxByOrNull { sevProbs[it] } ?: 0
+            sevProbs.forEachIndexed { idx, p ->
+                add(DecisionBarUi("Severity $idx", p.toFloat(), idx == topSevIdx))
+            }
+        }
+
+        return DecisionOutcomeUi(
+            headline = "${if (urgentValue) "Urgent" else "Not urgent"} · $deptSelected",
+            subtitle =
+                String.format(
+                    Locale.US,
+                    "Severity %.2f / %d · P(urgent) = %.1f%%",
+                    expectedScore,
+                    maxLevel,
+                    urgentProb * 100.0,
+                ),
+            bars = bars,
+            inferenceTimeMs = inferenceTimeMs,
+            triageResult = triageData,
+        )
     }
 
     private fun formatBoolean(
@@ -404,6 +729,11 @@ class DecisionMakerViewModel(application: Application) : AndroidViewModel(applic
                     DecisionBarUi("No", 1f - result.probabilityTrue, !result.value),
                 ),
             inferenceTimeMs = inferenceTimeMs,
+            booleanResult =
+                BooleanOutcomeData(
+                    value = result.value,
+                    probabilityTrue = result.probabilityTrue.toDouble(),
+                ),
         )
 
     private fun formatChoice(
@@ -421,6 +751,11 @@ class DecisionMakerViewModel(application: Application) : AndroidViewModel(applic
                         DecisionBarUi(key, prob, key == result.selectedKey)
                     },
             inferenceTimeMs = inferenceTimeMs,
+            choiceResult =
+                ChoiceOutcomeData(
+                    selected = result.selectedKey,
+                    probabilities = result.probabilities.mapValues { it.value.toDouble() },
+                ),
         )
 
     private fun formatScore(
@@ -439,6 +774,11 @@ class DecisionMakerViewModel(application: Application) : AndroidViewModel(applic
                     DecisionBarUi("${idx + 1} · ${levels.getOrElse(idx) { "" }}", p, idx == bestIdx)
                 },
             inferenceTimeMs = inferenceTimeMs,
+            scoreResult =
+                ScoreOutcomeData(
+                    expectedScore = result.expectedScore.toDouble(),
+                    probabilities = probs.map { it.toDouble() },
+                ),
         )
     }
 

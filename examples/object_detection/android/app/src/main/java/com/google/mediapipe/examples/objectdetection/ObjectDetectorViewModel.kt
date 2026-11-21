@@ -46,9 +46,30 @@ enum class DetectorTab {
     GALLERY,
 }
 
-enum class ObjectModel(val index: Int, val displayName: String, val shortLabel: String) {
+enum class ObjectModel(
+    val index: Int,
+    val displayName: String,
+    val shortLabel: String,
+    val supportsGpu: Boolean = true,
+) {
     LITE0(ObjectDetectorHelper.MODEL_EFFICIENTDETV0, "EfficientDet Lite0", "Lite0"),
+    LITE0_INT8(
+        ObjectDetectorHelper.MODEL_EFFICIENTDETV0_INT8,
+        "EfficientDet Lite0 (int8)",
+        "Lite0 int8",
+        supportsGpu = false,
+    ),
     LITE2(ObjectDetectorHelper.MODEL_EFFICIENTDETV2, "EfficientDet Lite2", "Lite2"),
+    SSD_MOBILENET_V2(
+        ObjectDetectorHelper.MODEL_SSD_MOBILENETV2_FP32,
+        "SSD MobileNetV2",
+        "SSD fp32",
+    ),
+    SSD_MOBILENET_V2_FP16(
+        ObjectDetectorHelper.MODEL_SSD_MOBILENETV2_FP16,
+        "SSD MobileNetV2 (fp16)",
+        "SSD fp16",
+    ),
 }
 
 enum class DetectorDelegate(val index: Int, val displayName: String) {
@@ -271,8 +292,9 @@ class ObjectDetectorViewModel(appContext: Context) : ViewModel() {
                             } ?: return@withContext null
                         val helper = createHelper(snapshot, RunningMode.IMAGE, listener)
                         try {
-                            val bundle = helper.detectImage(bitmap)
-                            bitmap to bundle?.let { toDetectionFrame(it, frameIndex = 0) }
+                            val bundle =
+                                helper.detectImage(bitmap) ?: return@withContext null
+                            bitmap to toDetectionFrame(bundle, frameIndex = 0)
                         } finally {
                             helper.clearObjectDetector()
                         }
@@ -320,8 +342,9 @@ class ObjectDetectorViewModel(appContext: Context) : ViewModel() {
                             val bitmap = decodeUriBitmap(uri) ?: return@withContext null
                             val helper = createHelper(snapshot, RunningMode.IMAGE, listener)
                             try {
-                                val bundle = helper.detectImage(bitmap)
-                                bitmap to bundle?.let { toDetectionFrame(it, frameIndex = 0) }
+                                val bundle =
+                                    helper.detectImage(bitmap) ?: return@withContext null
+                                bitmap to toDetectionFrame(bundle, frameIndex = 0)
                             } finally {
                                 helper.clearObjectDetector()
                             }

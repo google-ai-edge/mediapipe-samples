@@ -69,6 +69,11 @@ class PoseLandmarkerHelperTest {
                 assertTrue("Landmark x out of range: ${lm.x()}", lm.x() in 0f..1f)
                 assertTrue("Landmark y out of range: ${lm.y()}", lm.y() in 0f..1f)
             }
+            val maskSummary = bundle.segmentationMasks.firstOrNull()
+            assertNotNull("Expected segmentation mask summary", maskSummary)
+            assertEquals(bitmap.width, maskSummary!!.width)
+            assertEquals(bitmap.height, maskSummary.height)
+            assertTrue("Expected positive mask fraction", maskSummary.fraction in 0.01..0.99)
 
             repeat(5) {
                 recorder.measure("detect_steady_ms") { helper.detectImage(bitmap) }

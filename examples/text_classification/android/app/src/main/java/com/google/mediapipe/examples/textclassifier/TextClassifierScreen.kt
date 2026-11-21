@@ -88,6 +88,7 @@ fun TextClassifierScreen(
     onApplyPreset: (TextPreset) -> Unit,
     onClassify: () -> Unit,
     onSelectModel: (ClassifierModel) -> Unit,
+    onUseCpuDelegate: () -> Unit,
     onRetryInitialization: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -99,7 +100,7 @@ fun TextClassifierScreen(
         topBar = {
             MediaPipeTopBar(
                 title = stringResource(R.string.app_name),
-                subtitle = uiState.model.displayName,
+                subtitle = "${uiState.model.displayName} · ${uiState.delegate.displayName}",
                 onSettingsClick = { showSettings = true },
                 settingsContentDescription = stringResource(R.string.cd_open_settings),
             )
@@ -120,10 +121,14 @@ fun TextClassifierScreen(
                 exit = fadeOut() + shrinkVertically(),
             ) {
                 uiState.errorMessage?.let { message ->
+                    val isGpuError = uiState.errorCode == TextClassifierHelper.GPU_ERROR
                     StatusErrorBanner(
                         message = message,
-                        actionLabel = stringResource(R.string.action_retry),
-                        onAction = onRetryInitialization,
+                        actionLabel =
+                            stringResource(
+                                if (isGpuError) R.string.action_use_cpu else R.string.action_retry
+                            ),
+                        onAction = if (isGpuError) onUseCpuDelegate else onRetryInitialization,
                     )
                 }
             }
@@ -494,30 +499,6 @@ private fun SettingsSheetContent(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-
-        HorizontalDivider()
-
-        Surface(
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.label_accelerator_cpu),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Medium,
-                )
-                Text(
-                    text = stringResource(R.string.delegate_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
 
         Button(
             onClick = onDismiss,

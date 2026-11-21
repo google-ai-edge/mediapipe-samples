@@ -23,6 +23,7 @@ import android.os.SystemClock
 import android.util.Log
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
+import com.google.mediapipe.tasks.core.ImagePart
 import com.google.mediapipe.tasks.retrieval.components.AppSearchVectorStore
 import com.google.mediapipe.tasks.retrieval.components.SqliteVectorStore
 import com.google.mediapipe.tasks.retrieval.semanticretriever.RetrievalResult
@@ -140,7 +141,37 @@ class SemanticRetrieverHelper(
         metadata: Map<String, String> = emptyMap(),
     ) {
         val retriever = semanticRetriever ?: error("SemanticRetriever is not initialized")
-        retriever.insertImage(id, imageUri, metadata)
+        val path = imageUri.path
+        if (imageUri.scheme == "file" && path != null && path.startsWith("/android_asset/")) {
+            retriever.insertImage(id, imageUri, metadata)
+            return
+        }
+        val bytes = readImageBytes(imageUri)
+        retriever.insertContent(id, listOf(ImagePart(imageUri, bytes)), metadata)
+    }
+
+    private fun readImageBytes(uri: Uri): ByteArray {
+        val scheme = uri.scheme
+        if (scheme == "content" || scheme == "android.resource") {
+            return context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                ?: throw IllegalArgumentException("Failed to open input stream for URI: $uri")
+        }
+        val path = uri.path ?: throw IllegalArgumentException("Missing path in URI: $uri")
+        if (path.startsWith("/android_asset/")) {
+            val assetPath = path.removePrefix("/android_asset/")
+            return context.assets.open(assetPath).use { it.readBytes() }
+        }
+        return File(path).readBytes()
+    }
+
+    /** Inserts a text document [text] with [id] and optional [metadata]. */
+    fun insertDocument(
+        id: String,
+        text: String,
+        metadata: Map<String, String> = emptyMap(),
+    ) {
+        val retriever = semanticRetriever ?: error("SemanticRetriever is not initialized")
+        retriever.insertDocument(id, text, metadata)
     }
 
     /** Returns all currently indexed record IDs, or empty if uninitialized. */
@@ -151,11 +182,24 @@ class SemanticRetrieverHelper(
         semanticRetriever?.deleteAll()
     }
 
-    /** Queries the vector store with natural-language [query], returning top [topK] results and timing. */
-    fun retrieve(query: String, topK: Int = 5): SearchBundle? {
+    /**
+     * Queries the vector store with natural-language [query], returning up to [topK] results whose
+     * similarity is at least [minSimilarity] (when `> 0.0`) along with timing.
+     */
+    fun retrieve(
+        query: String,
+        topK: Int = 5,
+        minSimilarity: Double = 0.0,
+    ): SearchBundle? {
         val retriever = semanticRetriever ?: return null
         val startTime = SystemClock.uptimeMillis()
-        val results = retriever.retrieve(query, topK)
+        val rawResults = retriever.retrieve(query, topK)
+        val results =
+            if (minSimilarity > 0.0) {
+                rawResults.filter { it.score() >= minSimilarity }
+            } else {
+                rawResults
+            }
         val inferenceTimeMs = SystemClock.uptimeMillis() - startTime
         return SearchBundle(
             results = results,
