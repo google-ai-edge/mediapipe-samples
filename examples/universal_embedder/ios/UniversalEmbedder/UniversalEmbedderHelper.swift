@@ -52,10 +52,10 @@ final class UniversalEmbedderHelper {
       throw HelperError.modelNotFound
     }
 
-    let options = UniversalEmbedderOptions()
+    var options = UniversalEmbedderOptions()
     options.baseOptions.modelAssetPath = modelPath
     // Delegates are per-modality: the text tower encodes strings, the vision tower images.
-    let delegate: Delegate = useGPU ? .GPU : .CPU
+    let delegate: Delegate = useGPU ? .gpu : .cpu
     options.textDelegate = delegate
     options.visionDelegate = delegate
     options.cacheDirectory =
@@ -90,7 +90,6 @@ final class UniversalEmbedderHelper {
   /// Cosine similarity, in [-1, 1]. Identical inputs score 1.
   static func similarity(_ first: Embedding, _ second: Embedding) throws -> Double {
     return try UniversalEmbedder.cosineSimilarity(embedding1: first, embedding2: second)
-      .doubleValue
   }
 
   func close() {

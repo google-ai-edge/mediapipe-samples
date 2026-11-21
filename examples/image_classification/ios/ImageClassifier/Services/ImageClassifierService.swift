@@ -43,7 +43,7 @@ class ImageClassifierService: NSObject {
   weak var videoDelegate: ImageClassifierServiceVideoDelegate?
 
   var imageClassifier: ImageClassifier?
-  private(set) var runningMode: RunningMode
+  private(set) var runningMode: VisionRunningMode
   private var scoreThreshold: Float
   private var maxResult: Int
   private var modelPath: String
@@ -53,7 +53,7 @@ class ImageClassifierService: NSObject {
   private init?(model: Model,
                 scoreThreshold: Float,
                 maxResult: Int,
-                runningMode:RunningMode,
+                runningMode:VisionRunningMode,
                 delegate: ImageClassifierDelegate) {
     guard let modelPath = model.modelPath else { return nil }
     self.modelPath = modelPath
@@ -67,14 +67,16 @@ class ImageClassifierService: NSObject {
   }
 
   private func createImageClassifier() {
-    let imageClassifierOptions = ImageClassifierOptions()
+    var imageClassifierOptions = ImageClassifierOptions()
     imageClassifierOptions.runningMode = runningMode
     imageClassifierOptions.scoreThreshold = scoreThreshold
     imageClassifierOptions.maxResults = maxResult
     imageClassifierOptions.baseOptions.modelAssetPath = modelPath
     imageClassifierOptions.baseOptions.delegate = delegate.delegate
     if runningMode == .liveStream {
-      imageClassifierOptions.imageClassifierLiveStreamDelegate = self
+      imageClassifierOptions.liveStreamResultHandler = { [weak self] result, timestampInMilliseconds in
+        self?.handleLiveStreamResult(result, timestampInMilliseconds: timestampInMilliseconds)
+      }
     }
     do {
       imageClassifier = try ImageClassifier(options: imageClassifierOptions)
@@ -238,24 +240,20 @@ class ImageClassifierService: NSObject {
 
     return (imageClassifierResults, videoSize)
   }
-}
 
-// MARK: - ImageClassifierLiveStreamDelegate
-extension ImageClassifierService: ImageClassifierLiveStreamDelegate {
-
-  func imageClassifier(
-    _ imageClassifier: ImageClassifier,
-    didFinishClassification result: ImageClassifierResult?,
-    timestampInMilliseconds: Int,
-    error: Error?) {
-      guard let result = result else {
-        liveStreamDelegate?.imageClassifierService(self, didFinishClassification: nil, error: error)
-        return
-      }
+  private func handleLiveStreamResult(
+    _ result: Result<ImageClassifierResult, any Error>,
+    timestampInMilliseconds: Int
+  ) {
+    switch result {
+    case .success(let classificationResult):
       let resultBundle = ResultBundle(
         inferenceTime: Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds),
-        imageClassifierResults: [result])
+        imageClassifierResults: [classificationResult])
       liveStreamDelegate?.imageClassifierService(self, didFinishClassification: resultBundle, error: nil)
+    case .failure(let error):
+      liveStreamDelegate?.imageClassifierService(self, didFinishClassification: nil, error: error)
+    }
   }
 }
 

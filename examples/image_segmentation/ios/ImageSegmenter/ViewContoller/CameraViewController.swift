@@ -227,7 +227,7 @@ extension CameraViewController: ImageSegmenterServiceLiveStreamDelegate {
   func imageSegmenterService(_ imageSegmenterService: ImageSegmenterService, didFinishSegmention result: ResultBundle?, error: Error?) {
     guard let imageSegmenterResult = result?.imageSegmenterResults.first as? ImageSegmenterResult,
       let confidenceMasks = imageSegmenterResult.categoryMask else { return }
-    let confidenceMask = confidenceMasks.uint8Data
+    let confidenceMask = confidenceMasks.uint8Elements
 
     if !render.isPrepared {
       render.prepare(with: formatDescription, outputRetainedBufferCountHint: 3)

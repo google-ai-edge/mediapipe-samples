@@ -69,7 +69,7 @@ final class GestureRecognizerTests: XCTestCase {
         minHandDetectionConfidence: GestureRecognizerTests.minHandDetectionConfidence,
         minHandPresenceConfidence: GestureRecognizerTests.minHandPresenceConfidence,
         minTrackingConfidence: GestureRecognizerTests.minTrackingConfidence,
-        delegate: .CPU)
+        delegate: .cpu)
     return gestureRecognizerService!
   }
 

@@ -19,7 +19,7 @@ import MediaPipeTasksVision
 // MARK: Define default constants
 struct DefaultConstants {
   static let model: Model = .deeplabV3
-  static let delegate: Delegate = .CPU
+  static let delegate: Delegate = .cpu
 }
 
 // MARK: Model

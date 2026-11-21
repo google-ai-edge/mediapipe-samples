@@ -64,7 +64,7 @@ final class HandLandmarkerTests: XCTestCase {
         minHandDetectionConfidence: HandLandmarkerTests.minHandDetectionConfidence,
         minHandPresenceConfidence: HandLandmarkerTests.minHandPresenceConfidence,
         minTrackingConfidence: HandLandmarkerTests.minTrackingConfidence,
-        delegate: .CPU)!
+        delegate: .cpu)!
     return handLandmarkerService
   }
 

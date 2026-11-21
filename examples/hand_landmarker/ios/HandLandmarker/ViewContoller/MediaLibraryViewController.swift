@@ -291,7 +291,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     }
   }
   
-  func clearAndInitializeHandLandmarkerService(runningMode: RunningMode) {
+  func clearAndInitializeHandLandmarkerService(runningMode: VisionRunningMode) {
     handLandmarkerService = nil
     switch runningMode {
       case .image:

@@ -25,7 +25,7 @@ class LanguageDetectorHelper {
   private var languageDetector: LanguageDetector?
 
   init?(modelPath: String, scoreThreshold: Float = 0.0, maxResults: Int = -1) {
-    let options = LanguageDetectorOptions()
+    var options = LanguageDetectorOptions()
     options.baseOptions.modelAssetPath = modelPath
     options.scoreThreshold = scoreThreshold
     if maxResults > 0 {
@@ -46,7 +46,7 @@ class LanguageDetectorHelper {
       let result = try languageDetector.detect(text: text)
       let inferenceTime = (CACurrentMediaTime() - startTime) * 1000.0
       return LanguageDetectionResultBundle(
-        predictions: result.languagePredictions,
+        predictions: result.languages,
         inferenceTime: inferenceTime
       )
     } catch {

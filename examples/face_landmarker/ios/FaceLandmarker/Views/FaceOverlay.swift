@@ -243,7 +243,7 @@ class OverlayView: UIView {
         var lineConnections: [LineConnection] = []
         lineConnections.append(LineConnection(
           color: DefaultConstants.faceOvalConnectionsColor,
-          lines: FaceLandmarker.faceOvalConnections()
+          lines: FaceLandmarker.faceOvalConnections
             .map({ connection in
             let start = dots[Int(connection.start)]
             let end = dots[Int(connection.end)]
@@ -251,7 +251,7 @@ class OverlayView: UIView {
             })))
         lineConnections.append(LineConnection(
           color: DefaultConstants.rightEyebrowConnectionsColor,
-          lines: FaceLandmarker.rightEyebrowConnections()
+          lines: FaceLandmarker.rightEyebrowConnections
             .map({ connection in
             let start = dots[Int(connection.start)]
             let end = dots[Int(connection.end)]
@@ -259,7 +259,7 @@ class OverlayView: UIView {
           })))
         lineConnections.append(LineConnection(
           color: DefaultConstants.leftEyebrowConnectionsColor,
-          lines: FaceLandmarker.leftEyebrowConnections()
+          lines: FaceLandmarker.leftEyebrowConnections
           .map({ connection in
           let start = dots[Int(connection.start)]
           let end = dots[Int(connection.end)]
@@ -267,7 +267,7 @@ class OverlayView: UIView {
         })))
         lineConnections.append(LineConnection(
           color: DefaultConstants.rightEyeConnectionsColor,
-          lines: FaceLandmarker.rightEyeConnections()
+          lines: FaceLandmarker.rightEyeConnections
           .map({ connection in
           let start = dots[Int(connection.start)]
           let end = dots[Int(connection.end)]
@@ -275,7 +275,7 @@ class OverlayView: UIView {
         })))
         lineConnections.append(LineConnection(
           color: DefaultConstants.leftEyeConnectionsColor,
-          lines: FaceLandmarker.leftEyeConnections()
+          lines: FaceLandmarker.leftEyeConnections
           .map({ connection in
           let start = dots[Int(connection.start)]
           let end = dots[Int(connection.end)]
@@ -283,7 +283,7 @@ class OverlayView: UIView {
         })))
         lineConnections.append(LineConnection(
           color: DefaultConstants.lipsConnectionsColor,
-          lines: FaceLandmarker.lipsConnections()
+          lines: FaceLandmarker.lipsConnections
           .map({ connection in
           let start = dots[Int(connection.start)]
           let end = dots[Int(connection.end)]

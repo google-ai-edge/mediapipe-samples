@@ -22,7 +22,7 @@ struct DefaultConstants {
   static let scoreThreshold: Float = 0.2
 
   static let model: Model = .mobilenet_v3_small
-  static let delegate: ImageEmbedderDelegate = .CPU
+  static let delegate: ImageEmbedderDelegate = .cpu
 }
 
 // MARK: Tflite Model
@@ -44,33 +44,33 @@ enum Model: String, CaseIterable {
 
 // MARK: ImageEmbedderDelegate
 enum ImageEmbedderDelegate: CaseIterable {
-  case GPU
-  case CPU
+  case gpu
+  case cpu
 
   var name: String {
     switch self {
-    case .GPU:
+    case .gpu:
       return "GPU"
-    case .CPU:
+    case .cpu:
       return "CPU"
     }
   }
 
   var delegate: Delegate {
     switch self {
-    case .GPU:
-      return .GPU
-    case .CPU:
-      return .CPU
+    case .gpu:
+      return .gpu
+    case .cpu:
+      return .cpu
     }
   }
 
   init?(name: String) {
     switch name {
-    case ImageEmbedderDelegate.CPU.name:
-      self = ImageEmbedderDelegate.CPU
-    case ImageEmbedderDelegate.GPU.name:
-      self = ImageEmbedderDelegate.GPU
+    case ImageEmbedderDelegate.cpu.name:
+      self = ImageEmbedderDelegate.cpu
+    case ImageEmbedderDelegate.gpu.name:
+      self = ImageEmbedderDelegate.gpu
     default:
       return nil
     }

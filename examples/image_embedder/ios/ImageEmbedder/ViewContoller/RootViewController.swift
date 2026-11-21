@@ -218,7 +218,7 @@ extension RootViewController: InferenceResultDeliveryDelegate {
        let imageEmbedderResults2 = result2.imageEmbedderResults.first,
        let embedding1 = imageEmbedderResults1?.embeddingResult.embeddings.first,
        let embedding2 = imageEmbedderResults2?.embeddingResult.embeddings.first {
-      similarity = try? ImageEmbedder.cosineSimilarity(embedding1: embedding1, embedding2: embedding2).floatValue
+      similarity = (try? ImageEmbedder.cosineSimilarity(embedding1: embedding1, embedding2: embedding2)).map(Float.init)
     }
     DispatchQueue.main.async {
       self.bottomSheetViewController?.update(inferenceTimeString: inferenceTimeString, similarity: similarity)

@@ -77,10 +77,10 @@ class BottomSheetViewController: UIViewController {
       self.updateDelegate(title: action.title)
     }
 
-    let delegates: [Delegate] = [.CPU, .GPU]
+    let delegates: [Delegate] = [.cpu, .gpu]
     let delegateActions: [UIAction] = delegates.compactMap { delegate in
       return UIAction(
-        title: delegate == .CPU ? "CPU" : "GPU",
+        title: delegate == .cpu ? "CPU" : "GPU",
         state: (InferenceConfigurationManager.sharedInstance.delegate == delegate) ? .on : .off,
         handler: selectedDelegateAction
       )
@@ -92,7 +92,7 @@ class BottomSheetViewController: UIViewController {
   }
 
   private func updateDelegate(title: String) {
-    InferenceConfigurationManager.sharedInstance.delegate = title == "GPU" ? .GPU : .CPU
+    InferenceConfigurationManager.sharedInstance.delegate = title == "GPU" ? .gpu : .cpu
   }
 
   private func enableOrDisableClicks() {

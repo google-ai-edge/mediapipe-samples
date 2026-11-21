@@ -40,7 +40,7 @@ final class HolisticLandmarkerTests: XCTestCase {
       minPoseDetectionConfidence: HolisticLandmarkerTests.minPoseDetectionConfidence,
       minPosePresenceConfidence: HolisticLandmarkerTests.minPosePresenceConfidence,
       minHandLandmarksConfidence: HolisticLandmarkerTests.minHandLandmarksConfidence,
-      delegate: .CPU)
+      delegate: .cpu)
 
     XCTAssertNotNil(service)
     XCTAssertNotNil(service?.holisticLandmarker)
@@ -54,7 +54,7 @@ final class HolisticLandmarkerTests: XCTestCase {
       minPoseDetectionConfidence: HolisticLandmarkerTests.minPoseDetectionConfidence,
       minPosePresenceConfidence: HolisticLandmarkerTests.minPosePresenceConfidence,
       minHandLandmarksConfidence: HolisticLandmarkerTests.minHandLandmarksConfidence,
-      delegate: .GPU)
+      delegate: .gpu)
 
     XCTAssertNotNil(service)
     XCTAssertNotNil(service?.holisticLandmarker)
@@ -68,7 +68,7 @@ final class HolisticLandmarkerTests: XCTestCase {
       minPoseDetectionConfidence: DefaultConstants.minPoseDetectionConfidence,
       minPosePresenceConfidence: DefaultConstants.minPosePresenceConfidence,
       minHandLandmarksConfidence: DefaultConstants.minHandLandmarksConfidence,
-      delegate: .CPU)
+      delegate: .cpu)
 
     XCTAssertNotNil(service)
     guard let image = HolisticLandmarkerTests.testImage else {
@@ -169,7 +169,7 @@ final class HolisticLandmarkerTests: XCTestCase {
       minPoseDetectionConfidence: DefaultConstants.minPoseDetectionConfidence,
       minPosePresenceConfidence: DefaultConstants.minPosePresenceConfidence,
       minHandLandmarksConfidence: DefaultConstants.minHandLandmarksConfidence,
-      delegate: .CPU)
+      delegate: .cpu)
 
     XCTAssertNotNil(service)
     guard let baseImage = HolisticLandmarkerTests.testImage,

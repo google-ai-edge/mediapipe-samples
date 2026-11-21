@@ -269,7 +269,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
       }
     }
 
-  func clearAndInitializeImageClassifierService(runningMode: RunningMode) {
+  func clearAndInitializeImageClassifierService(runningMode: VisionRunningMode) {
     imageClassifierService = nil
     switch runningMode {
     case .image:

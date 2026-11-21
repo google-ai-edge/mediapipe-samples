@@ -291,7 +291,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     }
   }
   
-  func clearAndInitializeFaceLandmarkerService(runningMode: RunningMode) {
+  func clearAndInitializeFaceLandmarkerService(runningMode: VisionRunningMode) {
     faceLandmarkerService = nil
     switch runningMode {
       case .image:

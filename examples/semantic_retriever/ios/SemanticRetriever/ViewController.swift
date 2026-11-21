@@ -549,9 +549,9 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
     let result = results[indexPath.row]
     cell.configure(
       rank: indexPath.row + 1,
-      recordId: result.recordId,
+      recordId: result.id,
       score: result.score,
-      image: thumbnail(for: result.recordId))
+      image: thumbnail(for: result.id))
     return cell
   }
 }

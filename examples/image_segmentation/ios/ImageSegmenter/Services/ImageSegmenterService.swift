@@ -43,13 +43,13 @@ class ImageSegmenterService: NSObject {
   //  weak var videoDelegate: ImageSegmenterServiceVideoDelegate?
 
   var imageSegmenter: ImageSegmenter?
-  private(set) var runningMode = RunningMode.image
+  private(set) var runningMode = VisionRunningMode.image
   var modelPath: String
   var delegate: Delegate
 
   // MARK: - Custom Initializer
   private init?(modelPath: String?,
-                runningMode:RunningMode,
+                runningMode:VisionRunningMode,
                 delegate: Delegate) {
     guard let modelPath = modelPath else { return nil }
     self.modelPath = modelPath
@@ -61,13 +61,15 @@ class ImageSegmenterService: NSObject {
   }
 
   private func createImageSegmenter() {
-    let imageSegmenterOptions = ImageSegmenterOptions()
+    var imageSegmenterOptions = ImageSegmenterOptions()
     imageSegmenterOptions.runningMode = runningMode
-    imageSegmenterOptions.shouldOutputCategoryMask = true
+    imageSegmenterOptions.outputCategoryMask = true
     imageSegmenterOptions.baseOptions.modelAssetPath = modelPath
     imageSegmenterOptions.baseOptions.delegate = self.delegate
     if runningMode == .liveStream {
-      imageSegmenterOptions.imageSegmenterLiveStreamDelegate = self
+      imageSegmenterOptions.liveStreamResultHandler = { [weak self] result, timestampInMilliseconds in
+        self?.handleLiveStreamResult(result, timestampInMilliseconds: timestampInMilliseconds)
+      }
     }
     do {
       imageSegmenter = try ImageSegmenter(options: imageSegmenterOptions)
@@ -163,18 +165,24 @@ class ImageSegmenterService: NSObject {
       return nil
     }
   }
-}
 
-// MARK: - ImageSegmenterLiveStreamDelegate Methods
-extension ImageSegmenterService: ImageSegmenterLiveStreamDelegate {
-  func imageSegmenter(_ imageSegmenter: ImageSegmenter, didFinishSegmentation result: ImageSegmenterResult?, timestampInMilliseconds: Int, error: Error?) {
-    let resultBundle = ResultBundle(
-      inferenceTime: Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds),
-      imageSegmenterResults: [result])
-    liveStreamDelegate?.imageSegmenterService(
-      self,
-      didFinishSegmention: resultBundle,
-      error: error)
+  private func handleLiveStreamResult(
+    _ result: Result<ImageSegmenterResult, any Error>,
+    timestampInMilliseconds: Int
+  ) {
+    let inferenceTime = Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds)
+    switch result {
+    case .success(let segmenterResult):
+      let resultBundle = ResultBundle(
+        inferenceTime: inferenceTime,
+        imageSegmenterResults: [segmenterResult])
+      liveStreamDelegate?.imageSegmenterService(self, didFinishSegmention: resultBundle, error: nil)
+    case .failure(let error):
+      let resultBundle = ResultBundle(
+        inferenceTime: inferenceTime,
+        imageSegmenterResults: [nil])
+      liveStreamDelegate?.imageSegmenterService(self, didFinishSegmention: resultBundle, error: error)
+    }
   }
 }
 

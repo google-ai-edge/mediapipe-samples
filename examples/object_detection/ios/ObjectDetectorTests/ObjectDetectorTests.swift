@@ -61,7 +61,7 @@ final class ObjectDetectorTests: XCTestCase {
       model: model,
       maxResults: 3,
       scoreThreshold: 0,
-      delegate: .CPU
+      delegate: .cpu
     )
     return try XCTUnwrap(objectDetectorHelper)
   }

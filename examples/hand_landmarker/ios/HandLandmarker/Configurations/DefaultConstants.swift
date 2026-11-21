@@ -30,38 +30,38 @@ struct DefaultConstants {
   static var minHandPresenceConfidence: Float = 0.5
   static var minTrackingConfidence: Float = 0.5
   static let modelPath: String? = Bundle.main.path(forResource: "hand_landmarker", ofType: "task")
-  static let delegate: HandLandmarkerDelegate = .CPU
+  static let delegate: HandLandmarkerDelegate = .cpu
 }
 
 // MARK: ImageClassifierDelegate
 enum HandLandmarkerDelegate: CaseIterable {
-  case GPU
-  case CPU
+  case gpu
+  case cpu
 
   var name: String {
     switch self {
-    case .GPU:
+    case .gpu:
       return "GPU"
-    case .CPU:
+    case .cpu:
       return "CPU"
     }
   }
 
   var delegate: Delegate {
     switch self {
-    case .GPU:
-      return .GPU
-    case .CPU:
-      return .CPU
+    case .gpu:
+      return .gpu
+    case .cpu:
+      return .cpu
     }
   }
 
   init?(name: String) {
     switch name {
-    case HandLandmarkerDelegate.CPU.name:
-      self = HandLandmarkerDelegate.CPU
-    case HandLandmarkerDelegate.GPU.name:
-      self = HandLandmarkerDelegate.GPU
+    case HandLandmarkerDelegate.cpu.name:
+      self = HandLandmarkerDelegate.cpu
+    case HandLandmarkerDelegate.gpu.name:
+      self = HandLandmarkerDelegate.gpu
     default:
       return nil
     }

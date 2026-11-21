@@ -46,7 +46,7 @@ final class FaceDetectorTests: XCTestCase {
         modelPath: modelPath,
         minDetectionConfidence: minDetectionConfidence,
       minSuppressionThreshold: minSuppressionThreshold,
-        delegate: .CPU)
+        delegate: .cpu)
     return FaceDetectorService!
   }
 

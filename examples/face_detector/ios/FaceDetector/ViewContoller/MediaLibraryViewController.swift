@@ -289,7 +289,7 @@ extension MediaLibraryViewController: UIImagePickerControllerDelegate, UINavigat
     }
   }
   
-  func clearAndInitializeFaceDetectorService(runningMode: RunningMode) {
+  func clearAndInitializeFaceDetectorService(runningMode: VisionRunningMode) {
     faceDetectorService = nil
     switch runningMode {
       case .image:

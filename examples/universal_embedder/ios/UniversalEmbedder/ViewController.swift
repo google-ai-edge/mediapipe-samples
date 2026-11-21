@@ -374,7 +374,7 @@ class ViewController: UIViewController {
   /// First few dimensions of an embedding, e.g. `[-0.010, +0.026, …] 768d`.
   private func preview(_ embedding: Embedding) -> String {
     let vector = embedding.floatEmbedding ?? []
-    let head = vector.prefix(4).map { String(format: "%+.3f", $0.floatValue) }.joined(
+    let head = vector.prefix(4).map { String(format: "%+.3f", $0) }.joined(
       separator: ", ")
     return "[\(head), …] \(vector.count)d"
   }

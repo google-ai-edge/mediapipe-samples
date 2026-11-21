@@ -36,17 +36,18 @@ class TextProofreaderHelper {
     }
   }
 
-  func proofreadStreaming(text: String, completion: @escaping (String?, Bool, Error?) -> Void) {
+  func proofreadStreaming(text: String) -> AsyncThrowingStream<TextProofreaderStreamResult, any Error> {
     guard let textProofreader = textProofreader else {
-      completion(nil, false, NSError(domain: "TextProofreaderHelper", code: -1, userInfo: [NSLocalizedDescriptionKey: "Proofreader not initialized"]))
-      return
-    }
-    do {
-      try textProofreader.proofreadStreaming(text: text) { result, error in
-        completion(result?.chunk, result?.done ?? false, error)
+      return AsyncThrowingStream { continuation in
+        continuation.finish(
+          throwing: NSError(
+            domain: "TextProofreaderHelper",
+            code: -1,
+            userInfo: [NSLocalizedDescriptionKey: "Proofreader not initialized"]
+          )
+        )
       }
-    } catch {
-      completion(nil, false, error)
     }
+    return textProofreader.proofreadStreaming(text: text)
   }
 }

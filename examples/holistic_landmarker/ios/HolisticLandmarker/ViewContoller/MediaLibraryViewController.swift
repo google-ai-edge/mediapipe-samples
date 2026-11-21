@@ -174,7 +174,7 @@ class MediaLibraryViewController: UIViewController {
     overlayView.redrawHolisticOverlays(forNewDeviceOrientation: UIDevice.current.orientation)
   }
 
-  func clearAndInitializeHolisticLandmarkerService(runningMode: RunningMode) {
+  func clearAndInitializeHolisticLandmarkerService(runningMode: VisionRunningMode) {
     holisticLandmarkerService = nil
     switch runningMode {
     case .image:

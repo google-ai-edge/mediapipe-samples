@@ -43,14 +43,14 @@ class ObjectDetectorService: NSObject {
   weak var videoDelegate: ObjectDetectorServiceVideoDelegate?
 
   var objectDetector: ObjectDetector?
-  private(set) var runningMode = RunningMode.image
+  private(set) var runningMode = VisionRunningMode.image
   private var maxResults = 3
   private var scoreThreshold: Float = 0.5
   private var modelPath: String
   private var delegate: Delegate
 
   // MARK: - Custom Initializer
-  private init?(model: Model, maxResults: Int, scoreThreshold: Float, runningMode:RunningMode, delegate: Delegate) {
+  private init?(model: Model, maxResults: Int, scoreThreshold: Float, runningMode:VisionRunningMode, delegate: Delegate) {
     guard let modelPath = model.modelPath else {
       return nil
     }
@@ -65,14 +65,16 @@ class ObjectDetectorService: NSObject {
   }
   
   private func createObjectDetector() {
-    let objectDetectorOptions = ObjectDetectorOptions()
+    var objectDetectorOptions = ObjectDetectorOptions()
     objectDetectorOptions.runningMode = runningMode
     objectDetectorOptions.maxResults = self.maxResults
     objectDetectorOptions.scoreThreshold = self.scoreThreshold
     objectDetectorOptions.baseOptions.modelAssetPath = modelPath
     objectDetectorOptions.baseOptions.delegate = delegate
     if runningMode == .liveStream {
-      objectDetectorOptions.objectDetectorLiveStreamDelegate = self
+      objectDetectorOptions.liveStreamResultHandler = { [weak self] result, timestampInMilliseconds in
+        self?.handleLiveStreamResult(result, timestampInMilliseconds: timestampInMilliseconds)
+      }
     }
     do {
       objectDetector = try ObjectDetector(options: objectDetectorOptions)
@@ -233,23 +235,20 @@ class ObjectDetectorService: NSObject {
     
     return (objectDetectorResults, videoSize)
   }
-}
 
-// MARK: - ObjectDetectorLiveStreamDelegate
-extension ObjectDetectorService: ObjectDetectorLiveStreamDelegate {
-  func objectDetector(
-    _ objectDetector: ObjectDetector,
-    didFinishDetection result: ObjectDetectorResult?,
-    timestampInMilliseconds: Int,
-    error: Error?) {
-    guard let result = result else {
+  private func handleLiveStreamResult(
+    _ result: Result<ObjectDetectorResult, any Error>,
+    timestampInMilliseconds: Int
+  ) {
+    switch result {
+    case .success(let detectionResult):
+      let resultBundle = ResultBundle(
+        inferenceTime: Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds),
+        objectDetectorResults: [detectionResult])
+      liveStreamDelegate?.objectDetectorService(self, didFinishDetection: resultBundle, error: nil)
+    case .failure(let error):
       liveStreamDelegate?.objectDetectorService(self, didFinishDetection: nil, error: error)
-      return
     }
-    let resultBundle = ResultBundle(
-      inferenceTime: Date().timeIntervalSince1970 * 1000 - Double(timestampInMilliseconds),
-      objectDetectorResults: [result])
-    liveStreamDelegate?.objectDetectorService(self, didFinishDetection: resultBundle, error: nil)
   }
 }
 
