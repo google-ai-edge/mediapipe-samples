@@ -50,6 +50,7 @@ enum class TtsModelOption(
   val assetName: String,
   val displayName: String,
   val shortLabel: String,
+  val supportsGpu: Boolean = true,
 ) {
   KOKORO_CPU(
     modelId = "kokoro_82m_cpu",
@@ -68,12 +69,14 @@ enum class TtsModelOption(
     assetName = TextToSpeechHelper.MODEL_POCKET_TTS,
     displayName = "PocketTTS (EN)",
     shortLabel = "PocketTTS",
+    supportsGpu = false,
   ),
   PHONON(
     modelId = "phonon_31m_en",
     assetName = TextToSpeechHelper.MODEL_PHONON,
     displayName = "Phonon 31M (EN)",
     shortLabel = "Phonon",
+    supportsGpu = false,
   ),
 }
 

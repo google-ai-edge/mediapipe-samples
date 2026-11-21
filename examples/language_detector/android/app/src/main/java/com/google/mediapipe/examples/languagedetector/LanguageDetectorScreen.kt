@@ -88,7 +88,6 @@ fun LanguageDetectorScreen(
     onApplyPreset: (TextPreset) -> Unit,
     onDetect: () -> Unit,
     onSelectMaxResults: (MaxResultsOption) -> Unit,
-    onSelectDelegate: (DetectorDelegate) -> Unit,
     onUseCpuDelegate: () -> Unit,
     onRetryInitialization: () -> Unit,
     modifier: Modifier = Modifier,
@@ -176,10 +175,8 @@ fun LanguageDetectorScreen(
         ) {
             SettingsSheetContent(
                 selectedMaxResults = uiState.maxResultsOption,
-                selectedDelegate = uiState.delegate,
                 isBusy = uiState.isBusy,
                 onSelectMaxResults = onSelectMaxResults,
-                onSelectDelegate = onSelectDelegate,
                 onDismiss = { showSettings = false },
             )
         }
@@ -466,14 +463,11 @@ private fun LanguageBreakdownRow(prediction: LanguageDetectorHelper.LanguagePred
 @Composable
 private fun SettingsSheetContent(
     selectedMaxResults: MaxResultsOption,
-    selectedDelegate: DetectorDelegate,
     isBusy: Boolean,
     onSelectMaxResults: (MaxResultsOption) -> Unit,
-    onSelectDelegate: (DetectorDelegate) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val options = MaxResultsOption.entries
-    val delegates = DetectorDelegate.entries
 
     Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp),
@@ -497,16 +491,6 @@ private fun SettingsSheetContent(
             text = stringResource(R.string.max_results_description),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-
-        HorizontalDivider()
-
-        SegmentedOptionRow(
-            label = stringResource(R.string.label_delegate),
-            options = delegates.map { it.displayName },
-            selectedIndex = delegates.indexOf(selectedDelegate),
-            enabled = !isBusy,
-            onSelect = { index -> onSelectDelegate(delegates[index]) },
         )
 
         Button(

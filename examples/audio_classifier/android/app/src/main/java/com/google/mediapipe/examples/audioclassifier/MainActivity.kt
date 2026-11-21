@@ -96,7 +96,6 @@ class MainActivity : ComponentActivity() {
                         }
                     },
                     onSelectWindow = viewModel::selectWindow,
-                    onSelectDelegate = viewModel::selectDelegate,
                     onUpdateMaxResults = viewModel::updateMaxResults,
                     onUpdateThreshold = viewModel::updateThreshold,
                     onUpdateOverlap = viewModel::updateOverlap,

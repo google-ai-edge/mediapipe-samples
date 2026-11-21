@@ -46,12 +46,18 @@ enum class DetectorTab {
     GALLERY,
 }
 
-enum class ObjectModel(val index: Int, val displayName: String, val shortLabel: String) {
+enum class ObjectModel(
+    val index: Int,
+    val displayName: String,
+    val shortLabel: String,
+    val supportsGpu: Boolean = true,
+) {
     LITE0(ObjectDetectorHelper.MODEL_EFFICIENTDETV0, "EfficientDet Lite0", "Lite0"),
     LITE0_INT8(
         ObjectDetectorHelper.MODEL_EFFICIENTDETV0_INT8,
         "EfficientDet Lite0 (int8)",
         "Lite0 int8",
+        supportsGpu = false,
     ),
     LITE2(ObjectDetectorHelper.MODEL_EFFICIENTDETV2, "EfficientDet Lite2", "Lite2"),
     SSD_MOBILENET_V2(

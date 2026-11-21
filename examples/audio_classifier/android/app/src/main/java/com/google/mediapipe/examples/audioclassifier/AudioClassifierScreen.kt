@@ -92,7 +92,6 @@ fun AudioClassifierScreen(
     onStopPlayback: () -> Unit,
     onToggleMicrophone: () -> Unit,
     onSelectWindow: (Int) -> Unit,
-    onSelectDelegate: (ClassifierDelegate) -> Unit = {},
     onUpdateMaxResults: (Int) -> Unit,
     onUpdateThreshold: (Float) -> Unit,
     onUpdateOverlap: (OverlapOption) -> Unit,
@@ -182,12 +181,10 @@ fun AudioClassifierScreen(
             modifier = Modifier.testTag("settings_sheet"),
         ) {
             SettingsSheetContent(
-                delegate = uiState.delegate,
                 clipRunningMode = uiState.clipRunningMode,
                 maxResults = uiState.maxResults,
                 threshold = uiState.threshold,
                 overlapOption = uiState.overlapOption,
-                onSelectDelegate = onSelectDelegate,
                 onSelectClipRunningMode = onSelectClipRunningMode,
                 onUpdateMaxResults = onUpdateMaxResults,
                 onUpdateThreshold = onUpdateThreshold,
@@ -576,19 +573,16 @@ private fun CategoryProbabilityRow(category: AudioCategoryUi) {
 
 @Composable
 private fun SettingsSheetContent(
-    delegate: ClassifierDelegate,
     clipRunningMode: RunningMode,
     maxResults: Int,
     threshold: Float,
     overlapOption: OverlapOption,
-    onSelectDelegate: (ClassifierDelegate) -> Unit,
     onSelectClipRunningMode: (RunningMode) -> Unit,
     onUpdateMaxResults: (Int) -> Unit,
     onUpdateThreshold: (Float) -> Unit,
     onUpdateOverlap: (OverlapOption) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val delegates = ClassifierDelegate.entries
     val clipModes = listOf(RunningMode.AUDIO_CLIPS, RunningMode.AUDIO_STREAM)
     val maxResultOptions = listOf(1, 2, 3, 4, 5)
     val overlaps = OverlapOption.entries
@@ -604,13 +598,6 @@ private fun SettingsSheetContent(
             text = stringResource(R.string.settings_title),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
-        )
-
-        SegmentedOptionRow(
-            label = stringResource(R.string.label_delegate),
-            options = delegates.map { it.label },
-            selectedIndex = delegates.indexOf(delegate).coerceAtLeast(0),
-            onSelect = { index -> onSelectDelegate(delegates[index]) },
         )
 
         SegmentedOptionRow(

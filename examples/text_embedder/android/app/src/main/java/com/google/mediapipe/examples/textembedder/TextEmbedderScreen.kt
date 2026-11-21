@@ -94,7 +94,6 @@ fun TextEmbedderScreen(
     onApplyPreset: (TextPairPreset) -> Unit,
     onCompare: () -> Unit,
     onSelectModel: (EmbedderModel) -> Unit,
-    onSelectDelegate: (EmbedderDelegate) -> Unit,
     onL2NormalizeChange: (Boolean) -> Unit,
     onQuantizeChange: (Boolean) -> Unit,
     onUseCpuDelegate: () -> Unit,
@@ -228,12 +227,10 @@ fun TextEmbedderScreen(
         ) {
             SettingsSheetContent(
                 selectedModel = uiState.model,
-                selectedDelegate = uiState.delegate,
                 l2Normalize = uiState.l2Normalize,
                 quantize = uiState.quantize,
                 isBusy = uiState.isBusy,
                 onSelectModel = onSelectModel,
-                onSelectDelegate = onSelectDelegate,
                 onL2NormalizeChange = onL2NormalizeChange,
                 onQuantizeChange = onQuantizeChange,
                 onDismiss = { showSettings = false },
@@ -574,18 +571,15 @@ private fun SimilarityResultCard(
 @Composable
 private fun SettingsSheetContent(
     selectedModel: EmbedderModel,
-    selectedDelegate: EmbedderDelegate,
     l2Normalize: Boolean,
     quantize: Boolean,
     isBusy: Boolean,
     onSelectModel: (EmbedderModel) -> Unit,
-    onSelectDelegate: (EmbedderDelegate) -> Unit,
     onL2NormalizeChange: (Boolean) -> Unit,
     onQuantizeChange: (Boolean) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val models = EmbedderModel.entries
-    val delegates = EmbedderDelegate.entries
 
     Column(
         modifier =
@@ -614,16 +608,6 @@ private fun SettingsSheetContent(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-
-        HorizontalDivider()
-
-        SegmentedOptionRow(
-            label = stringResource(R.string.label_delegate),
-            options = delegates.map { it.displayName },
-            selectedIndex = delegates.indexOf(selectedDelegate),
-            enabled = !isBusy,
-            onSelect = { idx -> onSelectDelegate(delegates[idx]) },
-        )
 
         HorizontalDivider()
 

@@ -272,16 +272,24 @@ fun TextToSpeechScreen(
           options = TtsModelOption.entries.map { it.shortLabel },
           selectedIndex = TtsModelOption.entries.indexOf(state.selectedModel).coerceAtLeast(0),
           enabled = !state.isBusy,
-          onSelect = { idx -> onSelectModel(TtsModelOption.entries[idx]) },
+          onSelect = { idx ->
+            val model = TtsModelOption.entries[idx]
+            if (!model.supportsGpu && state.delegateMode == TtsDelegateMode.GPU) {
+              onSelectDelegateMode(TtsDelegateMode.CPU)
+            }
+            onSelectModel(model)
+          },
         )
 
-        SegmentedOptionRow(
-          label = "Delegate",
-          options = TtsDelegateMode.entries.map { it.label },
-          selectedIndex = TtsDelegateMode.entries.indexOf(state.delegateMode),
-          enabled = !state.isBusy,
-          onSelect = { idx -> onSelectDelegateMode(TtsDelegateMode.entries[idx]) },
-        )
+        if (state.selectedModel.supportsGpu) {
+          SegmentedOptionRow(
+            label = "Delegate",
+            options = TtsDelegateMode.entries.map { it.label },
+            selectedIndex = TtsDelegateMode.entries.indexOf(state.delegateMode),
+            enabled = !state.isBusy,
+            onSelect = { idx -> onSelectDelegateMode(TtsDelegateMode.entries[idx]) },
+          )
+        }
 
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
           Row(

@@ -698,7 +698,12 @@ private fun SettingsSheetContent(
                 models.forEach { model ->
                     FilterChip(
                         selected = model == selectedModel,
-                        onClick = { onSelectModel(model) },
+                        onClick = {
+                            if (!model.supportsGpu && selectedDelegate == DetectorDelegate.GPU) {
+                                onSelectDelegate(DetectorDelegate.CPU)
+                            }
+                            onSelectModel(model)
+                        },
                         label = { Text(model.shortLabel) },
                         modifier = Modifier.testTag("option_${modelLabel}_${model.shortLabel}"),
                     )
@@ -706,12 +711,14 @@ private fun SettingsSheetContent(
             }
         }
 
-        SegmentedOptionRow(
-            label = stringResource(R.string.label_delegate),
-            options = delegates.map { it.displayName },
-            selectedIndex = delegates.indexOf(selectedDelegate),
-            onSelect = { index -> onSelectDelegate(delegates[index]) },
-        )
+        if (selectedModel.supportsGpu) {
+            SegmentedOptionRow(
+                label = stringResource(R.string.label_delegate),
+                options = delegates.map { it.displayName },
+                selectedIndex = delegates.indexOf(selectedDelegate),
+                onSelect = { index -> onSelectDelegate(delegates[index]) },
+            )
+        }
 
         SegmentedOptionRow(
             label = stringResource(R.string.label_max_results),

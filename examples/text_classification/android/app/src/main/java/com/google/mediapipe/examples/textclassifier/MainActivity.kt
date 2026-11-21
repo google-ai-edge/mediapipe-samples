@@ -44,7 +44,6 @@ class MainActivity : ComponentActivity() {
                     onApplyPreset = classifierViewModel::applyPreset,
                     onClassify = classifierViewModel::classify,
                     onSelectModel = classifierViewModel::selectModel,
-                    onSelectDelegate = classifierViewModel::selectDelegate,
                     onUseCpuDelegate = classifierViewModel::switchToCpuDelegate,
                     onRetryInitialization = classifierViewModel::retryInitialization,
                 )

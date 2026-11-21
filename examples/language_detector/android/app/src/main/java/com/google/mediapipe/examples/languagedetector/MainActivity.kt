@@ -44,7 +44,6 @@ class MainActivity : ComponentActivity() {
                     onApplyPreset = detectorViewModel::applyPreset,
                     onDetect = detectorViewModel::detect,
                     onSelectMaxResults = detectorViewModel::selectMaxResults,
-                    onSelectDelegate = detectorViewModel::selectDelegate,
                     onUseCpuDelegate = detectorViewModel::switchToCpuDelegate,
                     onRetryInitialization = detectorViewModel::retryInitialization,
                 )
