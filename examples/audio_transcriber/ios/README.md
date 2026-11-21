@@ -2,65 +2,82 @@
 
 ### Overview
 
-This sample app demonstrates on-device real-time speech transcription using the MediaPipe Tasks Audio `AudioTranscriber` (`MPPAudioTranscriber`) API with the Parakeet TDT 0.6B v3 LiteRT-LM model (`parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm`).
+This iOS app performs on-device automatic speech recognition (ASR) using the
+MediaPipe `AudioTranscriber` task (`MediaPipeTasksAudio`) with the stateful
+[Parakeet TDT 0.6B v3](https://huggingface.co/litert-community/parakeet-tdt-0.6b-v3)
+LiteRT-LM model (`parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm`):
 
-The Audio Transcriber API enables streaming on-device speech-to-text:
+- **Audio Clip Transcription**: Transcribe the bundled 16 kHz mono speech clip
+  (`speech_16000_hz_mono.wav`) or import custom `.wav` / audio files from Files
+  (automatically resampled to 16 kHz mono float32 PCM), in either **Full Clip**
+  (single-call) or **Streaming** (chunked 500 ms with live progress) mode.
+- **Live Microphone Transcription**: Real-time `AVAudioEngine` microphone
+  capture with animated level metering, interim partial transcripts, and
+  finalized timestamped segments.
+- **Hardware Acceleration**: Switch between **CPU** and **GPU (Metal)** in the
+  Settings sheet, with live latency, Real-Time Factor (RTF), and duration
+  telemetry.
 
-- **Live Microphone Capture**: Captures 48kHz mono float32 PCM audio via `AVAudioEngine` with real-time level metering.
-- **Streaming Transcription**: Streams audio buffers into `AudioTranscriber` and displays both interim live transcriptions and finalized segments with timestamps and durations.
-- **Interactive UI**: Built with modern SwiftUI, featuring real-time audio level meters, status indicators, transcript list view, and record/stop controls.
+![Audio Transcriber iOS Demo](audiotranscriber.png?raw=true "Audio Transcriber iOS Demo")
 
-### API in a Nutshell
+The model and sample audio clip are downloaded automatically during the Xcode
+build via `RunScripts/download_models.sh` with SHA-256 verification. Shared
+SwiftUI components and test helpers live in [`ios-common/`](../../../ios-common).
 
-```swift
-import MediaPipeTasksAudio
+## Architecture
 
-// 1. Initialize AudioTranscriber
-let options = AudioTranscriberOptions()
-options.baseOptions.modelAssetPath = modelPath
-options.baseOptions.delegate = .CPU
-options.sampleRateHz = 48_000.0
-options.enableInterimResults = true
-options.modelArchitecture = .auto
+The sample follows a uniform 4-file SwiftUI + Swift 6 architecture designed for
+both standalone execution and shared validation harnesses:
 
-let transcriber = try AudioTranscriber(options: options)
-try transcriber.prewarm()
+- `AudioTranscriber/AudioTranscriberApp.swift` — minimal `@main` SwiftUI entry
+  point launching with automatic sample clip transcription
+- `AudioTranscriber/AudioTranscriberView.swift` — SwiftUI interface (Audio Clip
+  & Microphone modes, animated level meter, Hero Transcript card, Settings
+  sheet) accepting an injectable `AudioTranscriberViewModel`
+- `AudioTranscriber/AudioTranscriberViewModel.swift` — `@Observable @MainActor`
+  state container owning `AVAudioEngine` microphone capture and exposing
+  awaitable operations (`loadTranscriber()`, `configure(delegate:clipMode:)`,
+  `transcribeFile(url:stream:)`, `transcribeBundledSample()`,
+  `startRecording()`, `stopRecording()`)
+- `AudioTranscriber/AudioTranscriberHelper.swift` — Swift `actor` wrapping
+  `MediaPipeTasksAudio.AudioTranscriber` off the main thread, plus
+  `AudioClipDecoder` for CoreAudio decoding and 16 kHz resampling
 
-// 2. Stream audio buffers
-let result = try transcriber.transcribe(
-  samples: samplesBuffer,
-  count: UInt(samplesBuffer.count),
-  endOfStream: false
-)
-
-// 3. Finalize stream
-let finalResult = try transcriber.finishStream()
-```
-
-## Build the Demo Using Xcode
+## Build and run
 
 ### Prerequisites
 
-* Xcode 15.0 or later.
-* iOS 17.0 or later (physical device or simulator).
+- **Xcode 16 or newer** (iOS 18.0+ deployment target).
+- An iPhone/iPad running iOS 18.0+ or an iOS 18+ Simulator.
 
-The MediaPipe dependency is resolved via Swift Package Manager (SPM) using `MediaPipeTasksAudio`.
+### Building from Xcode
 
-### Model Setup
+1. Open `examples/audio_transcriber/ios/AudioTranscriber.xcodeproj` in Xcode.
+2. Wait for Swift Package Manager to resolve `MediaPipeTasksAudio` and the local
+   `ios-common` package.
+3. Press **Run** (`⌘R`). The **Download Models** build phase fetches and
+   verifies `parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm` (~615 MB) and
+   `speech_16000_hz_mono.wav` on the first build.
 
-The app requires the Parakeet TDT 0.6B v3 LiteRT-LM model bundle (`parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm`).
+### Building and testing from the command line
 
-The app automatically searches for the model in:
-1. The app bundle (`AudioTranscriber/parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm`)
-2. The app's `Documents` directory (on iOS device)
-3. `~/models/parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm` (on macOS / simulator)
+```bash
+cd examples/audio_transcriber/ios
 
-To bundle the model with the app:
-1. Place `parakeet_tdt_0.6b_v3_5s_i8_stateful.litertlm` into the `AudioTranscriber/` directory.
-2. Ensure it is added to the Xcode target under **Build Phases > Copy Bundle Resources**.
+# Download and verify model and sample audio SHA-256 checksums
+./RunScripts/download_models.sh --verify
 
-### Building
+# Run real-model XCTests (CPU + GPU, Full Clip + Streaming, WER <= 0.2)
+xcodebuild test \
+  -project AudioTranscriber.xcodeproj \
+  -scheme AudioTranscriber \
+  -destination "platform=iOS Simulator,name=iPhone 17" \
+  CODE_SIGNING_ALLOWED=NO
 
-1. Open `AudioTranscriber.xcodeproj` in Xcode.
-2. Select your development team under **Signing & Capabilities**.
-3. Select your device or simulator and click **Run**.
+# Build for generic iOS device (CI check)
+xcodebuild build \
+  -project AudioTranscriber.xcodeproj \
+  -scheme AudioTranscriber \
+  -destination "generic/platform=iOS" \
+  CODE_SIGNING_ALLOWED=NO
+```

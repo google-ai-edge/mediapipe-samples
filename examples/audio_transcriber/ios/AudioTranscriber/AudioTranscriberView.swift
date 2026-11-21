@@ -12,319 +12,719 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#if canImport(MediaPipeTasksAudio)
-import MediaPipeTasksAudio
-#elseif canImport(MPPAudioTranscriber)
-import MPPAudioTranscriber
-#endif
+import MediaPipeSampleUI
 import SwiftUI
-
+import UniformTypeIdentifiers
 #if canImport(UIKit)
-  import UIKit
-
-  extension Color {
-    fileprivate static let appBackground = Color(uiColor: .systemBackground)
-    fileprivate static let appSecondaryBackground = Color(uiColor: .secondarySystemBackground)
-    fileprivate static let appTertiaryFill = Color(uiColor: .tertiarySystemFill)
-    fileprivate static let appSeparator = Color(uiColor: .separator)
-  }
-#elseif canImport(AppKit)
-  import AppKit
-  import UniformTypeIdentifiers
-
-  extension Color {
-    fileprivate static let appBackground = Color(nsColor: .windowBackgroundColor)
-    fileprivate static let appSecondaryBackground = Color(nsColor: .controlBackgroundColor)
-    fileprivate static let appTertiaryFill = Color(nsColor: .quaternaryLabelColor)
-    fileprivate static let appSeparator = Color(nsColor: .separatorColor)
-  }
+import UIKit
 #endif
 
-private enum LayoutMetrics {
-  static let rootSpacing: CGFloat = 20
-  static let headerSpacing: CGFloat = 6
-  static let headerTopPadding: CGFloat = 10
-  static let statusPillSpacing: CGFloat = 8
-  static let statusIndicatorSize: CGFloat = 10
-  static let statusPillHorizontalPadding: CGFloat = 14
-  static let statusPillVerticalPadding: CGFloat = 6
-  static let statusPillCornerRadius: CGFloat = 20
-  static let meterCornerRadius: CGFloat = 6
-  static let meterHeight: CGFloat = 8
-  static let meterAnimationDuration: Double = 0.1
-  static let cardSpacing: CGFloat = 12
-  static let cardCornerRadius: CGFloat = 12
-  static let cardBorderWidth: CGFloat = 1
-  static let transcriptListSpacing: CGFloat = 10
-  static let transcriptListVerticalPadding: CGFloat = 4
-  static let segmentRowSpacing: CGFloat = 8
-  static let segmentTimestampTopPadding: CGFloat = 2
-  static let segmentRowPadding: CGFloat = 8
-  static let segmentRowCornerRadius: CGFloat = 8
-  static let interimBackgroundOpacity: Double = 0.1
-  static let bottomAnchorHeight: CGFloat = 1
-  static let bottomAnchorID = "bottomAnchor"
-  static let controlButtonsSpacing: CGFloat = 20
-  static let controlButtonsBottomPadding: CGFloat = 20
-  static let clearButtonHorizontalPadding: CGFloat = 24
-  static let recordButtonSpacing: CGFloat = 12
-  static let recordButtonHorizontalPadding: CGFloat = 32
-  static let buttonVerticalPadding: CGFloat = 16
-  static let buttonCornerRadius: CGFloat = 30
-  static let disabledButtonOpacity: Double = 0.4
-  static let enabledButtonOpacity: Double = 1.0
-  static let recordButtonShadowOpacity: Double = 0.15
-  static let recordButtonShadowRadius: CGFloat = 4
-  static let recordButtonShadowYOffset: CGFloat = 2
-}
-
-/// Primary SwiftUI view for live on-device MediaPipe `AudioTranscriber` speech recognition.
-@MainActor
-package struct AudioTranscriberView: View {
+/// Sleek SwiftUI screen for the MediaPipe Audio Transcriber sample app.
+public struct AudioTranscriberView: View {
   @State private var viewModel: AudioTranscriberViewModel
+  @State private var showSettings = false
+  @State private var showAudioImporter = false
+  @State private var copiedTranscript = false
 
-  /// Creates a speech recognition sample view with a default view model.
-  package init() {
-    self.viewModel = AudioTranscriberViewModel()
+  public init(viewModel: AudioTranscriberViewModel = AudioTranscriberViewModel()) {
+    _viewModel = State(initialValue: viewModel)
   }
 
-  /// Creates a speech recognition sample view bound to the provided view model.
-  ///
-  /// - Parameter viewModel: Observable view model managing audio capture and transcription.
-  package init(viewModel: AudioTranscriberViewModel) {
-    self.viewModel = viewModel
-  }
-
-  package var body: some View {
-    VStack(spacing: LayoutMetrics.rootSpacing) {
-      headerView
-      statusPillView
-      audioLevelMeterView
-      transcriptCardView
-      controlButtonsView
-    }
-  }
-
-  private var headerView: some View {
-    VStack(spacing: LayoutMetrics.headerSpacing) {
-      Text("MediaPipe AudioTranscriber")
-        .font(.title2.bold())
-      Text("On-Device Speech Recognition")
-        .font(.subheadline)
-        .foregroundStyle(.secondary)
-      Text("Model: \(viewModel.activeModelName)")
-        .font(.caption.monospaced())
-        .foregroundStyle(.secondary)
-    }
-    .padding(.top, LayoutMetrics.headerTopPadding)
-  }
-
-  private var statusPillView: some View {
-    HStack(spacing: LayoutMetrics.statusPillSpacing) {
-      Circle()
-        .fill(viewModel.isRecording ? Color.red : Color.green)
-        .frame(
-          width: LayoutMetrics.statusIndicatorSize,
-          height: LayoutMetrics.statusIndicatorSize
-        )
-      Text(viewModel.statusMessage)
-        .font(.caption.monospaced())
-        .foregroundStyle(.primary)
-    }
-    .padding(.horizontal, LayoutMetrics.statusPillHorizontalPadding)
-    .padding(.vertical, LayoutMetrics.statusPillVerticalPadding)
-    .background(Color.appSecondaryBackground)
-    .clipShape(RoundedRectangle(cornerRadius: LayoutMetrics.statusPillCornerRadius))
-  }
-
-  private var audioLevelMeterView: some View {
-    GeometryReader { geometry in
-      ZStack(alignment: .leading) {
-        RoundedRectangle(cornerRadius: LayoutMetrics.meterCornerRadius)
-          .fill(Color.appTertiaryFill)
-          .frame(height: LayoutMetrics.meterHeight)
-
-        let progress = CGFloat(viewModel.audioLevel)
-        let barWidth = geometry.size.width * progress
-        let clampedWidth = max(0, min(geometry.size.width, barWidth))
-
-        RoundedRectangle(cornerRadius: LayoutMetrics.meterCornerRadius)
-          .fill(Color.blue)
-          .frame(width: clampedWidth, height: LayoutMetrics.meterHeight)
-          .animation(
-            .linear(duration: LayoutMetrics.meterAnimationDuration),
-            value: viewModel.audioLevel
+  public var body: some View {
+    NavigationStack {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 12) {
+          MediaPipeStatusStrip(
+            status: viewModel.statusBadge,
+            delegateLabel: viewModel.selectedDelegate.shortName,
+            latencyMs: viewModel.lastResult?.inferenceTimeMs
           )
-      }
-    }
-    .frame(height: LayoutMetrics.meterHeight)
-    .padding(.horizontal)
-  }
 
-  private var transcriptCardView: some View {
-    VStack(alignment: .leading, spacing: LayoutMetrics.cardSpacing) {
-      HStack {
-        Text("Transcript")
-          .font(.headline)
-        Spacer()
-      }
-
-      ScrollViewReader { proxy in
-        ScrollView {
-          LazyVStack(alignment: .leading, spacing: LayoutMetrics.transcriptListSpacing) {
-            ForEach(viewModel.finalizedResults) { segment in
-              segmentRow(for: segment)
-            }
-
-            if !viewModel.interimTranscript.isEmpty {
-              interimRowView
-            }
-
-            Color.clear
-              .frame(height: LayoutMetrics.bottomAnchorHeight)
-              .id(LayoutMetrics.bottomAnchorID)
+          if let error = viewModel.errorMessage {
+            MediaPipeErrorBanner(
+              message: error,
+              actionLabel: viewModel.isGpuError ? "Use CPU" : "Retry",
+              onAction: {
+                if viewModel.isGpuError {
+                  viewModel.switchToCpuDelegate()
+                } else {
+                  viewModel.retryInitialization()
+                }
+              }
+            )
+            .transition(.move(edge: .top).combined(with: .opacity))
           }
-          .padding(.vertical, LayoutMetrics.transcriptListVerticalPadding)
+
+          inputModePicker
+
+          if viewModel.inputMode == .clip {
+            clipWorkspaceSection
+          } else {
+            microphoneWorkspaceSection
+          }
+
+          HeroTranscriptCard(
+            fullTranscript: viewModel.fullTranscript,
+            segments: viewModel.finalizedSegments,
+            interimTranscript: viewModel.interimTranscript,
+            result: viewModel.lastResult,
+            isBusy: viewModel.isBusy,
+            isRecording: viewModel.isRecording,
+            copiedTranscript: copiedTranscript,
+            onCopy: copyTranscript,
+            onClear: { viewModel.triggerClearTranscript() }
+          )
         }
-        .onChange(of: viewModel.finalizedResults.count) { _, _ in
-          withAnimation {
-            proxy.scrollTo(LayoutMetrics.bottomAnchorID, anchor: .bottom)
+        .padding(.horizontal, 16)
+        .padding(.top, 6)
+        .padding(.bottom, 22)
+        .animation(.snappy(duration: 0.25), value: viewModel.errorMessage != nil)
+        .animation(.snappy(duration: 0.25), value: viewModel.inputMode)
+        .animation(.spring(response: 0.34, dampingFraction: 0.84), value: viewModel.lastResult)
+      }
+      .background(MediaPipePalette.canvasBackground.ignoresSafeArea())
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .principal) {
+          MediaPipeNavigationTitle(
+            title: "Audio Transcriber",
+            subtitle: viewModel.headerSubtitle
+          )
+        }
+        ToolbarItem(placement: .topBarTrailing) {
+          MediaPipeSettingsButton {
+            showSettings = true
           }
         }
-        .onChange(of: viewModel.interimTranscript) { _, _ in
-          proxy.scrollTo(LayoutMetrics.bottomAnchorID, anchor: .bottom)
+      }
+      .sheet(isPresented: $showSettings) {
+        AudioTranscriberSettingsSheet(viewModel: viewModel)
+      }
+      .fileImporter(
+        isPresented: $showAudioImporter,
+        allowedContentTypes: [.audio, .wav],
+        allowsMultipleSelection: false
+      ) { result in
+        if case .success(let urls) = result, let url = urls.first {
+          viewModel.triggerImportAndTranscribeFile(url: url)
         }
       }
     }
-    .padding()
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .background(Color.appBackground)
-    .clipShape(RoundedRectangle(cornerRadius: LayoutMetrics.cardCornerRadius))
-    .overlay(
-      RoundedRectangle(cornerRadius: LayoutMetrics.cardCornerRadius)
-        .stroke(Color.appSeparator, lineWidth: LayoutMetrics.cardBorderWidth)
-    )
-    .padding(.horizontal)
   }
 
-  private func segmentRow(for segment: AudioTranscriberSegment) -> some View {
-    HStack(alignment: .top, spacing: LayoutMetrics.segmentRowSpacing) {
-      Text(String(format: "(%.1fs)", segment.durationSeconds))
-        .font(.caption2.monospaced())
-        .foregroundStyle(.secondary)
-        .padding(.top, LayoutMetrics.segmentTimestampTopPadding)
-      Text(segment.transcript)
-        .font(.body)
-        .foregroundStyle(.primary)
-    }
-    .padding(LayoutMetrics.segmentRowPadding)
-    .background(Color.appSecondaryBackground)
-    .clipShape(RoundedRectangle(cornerRadius: LayoutMetrics.segmentRowCornerRadius))
-    .id(segment.id)
-  }
+  // MARK: - Input Mode Picker
 
-  private var interimRowView: some View {
-    HStack(alignment: .top, spacing: LayoutMetrics.segmentRowSpacing) {
-      Text("[Live]")
-        .font(.caption2.monospaced())
-        .foregroundStyle(.orange)
-        .padding(.top, LayoutMetrics.segmentTimestampTopPadding)
-      Text(viewModel.interimTranscript)
-        .font(.body.italic())
-        .foregroundStyle(.secondary)
-    }
-    .padding(LayoutMetrics.segmentRowPadding)
-    .background(Color.orange.opacity(LayoutMetrics.interimBackgroundOpacity))
-    .clipShape(RoundedRectangle(cornerRadius: LayoutMetrics.segmentRowCornerRadius))
-  }
-
-  private var isClearDisabled: Bool {
-    viewModel.isRecording || viewModel.finalizedResults.isEmpty
-  }
-
-  private var controlButtonsView: some View {
-    HStack(spacing: LayoutMetrics.controlButtonsSpacing) {
-      #if canImport(AppKit)
-        Button {
-          selectModelFile()
-        } label: {
-          Text("Load Model…")
-            .font(.headline)
-            .foregroundStyle(.primary)
-            .padding(.horizontal, LayoutMetrics.clearButtonHorizontalPadding)
-            .padding(.vertical, LayoutMetrics.buttonVerticalPadding)
-            .background(Color.appSecondaryBackground)
-            .clipShape(RoundedRectangle(cornerRadius: LayoutMetrics.buttonCornerRadius))
-        }
-        .buttonStyle(.plain)
-        .disabled(viewModel.isRecording)
-        .opacity(
-          viewModel.isRecording
-            ? LayoutMetrics.disabledButtonOpacity
-            : LayoutMetrics.enabledButtonOpacity
-        )
-      #endif
-
-      Button {
-        viewModel.clearTranscripts()
-      } label: {
-        Text("Clear All")
-          .font(.headline)
-          .foregroundStyle(.primary)
-          .padding(.horizontal, LayoutMetrics.clearButtonHorizontalPadding)
-          .padding(.vertical, LayoutMetrics.buttonVerticalPadding)
-          .background(Color.appSecondaryBackground)
-          .clipShape(RoundedRectangle(cornerRadius: LayoutMetrics.buttonCornerRadius))
-      }
-      .buttonStyle(.plain)
-      .disabled(isClearDisabled)
-      .opacity(
-        isClearDisabled
-          ? LayoutMetrics.disabledButtonOpacity
-          : LayoutMetrics.enabledButtonOpacity
+  private var inputModePicker: some View {
+    Picker(
+      "Input Source",
+      selection: Binding(
+        get: { viewModel.inputMode },
+        set: { viewModel.selectInputMode($0) }
       )
+    ) {
+      ForEach(AudioInputSourceMode.allCases) { mode in
+        Label(mode.label, systemImage: mode.systemImage).tag(mode)
+      }
+    }
+    .pickerStyle(.segmented)
+    .disabled(viewModel.isBusy)
+    .accessibilityIdentifier("input_mode_picker")
+  }
+
+  // MARK: - Audio Clip Section
+
+  private var clipWorkspaceSection: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      VStack(alignment: .leading, spacing: 5) {
+        MediaPipeChipBar(
+          title: "Clip Mode",
+          items: AudioClipTranscriptionMode.allCases,
+          selectedID: viewModel.clipMode.id,
+          label: \.label,
+          accessibilityID: { "clip_mode_\($0.id)" },
+          onSelect: { mode in
+            viewModel.selectClipMode(mode)
+          }
+        )
+
+        Text(viewModel.clipMode.summary)
+          .font(.caption)
+          .foregroundStyle(.secondary)
+      }
+
+      audioClipSourceCard
+
+      MediaPipePrimaryButton(
+        title: viewModel.isUsingCustomClip ? "Transcribe Clip" : "Transcribe Sample",
+        busyTitle: viewModel.isModelLoading
+          ? "Loading Model…"
+          : (viewModel.clipMode == .streaming ? "Streaming Audio…" : "Transcribing…"),
+        systemImage: viewModel.clipMode == .streaming
+          ? "dot.radiowaves.left.and.right"
+          : "waveform.badge.magnifyingglass",
+        isBusy: viewModel.isBusy,
+        isEnabled: viewModel.canTranscribeClip
+      ) {
+        viewModel.triggerTranscribeActiveClip()
+      }
+      .accessibilityIdentifier("transcribe_clip_button")
+    }
+  }
+
+  private var audioClipSourceCard: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      HStack(spacing: 12) {
+        ZStack {
+          RoundedRectangle(cornerRadius: 12, style: .continuous)
+            .fill(MediaPipePalette.tealContainer)
+            .frame(width: 40, height: 40)
+          Image(systemName: "waveform")
+            .font(.body.weight(.semibold))
+            .foregroundStyle(MediaPipePalette.tealPrimary)
+        }
+
+        VStack(alignment: .leading, spacing: 2) {
+          Text(viewModel.isUsingCustomClip ? viewModel.activeClipLabel : "Sample Speech Clip")
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(.primary)
+            .lineLimit(1)
+            .truncationMode(.middle)
+            .accessibilityIdentifier("active_clip_label")
+
+          Text(
+            viewModel.isUsingCustomClip
+              ? "Custom audio · 16 kHz mono"
+              : "16 kHz mono WAV · 4.3 s"
+          )
+          .font(.caption)
+          .foregroundStyle(.secondary)
+          .lineLimit(1)
+        }
+
+        Spacer(minLength: 4)
+
+        HStack(spacing: 6) {
+          if viewModel.isUsingCustomClip {
+            Button {
+              viewModel.resetToBundledSample()
+            } label: {
+              Image(systemName: "arrow.uturn.backward")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(MediaPipePalette.tealPrimary)
+                .frame(width: 30, height: 30)
+                .mediaPipeGlassPill(tint: MediaPipePalette.tealPrimary)
+            }
+            .buttonStyle(.plain)
+            .disabled(viewModel.isBusy)
+            .accessibilityLabel("Use bundled sample clip")
+            .accessibilityIdentifier("reset_sample_button")
+          }
+
+          Button {
+            showAudioImporter = true
+          } label: {
+            Label("Import", systemImage: "folder")
+              .font(.caption.weight(.semibold))
+              .foregroundStyle(MediaPipePalette.onTealContainer)
+              .padding(.horizontal, 11)
+              .padding(.vertical, 7)
+              .background(MediaPipePalette.tealContainer, in: Capsule())
+          }
+          .buttonStyle(.plain)
+          .disabled(viewModel.isBusy)
+          .accessibilityIdentifier("import_audio_button")
+        }
+      }
+
+      if viewModel.isTranscribing && viewModel.clipMode == .streaming {
+        VStack(alignment: .leading, spacing: 6) {
+          AudioLevelWaveformMeter(
+            levels: viewModel.levelHistory,
+            isActive: true
+          )
+          .frame(height: 24)
+
+          ProgressView(value: viewModel.streamProgress)
+            .tint(MediaPipePalette.tealPrimary)
+        }
+        .transition(.opacity)
+      }
+    }
+    .padding(12)
+    .mediaPipeCard(cornerRadius: 18, isHighlighted: viewModel.isTranscribing)
+  }
+
+  // MARK: - Live Microphone Section
+
+  private var microphoneWorkspaceSection: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      VStack(alignment: .leading, spacing: 10) {
+        HStack {
+          HStack(spacing: 7) {
+            Circle()
+              .fill(
+                viewModel.isRecording
+                  ? MediaPipePalette.statusError
+                  : MediaPipePalette.tealPrimary.opacity(0.45)
+              )
+              .frame(width: 8, height: 8)
+
+            Text(viewModel.isRecording ? "Listening Live" : "Microphone Ready")
+              .font(.subheadline.weight(.semibold))
+              .foregroundStyle(.primary)
+          }
+
+          Spacer()
+
+          Text(Self.formatRecordingClock(viewModel.recordingDurationSeconds))
+            .font(.caption.weight(.semibold).monospacedDigit())
+            .foregroundStyle(viewModel.isRecording ? MediaPipePalette.statusError : .secondary)
+            .padding(.horizontal, 9)
+            .padding(.vertical, 4)
+            .background(MediaPipePalette.recessedSurface, in: Capsule())
+            .accessibilityIdentifier("recording_timer_label")
+        }
+
+        AudioLevelWaveformMeter(
+          levels: viewModel.levelHistory,
+          isActive: viewModel.isRecording
+        )
+        .frame(height: 40)
+
+        Text(
+          viewModel.isRecording
+            ? "Speaking directly into Parakeet TDT at 16 kHz mono."
+            : "Tap Start Recording to stream live speech on-device."
+        )
+        .font(.caption)
+        .foregroundStyle(.secondary)
+      }
+      .padding(14)
+      .mediaPipeCard(cornerRadius: 18, isHighlighted: viewModel.isRecording)
 
       Button {
-        viewModel.toggleRecording()
+        viewModel.triggerToggleRecording()
       } label: {
-        HStack(spacing: LayoutMetrics.recordButtonSpacing) {
+        HStack(spacing: 8) {
           Image(systemName: viewModel.isRecording ? "stop.fill" : "mic.fill")
-            .font(.title2)
-          Text(viewModel.isRecording ? "Stop" : "Record")
-            .font(.headline)
+            .font(.headline.weight(.semibold))
+          Text(viewModel.isRecording ? "Stop Recording" : "Start Recording")
+            .font(.headline.weight(.semibold))
         }
         .foregroundStyle(.white)
-        .padding(.horizontal, LayoutMetrics.recordButtonHorizontalPadding)
-        .padding(.vertical, LayoutMetrics.buttonVerticalPadding)
-        .background(viewModel.isRecording ? Color.red : Color.blue)
-        .clipShape(RoundedRectangle(cornerRadius: LayoutMetrics.buttonCornerRadius))
+        .frame(maxWidth: .infinity)
+        .frame(minHeight: 48)
+        .background(
+          RoundedRectangle(cornerRadius: 16, style: .continuous)
+            .fill(
+              viewModel.canToggleRecording
+                ? (viewModel.isRecording
+                  ? AnyShapeStyle(MediaPipePalette.statusError)
+                  : AnyShapeStyle(MediaPipePalette.brandGradient))
+                : AnyShapeStyle(Color.secondary.opacity(0.32))
+            )
+        )
         .shadow(
-          color: Color.black.opacity(LayoutMetrics.recordButtonShadowOpacity),
-          radius: LayoutMetrics.recordButtonShadowRadius,
+          color: viewModel.canToggleRecording
+            ? (viewModel.isRecording
+              ? MediaPipePalette.statusError.opacity(0.28)
+              : MediaPipePalette.tealPrimary.opacity(0.28))
+            : .clear,
+          radius: 10,
           x: 0,
-          y: LayoutMetrics.recordButtonShadowYOffset
+          y: 4
         )
       }
       .buttonStyle(.plain)
+      .disabled(!viewModel.canToggleRecording)
+      .sensoryFeedback(.impact(flexibility: .soft), trigger: viewModel.isRecording)
+      .accessibilityIdentifier("record_button")
     }
-    .padding(.bottom, LayoutMetrics.controlButtonsBottomPadding)
   }
 
-  #if canImport(AppKit)
-    private func selectModelFile() {
-      let panel = NSOpenPanel()
-      panel.canChooseFiles = true
-      panel.canChooseDirectories = false
-      panel.allowsMultipleSelection = false
-      if let modelType = UTType(
-        filenameExtension: TranscriberConfiguration.modelExtension,
-        conformingTo: .data
-      ) {
-        panel.allowedContentTypes = [modelType]
-      }
-      if panel.runModal() == .OK, let url = panel.url {
-        viewModel.loadModel(at: url)
+  // MARK: - Actions
+
+  private func copyTranscript() {
+    let text = viewModel.fullTranscript
+    guard !text.isEmpty else { return }
+    #if canImport(UIKit)
+    UIPasteboard.general.string = text
+    #endif
+    withAnimation(.snappy(duration: 0.2)) {
+      copiedTranscript = true
+    }
+    Task {
+      try? await Task.sleep(for: .seconds(1.8))
+      withAnimation(.snappy(duration: 0.2)) {
+        copiedTranscript = false
       }
     }
-  #endif
+  }
+
+  private static func formatRecordingClock(_ seconds: Double) -> String {
+    let total = max(0, Int(seconds.rounded(.down)))
+    return String(format: "%02d:%02d", total / 60, total % 60)
+  }
+}
+
+// MARK: - Animated Waveform Audio Level Meter
+
+private struct AudioLevelWaveformMeter: View {
+  let levels: [Float]
+  let isActive: Bool
+
+  var body: some View {
+    GeometryReader { geometry in
+      let count = max(1, levels.count)
+      let spacing: CGFloat = 3
+      let totalSpacing = spacing * CGFloat(count - 1)
+      let barWidth = max(3, (geometry.size.width - totalSpacing) / CGFloat(count))
+
+      HStack(alignment: .center, spacing: spacing) {
+        ForEach(Array(levels.enumerated()), id: \.offset) { index, level in
+          let normalized = CGFloat(min(max(level, 0.0), 1.0))
+          let idleFloor: CGFloat = 0.14
+          let fraction = isActive ? max(idleFloor, normalized) : idleFloor
+          let height = max(4, geometry.size.height * fraction)
+
+          Capsule(style: .continuous)
+            .fill(
+              isActive
+                ? AnyShapeStyle(MediaPipePalette.brandGradient)
+                : AnyShapeStyle(MediaPipePalette.recessedSurface)
+            )
+            .frame(width: barWidth, height: height)
+            .animation(
+              .spring(response: 0.18, dampingFraction: 0.78),
+              value: levels[index]
+            )
+        }
+      }
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+    }
+  }
+}
+
+// MARK: - Hero Transcript Card
+
+private struct HeroTranscriptCard: View {
+  let fullTranscript: String
+  let segments: [TranscribedSegment]
+  let interimTranscript: String
+  let result: AudioTranscriptionResult?
+  let isBusy: Bool
+  let isRecording: Bool
+  let copiedTranscript: Bool
+  let onCopy: () -> Void
+  let onClear: () -> Void
+
+  private var hasContent: Bool {
+    !fullTranscript.isEmpty || !interimTranscript.isEmpty
+  }
+
+  private let telemetryColumns = [
+    GridItem(.flexible(), spacing: 8),
+    GridItem(.flexible(), spacing: 8),
+  ]
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      HStack(spacing: 8) {
+        Text("Transcript")
+          .font(.subheadline.weight(.semibold))
+          .foregroundStyle(.secondary)
+
+        if let result {
+          Text(result.mode.label)
+            .font(.caption2.weight(.semibold))
+            .foregroundStyle(MediaPipePalette.onTealContainer)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(MediaPipePalette.tealContainer, in: Capsule())
+        }
+
+        Spacer()
+
+        if !fullTranscript.isEmpty {
+          Button(action: onCopy) {
+            HStack(spacing: 4) {
+              Image(systemName: copiedTranscript ? "checkmark" : "doc.on.doc")
+                .font(.caption2.weight(.semibold))
+              Text(copiedTranscript ? "Copied" : "Copy")
+                .font(.caption.weight(.semibold))
+            }
+            .foregroundStyle(
+              copiedTranscript ? MediaPipePalette.statusPositive : MediaPipePalette.tealPrimary
+            )
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(
+              (copiedTranscript
+                ? MediaPipePalette.statusPositive.opacity(0.14)
+                : MediaPipePalette.tealContainer),
+              in: Capsule()
+            )
+          }
+          .buttonStyle(.plain)
+          .accessibilityIdentifier("copy_transcript_button")
+        }
+
+        if hasContent && !isRecording && !isBusy {
+          Button(action: onClear) {
+            Image(systemName: "trash")
+              .font(.caption.weight(.semibold))
+              .foregroundStyle(.secondary)
+              .frame(width: 28, height: 28)
+              .background(MediaPipePalette.recessedSurface, in: Circle())
+          }
+          .buttonStyle(.plain)
+          .accessibilityLabel("Clear transcript")
+          .accessibilityIdentifier("clear_transcript_button")
+        }
+      }
+
+      if !hasContent {
+        emptyStateView
+      } else {
+        transcriptBodyView
+      }
+
+      if let result {
+        LazyVGrid(columns: telemetryColumns, spacing: 8) {
+          MediaPipeMetricTile(
+            label: "Latency",
+            value: Self.formatLatency(result.inferenceTimeMs),
+            systemImage: "bolt.fill"
+          )
+          .accessibilityIdentifier("metric_latency")
+
+          MediaPipeMetricTile(
+            label: "RTF",
+            value: String(format: "%.2f×", result.realTimeFactor),
+            systemImage: "gauge.with.dots.needle.67percent"
+          )
+          .accessibilityIdentifier("metric_rtf")
+
+          MediaPipeMetricTile(
+            label: "Duration",
+            value: String(format: "%.2f s", result.audioDurationSeconds),
+            systemImage: "waveform"
+          )
+          .accessibilityIdentifier("metric_duration")
+
+          MediaPipeMetricTile(
+            label: "Mode",
+            value: result.mode == .streaming
+              ? "Stream (\(result.chunkCount))"
+              : "Full Clip",
+            systemImage: result.mode == .streaming
+              ? "dot.radiowaves.left.and.right"
+              : "doc.text"
+          )
+          .accessibilityIdentifier("metric_mode")
+        }
+      }
+    }
+    .padding(14)
+    .mediaPipeCard(cornerRadius: 22)
+    .accessibilityElement(children: .contain)
+    .accessibilityIdentifier("transcript_card")
+  }
+
+  private var emptyStateView: some View {
+    VStack(spacing: 8) {
+      Image(systemName: isBusy ? "waveform.circle" : "text.bubble")
+        .font(.title2)
+        .foregroundStyle(MediaPipePalette.tealPrimary.opacity(0.75))
+      Text(
+        isBusy
+          ? "Preparing on-device speech recognition…"
+          : "Tap Transcribe Sample or start recording to see on-device transcription."
+      )
+      .font(.subheadline)
+      .foregroundStyle(.secondary)
+      .multilineTextAlignment(.center)
+    }
+    .frame(maxWidth: .infinity)
+    .padding(.vertical, 22)
+    .padding(.horizontal, 12)
+    .background(
+      RoundedRectangle(cornerRadius: 14, style: .continuous)
+        .fill(MediaPipePalette.recessedSurface)
+    )
+  }
+
+  private var transcriptBodyView: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      if !fullTranscript.isEmpty {
+        VStack(alignment: .leading, spacing: 8) {
+          HStack(alignment: .top, spacing: 10) {
+            Capsule(style: .continuous)
+              .fill(MediaPipePalette.brandGradient)
+              .frame(width: 3.5)
+
+            Text(fullTranscript)
+              .font(.title3.weight(.medium))
+              .foregroundStyle(.primary)
+              .textSelection(.enabled)
+              .fixedSize(horizontal: false, vertical: true)
+              .frame(maxWidth: .infinity, alignment: .leading)
+              .accessibilityIdentifier("transcript_text")
+          }
+
+          if segments.count == 1, let onlySegment = segments.first,
+            onlySegment.toTimestampMs > onlySegment.fromTimestampMs
+          {
+            HStack(spacing: 6) {
+              Image(systemName: "clock")
+                .font(.caption2)
+                .foregroundStyle(MediaPipePalette.tealPrimary)
+              Text(onlySegment.timeRangeLabel)
+                .font(.caption2.weight(.medium).monospacedDigit())
+                .foregroundStyle(.secondary)
+            }
+            .padding(.leading, 13.5)
+          }
+        }
+        .padding(12)
+        .background(
+          RoundedRectangle(cornerRadius: 14, style: .continuous)
+            .fill(MediaPipePalette.recessedSurface)
+        )
+      }
+
+      if !interimTranscript.isEmpty {
+        HStack(alignment: .top, spacing: 8) {
+          Text("LIVE")
+            .font(.caption2.weight(.bold).monospaced())
+            .foregroundStyle(MediaPipePalette.onTealContainer)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 3)
+            .background(MediaPipePalette.tealContainer, in: Capsule())
+
+          Text(interimTranscript)
+            .font(.subheadline.italic())
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityIdentifier("interim_transcript_text")
+        }
+        .padding(10)
+        .background(
+          RoundedRectangle(cornerRadius: 12, style: .continuous)
+            .fill(MediaPipePalette.tealContainer.opacity(0.35))
+        )
+      }
+
+      if segments.count > 1 {
+        VStack(alignment: .leading, spacing: 6) {
+          Text("Segments (\(segments.count))")
+            .font(.caption2.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .textCase(.uppercase)
+            .tracking(0.4)
+
+          ForEach(segments) { segment in
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+              Text(segment.timeRangeLabel)
+                .font(.caption2.weight(.medium).monospacedDigit())
+                .foregroundStyle(MediaPipePalette.tealPrimary)
+                .padding(.horizontal, 7)
+                .padding(.vertical, 2.5)
+                .background(MediaPipePalette.tealContainer.opacity(0.75), in: Capsule())
+
+              Text(segment.transcript)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private static func formatLatency(_ ms: Double) -> String {
+    if ms >= 1_000.0 {
+      return String(format: "%.2f s", ms / 1_000.0)
+    }
+    return String(format: "%.0f ms", ms)
+  }
+}
+
+// MARK: - Settings Sheet
+
+private struct AudioTranscriberSettingsSheet: View {
+  @Bindable var viewModel: AudioTranscriberViewModel
+
+  var body: some View {
+    MediaPipeSettingsSheet(title: "Model & Settings") {
+      Section {
+        Picker(
+          "Clip Mode",
+          selection: Binding(
+            get: { viewModel.clipMode },
+            set: { viewModel.selectClipMode($0) }
+          )
+        ) {
+          ForEach(AudioClipTranscriptionMode.allCases) { mode in
+            Text(mode.label).tag(mode)
+          }
+        }
+        .disabled(viewModel.isBusy || viewModel.isRecording)
+        .accessibilityIdentifier("picker_clip_mode")
+      } header: {
+        Text("Audio Clip Transcription")
+      } footer: {
+        Text(viewModel.clipMode.summary)
+      }
+
+      if AudioTranscriberViewModel.supportsGpuDelegateInUI {
+        Section {
+          Picker(
+            "Accelerator",
+            selection: Binding(
+              get: { viewModel.selectedDelegate },
+              set: { viewModel.selectDelegate($0) }
+            )
+          ) {
+            ForEach(AudioTranscriberDelegateOption.allCases) { delegate in
+              Text(delegate.displayName).tag(delegate)
+            }
+          }
+          .disabled(viewModel.isBusy || viewModel.isRecording)
+          .accessibilityIdentifier("picker_delegate")
+        } header: {
+          Text("Hardware Acceleration")
+        }
+      }
+
+      Section {
+        LabeledContent("Model", value: viewModel.selectedModel.fullName)
+        Text(viewModel.selectedModel.summary)
+          .font(.caption)
+          .foregroundStyle(.secondary)
+      } header: {
+        Text("Model")
+      }
+
+      Section("Diagnostics") {
+        LabeledContent("Accelerator", value: viewModel.selectedDelegate.displayName)
+        LabeledContent("Asset", value: viewModel.activeModelName)
+        LabeledContent("Input Format", value: "16,000 Hz Mono PCM")
+        if let loadMs = viewModel.modelLoadTimeMs {
+          LabeledContent(
+            "Model Load",
+            value: loadMs >= 1_000.0
+              ? String(format: "%.2f s", loadMs / 1_000.0)
+              : String(format: "%.0f ms", loadMs)
+          )
+        }
+      }
+    }
+  }
+}
+
+#Preview {
+  AudioTranscriberView()
 }
