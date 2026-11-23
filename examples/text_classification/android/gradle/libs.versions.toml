@@ -23,7 +23,7 @@ agp = "8.13.2"
 kotlin = "2.2.20"
 
 # MediaPipe
-mediapipeTasksText = "1.2.2"
+mediapipeTasksText = "1.2.3"
 
 # AndroidX & Compose
 coreKtx = "1.18.0"
