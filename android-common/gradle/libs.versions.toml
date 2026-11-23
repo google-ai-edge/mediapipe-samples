@@ -18,7 +18,7 @@ compileSdk = "36"
 minSdk = "28"
 
 # Build tooling
-agp = "8.13.2"
+agp = "9.5.2"
 kotlin = "2.2.20"
 
 # AndroidX & Compose
